@@ -13,9 +13,18 @@ interface ServiceFiltersProps {
     date: string;
   };
   onFiltersChange: (filters: any) => void;
+  locationName: string;
+  onLocationNameChange: (name: string) => void;
+  onUseCurrentLocation: () => void;
 }
 
-export default function ServiceFilters({ filters, onFiltersChange }: ServiceFiltersProps) {
+export default function ServiceFilters({ 
+  filters, 
+  onFiltersChange,
+  locationName,
+  onLocationNameChange,
+  onUseCurrentLocation
+}: ServiceFiltersProps) {
   const handleCategoryChange = (category: string) => {
     onFiltersChange({ ...filters, category });
   };
@@ -40,12 +49,16 @@ export default function ServiceFilters({ filters, onFiltersChange }: ServiceFilt
         <Input 
           placeholder="Current location" 
           className="pl-10 pr-12"
-          defaultValue="San Francisco, CA"
+          value={locationName}
+          onChange={(e) => onLocationNameChange(e.target.value)}
+          data-testid="input-location"
         />
         <Button 
           variant="ghost" 
           size="sm"
           className="absolute right-2 top-2 p-1"
+          onClick={onUseCurrentLocation}
+          data-testid="button-use-current-location"
         >
           <Target className="w-4 h-4 text-primary" />
         </Button>

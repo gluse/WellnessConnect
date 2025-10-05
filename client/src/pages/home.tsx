@@ -22,6 +22,8 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [selectedService, setSelectedService] = useState<ServiceWithProvider | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationName, setLocationName] = useState<string>("San Francisco, CA");
   const [filters, setFilters] = useState({
     category: "health_wellness",
     ageGroups: [] as string[],
@@ -63,9 +65,39 @@ export default function Home() {
     },
   });
 
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Geolocation Not Supported",
+        description: "Your browser doesn't support geolocation",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        setLocationName("Current Location");
+        toast({
+          title: "Location Updated",
+          description: "Using your current location",
+        });
+      },
+      (error) => {
+        toast({
+          title: "Location Error",
+          description: "Could not get your location. Please enable location services.",
+          variant: "destructive",
+        });
+      }
+    );
+  };
+
   // Search services query
   const { data: services = [], isLoading: servicesLoading } = useQuery({
-    queryKey: ["/api/services/search", filters],
+    queryKey: ["/api/services/search", filters, userLocation],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filters.category) params.append("category", filters.category);
@@ -74,6 +106,11 @@ export default function Home() {
         filters.ageGroups.forEach(age => params.append("ageGroups", age));
       }
       if (filters.date) params.append("date", filters.date);
+      if (userLocation) {
+        params.append("latitude", userLocation.lat.toString());
+        params.append("longitude", userLocation.lng.toString());
+        params.append("radius", filters.distance.toString());
+      }
       
       const response = await fetch(`/api/services/search?${params}`);
       if (!response.ok) throw new Error("Failed to fetch services");
@@ -136,6 +173,9 @@ export default function Home() {
           <ServiceFilters 
             filters={filters}
             onFiltersChange={setFilters}
+            locationName={locationName}
+            onLocationNameChange={setLocationName}
+            onUseCurrentLocation={handleGetCurrentLocation}
           />
 
           {/* View Toggle */}
