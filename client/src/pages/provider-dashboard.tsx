@@ -396,21 +396,14 @@ export default function ProviderDashboard() {
                         <Badge variant={service.instantBooking ? "default" : "outline"}>
                           {service.instantBooking ? "Instant Book" : "Approval Required"}
                         </Badge>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditService(service)}
-                            data-testid={`button-edit-service-${service.id}`}
-                          >
-                            Edit
-                          </Button>
-                          <Switch 
-                            checked={service.isActive} 
-                            onCheckedChange={() => {}}
-                            data-testid={`switch-active-${service.id}`}
-                          />
-                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditService(service)}
+                          data-testid={`button-edit-service-${service.id}`}
+                        >
+                          Edit
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
