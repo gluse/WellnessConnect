@@ -621,7 +621,16 @@ export default function ProviderDashboard() {
                     min="0"
                     max="100"
                     value={newService.advancePaymentPercent}
-                    onChange={(e) => setNewService(prev => ({ ...prev, advancePaymentPercent: parseInt(e.target.value) || 50 }))}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      if (!isNaN(value)) {
+                        const clampedValue = Math.min(Math.max(value, 0), 100);
+                        setNewService(prev => ({ ...prev, advancePaymentPercent: clampedValue }));
+                      } else if (e.target.value === '') {
+                        setNewService(prev => ({ ...prev, advancePaymentPercent: 0 }));
+                      }
+                    }}
+                    data-testid="input-advance-payment"
                   />
                 </div>
                 
