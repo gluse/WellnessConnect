@@ -83,12 +83,32 @@ export const availability = pgTable("availability", {
   id: serial("id").primaryKey(),
   serviceId: integer("service_id").references(() => services.id).notNull(),
   providerId: varchar("provider_id").references(() => users.id).notNull(),
-  date: timestamp("date").notNull(),
-  startTime: varchar("start_time").notNull(), // HH:MM format
-  endTime: varchar("end_time").notNull(), // HH:MM format
-  isAvailable: boolean("is_available").default(true),
-  bookedCapacity: integer("booked_capacity").default(0),
+  
+  // Schedule type
+  scheduleType: varchar("schedule_type", { enum: ["specific", "recurring"] }).notNull(),
+  
+  // For specific date/time
+  specificDate: timestamp("specific_date"),
+  
+  // For recurring schedules
+  daysOfWeek: jsonb("days_of_week").$type<number[]>(), // [0-6] where 0=Sunday
+  
+  // Time slots (HH:MM format)
+  startTime: varchar("start_time").notNull(),
+  endTime: varchar("end_time").notNull(),
+  
+  // Timezone
+  timezone: varchar("timezone").notNull().default("UTC"),
+  
+  // Recurrence end conditions (for recurring only)
+  recurrenceEndType: varchar("recurrence_end_type", { enum: ["never", "after_events", "on_date"] }),
+  recurrenceEndValue: varchar("recurrence_end_value"), // number of events or date string
+  
+  // Status
+  isActive: boolean("is_active").default(true),
+  
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Relations
