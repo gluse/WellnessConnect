@@ -189,6 +189,7 @@ export type ServiceWithProvider = Service & {
   provider: User;
   availableCapacity?: number;
   nextAvailability?: string;
+  distance?: number; // Distance in kilometers from user's location
 };
 
 export type BookingWithDetails = Booking & {

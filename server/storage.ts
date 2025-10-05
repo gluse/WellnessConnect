@@ -17,6 +17,25 @@ import {
 import { db } from "./db";
 import { eq, and, gte, lte, asc, desc, sql, ne } from "drizzle-orm";
 
+// Haversine formula to calculate distance between two points in kilometers
+function calculateDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+  return Math.round(distance * 10) / 10; // Round to 1 decimal place
+}
+
 export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
@@ -156,10 +175,47 @@ export class DatabaseStorage implements IStorage {
 
     const results = await query.orderBy(desc(services.createdAt));
 
-    return results.map(result => ({
+    let servicesWithProviders = results.map(result => ({
       ...result.services,
       provider: result.users!,
     }));
+
+    // Calculate distance if user location is provided
+    if (filters.latitude !== undefined && filters.longitude !== undefined) {
+      servicesWithProviders = servicesWithProviders.map(service => {
+        let distance: number | undefined;
+        
+        if (service.latitude !== null && service.longitude !== null) {
+          distance = calculateDistance(
+            filters.latitude!,
+            filters.longitude!,
+            service.latitude,
+            service.longitude
+          );
+        }
+        
+        return {
+          ...service,
+          distance,
+        };
+      });
+
+      // Filter by radius if specified
+      if (filters.radius !== undefined) {
+        servicesWithProviders = servicesWithProviders.filter(
+          service => service.distance !== undefined && service.distance <= filters.radius!
+        );
+      }
+
+      // Sort by distance (closest first)
+      servicesWithProviders.sort((a, b) => {
+        if (a.distance === undefined) return 1;
+        if (b.distance === undefined) return -1;
+        return a.distance - b.distance;
+      });
+    }
+
+    return servicesWithProviders;
   }
 
   // Booking operations
