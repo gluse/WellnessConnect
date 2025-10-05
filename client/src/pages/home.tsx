@@ -93,7 +93,7 @@ export default function Home() {
   };
 
   if (currentRole === "provider") {
-    return <ProviderDashboard />;
+    return <ProviderDashboard onRoleSwitch={handleRoleSwitch} />;
   }
 
   return (

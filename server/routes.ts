@@ -206,12 +206,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/availability', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const availabilityData = insertAvailabilitySchema.parse({
+      
+      // Verify service ownership
+      const service = await storage.getServiceById(req.body.serviceId);
+      if (!service || service.providerId !== userId) {
+        return res.status(403).json({ message: "Unauthorized - service not found or not owned by you" });
+      }
+      
+      // Parse and convert data
+      const availabilityData = {
         ...req.body,
         providerId: userId,
-      });
+        specificDate: req.body.specificDate ? new Date(req.body.specificDate) : null,
+        daysOfWeek: req.body.daysOfWeek || null,
+      };
       
-      const availability = await storage.createAvailability(availabilityData);
+      const validated = insertAvailabilitySchema.parse(availabilityData);
+      const availability = await storage.createAvailability(validated);
       res.json(availability);
     } catch (error) {
       console.error("Error creating availability:", error);
@@ -222,13 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/availability/service/:serviceId', async (req, res) => {
     try {
       const serviceId = parseInt(req.params.serviceId);
-      const { date } = req.query;
-      
-      if (!date) {
-        return res.status(400).json({ message: "Date parameter is required" });
-      }
-      
-      const availability = await storage.getAvailabilityByService(serviceId, date as string);
+      const availability = await storage.getAvailabilityByService(serviceId);
       res.json(availability);
     } catch (error) {
       console.error("Error fetching availability:", error);
@@ -239,17 +244,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/availability/provider', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { startDate, endDate } = req.query;
-      
-      if (!startDate || !endDate) {
-        return res.status(400).json({ message: "Start and end dates are required" });
-      }
-      
-      const availability = await storage.getProviderAvailability(userId, startDate as string, endDate as string);
+      const availability = await storage.getAvailabilityByProvider(userId);
       res.json(availability);
     } catch (error) {
       console.error("Error fetching provider availability:", error);
       res.status(500).json({ message: "Failed to fetch availability" });
+    }
+  });
+
+  app.patch('/api/availability/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const availabilityId = parseInt(req.params.id);
+      
+      // Verify ownership
+      const existing = await storage.getAvailabilityByProvider(userId);
+      const availability = existing.find(a => a.id === availabilityId);
+      if (!availability) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Convert date if provided
+      const updates = {
+        ...req.body,
+        specificDate: req.body.specificDate ? new Date(req.body.specificDate) : undefined,
+      };
+      
+      const updated = await storage.updateAvailability(availabilityId, updates);
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating availability:", error);
+      res.status(500).json({ message: "Failed to update availability" });
+    }
+  });
+
+  app.delete('/api/availability/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const availabilityId = parseInt(req.params.id);
+      
+      // Delete with ownership verification in storage layer
+      await storage.deleteAvailability(availabilityId, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting availability:", error);
+      res.status(500).json({ message: "Failed to delete availability" });
     }
   });
 

@@ -49,9 +49,10 @@ export interface IStorage {
 
   // Availability operations
   createAvailability(availability: InsertAvailability): Promise<Availability>;
-  getAvailabilityByService(serviceId: number, date: string): Promise<Availability[]>;
+  getAvailabilityByService(serviceId: number): Promise<Availability[]>;
+  getAvailabilityByProvider(providerId: string): Promise<Availability[]>;
   updateAvailability(id: number, updates: Partial<InsertAvailability>): Promise<Availability>;
-  getProviderAvailability(providerId: string, startDate: string, endDate: string): Promise<Availability[]>;
+  deleteAvailability(id: number, providerId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -241,49 +242,59 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Availability operations
-  async createAvailability(availability: InsertAvailability): Promise<Availability> {
+  async createAvailability(availabilityData: InsertAvailability): Promise<Availability> {
     const [newAvailability] = await db
       .insert(availability)
-      .values(availability)
+      .values(availabilityData)
       .returning();
     return newAvailability;
   }
 
-  async getAvailabilityByService(serviceId: number, date: string): Promise<Availability[]> {
+  async getAvailabilityByService(serviceId: number): Promise<Availability[]> {
     return await db
       .select()
       .from(availability)
       .where(
         and(
           eq(availability.serviceId, serviceId),
-          gte(availability.date, new Date(date)),
-          lte(availability.date, new Date(date + 'T23:59:59'))
+          eq(availability.isActive, true)
         )
       )
       .orderBy(asc(availability.startTime));
   }
 
-  async updateAvailability(id: number, updates: Partial<InsertAvailability>): Promise<Availability> {
-    const [updated] = await db
-      .update(availability)
-      .set(updates)
-      .where(eq(availability.id, id))
-      .returning();
-    return updated;
-  }
-
-  async getProviderAvailability(providerId: string, startDate: string, endDate: string): Promise<Availability[]> {
+  async getAvailabilityByProvider(providerId: string): Promise<Availability[]> {
     return await db
       .select()
       .from(availability)
       .where(
         and(
           eq(availability.providerId, providerId),
-          gte(availability.date, new Date(startDate)),
-          lte(availability.date, new Date(endDate))
+          eq(availability.isActive, true)
         )
       )
-      .orderBy(asc(availability.date), asc(availability.startTime));
+      .orderBy(asc(availability.createdAt));
+  }
+
+  async updateAvailability(id: number, updates: Partial<InsertAvailability>): Promise<Availability> {
+    const [updated] = await db
+      .update(availability)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(availability.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteAvailability(id: number, providerId: string): Promise<void> {
+    await db
+      .update(availability)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(
+        and(
+          eq(availability.id, id),
+          eq(availability.providerId, providerId)
+        )
+      );
   }
 }
 

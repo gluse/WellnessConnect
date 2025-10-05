@@ -18,12 +18,17 @@ import RoleSwitcher from "@/components/role-switcher";
 import BottomNavigation from "@/components/bottom-navigation";
 import type { Service, BookingWithDetails } from "@shared/schema";
 
-export default function ProviderDashboard() {
+interface ProviderDashboardProps {
+  onRoleSwitch?: (role: "seeker" | "provider") => void;
+}
+
+export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardProps = {}) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showAddService, setShowAddService] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [newService, setNewService] = useState({
     name: "",
     description: "",
@@ -38,6 +43,17 @@ export default function ProviderDashboard() {
     advancePaymentPercent: 50,
     address: "",
   });
+  const [newSchedule, setNewSchedule] = useState({
+    serviceId: 0,
+    scheduleType: "specific" as "specific" | "recurring",
+    specificDate: "",
+    daysOfWeek: [] as number[],
+    startTime: "09:00",
+    endTime: "17:00",
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    recurrenceEndType: "never" as "never" | "after_events" | "on_date",
+    recurrenceEndValue: "",
+  });
 
   // Fetch provider services
   const { data: services = [], isLoading: servicesLoading } = useQuery({
@@ -48,6 +64,12 @@ export default function ProviderDashboard() {
   // Fetch provider bookings
   const { data: bookings = [], isLoading: bookingsLoading } = useQuery({
     queryKey: ["/api/bookings/provider"],
+    retry: false,
+  });
+
+  // Fetch provider availability schedules
+  const { data: schedules = [], isLoading: schedulesLoading } = useQuery({
+    queryKey: ["/api/availability/provider"],
     retry: false,
   });
 
@@ -182,9 +204,59 @@ export default function ProviderDashboard() {
     },
   });
 
+  // Create availability mutation
+  const createAvailabilityMutation = useMutation({
+    mutationFn: async (scheduleData: any) => {
+      const response = await apiRequest("POST", "/api/availability", scheduleData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/availability/provider"] });
+      setShowScheduleModal(false);
+      setNewSchedule({
+        serviceId: 0,
+        scheduleType: "specific",
+        specificDate: "",
+        daysOfWeek: [],
+        startTime: "09:00",
+        endTime: "17:00",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        recurrenceEndType: "never",
+        recurrenceEndValue: "",
+      });
+      toast({
+        title: "Schedule Created",
+        description: "Availability schedule has been added",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create schedule",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete availability mutation
+  const deleteAvailabilityMutation = useMutation({
+    mutationFn: async (scheduleId: number) => {
+      const response = await apiRequest("DELETE", `/api/availability/${scheduleId}`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/availability/provider"] });
+      toast({
+        title: "Schedule Deleted",
+        description: "Availability schedule has been removed",
+      });
+    },
+  });
+
   const handleRoleSwitch = (role: "seeker" | "provider") => {
-    // This will be handled by the parent component
-    window.location.reload();
+    if (onRoleSwitch) {
+      onRoleSwitch(role);
+    }
   };
 
   const handleCreateService = () => {
@@ -244,6 +316,7 @@ export default function ProviderDashboard() {
       duration: 60,
       maxCapacity: 1,
       ageGroups: [],
+      targetGender: "both",
       instantBooking: false,
       advancePaymentPercent: 50,
       address: "",
@@ -261,6 +334,28 @@ export default function ProviderDashboard() {
 
   const handleBookingAction = (bookingId: number, action: "confirmed" | "cancelled") => {
     updateBookingMutation.mutate({ bookingId, status: action });
+  };
+
+  const handleCreateSchedule = () => {
+    if (newSchedule.serviceId === 0) {
+      toast({
+        title: "Error",
+        description: "Please select a service",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createAvailabilityMutation.mutate(newSchedule);
+  };
+
+  const handleDayToggle = (day: number) => {
+    setNewSchedule(prev => ({
+      ...prev,
+      daysOfWeek: prev.daysOfWeek.includes(day)
+        ? prev.daysOfWeek.filter(d => d !== day)
+        : [...prev.daysOfWeek, day]
+    }));
   };
 
   // Calculate stats
@@ -343,6 +438,8 @@ export default function ProviderDashboard() {
                 <Button 
                   variant="outline" 
                   className="p-4 h-auto flex-col"
+                  onClick={() => setShowScheduleModal(true)}
+                  data-testid="button-manage-schedule"
                 >
                   <Calendar className="w-5 h-5 mb-2" />
                   Manage Schedule
@@ -698,6 +795,224 @@ export default function ProviderDashboard() {
                     }
                   </Button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Schedule Modal */}
+        {showScheduleModal && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
+            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 max-w-md mx-auto max-h-[80vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">Manage Availability</h2>
+                <Button variant="ghost" size="sm" onClick={() => setShowScheduleModal(false)} data-testid="button-close-schedule">
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="scheduleService">Select Service</Label>
+                  <select
+                    id="scheduleService"
+                    className="w-full p-2 border rounded-md"
+                    value={newSchedule.serviceId}
+                    onChange={(e) => setNewSchedule(prev => ({ ...prev, serviceId: parseInt(e.target.value) }))}
+                    data-testid="select-service"
+                  >
+                    <option value={0}>Select a service...</option>
+                    {(services as Service[]).map((service: Service) => (
+                      <option key={service.id} value={service.id}>{service.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <Label>Schedule Type</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      variant={newSchedule.scheduleType === "specific" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setNewSchedule(prev => ({ ...prev, scheduleType: "specific" }))}
+                      data-testid="button-schedule-specific"
+                      className="flex-1"
+                    >
+                      Specific Date
+                    </Button>
+                    <Button
+                      variant={newSchedule.scheduleType === "recurring" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setNewSchedule(prev => ({ ...prev, scheduleType: "recurring" }))}
+                      data-testid="button-schedule-recurring"
+                      className="flex-1"
+                    >
+                      Recurring
+                    </Button>
+                  </div>
+                </div>
+
+                {newSchedule.scheduleType === "specific" && (
+                  <div>
+                    <Label htmlFor="specificDate">Date</Label>
+                    <Input
+                      id="specificDate"
+                      type="date"
+                      value={newSchedule.specificDate}
+                      onChange={(e) => setNewSchedule(prev => ({ ...prev, specificDate: e.target.value }))}
+                      data-testid="input-specific-date"
+                    />
+                  </div>
+                )}
+
+                {newSchedule.scheduleType === "recurring" && (
+                  <>
+                    <div>
+                      <Label>Days of Week</Label>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {[{day: 0, label: "Sun"}, {day: 1, label: "Mon"}, {day: 2, label: "Tue"}, {day: 3, label: "Wed"}, {day: 4, label: "Thu"}, {day: 5, label: "Fri"}, {day: 6, label: "Sat"}].map(({day, label}) => (
+                          <Button
+                            key={day}
+                            variant={newSchedule.daysOfWeek.includes(day) ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handleDayToggle(day)}
+                            data-testid={`button-day-${day}`}
+                          >
+                            {label}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>Recurrence End</Label>
+                      <select
+                        className="w-full p-2 border rounded-md mt-2"
+                        value={newSchedule.recurrenceEndType}
+                        onChange={(e) => setNewSchedule(prev => ({ ...prev, recurrenceEndType: e.target.value as any }))}
+                        data-testid="select-recurrence-end"
+                      >
+                        <option value="never">Never</option>
+                        <option value="after_events">After number of events</option>
+                        <option value="on_date">On specific date</option>
+                      </select>
+                    </div>
+
+                    {newSchedule.recurrenceEndType === "after_events" && (
+                      <div>
+                        <Label htmlFor="eventCount">Number of Events</Label>
+                        <Input
+                          id="eventCount"
+                          type="number"
+                          min="1"
+                          value={newSchedule.recurrenceEndValue}
+                          onChange={(e) => setNewSchedule(prev => ({ ...prev, recurrenceEndValue: e.target.value }))}
+                          data-testid="input-event-count"
+                        />
+                      </div>
+                    )}
+
+                    {newSchedule.recurrenceEndType === "on_date" && (
+                      <div>
+                        <Label htmlFor="endDate">End Date</Label>
+                        <Input
+                          id="endDate"
+                          type="date"
+                          value={newSchedule.recurrenceEndValue}
+                          onChange={(e) => setNewSchedule(prev => ({ ...prev, recurrenceEndValue: e.target.value }))}
+                          data-testid="input-end-date"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="startTime">Start Time</Label>
+                    <Input
+                      id="startTime"
+                      type="time"
+                      value={newSchedule.startTime}
+                      onChange={(e) => setNewSchedule(prev => ({ ...prev, startTime: e.target.value }))}
+                      data-testid="input-start-time"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="endTime">End Time</Label>
+                    <Input
+                      id="endTime"
+                      type="time"
+                      value={newSchedule.endTime}
+                      onChange={(e) => setNewSchedule(prev => ({ ...prev, endTime: e.target.value }))}
+                      data-testid="input-end-time"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="timezone">Timezone</Label>
+                  <Input
+                    id="timezone"
+                    value={newSchedule.timezone}
+                    onChange={(e) => setNewSchedule(prev => ({ ...prev, timezone: e.target.value }))}
+                    placeholder="e.g. America/New_York"
+                    data-testid="input-timezone"
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">Current: {Intl.DateTimeFormat().resolvedOptions().timeZone}</p>
+                </div>
+
+                <Separator />
+
+                <div className="flex space-x-3">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => setShowScheduleModal(false)}
+                    data-testid="button-cancel-schedule"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    className="flex-1"
+                    onClick={handleCreateSchedule}
+                    disabled={createAvailabilityMutation.isPending}
+                    data-testid="button-save-schedule"
+                  >
+                    {createAvailabilityMutation.isPending ? "Creating..." : "Create Schedule"}
+                  </Button>
+                </div>
+
+                {schedules.length > 0 && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h3 className="font-semibold mb-3">Existing Schedules</h3>
+                      <div className="space-y-2">
+                        {(schedules as any[]).map((schedule: any) => (
+                          <div key={schedule.id} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">
+                                {schedule.scheduleType === "specific" ? "Specific" : "Recurring"}
+                              </p>
+                              <p className="text-xs text-neutral-600">
+                                {schedule.startTime} - {schedule.endTime}
+                              </p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteAvailabilityMutation.mutate(schedule.id)}
+                              data-testid={`button-delete-schedule-${schedule.id}`}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
