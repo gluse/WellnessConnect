@@ -23,6 +23,7 @@ export default function ProviderDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showAddService, setShowAddService] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
   const [newService, setNewService] = useState({
     name: "",
     description: "",
@@ -58,6 +59,7 @@ export default function ProviderDashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/services/provider"] });
       setShowAddService(false);
+      setEditingService(null);
       setNewService({
         name: "",
         description: "",
@@ -91,6 +93,54 @@ export default function ProviderDashboard() {
       toast({
         title: "Error",
         description: "Failed to create service",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update service mutation
+  const updateServiceMutation = useMutation({
+    mutationFn: async ({ id, serviceData }: { id: number; serviceData: any }) => {
+      const response = await apiRequest("PATCH", `/api/services/${id}`, serviceData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/services/provider"] });
+      setShowAddService(false);
+      setEditingService(null);
+      setNewService({
+        name: "",
+        description: "",
+        category: "health_wellness",
+        serviceType: "one_to_one",
+        price: "",
+        duration: 60,
+        maxCapacity: 1,
+        ageGroups: [],
+        instantBooking: false,
+        advancePaymentPercent: 50,
+        address: "",
+      });
+      toast({
+        title: "Service Updated",
+        description: "Your service has been updated successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update service",
         variant: "destructive",
       });
     },
@@ -144,9 +194,55 @@ export default function ProviderDashboard() {
       return;
     }
 
-    createServiceMutation.mutate({
-      ...newService,
-      price: newService.price,
+    if (editingService) {
+      updateServiceMutation.mutate({
+        id: editingService.id,
+        serviceData: {
+          ...newService,
+          price: newService.price,
+        },
+      });
+    } else {
+      createServiceMutation.mutate({
+        ...newService,
+        price: newService.price,
+      });
+    }
+  };
+
+  const handleEditService = (service: Service) => {
+    setEditingService(service);
+    setNewService({
+      name: service.name,
+      description: service.description || "",
+      category: service.category,
+      serviceType: service.serviceType,
+      price: service.price,
+      duration: service.duration,
+      maxCapacity: service.maxCapacity || 1,
+      ageGroups: (service.ageGroups as string[]) || [],
+      instantBooking: service.instantBooking || false,
+      advancePaymentPercent: service.advancePaymentPercent || 50,
+      address: service.address || "",
+    });
+    setShowAddService(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddService(false);
+    setEditingService(null);
+    setNewService({
+      name: "",
+      description: "",
+      category: "health_wellness",
+      serviceType: "one_to_one",
+      price: "",
+      duration: 60,
+      maxCapacity: 1,
+      ageGroups: [],
+      instantBooking: false,
+      advancePaymentPercent: 50,
+      address: "",
     });
   };
 
@@ -296,10 +392,21 @@ export default function ProviderDashboard() {
                         <Badge variant={service.instantBooking ? "default" : "outline"}>
                           {service.instantBooking ? "Instant Book" : "Approval Required"}
                         </Badge>
-                        <Switch 
-                          checked={service.isActive} 
-                          onCheckedChange={() => {}}
-                        />
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditService(service)}
+                            data-testid={`button-edit-service-${service.id}`}
+                          >
+                            Edit
+                          </Button>
+                          <Switch 
+                            checked={service.isActive} 
+                            onCheckedChange={() => {}}
+                            data-testid={`switch-active-${service.id}`}
+                          />
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -380,13 +487,13 @@ export default function ProviderDashboard() {
           </div>
         </main>
 
-        {/* Add Service Modal */}
+        {/* Add/Edit Service Modal */}
         {showAddService && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
             <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 max-w-md mx-auto max-h-[80vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">Add New Service</h2>
-                <Button variant="ghost" size="sm" onClick={() => setShowAddService(false)}>
+                <h2 className="text-xl font-semibold">{editingService ? "Edit Service" : "Add New Service"}</h2>
+                <Button variant="ghost" size="sm" onClick={handleCloseModal} data-testid="button-close-modal">
                   <X className="w-5 h-5" />
                 </Button>
               </div>
@@ -534,16 +641,21 @@ export default function ProviderDashboard() {
                   <Button 
                     variant="outline" 
                     className="flex-1"
-                    onClick={() => setShowAddService(false)}
+                    onClick={handleCloseModal}
+                    data-testid="button-cancel-service"
                   >
                     Cancel
                   </Button>
                   <Button 
                     className="flex-1"
                     onClick={handleCreateService}
-                    disabled={createServiceMutation.isPending}
+                    disabled={createServiceMutation.isPending || updateServiceMutation.isPending}
+                    data-testid="button-save-service"
                   >
-                    {createServiceMutation.isPending ? "Creating..." : "Create Service"}
+                    {editingService
+                      ? (updateServiceMutation.isPending ? "Updating..." : "Update Service")
+                      : (createServiceMutation.isPending ? "Creating..." : "Create Service")
+                    }
                   </Button>
                 </div>
               </div>
