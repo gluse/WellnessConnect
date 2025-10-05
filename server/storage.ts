@@ -159,23 +159,24 @@ export class DatabaseStorage implements IStorage {
     radius?: number;
     date?: string;
   }): Promise<ServiceWithProvider[]> {
-    let query = db
-      .select()
-      .from(services)
-      .leftJoin(users, eq(services.providerId, users.id))
-      .where(eq(services.isActive, true));
+    const conditions = [eq(services.isActive, true)];
 
     if (filters.category) {
-      query = query.where(eq(services.category, filters.category));
+      conditions.push(eq(services.category, filters.category));
     }
 
     if (filters.serviceType) {
-      query = query.where(eq(services.serviceType, filters.serviceType));
+      conditions.push(eq(services.serviceType, filters.serviceType));
     }
 
-    const results = await query.orderBy(desc(services.createdAt));
+    const results = await db
+      .select()
+      .from(services)
+      .leftJoin(users, eq(services.providerId, users.id))
+      .where(and(...conditions))
+      .orderBy(desc(services.createdAt));
 
-    let servicesWithProviders = results.map(result => ({
+    let servicesWithProviders: ServiceWithProvider[] = results.map(result => ({
       ...result.services,
       provider: result.users!,
     }));

@@ -37,11 +37,17 @@ export default function ServiceCard({ service, onBook }: ServiceCardProps) {
               <p className="text-sm text-neutral-600">
                 {service.provider.firstName} {service.provider.lastName}
               </p>
-              <span className="text-sm text-neutral-500">•</span>
-              <div className="flex items-center">
-                <MapPin className="w-3 h-3 text-neutral-400 mr-1" />
-                <span className="text-sm text-neutral-500">1.2 km away</span>
-              </div>
+              {service.distance !== undefined && (
+                <>
+                  <span className="text-sm text-neutral-500">•</span>
+                  <div className="flex items-center">
+                    <MapPin className="w-3 h-3 text-neutral-400 mr-1" />
+                    <span className="text-sm text-neutral-500" data-testid={`text-distance-${service.id}`}>
+                      {service.distance} km away
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
             
             <div className="flex items-center justify-between mb-3">
