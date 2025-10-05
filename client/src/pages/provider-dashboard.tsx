@@ -146,7 +146,7 @@ export default function ProviderDashboard() {
 
     createServiceMutation.mutate({
       ...newService,
-      price: parseFloat(newService.price),
+      price: newService.price,
     });
   };
 
