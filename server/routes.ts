@@ -1,0 +1,280 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
+import { insertServiceSchema, insertBookingSchema, insertAvailabilitySchema } from "@shared/schema";
+import { z } from "zod";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // User routes
+  app.patch('/api/users/role', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { role } = req.body;
+      
+      if (!['seeker', 'provider'].includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+
+      const user = await storage.updateUserRole(userId, role);
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "Failed to update user role" });
+    }
+  });
+
+  // Service routes
+  app.post('/api/services', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const serviceData = insertServiceSchema.parse({
+        ...req.body,
+        providerId: userId,
+      });
+      
+      const service = await storage.createService(serviceData);
+      res.json(service);
+    } catch (error) {
+      console.error("Error creating service:", error);
+      res.status(500).json({ message: "Failed to create service" });
+    }
+  });
+
+  app.get('/api/services/provider', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const services = await storage.getServicesByProvider(userId);
+      res.json(services);
+    } catch (error) {
+      console.error("Error fetching provider services:", error);
+      res.status(500).json({ message: "Failed to fetch services" });
+    }
+  });
+
+  app.get('/api/services/search', async (req, res) => {
+    try {
+      const { category, ageGroups, serviceType, latitude, longitude, radius, date } = req.query;
+      
+      const filters: any = {};
+      if (category) filters.category = category;
+      if (serviceType) filters.serviceType = serviceType;
+      if (ageGroups) filters.ageGroups = Array.isArray(ageGroups) ? ageGroups : [ageGroups];
+      if (latitude) filters.latitude = parseFloat(latitude as string);
+      if (longitude) filters.longitude = parseFloat(longitude as string);
+      if (radius) filters.radius = parseFloat(radius as string);
+      if (date) filters.date = date as string;
+
+      const services = await storage.searchServices(filters);
+      res.json(services);
+    } catch (error) {
+      console.error("Error searching services:", error);
+      res.status(500).json({ message: "Failed to search services" });
+    }
+  });
+
+  app.get('/api/services/:id', async (req, res) => {
+    try {
+      const serviceId = parseInt(req.params.id);
+      const service = await storage.getServiceById(serviceId);
+      
+      if (!service) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      
+      res.json(service);
+    } catch (error) {
+      console.error("Error fetching service:", error);
+      res.status(500).json({ message: "Failed to fetch service" });
+    }
+  });
+
+  app.patch('/api/services/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const serviceId = parseInt(req.params.id);
+      
+      // Verify service belongs to user
+      const service = await storage.getServiceById(serviceId);
+      if (!service || service.providerId !== userId) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const updates = req.body;
+      const updatedService = await storage.updateService(serviceId, updates);
+      res.json(updatedService);
+    } catch (error) {
+      console.error("Error updating service:", error);
+      res.status(500).json({ message: "Failed to update service" });
+    }
+  });
+
+  app.delete('/api/services/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const serviceId = parseInt(req.params.id);
+      
+      // Verify service belongs to user
+      const service = await storage.getServiceById(serviceId);
+      if (!service || service.providerId !== userId) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      await storage.deleteService(serviceId);
+      res.json({ message: "Service deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting service:", error);
+      res.status(500).json({ message: "Failed to delete service" });
+    }
+  });
+
+  // Booking routes
+  app.post('/api/bookings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const bookingData = insertBookingSchema.parse({
+        ...req.body,
+        seekerId: userId,
+      });
+      
+      const booking = await storage.createBooking(bookingData);
+      res.json(booking);
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      res.status(500).json({ message: "Failed to create booking" });
+    }
+  });
+
+  app.get('/api/bookings/seeker', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const bookings = await storage.getBookingsBySeeker(userId);
+      res.json(bookings);
+    } catch (error) {
+      console.error("Error fetching seeker bookings:", error);
+      res.status(500).json({ message: "Failed to fetch bookings" });
+    }
+  });
+
+  app.get('/api/bookings/provider', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const bookings = await storage.getBookingsByProvider(userId);
+      res.json(bookings);
+    } catch (error) {
+      console.error("Error fetching provider bookings:", error);
+      res.status(500).json({ message: "Failed to fetch bookings" });
+    }
+  });
+
+  app.patch('/api/bookings/:id/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const bookingId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      // Verify booking belongs to user (as provider)
+      const booking = await storage.getBookingById(bookingId);
+      if (!booking || booking.providerId !== userId) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const updatedBooking = await storage.updateBookingStatus(bookingId, status);
+      res.json(updatedBooking);
+    } catch (error) {
+      console.error("Error updating booking status:", error);
+      res.status(500).json({ message: "Failed to update booking status" });
+    }
+  });
+
+  // Availability routes
+  app.post('/api/availability', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const availabilityData = insertAvailabilitySchema.parse({
+        ...req.body,
+        providerId: userId,
+      });
+      
+      const availability = await storage.createAvailability(availabilityData);
+      res.json(availability);
+    } catch (error) {
+      console.error("Error creating availability:", error);
+      res.status(500).json({ message: "Failed to create availability" });
+    }
+  });
+
+  app.get('/api/availability/service/:serviceId', async (req, res) => {
+    try {
+      const serviceId = parseInt(req.params.serviceId);
+      const { date } = req.query;
+      
+      if (!date) {
+        return res.status(400).json({ message: "Date parameter is required" });
+      }
+      
+      const availability = await storage.getAvailabilityByService(serviceId, date as string);
+      res.json(availability);
+    } catch (error) {
+      console.error("Error fetching availability:", error);
+      res.status(500).json({ message: "Failed to fetch availability" });
+    }
+  });
+
+  app.get('/api/availability/provider', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { startDate, endDate } = req.query;
+      
+      if (!startDate || !endDate) {
+        return res.status(400).json({ message: "Start and end dates are required" });
+      }
+      
+      const availability = await storage.getProviderAvailability(userId, startDate as string, endDate as string);
+      res.json(availability);
+    } catch (error) {
+      console.error("Error fetching provider availability:", error);
+      res.status(500).json({ message: "Failed to fetch availability" });
+    }
+  });
+
+  // Mock payment route (for demo purposes)
+  app.post('/api/payments/process', isAuthenticated, async (req: any, res) => {
+    try {
+      const { bookingId, amount, paymentMethod } = req.body;
+      
+      // Mock payment processing
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Update booking payment status
+      await storage.updateBookingPayment(bookingId, 'advance_paid');
+      
+      res.json({ 
+        success: true, 
+        transactionId: `txn_${Date.now()}`,
+        message: "Payment processed successfully"
+      });
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      res.status(500).json({ message: "Failed to process payment" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
