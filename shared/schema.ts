@@ -50,6 +50,7 @@ export const services = pgTable("services", {
   duration: integer("duration").notNull(), // in minutes
   maxCapacity: integer("max_capacity").default(1),
   ageGroups: jsonb("age_groups").$type<string[]>().default([]), // ["children", "teens", "adults", "seniors"]
+  targetGender: varchar("target_gender", { enum: ["females", "males", "both"] }).default("both"),
   instantBooking: boolean("instant_booking").default(false),
   advancePaymentPercent: integer("advance_payment_percent").default(50),
   latitude: real("latitude"),

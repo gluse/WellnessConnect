@@ -33,6 +33,7 @@ export default function ProviderDashboard() {
     duration: 60,
     maxCapacity: 1,
     ageGroups: [] as string[],
+    targetGender: "both",
     instantBooking: false,
     advancePaymentPercent: 50,
     address: "",
@@ -69,6 +70,7 @@ export default function ProviderDashboard() {
         duration: 60,
         maxCapacity: 1,
         ageGroups: [],
+        targetGender: "both",
         instantBooking: false,
         advancePaymentPercent: 50,
         address: "",
@@ -117,6 +119,7 @@ export default function ProviderDashboard() {
         duration: 60,
         maxCapacity: 1,
         ageGroups: [],
+        targetGender: "both",
         instantBooking: false,
         advancePaymentPercent: 50,
         address: "",
@@ -221,6 +224,7 @@ export default function ProviderDashboard() {
       duration: service.duration,
       maxCapacity: service.maxCapacity || 1,
       ageGroups: (service.ageGroups as string[]) || [],
+      targetGender: service.targetGender || "both",
       instantBooking: service.instantBooking || false,
       advancePaymentPercent: service.advancePaymentPercent || 50,
       address: service.address || "",
@@ -598,10 +602,44 @@ export default function ProviderDashboard() {
                         variant={newService.ageGroups.includes(ageGroup) ? "default" : "outline"}
                         size="sm"
                         onClick={() => handleAgeGroupToggle(ageGroup)}
+                        data-testid={`button-age-${ageGroup}`}
                       >
                         {ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1)}
                       </Button>
                     ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <Label>Target Gender</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      variant={newService.targetGender === "females" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setNewService(prev => ({ ...prev, targetGender: "females" }))}
+                      data-testid="button-gender-females"
+                      className="flex-1"
+                    >
+                      Females
+                    </Button>
+                    <Button
+                      variant={newService.targetGender === "males" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setNewService(prev => ({ ...prev, targetGender: "males" }))}
+                      data-testid="button-gender-males"
+                      className="flex-1"
+                    >
+                      Males
+                    </Button>
+                    <Button
+                      variant={newService.targetGender === "both" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setNewService(prev => ({ ...prev, targetGender: "both" }))}
+                      data-testid="button-gender-both"
+                      className="flex-1"
+                    >
+                      Females and Males
+                    </Button>
                   </div>
                 </div>
                 
