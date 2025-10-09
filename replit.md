@@ -43,6 +43,8 @@ WellnessFind is a full-stack web application that connects service seekers with 
 - **Service Types**: One-to-one and group services
 - **Pricing**: Flexible pricing with advance payment options
 - **Availability**: Real-time capacity tracking and scheduling
+- **Media**: Image upload support via Replit Object Storage
+- **External Links**: Optional external URLs for additional information
 
 ### Booking System
 - **Instant Booking**: Automated confirmation for participating providers
@@ -55,6 +57,8 @@ WellnessFind is a full-stack web application that connects service seekers with 
 - **Mobile Navigation**: Bottom tab navigation for mobile users
 - **Role Switching**: Seamless transition between seeker and provider modes
 - **Responsive Design**: Adaptive layouts for all screen sizes
+- **Calendar View**: Monthly calendar with timezone support for managing bookings and availability
+- **View Modes**: List, Map, and Calendar views for flexible service discovery
 
 ### Location & Mapping
 - **Geolocation**: Browser-based location detection using Geolocation API
@@ -91,6 +95,7 @@ WellnessFind is a full-stack web application that connects service seekers with 
 - **Neon Database**: Serverless PostgreSQL with connection pooling
 - **Replit Platform**: Development environment and deployment
 - **WebSocket Support**: Real-time features via ws library
+- **Object Storage**: Replit Object Storage (Google Cloud Storage) for image uploads
 
 ### UI & Styling
 - **Radix UI**: Accessible component primitives
@@ -102,6 +107,7 @@ WellnessFind is a full-stack web application that connects service seekers with 
 - **Stripe**: Payment processing infrastructure (configured)
 - **React Query**: Server state synchronization
 - **Date-fns**: Date manipulation and formatting
+- **Uppy**: File upload with AWS S3-compatible API for object storage
 
 ## Deployment Strategy
 
@@ -125,6 +131,7 @@ WellnessFind is a full-stack web application that connects service seekers with 
 
 ```
 Changelog:
+- October 09, 2025 (Update 4). Added calendar feature with timezone support: created CalendarView component showing monthly calendar of bookings and availability schedules; integrated calendar into provider dashboard for managing services; added Calendar tab to seeker home page for viewing bookings; calendar displays color-coded events (confirmed, pending, cancelled, completed); added image upload functionality using Replit Object Storage with ObjectUploader component; added external URL field to service creation form for linking to provider websites
 - October 09, 2025 (Update 3). Enhanced service creation with manual coordinate entry: added latitude/longitude input fields for international addresses that can't be auto-verified by Google Maps; both auto-verification and manual entry now supported; unified UX flow so clicking services from both list and map views shows detail modal first, with option to proceed to booking
 - October 09, 2025 (Update 2). Enhanced service discovery UX: changed distance filter from dropdown to manual input (1-500km); added comprehensive service detail modal for seekers showing full service information; fixed booking creation bug by updating schema to accept ISO string dates; made service names clickable to view details
 - October 09, 2025. Switched from Leaflet to Google Maps for interactive map view; fixed location search UX with read-only input and clear instructions; added HTML escaping for XSS protection in map popups; added secure backend endpoint for Google Maps API key delivery
