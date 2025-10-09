@@ -244,7 +244,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="h-96 px-4 lg:px-0 lg:h-[600px]">
-              {userLocation ? (
+              {services.length > 0 || userLocation ? (
                 <GoogleMap 
                   services={services}
                   userLocation={userLocation}
@@ -254,8 +254,8 @@ export default function Home() {
                 <div className="bg-neutral-100 rounded-xl h-full flex items-center justify-center border-2 border-dashed border-neutral-300">
                   <div className="text-center p-6">
                     <MapPin className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-                    <p className="text-neutral-700 font-medium mb-2">Location Required</p>
-                    <p className="text-sm text-neutral-500 mb-4">Please enable your location to view the map</p>
+                    <p className="text-neutral-700 font-medium mb-2">No Services to Display</p>
+                    <p className="text-sm text-neutral-500 mb-4">Enable your location to find services near you</p>
                     <Button onClick={handleGetCurrentLocation} data-testid="button-enable-location">
                       <Target className="w-4 h-4 mr-2" />
                       Enable Location

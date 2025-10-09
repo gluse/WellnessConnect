@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Loader } from "@googlemaps/js-api-loader";
+import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import type { ServiceWithProvider } from "@shared/schema";
 
 interface GoogleMapProps {
@@ -44,16 +44,17 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
       ? { lat: userLocation.lat, lng: userLocation.lng }
       : { lat: 37.7749, lng: -122.4194 };
 
-    const loader = new Loader({
+    // Configure the loader with API key
+    setOptions({ 
       apiKey: apiKey,
-      version: "weekly",
-      libraries: ['maps', 'marker'],
+      version: "weekly"
     });
 
-    loader.load().then(() => {
+    // Load the maps library
+    importLibrary("maps").then(({ Map }) => {
       if (!mapRef.current) return;
 
-      googleMapRef.current = new google.maps.Map(mapRef.current, {
+      googleMapRef.current = new Map(mapRef.current, {
         center: defaultCenter,
         zoom: 12,
         mapTypeControl: false,
@@ -62,6 +63,9 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
       });
       
       setMapReady(true);
+    }).catch(err => {
+      console.error('Failed to load Google Maps:', err);
+      setIsLoading(false);
     });
 
     return () => {
