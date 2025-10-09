@@ -47,10 +47,10 @@ export default function ServiceFilters({
       <div className="relative">
         <MapPin className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
         <Input 
-          placeholder="Current location" 
-          className="pl-10 pr-12"
+          placeholder="Click target to use your location" 
+          className="pl-10 pr-12 bg-neutral-50 cursor-not-allowed"
           value={locationName}
-          onChange={(e) => onLocationNameChange(e.target.value)}
+          readOnly
           data-testid="input-location"
         />
         <Button 
@@ -59,6 +59,7 @@ export default function ServiceFilters({
           className="absolute right-2 top-2 p-1"
           onClick={onUseCurrentLocation}
           data-testid="button-use-current-location"
+          title="Use my current location"
         >
           <Target className="w-4 h-4 text-primary" />
         </Button>

@@ -7,11 +7,12 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import RoleSwitcher from "@/components/role-switcher";
 import ServiceFilters from "@/components/service-filters";
 import ServiceCard from "@/components/service-card";
+import ServiceMap from "@/components/service-map";
 import BookingModal from "@/components/booking-modal";
 import BottomNavigation from "@/components/bottom-navigation";
 import ProviderDashboard from "@/pages/provider-dashboard";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, List, Map } from "lucide-react";
+import { Heart, MapPin, List, Map, Target } from "lucide-react";
 import type { ServiceWithProvider } from "@shared/schema";
 
 export default function Home() {
@@ -243,13 +244,25 @@ export default function Home() {
             </div>
           ) : (
             <div className="h-96 px-4 lg:px-0 lg:h-[600px]">
-              <div className="bg-neutral-200 rounded-xl h-full flex items-center justify-center">
-                <div className="text-center">
-                  <Map className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-                  <p className="text-neutral-600">Map View</p>
-                  <p className="text-sm text-neutral-500">Coming soon - interactive map with service locations</p>
+              {userLocation ? (
+                <ServiceMap 
+                  services={services}
+                  userLocation={userLocation}
+                  onServiceSelect={handleBookService}
+                />
+              ) : (
+                <div className="bg-neutral-100 rounded-xl h-full flex items-center justify-center border-2 border-dashed border-neutral-300">
+                  <div className="text-center p-6">
+                    <MapPin className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
+                    <p className="text-neutral-700 font-medium mb-2">Location Required</p>
+                    <p className="text-sm text-neutral-500 mb-4">Please enable your location to view the map</p>
+                    <Button onClick={handleGetCurrentLocation} data-testid="button-enable-location">
+                      <Target className="w-4 h-4 mr-2" />
+                      Enable Location
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </main>
