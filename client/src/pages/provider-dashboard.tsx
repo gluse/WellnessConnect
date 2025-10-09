@@ -367,43 +367,42 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <div className="max-w-md mx-auto bg-white shadow-xl min-h-screen">
-        {/* Header */}
-        <header className="sticky top-0 z-50 bg-white border-b border-neutral-200">
-          <div className="px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <Heart className="w-4 h-4 text-white" />
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Heart className="w-4 h-4 text-white" />
+              </div>
+              <h1 className="text-lg font-semibold text-neutral-800">WellnessFind</h1>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <RoleSwitcher 
+                currentRole="provider" 
+                onRoleChange={handleRoleSwitch}
+              />
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => window.location.href = "/api/logout"}
+                className="w-8 h-8 p-0"
+              >
+                <div className="w-6 h-6 bg-neutral-200 rounded-full flex items-center justify-center">
+                  <span className="text-xs">👤</span>
                 </div>
-                <h1 className="text-lg font-semibold text-neutral-800">WellnessFind</h1>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <RoleSwitcher 
-                  currentRole="provider" 
-                  onRoleChange={handleRoleSwitch}
-                />
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => window.location.href = "/api/logout"}
-                  className="w-8 h-8 p-0"
-                >
-                  <div className="w-6 h-6 bg-neutral-200 rounded-full flex items-center justify-center">
-                    <span className="text-xs">👤</span>
-                  </div>
-                </Button>
-              </div>
+              </Button>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* Main Content */}
-        <main className="pb-20">
-          <div className="p-4 space-y-6">
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4">
+      {/* Main Content */}
+      <main className="pb-20 lg:pb-8">
+        <div className="max-w-7xl mx-auto p-4 lg:p-6 space-y-6">
+          {/* Stats */}
+          <div className="grid grid-cols-3 lg:grid-cols-4 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold text-primary">{totalBookings}</div>
@@ -427,7 +426,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
             {/* Quick Actions */}
             <div className="space-y-3">
               <h2 className="text-lg font-semibold text-neutral-800">Quick Actions</h2>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <Button 
                   className="p-4 h-auto flex-col bg-primary text-white"
                   onClick={() => setShowAddService(true)}
@@ -1018,9 +1017,10 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
           </div>
         )}
 
-        {/* Bottom Navigation */}
-        <BottomNavigation />
-      </div>
+        {/* Bottom Navigation - Mobile Only */}
+        <div className="lg:hidden">
+          <BottomNavigation />
+        </div>
     </div>
   );
 }
