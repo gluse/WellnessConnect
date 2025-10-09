@@ -13,9 +13,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, Plus, Calendar, DollarSign, Star, Users, Check, X } from "lucide-react";
+import { Heart, Plus, Calendar, DollarSign, Star, Users, Check, X, Image as ImageIcon, Link as LinkIcon } from "lucide-react";
 import RoleSwitcher from "@/components/role-switcher";
 import BottomNavigation from "@/components/bottom-navigation";
+import { ObjectUploader } from "@/components/ObjectUploader";
 import type { Service, BookingWithDetails } from "@shared/schema";
 
 interface ProviderDashboardProps {
@@ -44,6 +45,8 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     address: "",
     latitude: null as number | null,
     longitude: null as number | null,
+    imageUrl: "",
+    externalUrl: "",
   });
   const [newSchedule, setNewSchedule] = useState({
     serviceId: 0,
@@ -317,6 +320,8 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       address: service.address || "",
       latitude: service.latitude || null,
       longitude: service.longitude || null,
+      imageUrl: (service as any).imageUrl || "",
+      externalUrl: (service as any).externalUrl || "",
     });
     setShowAddService(true);
   };
@@ -337,6 +342,10 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       instantBooking: false,
       advancePaymentPercent: 50,
       address: "",
+      latitude: null,
+      longitude: null,
+      imageUrl: "",
+      externalUrl: "",
     });
   };
 
@@ -873,6 +882,75 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                     ✓ Coordinates set: {newService.latitude.toFixed(4)}, {newService.longitude.toFixed(4)}
                   </p>
                 )}
+                
+                <Separator />
+                
+                <div>
+                  <Label>Service Image (Optional)</Label>
+                  <div className="mt-2">
+                    <ObjectUploader
+                      maxNumberOfFiles={1}
+                      maxFileSize={10485760}
+                      onGetUploadParameters={async () => {
+                        const response = await apiRequest("POST", "/api/objects/upload", {});
+                        const data = await response.json();
+                        return {
+                          method: 'PUT' as const,
+                          url: data.uploadURL,
+                        };
+                      }}
+                      onComplete={(result) => {
+                        if (result.successful.length > 0) {
+                          const uploadedUrl = result.successful[0].uploadURL;
+                          apiRequest("PUT", "/api/service-images", { imageURL: uploadedUrl })
+                            .then((res) => res.json())
+                            .then((data) => {
+                              setNewService(prev => ({ ...prev, imageUrl: data.objectPath }));
+                              toast({
+                                title: "Image Uploaded",
+                                description: "Service image uploaded successfully",
+                              });
+                            })
+                            .catch((error) => {
+                              console.error("Error setting image:", error);
+                              toast({
+                                title: "Error",
+                                description: "Failed to set service image",
+                                variant: "destructive",
+                              });
+                            });
+                        }
+                      }}
+                      buttonClassName="w-full"
+                    >
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      {newService.imageUrl ? "Change Image" : "Upload Image"}
+                    </ObjectUploader>
+                    {newService.imageUrl && (
+                      <p className="text-xs text-green-600 mt-2">
+                        ✓ Image uploaded
+                      </p>
+                    )}
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="externalUrl">External URL (Optional)</Label>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <LinkIcon className="w-4 h-4 text-neutral-400" />
+                    <Input
+                      id="externalUrl"
+                      type="url"
+                      value={newService.externalUrl}
+                      onChange={(e) => setNewService(prev => ({ ...prev, externalUrl: e.target.value }))}
+                      placeholder="https://example.com/more-info"
+                      data-testid="input-external-url"
+                    />
+                  </div>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Add a link to your website or booking page
+                  </p>
+                </div>
                 
                 <Separator />
                 
