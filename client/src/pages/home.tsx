@@ -135,52 +135,68 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <div className="max-w-md mx-auto bg-white shadow-xl min-h-screen">
-        {/* Header */}
-        <header className="sticky top-0 z-50 bg-white border-b border-neutral-200">
-          <div className="px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <Heart className="w-4 h-4 text-white" />
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Heart className="w-4 h-4 text-white" />
+              </div>
+              <h1 className="text-lg font-semibold text-neutral-800">WellnessFind</h1>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <RoleSwitcher 
+                currentRole={currentRole} 
+                onRoleChange={handleRoleSwitch}
+              />
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => window.location.href = "/api/logout"}
+                className="w-8 h-8 p-0"
+              >
+                <div className="w-6 h-6 bg-neutral-200 rounded-full flex items-center justify-center">
+                  <span className="text-xs">👤</span>
                 </div>
-                <h1 className="text-lg font-semibold text-neutral-800">WellnessFind</h1>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <RoleSwitcher 
-                  currentRole={currentRole} 
-                  onRoleChange={handleRoleSwitch}
-                />
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => window.location.href = "/api/logout"}
-                  className="w-8 h-8 p-0"
-                >
-                  <div className="w-6 h-6 bg-neutral-200 rounded-full flex items-center justify-center">
-                    <span className="text-xs">👤</span>
-                  </div>
-                </Button>
-              </div>
+              </Button>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* Main Content */}
-        <main className="pb-20">
-          {/* Filters */}
-          <ServiceFilters 
-            filters={filters}
-            onFiltersChange={setFilters}
-            locationName={locationName}
-            onLocationNameChange={setLocationName}
-            onUseCurrentLocation={handleGetCurrentLocation}
-          />
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto lg:flex lg:gap-6 lg:px-4 lg:py-6">
+        {/* Filters Sidebar - Desktop */}
+        <aside className="hidden lg:block lg:w-80 lg:shrink-0">
+          <div className="bg-white rounded-lg shadow-sm sticky top-20">
+            <ServiceFilters 
+              filters={filters}
+              onFiltersChange={setFilters}
+              locationName={locationName}
+              onLocationNameChange={setLocationName}
+              onUseCurrentLocation={handleGetCurrentLocation}
+            />
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <main className="flex-1 pb-20 lg:pb-0">
+          {/* Filters - Mobile Only */}
+          <div className="lg:hidden">
+            <ServiceFilters 
+              filters={filters}
+              onFiltersChange={setFilters}
+              locationName={locationName}
+              onLocationNameChange={setLocationName}
+              onUseCurrentLocation={handleGetCurrentLocation}
+            />
+          </div>
 
           {/* View Toggle */}
-          <div className="px-4 pb-4">
-            <div className="flex bg-neutral-100 rounded-lg p-1">
+          <div className="px-4 pb-4 lg:px-0">
+            <div className="flex bg-neutral-100 rounded-lg p-1 max-w-xs">
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
@@ -204,14 +220,14 @@ export default function Home() {
 
           {/* Services List */}
           {viewMode === "list" ? (
-            <div className="space-y-4 px-4">
+            <div className="space-y-4 px-4 lg:px-0 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
               {servicesLoading ? (
-                <div className="text-center py-8">
+                <div className="text-center py-8 lg:col-span-2">
                   <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
                   <p className="text-neutral-600">Loading services...</p>
                 </div>
               ) : services.length === 0 ? (
-                <div className="text-center py-8">
+                <div className="text-center py-8 lg:col-span-2">
                   <MapPin className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
                   <p className="text-neutral-600">No services found matching your criteria</p>
                 </div>
@@ -226,7 +242,7 @@ export default function Home() {
               )}
             </div>
           ) : (
-            <div className="h-96 px-4">
+            <div className="h-96 px-4 lg:px-0 lg:h-[600px]">
               <div className="bg-neutral-200 rounded-xl h-full flex items-center justify-center">
                 <div className="text-center">
                   <Map className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
@@ -237,16 +253,18 @@ export default function Home() {
             </div>
           )}
         </main>
+      </div>
 
-        {/* Booking Modal */}
-        {showBookingModal && selectedService && (
-          <BookingModal
-            service={selectedService}
-            onClose={() => setShowBookingModal(false)}
-          />
-        )}
+      {/* Booking Modal */}
+      {showBookingModal && selectedService && (
+        <BookingModal
+          service={selectedService}
+          onClose={() => setShowBookingModal(false)}
+        />
+      )}
 
-        {/* Bottom Navigation */}
+      {/* Bottom Navigation - Mobile Only */}
+      <div className="lg:hidden">
         <BottomNavigation />
       </div>
     </div>
