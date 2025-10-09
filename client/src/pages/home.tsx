@@ -41,10 +41,6 @@ export default function Home() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({
-        title: "Role Updated",
-        description: `Switched to ${currentRole} mode`,
-      });
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
