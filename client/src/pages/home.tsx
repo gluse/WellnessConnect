@@ -12,16 +12,17 @@ import BookingModal from "@/components/booking-modal";
 import ServiceDetailModal from "@/components/service-detail-modal";
 import BottomNavigation from "@/components/bottom-navigation";
 import ProviderDashboard from "@/pages/provider-dashboard";
+import CalendarView from "@/components/calendar-view";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, List, Map, Target } from "lucide-react";
-import type { ServiceWithProvider } from "@shared/schema";
+import { Heart, MapPin, List, Map, Target, Calendar } from "lucide-react";
+import type { ServiceWithProvider, BookingWithDetails } from "@shared/schema";
 
 export default function Home() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [currentRole, setCurrentRole] = useState<"seeker" | "provider">((user as any)?.currentRole || "seeker");
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [viewMode, setViewMode] = useState<"list" | "map" | "calendar">("list");
   const [selectedService, setSelectedService] = useState<ServiceWithProvider | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -118,6 +119,13 @@ export default function Home() {
     enabled: currentRole === "seeker",
   });
 
+  // Fetch seeker bookings for calendar
+  const { data: bookings = [] } = useQuery({
+    queryKey: ["/api/bookings/seeker"],
+    enabled: currentRole === "seeker" && viewMode === "calendar",
+    retry: false,
+  });
+
   const handleRoleSwitch = (role: "seeker" | "provider") => {
     setCurrentRole(role);
     updateRoleMutation.mutate(role);
@@ -200,12 +208,13 @@ export default function Home() {
 
           {/* View Toggle */}
           <div className="px-4 pb-4 lg:px-0">
-            <div className="flex bg-neutral-100 rounded-lg p-1 max-w-xs">
+            <div className="flex bg-neutral-100 rounded-lg p-1 max-w-md">
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("list")}
                 className="flex-1"
+                data-testid="button-view-list"
               >
                 <List className="w-4 h-4 mr-2" />
                 List
@@ -215,15 +224,26 @@ export default function Home() {
                 size="sm"
                 onClick={() => setViewMode("map")}
                 className="flex-1"
+                data-testid="button-view-map"
               >
                 <Map className="w-4 h-4 mr-2" />
                 Map
+              </Button>
+              <Button
+                variant={viewMode === "calendar" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("calendar")}
+                className="flex-1"
+                data-testid="button-view-calendar"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Calendar
               </Button>
             </div>
           </div>
 
           {/* Services List */}
-          {viewMode === "list" ? (
+          {viewMode === "list" && (
             <div className="space-y-4 px-4 lg:px-0 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
               {servicesLoading ? (
                 <div className="text-center py-8 lg:col-span-2">
@@ -246,7 +266,10 @@ export default function Home() {
                 ))
               )}
             </div>
-          ) : (
+          )}
+
+          {/* Map View */}
+          {viewMode === "map" && (
             <div className="h-96 px-4 lg:px-0 lg:h-[600px]">
               {services.length > 0 || userLocation ? (
                 <GoogleMap 
@@ -267,6 +290,22 @@ export default function Home() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Calendar View */}
+          {viewMode === "calendar" && (
+            <div className="px-4 lg:px-0">
+              <CalendarView
+                bookings={bookings as BookingWithDetails[]}
+                schedules={[]}
+                onDateClick={(date) => {
+                  toast({
+                    title: "Date Selected",
+                    description: `Selected date: ${date.toLocaleDateString()}`,
+                  });
+                }}
+              />
             </div>
           )}
         </main>
