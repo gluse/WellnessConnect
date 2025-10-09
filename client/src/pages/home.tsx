@@ -7,7 +7,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import RoleSwitcher from "@/components/role-switcher";
 import ServiceFilters from "@/components/service-filters";
 import ServiceCard from "@/components/service-card";
-import ServiceMap from "@/components/service-map";
+import GoogleMap from "@/components/google-map";
 import BookingModal from "@/components/booking-modal";
 import BottomNavigation from "@/components/bottom-navigation";
 import ProviderDashboard from "@/pages/provider-dashboard";
@@ -245,7 +245,7 @@ export default function Home() {
           ) : (
             <div className="h-96 px-4 lg:px-0 lg:h-[600px]">
               {userLocation ? (
-                <ServiceMap 
+                <GoogleMap 
                   services={services}
                   userLocation={userLocation}
                   onServiceSelect={handleBookService}

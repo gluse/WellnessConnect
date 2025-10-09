@@ -20,6 +20,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
   const markersRef = useRef<google.maps.Marker[]>([]);
   const [apiKey, setApiKey] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
 
   // Fetch API key
   useEffect(() => {
@@ -46,6 +47,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
     const loader = new Loader({
       apiKey: apiKey,
       version: "weekly",
+      libraries: ['maps', 'marker'],
     });
 
     loader.load().then(() => {
@@ -58,16 +60,19 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
         streetViewControl: false,
         fullscreenControl: false,
       });
+      
+      setMapReady(true);
     });
 
     return () => {
       googleMapRef.current = null;
+      setMapReady(false);
     };
   }, [apiKey, isLoading, userLocation]);
 
   // Add markers
   useEffect(() => {
-    if (!googleMapRef.current || !apiKey) return;
+    if (!googleMapRef.current || !apiKey || !mapReady) return;
 
     // Clear existing markers
     markersRef.current.forEach(marker => marker.setMap(null));
@@ -166,7 +171,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
     return () => {
       markersRef.current.forEach(marker => marker.setMap(null));
     };
-  }, [services, userLocation, onServiceSelect, apiKey]);
+  }, [services, userLocation, onServiceSelect, apiKey, mapReady]);
 
   if (isLoading) {
     return (
