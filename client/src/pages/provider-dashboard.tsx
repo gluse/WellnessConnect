@@ -42,6 +42,8 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     instantBooking: false,
     advancePaymentPercent: 50,
     address: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
   });
   const [newSchedule, setNewSchedule] = useState({
     serviceId: 0,
@@ -96,6 +98,8 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
         instantBooking: false,
         advancePaymentPercent: 50,
         address: "",
+        latitude: null,
+        longitude: null,
       });
       toast({
         title: "Service Created",
@@ -145,6 +149,8 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
         instantBooking: false,
         advancePaymentPercent: 50,
         address: "",
+        latitude: null,
+        longitude: null,
       });
       toast({
         title: "Service Updated",
@@ -300,6 +306,8 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       instantBooking: service.instantBooking || false,
       advancePaymentPercent: service.advancePaymentPercent || 50,
       address: service.address || "",
+      latitude: service.latitude || null,
+      longitude: service.longitude || null,
     });
     setShowAddService(true);
   };
@@ -762,13 +770,63 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                 </div>
                 
                 <div>
-                  <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
-                    value={newService.address}
-                    onChange={(e) => setNewService(prev => ({ ...prev, address: e.target.value }))}
-                    placeholder="Service location"
-                  />
+                  <Label htmlFor="address">Address *</Label>
+                  <div className="flex space-x-2">
+                    <Input
+                      id="address"
+                      value={newService.address}
+                      onChange={(e) => setNewService(prev => ({ ...prev, address: e.target.value }))}
+                      placeholder="Enter service address"
+                      data-testid="input-address"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={async () => {
+                        if (!newService.address.trim()) {
+                          toast({
+                            title: "Address Required",
+                            description: "Please enter an address to verify",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        
+                        try {
+                          const response = await apiRequest("POST", "/api/geocode", {
+                            address: newService.address,
+                          });
+                          const data = await response.json();
+                          
+                          setNewService(prev => ({
+                            ...prev,
+                            latitude: data.latitude,
+                            longitude: data.longitude,
+                            address: data.formattedAddress,
+                          }));
+                          
+                          toast({
+                            title: "Address Verified",
+                            description: "Location coordinates set successfully",
+                          });
+                        } catch (error) {
+                          toast({
+                            title: "Verification Failed",
+                            description: "Please enter a valid address",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      data-testid="button-verify-address"
+                    >
+                      Verify
+                    </Button>
+                  </div>
+                  {newService.latitude && newService.longitude && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✓ Address verified
+                    </p>
+                  )}
                 </div>
                 
                 <Separator />

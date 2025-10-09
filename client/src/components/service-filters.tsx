@@ -120,21 +120,20 @@ export default function ServiceFilters({
       {/* Distance and Date */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label className="text-sm font-medium text-neutral-700">Distance</Label>
-          <Select 
-            value={filters.distance.toString()} 
-            onValueChange={(value) => onFiltersChange({ ...filters, distance: parseInt(value) })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5 km</SelectItem>
-              <SelectItem value="10">10 km</SelectItem>
-              <SelectItem value="20">20 km</SelectItem>
-              <SelectItem value="50">50 km</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label className="text-sm font-medium text-neutral-700">Distance (km)</Label>
+          <Input 
+            type="number"
+            min="1"
+            max="500"
+            value={filters.distance}
+            onChange={(e) => {
+              const value = parseInt(e.target.value) || 5;
+              const clampedValue = Math.min(Math.max(value, 1), 500);
+              onFiltersChange({ ...filters, distance: clampedValue });
+            }}
+            placeholder="Distance in km"
+            data-testid="input-distance"
+          />
         </div>
         <div className="space-y-1">
           <Label className="text-sm font-medium text-neutral-700">When</Label>
