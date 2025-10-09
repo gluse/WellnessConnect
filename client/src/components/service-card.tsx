@@ -7,9 +7,10 @@ import type { ServiceWithProvider } from "@shared/schema";
 interface ServiceCardProps {
   service: ServiceWithProvider;
   onBook: () => void;
+  onViewDetails: () => void;
 }
 
-export default function ServiceCard({ service, onBook }: ServiceCardProps) {
+export default function ServiceCard({ service, onBook, onViewDetails }: ServiceCardProps) {
   const isGroupService = service.serviceType === "group";
   const availableSpots = isGroupService ? (service.maxCapacity - (service.availableCapacity || 0)) : 1;
 
@@ -27,7 +28,13 @@ export default function ServiceCard({ service, onBook }: ServiceCardProps) {
           
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-semibold text-neutral-800">{service.name}</h3>
+              <h3 
+                className="font-semibold text-neutral-800 hover:text-primary cursor-pointer" 
+                onClick={onViewDetails}
+                data-testid={`button-view-details-${service.id}`}
+              >
+                {service.name}
+              </h3>
               <Badge variant={isGroupService ? "secondary" : "default"}>
                 {isGroupService ? "Group" : "One-to-One"}
               </Badge>

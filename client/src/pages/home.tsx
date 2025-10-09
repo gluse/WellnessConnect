@@ -9,6 +9,7 @@ import ServiceFilters from "@/components/service-filters";
 import ServiceCard from "@/components/service-card";
 import GoogleMap from "@/components/google-map";
 import BookingModal from "@/components/booking-modal";
+import ServiceDetailModal from "@/components/service-detail-modal";
 import BottomNavigation from "@/components/bottom-navigation";
 import ProviderDashboard from "@/pages/provider-dashboard";
 import { Button } from "@/components/ui/button";
@@ -19,10 +20,11 @@ export default function Home() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [currentRole, setCurrentRole] = useState<"seeker" | "provider">(user?.currentRole || "seeker");
+  const [currentRole, setCurrentRole] = useState<"seeker" | "provider">((user as any)?.currentRole || "seeker");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [selectedService, setSelectedService] = useState<ServiceWithProvider | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationName, setLocationName] = useState<string>("San Francisco, CA");
   const [filters, setFilters] = useState({
@@ -124,6 +126,11 @@ export default function Home() {
   const handleBookService = (service: ServiceWithProvider) => {
     setSelectedService(service);
     setShowBookingModal(true);
+  };
+
+  const handleViewDetails = (service: ServiceWithProvider) => {
+    setSelectedService(service);
+    setShowDetailModal(true);
   };
 
   if (currentRole === "provider") {
@@ -234,6 +241,7 @@ export default function Home() {
                     key={service.id} 
                     service={service}
                     onBook={() => handleBookService(service)}
+                    onViewDetails={() => handleViewDetails(service)}
                   />
                 ))
               )}
@@ -271,6 +279,20 @@ export default function Home() {
           onClose={() => setShowBookingModal(false)}
         />
       )}
+
+      {/* Service Detail Modal */}
+      <ServiceDetailModal
+        service={selectedService}
+        open={showDetailModal}
+        onClose={() => {
+          setShowDetailModal(false);
+          setSelectedService(null);
+        }}
+        onBook={() => {
+          setShowDetailModal(false);
+          setShowBookingModal(true);
+        }}
+      />
 
       {/* Bottom Navigation - Mobile Only */}
       <div className="lg:hidden">

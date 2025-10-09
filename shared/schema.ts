@@ -177,6 +177,17 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  scheduledDate: z.string().or(z.date()).transform((val) => {
+    if (typeof val === 'string') {
+      const date = new Date(val);
+      if (isNaN(date.getTime())) {
+        throw new Error('Invalid date format');
+      }
+      return date;
+    }
+    return val;
+  }),
 });
 
 export const insertAvailabilitySchema = createInsertSchema(availability).omit({
