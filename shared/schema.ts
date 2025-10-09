@@ -56,6 +56,8 @@ export const services = pgTable("services", {
   latitude: real("latitude"),
   longitude: real("longitude"),
   address: text("address"),
+  imageUrl: text("image_url"),
+  externalUrl: text("external_url"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
