@@ -125,6 +125,7 @@ WellnessFind is a full-stack web application that connects service seekers with 
 
 ```
 Changelog:
+- October 09, 2025 (Update 2). Enhanced service discovery UX: changed distance filter from dropdown to manual input (1-500km); added comprehensive service detail modal for seekers showing full service information; fixed booking creation bug by updating schema to accept ISO string dates; made service names clickable to view details
 - October 09, 2025. Switched from Leaflet to Google Maps for interactive map view; fixed location search UX with read-only input and clear instructions; added HTML escaping for XSS protection in map popups; added secure backend endpoint for Google Maps API key delivery
 - July 03, 2025. Initial setup
 ```
