@@ -1,3 +1,4 @@
+/// <reference types="@types/google.maps" />
 import { useEffect, useRef, useState } from "react";
 import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import type { ServiceWithProvider } from "@shared/schema";
@@ -47,7 +48,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
     // Configure the loader with API key
     setOptions({ 
       key: apiKey,
-      version: "weekly"
+      v: "weekly"
     });
 
     // Load the maps library
