@@ -275,6 +275,15 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       return;
     }
 
+    if (!newService.address || !newService.latitude || !newService.longitude) {
+      toast({
+        title: "Location Required",
+        description: "Please provide an address and coordinates (verify address or enter manually)",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (editingService) {
       updateServiceMutation.mutate({
         id: editingService.id,
@@ -812,7 +821,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                         } catch (error) {
                           toast({
                             title: "Verification Failed",
-                            description: "Please enter a valid address",
+                            description: "Unable to verify address automatically. Please enter coordinates manually below.",
                             variant: "destructive",
                           });
                         }
@@ -822,12 +831,48 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                       Verify
                     </Button>
                   </div>
-                  {newService.latitude && newService.longitude && (
-                    <p className="text-xs text-green-600 mt-1">
-                      ✓ Address verified
-                    </p>
-                  )}
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Use the Verify button to auto-fill coordinates, or enter them manually below
+                  </p>
                 </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="latitude">Latitude *</Label>
+                    <Input
+                      id="latitude"
+                      type="number"
+                      step="any"
+                      value={newService.latitude ?? ''}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? null : parseFloat(e.target.value);
+                        setNewService(prev => ({ ...prev, latitude: value }));
+                      }}
+                      placeholder="e.g. 57.5397"
+                      data-testid="input-latitude"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="longitude">Longitude *</Label>
+                    <Input
+                      id="longitude"
+                      type="number"
+                      step="any"
+                      value={newService.longitude ?? ''}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? null : parseFloat(e.target.value);
+                        setNewService(prev => ({ ...prev, longitude: value }));
+                      }}
+                      placeholder="e.g. 25.4175"
+                      data-testid="input-longitude"
+                    />
+                  </div>
+                </div>
+                {newService.latitude && newService.longitude && (
+                  <p className="text-xs text-green-600">
+                    ✓ Coordinates set: {newService.latitude.toFixed(4)}, {newService.longitude.toFixed(4)}
+                  </p>
+                )}
                 
                 <Separator />
                 
