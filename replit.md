@@ -59,9 +59,10 @@ WellnessFind is a full-stack web application that connects service seekers with 
 ### Location & Mapping
 - **Geolocation**: Browser-based location detection using Geolocation API
 - **Distance Calculation**: Haversine formula for accurate distance measurements
-- **Map View**: Interactive Leaflet map displaying service locations
+- **Map View**: Interactive Google Maps displaying service locations
 - **Location Input**: Read-only field with clear instructions for enabling location
 - **Security**: HTML escaping for all user-generated content in map popups
+- **API Key Management**: Secure backend endpoint for Google Maps API key delivery
 
 ## Data Flow
 
@@ -95,7 +96,7 @@ WellnessFind is a full-stack web application that connects service seekers with 
 - **Radix UI**: Accessible component primitives
 - **Tailwind CSS**: Utility-first styling framework
 - **Lucide React**: Icon library for consistent iconography
-- **Leaflet**: Open-source mapping library for interactive maps
+- **Google Maps**: Interactive mapping with markers and info windows
 
 ### Payment & Communication
 - **Stripe**: Payment processing infrastructure (configured)
@@ -124,7 +125,7 @@ WellnessFind is a full-stack web application that connects service seekers with 
 
 ```
 Changelog:
-- October 09, 2025. Implemented interactive map view with Leaflet; fixed location search UX with read-only input and clear instructions; added HTML escaping for XSS protection in map popups
+- October 09, 2025. Switched from Leaflet to Google Maps for interactive map view; fixed location search UX with read-only input and clear instructions; added HTML escaping for XSS protection in map popups; added secure backend endpoint for Google Maps API key delivery
 - July 03, 2025. Initial setup
 ```
 
