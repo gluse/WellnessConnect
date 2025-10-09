@@ -252,7 +252,7 @@ export default function Home() {
                 <GoogleMap 
                   services={services}
                   userLocation={userLocation}
-                  onServiceSelect={handleBookService}
+                  onServiceSelect={handleViewDetails}
                 />
               ) : (
                 <div className="bg-neutral-100 rounded-xl h-full flex items-center justify-center border-2 border-dashed border-neutral-300">
