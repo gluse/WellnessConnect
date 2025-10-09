@@ -17,7 +17,9 @@ import { Heart, Plus, Calendar, DollarSign, Star, Users, Check, X, Image as Imag
 import RoleSwitcher from "@/components/role-switcher";
 import BottomNavigation from "@/components/bottom-navigation";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import type { Service, BookingWithDetails } from "@shared/schema";
+import CalendarView from "@/components/calendar-view";
+import { format } from "date-fns";
+import type { Service, BookingWithDetails, Availability } from "@shared/schema";
 
 interface ProviderDashboardProps {
   onRoleSwitch?: (role: "seeker" | "provider") => void;
@@ -602,6 +604,22 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                   </Card>
                 ))
               )}
+            </div>
+
+            {/* Calendar View */}
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold text-neutral-800">Calendar</h2>
+              <CalendarView
+                services={services as Service[]}
+                bookings={bookings as BookingWithDetails[]}
+                schedules={schedules as Availability[]}
+                onDateClick={(date) => {
+                  toast({
+                    title: "Date Selected",
+                    description: `You selected ${format(date, 'MMMM d, yyyy')}`,
+                  });
+                }}
+              />
             </div>
           </div>
         </main>
