@@ -46,7 +46,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
 
     // Configure the loader with API key
     setOptions({ 
-      apiKey: apiKey,
+      key: apiKey,
       version: "weekly"
     });
 
