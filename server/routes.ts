@@ -92,7 +92,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Geocoding endpoint for address verification
+  // Geocoding endpoint for address search
+  app.get('/api/geocode', async (req: any, res) => {
+    try {
+      const address = req.query.address as string;
+      
+      if (!address) {
+        return res.status(400).json({ message: "Address is required" });
+      }
+
+      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ message: "Google Maps API key not configured" });
+      }
+
+      const encodedAddress = encodeURIComponent(address);
+      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${apiKey}`;
+      
+      const response = await fetch(geocodeUrl);
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.results.length > 0) {
+        const result = data.results[0];
+        res.json({
+          lat: result.geometry.location.lat,
+          lng: result.geometry.location.lng,
+          formattedAddress: result.formatted_address,
+        });
+      } else {
+        res.status(400).json({ 
+          message: "Address not found. Please enter a valid address." 
+        });
+      }
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      res.status(500).json({ message: "Failed to verify address" });
+    }
+  });
+
+  // Geocoding endpoint for address verification (POST for service creation)
   app.post('/api/geocode', isAuthenticated, async (req: any, res) => {
     try {
       const { address } = req.body;
