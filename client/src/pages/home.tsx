@@ -95,6 +95,28 @@ export default function Home() {
     );
   };
 
+  const handleGeocodeLocation = async (address: string) => {
+    try {
+      const response = await fetch(`/api/geocode?address=${encodeURIComponent(address)}`);
+      if (!response.ok) {
+        throw new Error("Geocoding failed");
+      }
+      const data = await response.json();
+      setUserLocation({ lat: data.lat, lng: data.lng });
+      setLocationName(data.formattedAddress);
+      toast({
+        title: "Location Found",
+        description: `Using ${data.formattedAddress}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Location Not Found",
+        description: "Could not find the address. Please try a different search.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Search services query
   const { data: services = [], isLoading: servicesLoading } = useQuery({
     queryKey: ["/api/services/search", filters, userLocation],
@@ -189,6 +211,7 @@ export default function Home() {
               locationName={locationName}
               onLocationNameChange={setLocationName}
               onUseCurrentLocation={handleGetCurrentLocation}
+              onGeocodeLocation={handleGeocodeLocation}
             />
           </div>
         </aside>
@@ -203,6 +226,7 @@ export default function Home() {
               locationName={locationName}
               onLocationNameChange={setLocationName}
               onUseCurrentLocation={handleGetCurrentLocation}
+              onGeocodeLocation={handleGeocodeLocation}
             />
           </div>
 

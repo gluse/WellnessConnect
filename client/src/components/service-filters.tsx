@@ -2,7 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Target } from "lucide-react";
+import { MapPin, Target, Search, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface ServiceFiltersProps {
   filters: {
@@ -16,6 +18,7 @@ interface ServiceFiltersProps {
   locationName: string;
   onLocationNameChange: (name: string) => void;
   onUseCurrentLocation: () => void;
+  onGeocodeLocation: (address: string) => Promise<void>;
 }
 
 export default function ServiceFilters({ 
@@ -23,8 +26,13 @@ export default function ServiceFilters({
   onFiltersChange,
   locationName,
   onLocationNameChange,
-  onUseCurrentLocation
+  onUseCurrentLocation,
+  onGeocodeLocation
 }: ServiceFiltersProps) {
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [inputAddress, setInputAddress] = useState(locationName);
+  const { toast } = useToast();
+
   const handleCategoryChange = (category: string) => {
     onFiltersChange({ ...filters, category });
   };
@@ -41,28 +49,73 @@ export default function ServiceFilters({
     onFiltersChange({ ...filters, serviceType: newServiceType });
   };
 
+  const handleSearchLocation = async () => {
+    if (!inputAddress.trim()) {
+      toast({
+        title: "Location Required",
+        description: "Please enter an address to search",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeocoding(true);
+    try {
+      await onGeocodeLocation(inputAddress);
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearchLocation();
+    }
+  };
+
   return (
     <div className="p-4 space-y-4">
       {/* Location Input */}
-      <div className="relative">
-        <MapPin className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
-        <Input 
-          placeholder="Click target to use your location" 
-          className="pl-10 pr-12 bg-neutral-50 cursor-not-allowed"
-          value={locationName}
-          readOnly
-          data-testid="input-location"
-        />
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className="absolute right-2 top-2 p-1"
-          onClick={onUseCurrentLocation}
-          data-testid="button-use-current-location"
-          title="Use my current location"
-        >
-          <Target className="w-4 h-4 text-primary" />
-        </Button>
+      <div className="space-y-2">
+        <Label className="text-sm font-medium text-neutral-700">Location</Label>
+        <div className="relative flex gap-2">
+          <div className="relative flex-1">
+            <MapPin className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+            <Input 
+              placeholder="Enter address or city" 
+              className="pl-10"
+              value={inputAddress}
+              onChange={(e) => setInputAddress(e.target.value)}
+              onKeyPress={handleKeyPress}
+              data-testid="input-location"
+            />
+          </div>
+          <Button 
+            variant="default"
+            size="sm"
+            onClick={handleSearchLocation}
+            disabled={isGeocoding || !inputAddress.trim()}
+            data-testid="button-search-location"
+            title="Search for this address"
+            className="px-3"
+          >
+            {isGeocoding ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Search className="w-4 h-4" />
+            )}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onUseCurrentLocation}
+            data-testid="button-use-current-location"
+            title="Use my current location"
+            className="px-3"
+          >
+            <Target className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Service Categories */}
