@@ -62,11 +62,13 @@ WellnessFind is a full-stack web application that connects service seekers with 
 
 ### Location & Mapping
 - **Geolocation**: Browser-based location detection using Geolocation API
+- **Address Search**: Client-side geocoding to convert typed addresses to coordinates
 - **Distance Calculation**: Haversine formula for accurate distance measurements
 - **Map View**: Interactive Google Maps displaying service locations
-- **Location Input**: Read-only field with clear instructions for enabling location
+- **Location Input**: Editable text field for typing addresses or using current location
 - **Security**: HTML escaping for all user-generated content in map popups
 - **API Key Management**: Secure backend endpoint for Google Maps API key delivery
+- **API Requirements**: Google Maps API key must have Geocoding API enabled and proper restrictions configured
 
 ## Data Flow
 
@@ -131,6 +133,7 @@ WellnessFind is a full-stack web application that connects service seekers with 
 
 ```
 Changelog:
+- November 15, 2025. Added address search functionality: users can now type any address (city, street, etc.) to search for nearby services; location input is now editable with search button; implemented client-side geocoding using Google Maps JavaScript API; added loading states and error handling; supports Enter key for quick search; NOTE: Requires Google Maps API key with Geocoding API enabled and proper restrictions
 - October 09, 2025 (Update 4). Added calendar feature with timezone support: created CalendarView component showing monthly calendar of bookings and availability schedules; integrated calendar into provider dashboard for managing services; added Calendar tab to seeker home page for viewing bookings; calendar displays color-coded events (confirmed, pending, cancelled, completed); added image upload functionality using Replit Object Storage with ObjectUploader component; added external URL field to service creation form for linking to provider websites
 - October 09, 2025 (Update 3). Enhanced service creation with manual coordinate entry: added latitude/longitude input fields for international addresses that can't be auto-verified by Google Maps; both auto-verification and manual entry now supported; unified UX flow so clicking services from both list and map views shows detail modal first, with option to proceed to booking
 - October 09, 2025 (Update 2). Enhanced service discovery UX: changed distance filter from dropdown to manual input (1-500km); added comprehensive service detail modal for seekers showing full service information; fixed booking creation bug by updating schema to accept ISO string dates; made service names clickable to view details

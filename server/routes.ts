@@ -103,6 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const apiKey = process.env.GOOGLE_MAPS_API_KEY;
       if (!apiKey) {
+        console.error("Google Maps API key not configured");
         return res.status(500).json({ message: "Google Maps API key not configured" });
       }
 
@@ -111,6 +112,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const response = await fetch(geocodeUrl);
       const data = await response.json();
+      
+      console.log("Geocoding API response status:", data.status);
+      console.log("Geocoding API error message:", data.error_message);
 
       if (data.status === 'OK' && data.results.length > 0) {
         const result = data.results[0];
@@ -120,8 +124,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           formattedAddress: result.formatted_address,
         });
       } else {
+        console.error(`Geocoding failed for "${address}": status=${data.status}, error=${data.error_message || 'none'}`);
         res.status(400).json({ 
-          message: "Address not found. Please enter a valid address." 
+          message: `Address not found. Status: ${data.status}` 
         });
       }
     } catch (error) {

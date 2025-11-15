@@ -95,20 +95,57 @@ export default function Home() {
     );
   };
 
+  const loadGoogleMapsAPI = async (apiKey: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if ((window as any).google?.maps) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load Google Maps'));
+      document.head.appendChild(script);
+    });
+  };
+
   const handleGeocodeLocation = async (address: string) => {
     try {
-      const response = await fetch(`/api/geocode?address=${encodeURIComponent(address)}`);
-      if (!response.ok) {
-        throw new Error("Geocoding failed");
+      // Get Google Maps API key
+      const configResponse = await fetch('/api/config/maps');
+      const config = await configResponse.json();
+      
+      if (!config.apiKey) {
+        throw new Error("Maps API key not configured");
       }
-      const data = await response.json();
-      setUserLocation({ lat: data.lat, lng: data.lng });
-      setLocationName(data.formattedAddress);
+
+      // Load Google Maps API if not already loaded
+      await loadGoogleMapsAPI(config.apiKey);
+
+      // Use Google Maps Geocoder on the client side
+      const geocoder = new (window as any).google.maps.Geocoder();
+      const result = await new Promise<any>((resolve, reject) => {
+        geocoder.geocode({ address }, (results: any, status: any) => {
+          if (status === 'OK' && results && results.length > 0) {
+            resolve(results[0]);
+          } else {
+            reject(new Error(`Geocoding failed: ${status}`));
+          }
+        });
+      });
+
+      const location = result.geometry.location;
+      setUserLocation({ lat: location.lat(), lng: location.lng() });
+      setLocationName(result.formatted_address);
       toast({
         title: "Location Found",
-        description: `Using ${data.formattedAddress}`,
+        description: `Using ${result.formatted_address}`,
       });
     } catch (error) {
+      console.error("Geocoding error:", error);
       toast({
         title: "Location Not Found",
         description: "Could not find the address. Please try a different search.",
