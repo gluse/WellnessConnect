@@ -162,11 +162,11 @@ export class DatabaseStorage implements IStorage {
     const conditions = [eq(services.isActive, true)];
 
     if (filters.category) {
-      conditions.push(eq(services.category, filters.category));
+      conditions.push(eq(services.category, filters.category as any));
     }
 
     if (filters.serviceType) {
-      conditions.push(eq(services.serviceType, filters.serviceType));
+      conditions.push(eq(services.serviceType, filters.serviceType as any));
     }
 
     const results = await db
@@ -283,7 +283,7 @@ export class DatabaseStorage implements IStorage {
   async updateBookingStatus(id: number, status: string): Promise<Booking> {
     const [booking] = await db
       .update(bookings)
-      .set({ status, updatedAt: new Date() })
+      .set({ status: status as any, updatedAt: new Date() })
       .where(eq(bookings.id, id))
       .returning();
     return booking;
@@ -292,7 +292,7 @@ export class DatabaseStorage implements IStorage {
   async updateBookingPayment(id: number, paymentStatus: string): Promise<Booking> {
     const [booking] = await db
       .update(bookings)
-      .set({ paymentStatus, updatedAt: new Date() })
+      .set({ paymentStatus: paymentStatus as any, updatedAt: new Date() })
       .where(eq(bookings.id, id))
       .returning();
     return booking;
