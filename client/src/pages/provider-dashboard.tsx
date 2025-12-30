@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, Plus, Calendar, DollarSign, Star, Users, Check, X, Image as ImageIcon, Link as LinkIcon } from "lucide-react";
+import { Heart, Plus, Calendar, DollarSign, Star, Users, Check, X, Image as ImageIcon, Link as LinkIcon, Sparkles } from "lucide-react";
 import RoleSwitcher from "@/components/role-switcher";
 import BottomNavigation from "@/components/bottom-navigation";
 import { ObjectUploader } from "@/components/ObjectUploader";
@@ -264,6 +264,38 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     },
   });
 
+  // Generate embeddings mutation for AI-powered search
+  const generateEmbeddingsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/admin/generate-embeddings", {});
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "AI Search Updated",
+        description: `Generated search data for ${data.generated} services`,
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to generate search data",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleRoleSwitch = (role: "seeker" | "provider") => {
     if (onRoleSwitch) {
       onRoleSwitch(role);
@@ -470,6 +502,16 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                 >
                   <Calendar className="w-5 h-5 mb-2" />
                   Manage Schedule
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="p-4 h-auto flex-col"
+                  onClick={() => generateEmbeddingsMutation.mutate()}
+                  disabled={generateEmbeddingsMutation.isPending || services.length === 0}
+                  data-testid="button-generate-ai-search"
+                >
+                  <Sparkles className="w-5 h-5 mb-2" />
+                  {generateEmbeddingsMutation.isPending ? "Updating..." : "Update AI Search"}
                 </Button>
               </div>
             </div>
