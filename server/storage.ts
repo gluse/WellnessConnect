@@ -3,6 +3,7 @@ import {
   services,
   bookings,
   availability,
+  serviceEmbeddings,
   type User,
   type UpsertUser,
   type Service,
@@ -13,6 +14,8 @@ import {
   type InsertAvailability,
   type ServiceWithProvider,
   type BookingWithDetails,
+  type ServiceEmbedding,
+  type InsertServiceEmbedding,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, asc, desc, sql, ne } from "drizzle-orm";
@@ -73,6 +76,12 @@ export interface IStorage {
   getAvailabilityByProvider(providerId: string): Promise<Availability[]>;
   updateAvailability(id: number, updates: Partial<InsertAvailability>): Promise<Availability>;
   deleteAvailability(id: number, providerId: string): Promise<void>;
+  
+  // Embedding operations for semantic search
+  upsertServiceEmbedding(embedding: InsertServiceEmbedding): Promise<ServiceEmbedding>;
+  getServiceEmbedding(serviceId: number): Promise<ServiceEmbedding | undefined>;
+  getAllServiceEmbeddings(): Promise<ServiceEmbedding[]>;
+  deleteServiceEmbedding(serviceId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -362,6 +371,39 @@ export class DatabaseStorage implements IStorage {
           eq(availability.providerId, providerId)
         )
       );
+  }
+
+  // Embedding operations for semantic search
+  async upsertServiceEmbedding(embeddingData: InsertServiceEmbedding): Promise<ServiceEmbedding> {
+    const [embedding] = await db
+      .insert(serviceEmbeddings)
+      .values(embeddingData)
+      .onConflictDoUpdate({
+        target: serviceEmbeddings.serviceId,
+        set: {
+          embedding: embeddingData.embedding,
+          textContent: embeddingData.textContent,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return embedding;
+  }
+
+  async getServiceEmbedding(serviceId: number): Promise<ServiceEmbedding | undefined> {
+    const [embedding] = await db
+      .select()
+      .from(serviceEmbeddings)
+      .where(eq(serviceEmbeddings.serviceId, serviceId));
+    return embedding;
+  }
+
+  async getAllServiceEmbeddings(): Promise<ServiceEmbedding[]> {
+    return await db.select().from(serviceEmbeddings);
+  }
+
+  async deleteServiceEmbedding(serviceId: number): Promise<void> {
+    await db.delete(serviceEmbeddings).where(eq(serviceEmbeddings.serviceId, serviceId));
   }
 }
 

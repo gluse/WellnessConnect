@@ -80,6 +80,16 @@ export const bookings = pgTable("bookings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Service embeddings table for semantic search
+export const serviceEmbeddings = pgTable("service_embeddings", {
+  id: serial("id").primaryKey(),
+  serviceId: integer("service_id").references(() => services.id).notNull().unique(),
+  embedding: jsonb("embedding").$type<number[]>().notNull(),
+  textContent: text("text_content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Availability table
 export const availability = pgTable("availability", {
   id: serial("id").primaryKey(),
@@ -167,6 +177,9 @@ export type Booking = typeof bookings.$inferSelect;
 
 export type InsertAvailability = typeof availability.$inferInsert;
 export type Availability = typeof availability.$inferSelect;
+
+export type InsertServiceEmbedding = typeof serviceEmbeddings.$inferInsert;
+export type ServiceEmbedding = typeof serviceEmbeddings.$inferSelect;
 
 // Schemas
 export const insertServiceSchema = createInsertSchema(services).omit({

@@ -158,7 +158,7 @@ export default function Home() {
     }
   };
 
-  // Search services query
+  // Search services query - uses semantic search for cross-language support when search query provided
   const { data: services = [], isLoading: servicesLoading } = useQuery({
     queryKey: ["/api/services/search", filters, userLocation],
     queryFn: async () => {
@@ -169,7 +169,27 @@ export default function Home() {
         filters.ageGroups.forEach(age => params.append("ageGroups", age));
       }
       if (filters.date) params.append("date", filters.date);
-      if (filters.searchQuery) params.append("searchQuery", filters.searchQuery);
+      
+      // Use semantic search if search query is provided for cross-language matching
+      const searchQuery = filters.searchQuery?.trim();
+      if (searchQuery) {
+        const semanticParams = new URLSearchParams();
+        semanticParams.append("query", searchQuery);
+        if (filters.category) semanticParams.append("category", filters.category);
+        if (userLocation) {
+          semanticParams.append("latitude", userLocation.lat.toString());
+          semanticParams.append("longitude", userLocation.lng.toString());
+          semanticParams.append("radius", filters.distance.toString());
+        }
+        
+        const response = await fetch(`/api/services/semantic-search?${semanticParams}`);
+        if (response.ok) {
+          return response.json();
+        }
+        // Fall through to regular search if semantic search fails
+      }
+      
+      if (searchQuery) params.append("searchQuery", searchQuery);
       if (userLocation) {
         params.append("latitude", userLocation.lat.toString());
         params.append("longitude", userLocation.lng.toString());

@@ -5,6 +5,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertServiceSchema, insertBookingSchema, insertAvailabilitySchema } from "@shared/schema";
 import { z } from "zod";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { generateEmbedding, cosineSimilarity } from "./embeddings";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -238,6 +239,163 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error searching services:", error);
       res.status(500).json({ message: "Failed to search services" });
+    }
+  });
+
+  // Semantic search endpoint (cross-language AI-powered search)
+  app.get('/api/services/semantic-search', async (req, res) => {
+    try {
+      const { query, category, latitude, longitude, radius } = req.query;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+
+      // Get all service embeddings
+      const allEmbeddings = await storage.getAllServiceEmbeddings();
+      
+      if (allEmbeddings.length === 0) {
+        // Fall back to text search if no embeddings exist
+        const services = await storage.searchServices({ 
+          searchQuery: query,
+          category: category as string,
+        });
+        return res.json(services);
+      }
+
+      // Generate embedding for the search query
+      const queryEmbedding = await generateEmbedding(query);
+      
+      // Calculate similarity scores for all services
+      const scoredServices: { serviceId: number; score: number }[] = [];
+      for (const embedding of allEmbeddings) {
+        const score = cosineSimilarity(queryEmbedding, embedding.embedding);
+        scoredServices.push({ serviceId: embedding.serviceId, score });
+      }
+      
+      // Sort by similarity score (highest first) and filter by threshold
+      const SIMILARITY_THRESHOLD = 0.3;
+      const relevantServiceIds = scoredServices
+        .filter(s => s.score >= SIMILARITY_THRESHOLD)
+        .sort((a, b) => b.score - a.score)
+        .map(s => s.serviceId);
+      
+      if (relevantServiceIds.length === 0) {
+        // No semantic matches, fall back to text search
+        const services = await storage.searchServices({ 
+          searchQuery: query,
+          category: category as string,
+        });
+        return res.json(services);
+      }
+      
+      // Fetch the matched services
+      const servicesPromises = relevantServiceIds.map(id => storage.getServiceById(id));
+      const servicesResults = await Promise.all(servicesPromises);
+      let services = servicesResults.filter((s): s is NonNullable<typeof s> => s !== undefined);
+      
+      // Apply category filter if specified
+      if (category) {
+        services = services.filter(s => s.category === category);
+      }
+      
+      // Apply location filter if specified
+      if (latitude && longitude && radius) {
+        const lat = parseFloat(latitude as string);
+        const lng = parseFloat(longitude as string);
+        const rad = parseFloat(radius as string);
+        
+        services = services.filter(s => {
+          if (s.latitude === null || s.longitude === null) return false;
+          const R = 6371;
+          const dLat = (s.latitude - lat) * Math.PI / 180;
+          const dLon = (s.longitude - lng) * Math.PI / 180;
+          const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(lat * Math.PI/180) * Math.cos(s.latitude * Math.PI/180) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          const distance = R * c;
+          return distance <= rad;
+        });
+      }
+      
+      res.json(services);
+    } catch (error) {
+      console.error("Error in semantic search:", error);
+      // Fallback to regular search on error
+      const services = await storage.searchServices({ 
+        searchQuery: req.query.query as string,
+        category: req.query.category as string,
+      });
+      res.json(services);
+    }
+  });
+
+  // Generate/update embedding for a service
+  app.post('/api/services/:id/embedding', isAuthenticated, async (req: any, res) => {
+    try {
+      const serviceId = parseInt(req.params.id);
+      const service = await storage.getServiceById(serviceId);
+      
+      if (!service) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      
+      // Create text content for embedding
+      const textContent = `${service.name} ${service.description || ''} ${service.category}`.trim();
+      
+      // Generate embedding
+      const embedding = await generateEmbedding(textContent);
+      
+      // Store embedding
+      const result = await storage.upsertServiceEmbedding({
+        serviceId,
+        embedding,
+        textContent,
+      });
+      
+      res.json({ message: "Embedding generated successfully", id: result.id });
+    } catch (error) {
+      console.error("Error generating embedding:", error);
+      res.status(500).json({ message: "Failed to generate embedding" });
+    }
+  });
+
+  // Bulk generate embeddings for all services (admin endpoint)
+  app.post('/api/admin/generate-embeddings', isAuthenticated, async (req: any, res) => {
+    try {
+      // Get all active services
+      const allServices = await storage.searchServices({});
+      
+      let generated = 0;
+      let failed = 0;
+      
+      for (const service of allServices) {
+        try {
+          const textContent = `${service.name} ${service.description || ''} ${service.category}`.trim();
+          const embedding = await generateEmbedding(textContent);
+          
+          await storage.upsertServiceEmbedding({
+            serviceId: service.id,
+            embedding,
+            textContent,
+          });
+          generated++;
+        } catch (err) {
+          console.error(`Failed to generate embedding for service ${service.id}:`, err);
+          failed++;
+        }
+      }
+      
+      res.json({ 
+        message: "Embedding generation complete",
+        generated,
+        failed,
+        total: allServices.length
+      });
+    } catch (error) {
+      console.error("Error generating embeddings:", error);
+      res.status(500).json({ message: "Failed to generate embeddings" });
     }
   });
 
