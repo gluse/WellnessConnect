@@ -1,0 +1,138 @@
+{
+  "common": {
+    "search": "搜索",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "back": "返回",
+    "next": "下一步",
+    "submit": "提交",
+    "close": "关闭"
+  },
+  "nav": {
+    "home": "首页",
+    "services": "服务",
+    "bookings": "预订",
+    "calendar": "日历",
+    "profile": "个人资料",
+    "logout": "退出登录",
+    "login": "登录",
+    "getStarted": "开始使用"
+  },
+  "home": {
+    "title": "发现附近的服务",
+    "subtitle": "在您的区域发现健康、保健、教育和娱乐服务",
+    "searchPlaceholder": "按名称或描述搜索...",
+    "noServices": "未找到服务",
+    "noServicesDescription": "尝试调整筛选条件或在其他区域搜索"
+  },
+  "filters": {
+    "title": "筛选",
+    "searchServices": "搜索服务",
+    "category": "类别",
+    "allCategories": "所有类别",
+    "location": "位置",
+    "locationPlaceholder": "输入地址或城市",
+    "useCurrentLocation": "使用当前位置",
+    "distance": "距离",
+    "km": "公里",
+    "date": "日期",
+    "serviceType": "服务类型",
+    "allTypes": "所有类型",
+    "oneToOne": "一对一",
+    "group": "团体",
+    "ageGroup": "年龄段",
+    "clearFilters": "清除筛选"
+  },
+  "categories": {
+    "health_wellness": "健康与保健",
+    "education": "教育",
+    "entertainment": "娱乐"
+  },
+  "ageGroups": {
+    "children": "儿童 (0-12岁)",
+    "teenagers": "青少年 (13-17岁)",
+    "adults": "成人 (18-64岁)",
+    "seniors": "老年人 (65岁以上)"
+  },
+  "service": {
+    "bookNow": "立即预订",
+    "viewDetails": "查看详情",
+    "price": "价格",
+    "duration": "时长",
+    "capacity": "容量",
+    "available": "可用",
+    "soldOut": "已满",
+    "description": "描述",
+    "provider": "提供者",
+    "location": "位置",
+    "schedule": "时间表",
+    "reviews": "评价",
+    "perSession": "每次",
+    "minutes": "分钟",
+    "hour": "小时",
+    "hours": "小时"
+  },
+  "booking": {
+    "title": "预订服务",
+    "selectDate": "选择日期",
+    "selectTime": "选择时间",
+    "participants": "参与人数",
+    "totalPrice": "总价",
+    "advancePayment": "预付款",
+    "confirmBooking": "确认预订",
+    "bookingConfirmed": "预订成功！",
+    "bookingPending": "预订待确认",
+    "bookingCancelled": "预订已取消",
+    "myBookings": "我的预订",
+    "noBookings": "暂无预订",
+    "upcoming": "即将到来",
+    "past": "已完成",
+    "cancelled": "已取消"
+  },
+  "provider": {
+    "dashboard": "服务商控制台",
+    "myServices": "我的服务",
+    "addService": "添加服务",
+    "editService": "编辑服务",
+    "manageAvailability": "管理可用性",
+    "earnings": "收入",
+    "requests": "预订请求",
+    "approve": "批准",
+    "decline": "拒绝",
+    "noServices": "暂无服务",
+    "createFirst": "创建您的第一个服务"
+  },
+  "role": {
+    "seeker": "服务寻找者",
+    "provider": "服务提供者",
+    "switchTo": "切换为"
+  },
+  "views": {
+    "list": "列表",
+    "map": "地图",
+    "calendar": "日历"
+  },
+  "landing": {
+    "hero": "找到适合您的完美服务",
+    "heroSubtitle": "与当地健康、保健、教育和娱乐服务提供者建立联系",
+    "howItWorks": "使用方法",
+    "step1Title": "搜索",
+    "step1Description": "根据您的偏好查找附近的服务",
+    "step2Title": "预订",
+    "step2Description": "选择适合您的时间",
+    "step3Title": "享受",
+    "step3Description": "体验经过验证的优质服务"
+  },
+  "errors": {
+    "somethingWentWrong": "出了点问题",
+    "tryAgain": "请重试",
+    "notFound": "未找到",
+    "unauthorized": "请登录后继续",
+    "networkError": "网络错误，请检查您的连接。"
+  }
+}

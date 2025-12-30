@@ -1,0 +1,138 @@
+{
+  "common": {
+    "search": "खोजें",
+    "cancel": "रद्द करें",
+    "save": "सहेजें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "loading": "लोड हो रहा है...",
+    "error": "त्रुटि",
+    "success": "सफलता",
+    "back": "वापस",
+    "next": "आगे",
+    "submit": "जमा करें",
+    "close": "बंद करें"
+  },
+  "nav": {
+    "home": "होम",
+    "services": "सेवाएं",
+    "bookings": "बुकिंग",
+    "calendar": "कैलेंडर",
+    "profile": "प्रोफ़ाइल",
+    "logout": "लॉग आउट",
+    "login": "लॉग इन",
+    "getStarted": "शुरू करें"
+  },
+  "home": {
+    "title": "अपने पास सेवाएं खोजें",
+    "subtitle": "अपने क्षेत्र में स्वास्थ्य, कल्याण, शिक्षा और मनोरंजन सेवाएं खोजें",
+    "searchPlaceholder": "नाम या विवरण से खोजें...",
+    "noServices": "कोई सेवा नहीं मिली",
+    "noServicesDescription": "अपने फ़िल्टर समायोजित करें या किसी अन्य क्षेत्र में खोजें"
+  },
+  "filters": {
+    "title": "फ़िल्टर",
+    "searchServices": "सेवाएं खोजें",
+    "category": "श्रेणी",
+    "allCategories": "सभी श्रेणियां",
+    "location": "स्थान",
+    "locationPlaceholder": "पता या शहर दर्ज करें",
+    "useCurrentLocation": "वर्तमान स्थान का उपयोग करें",
+    "distance": "दूरी",
+    "km": "किमी",
+    "date": "तारीख",
+    "serviceType": "सेवा प्रकार",
+    "allTypes": "सभी प्रकार",
+    "oneToOne": "एक-एक",
+    "group": "समूह",
+    "ageGroup": "आयु वर्ग",
+    "clearFilters": "फ़िल्टर साफ़ करें"
+  },
+  "categories": {
+    "health_wellness": "स्वास्थ्य और कल्याण",
+    "education": "शिक्षा",
+    "entertainment": "मनोरंजन"
+  },
+  "ageGroups": {
+    "children": "बच्चे (0-12)",
+    "teenagers": "किशोर (13-17)",
+    "adults": "वयस्क (18-64)",
+    "seniors": "वरिष्ठ (65+)"
+  },
+  "service": {
+    "bookNow": "अभी बुक करें",
+    "viewDetails": "विवरण देखें",
+    "price": "मूल्य",
+    "duration": "अवधि",
+    "capacity": "क्षमता",
+    "available": "उपलब्ध",
+    "soldOut": "बिक गया",
+    "description": "विवरण",
+    "provider": "प्रदाता",
+    "location": "स्थान",
+    "schedule": "समय-सारणी",
+    "reviews": "समीक्षाएं",
+    "perSession": "प्रति सत्र",
+    "minutes": "मिनट",
+    "hour": "घंटा",
+    "hours": "घंटे"
+  },
+  "booking": {
+    "title": "सेवा बुक करें",
+    "selectDate": "तारीख चुनें",
+    "selectTime": "समय चुनें",
+    "participants": "प्रतिभागियों की संख्या",
+    "totalPrice": "कुल मूल्य",
+    "advancePayment": "अग्रिम भुगतान",
+    "confirmBooking": "बुकिंग की पुष्टि करें",
+    "bookingConfirmed": "बुकिंग की पुष्टि हो गई!",
+    "bookingPending": "बुकिंग लंबित",
+    "bookingCancelled": "बुकिंग रद्द",
+    "myBookings": "मेरी बुकिंग",
+    "noBookings": "अभी कोई बुकिंग नहीं",
+    "upcoming": "आगामी",
+    "past": "पिछली",
+    "cancelled": "रद्द"
+  },
+  "provider": {
+    "dashboard": "प्रदाता डैशबोर्ड",
+    "myServices": "मेरी सेवाएं",
+    "addService": "सेवा जोड़ें",
+    "editService": "सेवा संपादित करें",
+    "manageAvailability": "उपलब्धता प्रबंधित करें",
+    "earnings": "कमाई",
+    "requests": "बुकिंग अनुरोध",
+    "approve": "स्वीकार करें",
+    "decline": "अस्वीकार करें",
+    "noServices": "अभी कोई सेवा नहीं",
+    "createFirst": "अपनी पहली सेवा बनाएं"
+  },
+  "role": {
+    "seeker": "सेवा खोजने वाला",
+    "provider": "सेवा प्रदाता",
+    "switchTo": "बदलें"
+  },
+  "views": {
+    "list": "सूची",
+    "map": "नक्शा",
+    "calendar": "कैलेंडर"
+  },
+  "landing": {
+    "hero": "अपने लिए सही सेवा खोजें",
+    "heroSubtitle": "स्थानीय स्वास्थ्य, कल्याण, शिक्षा और मनोरंजन प्रदाताओं से जुड़ें",
+    "howItWorks": "यह कैसे काम करता है",
+    "step1Title": "खोजें",
+    "step1Description": "अपनी पसंद के अनुसार पास में सेवाएं खोजें",
+    "step2Title": "बुक करें",
+    "step2Description": "अपने लिए सुविधाजनक समय चुनें",
+    "step3Title": "आनंद लें",
+    "step3Description": "सत्यापित प्रदाताओं से गुणवत्ता सेवाओं का अनुभव करें"
+  },
+  "errors": {
+    "somethingWentWrong": "कुछ गलत हो गया",
+    "tryAgain": "कृपया पुनः प्रयास करें",
+    "notFound": "नहीं मिला",
+    "unauthorized": "कृपया जारी रखने के लिए लॉग इन करें",
+    "networkError": "नेटवर्क त्रुटि। कृपया अपना कनेक्शन जांचें।"
+  }
+}

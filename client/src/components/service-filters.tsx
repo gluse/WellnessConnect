@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,7 @@ export default function ServiceFilters({
   onUseCurrentLocation,
   onGeocodeLocation
 }: ServiceFiltersProps) {
+  const { t } = useTranslation();
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [inputAddress, setInputAddress] = useState(locationName);
   const { toast } = useToast();
@@ -78,11 +80,11 @@ export default function ServiceFilters({
     <div className="p-4 space-y-4">
       {/* Search by Name/Description */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium text-neutral-700">Search Services</Label>
+        <Label className="text-sm font-medium text-neutral-700">{t('filters.searchServices')}</Label>
         <div className="relative">
           <Search className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
           <Input 
-            placeholder="Search by name or description..." 
+            placeholder={t('home.searchPlaceholder')} 
             className="pl-10"
             value={filters.searchQuery || ""}
             onChange={(e) => onFiltersChange({ ...filters, searchQuery: e.target.value })}
@@ -93,7 +95,7 @@ export default function ServiceFilters({
 
       {/* Location Input */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium text-neutral-700">Location</Label>
+        <Label className="text-sm font-medium text-neutral-700">{t('filters.location')}</Label>
         <div className="relative flex gap-2">
           <div className="relative flex-1">
             <MapPin className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />

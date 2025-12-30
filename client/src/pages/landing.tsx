@@ -1,8 +1,11 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Users, MapPin, Star, Shield, Clock } from "lucide-react";
+import { LanguagePicker } from "@/components/language-picker";
 
 export default function Landing() {
+  const { t } = useTranslation();
   const handleLogin = () => {
     window.location.href = "/api/login";
   };
@@ -10,13 +13,18 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
       <div className="max-w-md mx-auto bg-white shadow-xl min-h-screen">
+        {/* Language Picker */}
+        <div className="flex justify-end px-4 pt-4">
+          <LanguagePicker />
+        </div>
+        
         {/* Header */}
         <div className="px-6 py-8 text-center">
           <div className="w-16 h-16 bg-primary rounded-2xl mx-auto mb-4 flex items-center justify-center">
             <Heart className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-neutral-800 mb-2">WellnessFind</h1>
-          <p className="text-neutral-600">Find and book local health, wellness, education, and entertainment services</p>
+          <p className="text-neutral-600">{t('landing.heroSubtitle')}</p>
         </div>
 
         {/* Features */}
@@ -104,7 +112,7 @@ export default function Landing() {
             className="w-full bg-primary hover:bg-primary/90 text-white py-6 text-lg font-semibold rounded-xl"
             data-testid="button-get-started"
           >
-            Get Started
+            {t('nav.getStarted')}
           </Button>
           <p className="text-center text-sm text-neutral-500 mt-4">
             Sign in with Google, GitHub, or email to get started

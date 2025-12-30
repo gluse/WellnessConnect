@@ -1,0 +1,138 @@
+{
+  "common": {
+    "search": "Pesquisar",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "back": "Voltar",
+    "next": "Próximo",
+    "submit": "Enviar",
+    "close": "Fechar"
+  },
+  "nav": {
+    "home": "Início",
+    "services": "Serviços",
+    "bookings": "Reservas",
+    "calendar": "Calendário",
+    "profile": "Perfil",
+    "logout": "Sair",
+    "login": "Entrar",
+    "getStarted": "Começar"
+  },
+  "home": {
+    "title": "Encontre Serviços Perto de Você",
+    "subtitle": "Descubra serviços de saúde, bem-estar, educação e entretenimento na sua região",
+    "searchPlaceholder": "Pesquisar por nome ou descrição...",
+    "noServices": "Nenhum serviço encontrado",
+    "noServicesDescription": "Tente ajustar seus filtros ou pesquisar em outra área"
+  },
+  "filters": {
+    "title": "Filtros",
+    "searchServices": "Pesquisar Serviços",
+    "category": "Categoria",
+    "allCategories": "Todas as Categorias",
+    "location": "Localização",
+    "locationPlaceholder": "Digite endereço ou cidade",
+    "useCurrentLocation": "Usar localização atual",
+    "distance": "Distância",
+    "km": "km",
+    "date": "Data",
+    "serviceType": "Tipo de Serviço",
+    "allTypes": "Todos os Tipos",
+    "oneToOne": "Individual",
+    "group": "Grupo",
+    "ageGroup": "Faixa Etária",
+    "clearFilters": "Limpar Filtros"
+  },
+  "categories": {
+    "health_wellness": "Saúde e Bem-estar",
+    "education": "Educação",
+    "entertainment": "Entretenimento"
+  },
+  "ageGroups": {
+    "children": "Crianças (0-12)",
+    "teenagers": "Adolescentes (13-17)",
+    "adults": "Adultos (18-64)",
+    "seniors": "Idosos (65+)"
+  },
+  "service": {
+    "bookNow": "Reservar Agora",
+    "viewDetails": "Ver Detalhes",
+    "price": "Preço",
+    "duration": "Duração",
+    "capacity": "Capacidade",
+    "available": "disponível",
+    "soldOut": "Esgotado",
+    "description": "Descrição",
+    "provider": "Provedor",
+    "location": "Localização",
+    "schedule": "Horário",
+    "reviews": "Avaliações",
+    "perSession": "por sessão",
+    "minutes": "minutos",
+    "hour": "hora",
+    "hours": "horas"
+  },
+  "booking": {
+    "title": "Reservar Serviço",
+    "selectDate": "Selecionar Data",
+    "selectTime": "Selecionar Horário",
+    "participants": "Número de Participantes",
+    "totalPrice": "Preço Total",
+    "advancePayment": "Pagamento Antecipado",
+    "confirmBooking": "Confirmar Reserva",
+    "bookingConfirmed": "Reserva Confirmada!",
+    "bookingPending": "Reserva Pendente",
+    "bookingCancelled": "Reserva Cancelada",
+    "myBookings": "Minhas Reservas",
+    "noBookings": "Nenhuma reserva ainda",
+    "upcoming": "Próximas",
+    "past": "Anteriores",
+    "cancelled": "Canceladas"
+  },
+  "provider": {
+    "dashboard": "Painel do Provedor",
+    "myServices": "Meus Serviços",
+    "addService": "Adicionar Serviço",
+    "editService": "Editar Serviço",
+    "manageAvailability": "Gerenciar Disponibilidade",
+    "earnings": "Ganhos",
+    "requests": "Solicitações de Reserva",
+    "approve": "Aprovar",
+    "decline": "Recusar",
+    "noServices": "Nenhum serviço ainda",
+    "createFirst": "Crie seu primeiro serviço"
+  },
+  "role": {
+    "seeker": "Buscador de Serviços",
+    "provider": "Provedor de Serviços",
+    "switchTo": "Mudar para"
+  },
+  "views": {
+    "list": "Lista",
+    "map": "Mapa",
+    "calendar": "Calendário"
+  },
+  "landing": {
+    "hero": "Encontre o Serviço Perfeito para Você",
+    "heroSubtitle": "Conecte-se com provedores locais de saúde, bem-estar, educação e entretenimento",
+    "howItWorks": "Como Funciona",
+    "step1Title": "Pesquisar",
+    "step1Description": "Encontre serviços perto de você com base nas suas preferências",
+    "step2Title": "Reservar",
+    "step2Description": "Escolha um horário que funcione para você",
+    "step3Title": "Aproveitar",
+    "step3Description": "Experimente serviços de qualidade de provedores verificados"
+  },
+  "errors": {
+    "somethingWentWrong": "Algo deu errado",
+    "tryAgain": "Por favor, tente novamente",
+    "notFound": "Não encontrado",
+    "unauthorized": "Por favor, faça login para continuar",
+    "networkError": "Erro de rede. Por favor, verifique sua conexão."
+  }
+}

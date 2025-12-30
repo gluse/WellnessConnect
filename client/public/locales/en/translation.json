@@ -1,0 +1,138 @@
+{
+  "common": {
+    "search": "Search",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "close": "Close"
+  },
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "bookings": "Bookings",
+    "calendar": "Calendar",
+    "profile": "Profile",
+    "logout": "Log out",
+    "login": "Log in",
+    "getStarted": "Get Started"
+  },
+  "home": {
+    "title": "Find Services Near You",
+    "subtitle": "Discover health, wellness, education, and entertainment services in your area",
+    "searchPlaceholder": "Search by name or description...",
+    "noServices": "No services found",
+    "noServicesDescription": "Try adjusting your filters or search in a different area"
+  },
+  "filters": {
+    "title": "Filters",
+    "searchServices": "Search Services",
+    "category": "Category",
+    "allCategories": "All Categories",
+    "location": "Location",
+    "locationPlaceholder": "Enter address or city",
+    "useCurrentLocation": "Use current location",
+    "distance": "Distance",
+    "km": "km",
+    "date": "Date",
+    "serviceType": "Service Type",
+    "allTypes": "All Types",
+    "oneToOne": "One-to-One",
+    "group": "Group",
+    "ageGroup": "Age Group",
+    "clearFilters": "Clear Filters"
+  },
+  "categories": {
+    "health_wellness": "Health & Wellness",
+    "education": "Education",
+    "entertainment": "Entertainment"
+  },
+  "ageGroups": {
+    "children": "Children (0-12)",
+    "teenagers": "Teenagers (13-17)",
+    "adults": "Adults (18-64)",
+    "seniors": "Seniors (65+)"
+  },
+  "service": {
+    "bookNow": "Book Now",
+    "viewDetails": "View Details",
+    "price": "Price",
+    "duration": "Duration",
+    "capacity": "Capacity",
+    "available": "available",
+    "soldOut": "Sold Out",
+    "description": "Description",
+    "provider": "Provider",
+    "location": "Location",
+    "schedule": "Schedule",
+    "reviews": "Reviews",
+    "perSession": "per session",
+    "minutes": "minutes",
+    "hour": "hour",
+    "hours": "hours"
+  },
+  "booking": {
+    "title": "Book Service",
+    "selectDate": "Select Date",
+    "selectTime": "Select Time",
+    "participants": "Number of Participants",
+    "totalPrice": "Total Price",
+    "advancePayment": "Advance Payment",
+    "confirmBooking": "Confirm Booking",
+    "bookingConfirmed": "Booking Confirmed!",
+    "bookingPending": "Booking Pending",
+    "bookingCancelled": "Booking Cancelled",
+    "myBookings": "My Bookings",
+    "noBookings": "No bookings yet",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "cancelled": "Cancelled"
+  },
+  "provider": {
+    "dashboard": "Provider Dashboard",
+    "myServices": "My Services",
+    "addService": "Add Service",
+    "editService": "Edit Service",
+    "manageAvailability": "Manage Availability",
+    "earnings": "Earnings",
+    "requests": "Booking Requests",
+    "approve": "Approve",
+    "decline": "Decline",
+    "noServices": "No services yet",
+    "createFirst": "Create your first service"
+  },
+  "role": {
+    "seeker": "Service Seeker",
+    "provider": "Service Provider",
+    "switchTo": "Switch to"
+  },
+  "views": {
+    "list": "List",
+    "map": "Map",
+    "calendar": "Calendar"
+  },
+  "landing": {
+    "hero": "Find the Perfect Service for You",
+    "heroSubtitle": "Connect with local providers for health, wellness, education, and entertainment",
+    "howItWorks": "How It Works",
+    "step1Title": "Search",
+    "step1Description": "Find services near you based on your preferences",
+    "step2Title": "Book",
+    "step2Description": "Choose a time that works for you",
+    "step3Title": "Enjoy",
+    "step3Description": "Experience quality services from verified providers"
+  },
+  "errors": {
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Please try again",
+    "notFound": "Not found",
+    "unauthorized": "Please log in to continue",
+    "networkError": "Network error. Please check your connection."
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "common": {
+    "search": "Suchen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "back": "Zurück",
+    "next": "Weiter",
+    "submit": "Absenden",
+    "close": "Schließen"
+  },
+  "nav": {
+    "home": "Startseite",
+    "services": "Dienste",
+    "bookings": "Buchungen",
+    "calendar": "Kalender",
+    "profile": "Profil",
+    "logout": "Abmelden",
+    "login": "Anmelden",
+    "getStarted": "Loslegen"
+  },
+  "home": {
+    "title": "Finden Sie Dienste in Ihrer Nähe",
+    "subtitle": "Entdecken Sie Gesundheits-, Wellness-, Bildungs- und Unterhaltungsdienste in Ihrer Region",
+    "searchPlaceholder": "Nach Name oder Beschreibung suchen...",
+    "noServices": "Keine Dienste gefunden",
+    "noServicesDescription": "Versuchen Sie, Ihre Filter anzupassen oder in einer anderen Gegend zu suchen"
+  },
+  "filters": {
+    "title": "Filter",
+    "searchServices": "Dienste suchen",
+    "category": "Kategorie",
+    "allCategories": "Alle Kategorien",
+    "location": "Standort",
+    "locationPlaceholder": "Adresse oder Stadt eingeben",
+    "useCurrentLocation": "Aktuellen Standort verwenden",
+    "distance": "Entfernung",
+    "km": "km",
+    "date": "Datum",
+    "serviceType": "Diensttyp",
+    "allTypes": "Alle Typen",
+    "oneToOne": "Einzeln",
+    "group": "Gruppe",
+    "ageGroup": "Altersgruppe",
+    "clearFilters": "Filter löschen"
+  },
+  "categories": {
+    "health_wellness": "Gesundheit & Wellness",
+    "education": "Bildung",
+    "entertainment": "Unterhaltung"
+  },
+  "ageGroups": {
+    "children": "Kinder (0-12)",
+    "teenagers": "Teenager (13-17)",
+    "adults": "Erwachsene (18-64)",
+    "seniors": "Senioren (65+)"
+  },
+  "service": {
+    "bookNow": "Jetzt buchen",
+    "viewDetails": "Details anzeigen",
+    "price": "Preis",
+    "duration": "Dauer",
+    "capacity": "Kapazität",
+    "available": "verfügbar",
+    "soldOut": "Ausgebucht",
+    "description": "Beschreibung",
+    "provider": "Anbieter",
+    "location": "Standort",
+    "schedule": "Zeitplan",
+    "reviews": "Bewertungen",
+    "perSession": "pro Sitzung",
+    "minutes": "Minuten",
+    "hour": "Stunde",
+    "hours": "Stunden"
+  },
+  "booking": {
+    "title": "Dienst buchen",
+    "selectDate": "Datum auswählen",
+    "selectTime": "Zeit auswählen",
+    "participants": "Anzahl der Teilnehmer",
+    "totalPrice": "Gesamtpreis",
+    "advancePayment": "Vorauszahlung",
+    "confirmBooking": "Buchung bestätigen",
+    "bookingConfirmed": "Buchung bestätigt!",
+    "bookingPending": "Buchung ausstehend",
+    "bookingCancelled": "Buchung storniert",
+    "myBookings": "Meine Buchungen",
+    "noBookings": "Noch keine Buchungen",
+    "upcoming": "Bevorstehend",
+    "past": "Vergangen",
+    "cancelled": "Storniert"
+  },
+  "provider": {
+    "dashboard": "Anbieter-Dashboard",
+    "myServices": "Meine Dienste",
+    "addService": "Dienst hinzufügen",
+    "editService": "Dienst bearbeiten",
+    "manageAvailability": "Verfügbarkeit verwalten",
+    "earnings": "Einnahmen",
+    "requests": "Buchungsanfragen",
+    "approve": "Genehmigen",
+    "decline": "Ablehnen",
+    "noServices": "Noch keine Dienste",
+    "createFirst": "Erstellen Sie Ihren ersten Dienst"
+  },
+  "role": {
+    "seeker": "Dienstsucher",
+    "provider": "Dienstanbieter",
+    "switchTo": "Wechseln zu"
+  },
+  "views": {
+    "list": "Liste",
+    "map": "Karte",
+    "calendar": "Kalender"
+  },
+  "landing": {
+    "hero": "Finden Sie den perfekten Service für Sie",
+    "heroSubtitle": "Verbinden Sie sich mit lokalen Anbietern für Gesundheit, Wellness, Bildung und Unterhaltung",
+    "howItWorks": "So funktioniert's",
+    "step1Title": "Suchen",
+    "step1Description": "Finden Sie Dienste in Ihrer Nähe nach Ihren Vorlieben",
+    "step2Title": "Buchen",
+    "step2Description": "Wählen Sie eine Zeit, die Ihnen passt",
+    "step3Title": "Genießen",
+    "step3Description": "Erleben Sie Qualitätsdienste von verifizierten Anbietern"
+  },
+  "errors": {
+    "somethingWentWrong": "Etwas ist schiefgelaufen",
+    "tryAgain": "Bitte versuchen Sie es erneut",
+    "notFound": "Nicht gefunden",
+    "unauthorized": "Bitte melden Sie sich an, um fortzufahren",
+    "networkError": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung."
+  }
+}

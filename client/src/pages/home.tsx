@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -13,11 +14,13 @@ import ServiceDetailModal from "@/components/service-detail-modal";
 import BottomNavigation from "@/components/bottom-navigation";
 import ProviderDashboard from "@/pages/provider-dashboard";
 import CalendarView from "@/components/calendar-view";
+import { LanguagePicker } from "@/components/language-picker";
 import { Button } from "@/components/ui/button";
 import { Heart, MapPin, List, Map, Target, Calendar } from "lucide-react";
 import type { ServiceWithProvider, BookingWithDetails } from "@shared/schema";
 
 export default function Home() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -220,6 +223,7 @@ export default function Home() {
             </div>
             
             <div className="flex items-center space-x-2">
+              <LanguagePicker />
               <RoleSwitcher 
                 currentRole={currentRole} 
                 onRoleChange={handleRoleSwitch}
@@ -280,7 +284,7 @@ export default function Home() {
                 data-testid="button-view-list"
               >
                 <List className="w-4 h-4 mr-2" />
-                List
+                {t('views.list')}
               </Button>
               <Button
                 variant={viewMode === "map" ? "default" : "ghost"}
@@ -290,7 +294,7 @@ export default function Home() {
                 data-testid="button-view-map"
               >
                 <Map className="w-4 h-4 mr-2" />
-                Map
+                {t('views.map')}
               </Button>
               <Button
                 variant={viewMode === "calendar" ? "default" : "ghost"}
@@ -300,7 +304,7 @@ export default function Home() {
                 data-testid="button-view-calendar"
               >
                 <Calendar className="w-4 h-4 mr-2" />
-                Calendar
+                {t('views.calendar')}
               </Button>
             </div>
           </div>

@@ -1,0 +1,138 @@
+{
+  "common": {
+    "search": "検索",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "back": "戻る",
+    "next": "次へ",
+    "submit": "送信",
+    "close": "閉じる"
+  },
+  "nav": {
+    "home": "ホーム",
+    "services": "サービス",
+    "bookings": "予約",
+    "calendar": "カレンダー",
+    "profile": "プロフィール",
+    "logout": "ログアウト",
+    "login": "ログイン",
+    "getStarted": "始める"
+  },
+  "home": {
+    "title": "近くのサービスを探す",
+    "subtitle": "お近くの健康、ウェルネス、教育、エンターテインメントサービスを発見",
+    "searchPlaceholder": "名前または説明で検索...",
+    "noServices": "サービスが見つかりません",
+    "noServicesDescription": "フィルターを調整するか、別の地域で検索してください"
+  },
+  "filters": {
+    "title": "フィルター",
+    "searchServices": "サービスを検索",
+    "category": "カテゴリー",
+    "allCategories": "すべてのカテゴリー",
+    "location": "場所",
+    "locationPlaceholder": "住所または都市を入力",
+    "useCurrentLocation": "現在地を使用",
+    "distance": "距離",
+    "km": "km",
+    "date": "日付",
+    "serviceType": "サービスタイプ",
+    "allTypes": "すべてのタイプ",
+    "oneToOne": "マンツーマン",
+    "group": "グループ",
+    "ageGroup": "年齢層",
+    "clearFilters": "フィルターをクリア"
+  },
+  "categories": {
+    "health_wellness": "健康とウェルネス",
+    "education": "教育",
+    "entertainment": "エンターテインメント"
+  },
+  "ageGroups": {
+    "children": "子供（0-12歳）",
+    "teenagers": "ティーンエイジャー（13-17歳）",
+    "adults": "大人（18-64歳）",
+    "seniors": "シニア（65歳以上）"
+  },
+  "service": {
+    "bookNow": "今すぐ予約",
+    "viewDetails": "詳細を見る",
+    "price": "価格",
+    "duration": "所要時間",
+    "capacity": "定員",
+    "available": "空きあり",
+    "soldOut": "満席",
+    "description": "説明",
+    "provider": "提供者",
+    "location": "場所",
+    "schedule": "スケジュール",
+    "reviews": "レビュー",
+    "perSession": "1セッションあたり",
+    "minutes": "分",
+    "hour": "時間",
+    "hours": "時間"
+  },
+  "booking": {
+    "title": "サービスを予約",
+    "selectDate": "日付を選択",
+    "selectTime": "時間を選択",
+    "participants": "参加者数",
+    "totalPrice": "合計金額",
+    "advancePayment": "前払い",
+    "confirmBooking": "予約を確認",
+    "bookingConfirmed": "予約が確認されました！",
+    "bookingPending": "予約保留中",
+    "bookingCancelled": "予約がキャンセルされました",
+    "myBookings": "マイ予約",
+    "noBookings": "まだ予約がありません",
+    "upcoming": "今後の予約",
+    "past": "過去の予約",
+    "cancelled": "キャンセル済み"
+  },
+  "provider": {
+    "dashboard": "提供者ダッシュボード",
+    "myServices": "マイサービス",
+    "addService": "サービスを追加",
+    "editService": "サービスを編集",
+    "manageAvailability": "空き状況を管理",
+    "earnings": "収益",
+    "requests": "予約リクエスト",
+    "approve": "承認",
+    "decline": "却下",
+    "noServices": "まだサービスがありません",
+    "createFirst": "最初のサービスを作成"
+  },
+  "role": {
+    "seeker": "サービス利用者",
+    "provider": "サービス提供者",
+    "switchTo": "切り替え"
+  },
+  "views": {
+    "list": "リスト",
+    "map": "マップ",
+    "calendar": "カレンダー"
+  },
+  "landing": {
+    "hero": "あなたにぴったりのサービスを見つけよう",
+    "heroSubtitle": "地元の健康、ウェルネス、教育、エンターテインメントの提供者とつながる",
+    "howItWorks": "使い方",
+    "step1Title": "検索",
+    "step1Description": "お好みに合わせて近くのサービスを検索",
+    "step2Title": "予約",
+    "step2Description": "都合の良い時間を選択",
+    "step3Title": "楽しむ",
+    "step3Description": "認定された提供者から質の高いサービスを体験"
+  },
+  "errors": {
+    "somethingWentWrong": "問題が発生しました",
+    "tryAgain": "もう一度お試しください",
+    "notFound": "見つかりません",
+    "unauthorized": "続行するにはログインしてください",
+    "networkError": "ネットワークエラー。接続を確認してください。"
+  }
+}

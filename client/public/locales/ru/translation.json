@@ -1,0 +1,138 @@
+{
+  "common": {
+    "search": "Поиск",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "back": "Назад",
+    "next": "Далее",
+    "submit": "Отправить",
+    "close": "Закрыть"
+  },
+  "nav": {
+    "home": "Главная",
+    "services": "Услуги",
+    "bookings": "Бронирования",
+    "calendar": "Календарь",
+    "profile": "Профиль",
+    "logout": "Выйти",
+    "login": "Войти",
+    "getStarted": "Начать"
+  },
+  "home": {
+    "title": "Найдите услуги рядом с вами",
+    "subtitle": "Откройте для себя услуги здоровья, велнеса, образования и развлечений в вашем районе",
+    "searchPlaceholder": "Поиск по названию или описанию...",
+    "noServices": "Услуги не найдены",
+    "noServicesDescription": "Попробуйте изменить фильтры или искать в другом районе"
+  },
+  "filters": {
+    "title": "Фильтры",
+    "searchServices": "Поиск услуг",
+    "category": "Категория",
+    "allCategories": "Все категории",
+    "location": "Местоположение",
+    "locationPlaceholder": "Введите адрес или город",
+    "useCurrentLocation": "Использовать текущее местоположение",
+    "distance": "Расстояние",
+    "km": "км",
+    "date": "Дата",
+    "serviceType": "Тип услуги",
+    "allTypes": "Все типы",
+    "oneToOne": "Индивидуально",
+    "group": "Группа",
+    "ageGroup": "Возрастная группа",
+    "clearFilters": "Сбросить фильтры"
+  },
+  "categories": {
+    "health_wellness": "Здоровье и велнес",
+    "education": "Образование",
+    "entertainment": "Развлечения"
+  },
+  "ageGroups": {
+    "children": "Дети (0-12)",
+    "teenagers": "Подростки (13-17)",
+    "adults": "Взрослые (18-64)",
+    "seniors": "Пожилые (65+)"
+  },
+  "service": {
+    "bookNow": "Забронировать",
+    "viewDetails": "Подробнее",
+    "price": "Цена",
+    "duration": "Продолжительность",
+    "capacity": "Вместимость",
+    "available": "доступно",
+    "soldOut": "Распродано",
+    "description": "Описание",
+    "provider": "Поставщик",
+    "location": "Местоположение",
+    "schedule": "Расписание",
+    "reviews": "Отзывы",
+    "perSession": "за сеанс",
+    "minutes": "минут",
+    "hour": "час",
+    "hours": "часов"
+  },
+  "booking": {
+    "title": "Забронировать услугу",
+    "selectDate": "Выбрать дату",
+    "selectTime": "Выбрать время",
+    "participants": "Количество участников",
+    "totalPrice": "Общая стоимость",
+    "advancePayment": "Предоплата",
+    "confirmBooking": "Подтвердить бронирование",
+    "bookingConfirmed": "Бронирование подтверждено!",
+    "bookingPending": "Бронирование ожидает",
+    "bookingCancelled": "Бронирование отменено",
+    "myBookings": "Мои бронирования",
+    "noBookings": "Пока нет бронирований",
+    "upcoming": "Предстоящие",
+    "past": "Прошедшие",
+    "cancelled": "Отменённые"
+  },
+  "provider": {
+    "dashboard": "Панель поставщика",
+    "myServices": "Мои услуги",
+    "addService": "Добавить услугу",
+    "editService": "Редактировать услугу",
+    "manageAvailability": "Управление доступностью",
+    "earnings": "Доходы",
+    "requests": "Запросы на бронирование",
+    "approve": "Одобрить",
+    "decline": "Отклонить",
+    "noServices": "Пока нет услуг",
+    "createFirst": "Создайте свою первую услугу"
+  },
+  "role": {
+    "seeker": "Ищущий услуги",
+    "provider": "Поставщик услуг",
+    "switchTo": "Переключиться на"
+  },
+  "views": {
+    "list": "Список",
+    "map": "Карта",
+    "calendar": "Календарь"
+  },
+  "landing": {
+    "hero": "Найдите идеальную услугу для вас",
+    "heroSubtitle": "Свяжитесь с местными поставщиками услуг здоровья, велнеса, образования и развлечений",
+    "howItWorks": "Как это работает",
+    "step1Title": "Поиск",
+    "step1Description": "Найдите услуги рядом с вами по вашим предпочтениям",
+    "step2Title": "Бронирование",
+    "step2Description": "Выберите удобное для вас время",
+    "step3Title": "Наслаждайтесь",
+    "step3Description": "Получите качественные услуги от проверенных поставщиков"
+  },
+  "errors": {
+    "somethingWentWrong": "Что-то пошло не так",
+    "tryAgain": "Пожалуйста, попробуйте снова",
+    "notFound": "Не найдено",
+    "unauthorized": "Пожалуйста, войдите для продолжения",
+    "networkError": "Ошибка сети. Пожалуйста, проверьте соединение."
+  }
+}

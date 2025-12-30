@@ -1,0 +1,138 @@
+{
+  "common": {
+    "search": "بحث",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجاح",
+    "back": "رجوع",
+    "next": "التالي",
+    "submit": "إرسال",
+    "close": "إغلاق"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "services": "الخدمات",
+    "bookings": "الحجوزات",
+    "calendar": "التقويم",
+    "profile": "الملف الشخصي",
+    "logout": "تسجيل الخروج",
+    "login": "تسجيل الدخول",
+    "getStarted": "ابدأ الآن"
+  },
+  "home": {
+    "title": "ابحث عن الخدمات بالقرب منك",
+    "subtitle": "اكتشف خدمات الصحة والعافية والتعليم والترفيه في منطقتك",
+    "searchPlaceholder": "البحث بالاسم أو الوصف...",
+    "noServices": "لم يتم العثور على خدمات",
+    "noServicesDescription": "حاول تعديل الفلاتر أو البحث في منطقة أخرى"
+  },
+  "filters": {
+    "title": "الفلاتر",
+    "searchServices": "البحث عن الخدمات",
+    "category": "الفئة",
+    "allCategories": "جميع الفئات",
+    "location": "الموقع",
+    "locationPlaceholder": "أدخل العنوان أو المدينة",
+    "useCurrentLocation": "استخدام الموقع الحالي",
+    "distance": "المسافة",
+    "km": "كم",
+    "date": "التاريخ",
+    "serviceType": "نوع الخدمة",
+    "allTypes": "جميع الأنواع",
+    "oneToOne": "فردي",
+    "group": "جماعي",
+    "ageGroup": "الفئة العمرية",
+    "clearFilters": "مسح الفلاتر"
+  },
+  "categories": {
+    "health_wellness": "الصحة والعافية",
+    "education": "التعليم",
+    "entertainment": "الترفيه"
+  },
+  "ageGroups": {
+    "children": "الأطفال (0-12)",
+    "teenagers": "المراهقون (13-17)",
+    "adults": "البالغون (18-64)",
+    "seniors": "كبار السن (65+)"
+  },
+  "service": {
+    "bookNow": "احجز الآن",
+    "viewDetails": "عرض التفاصيل",
+    "price": "السعر",
+    "duration": "المدة",
+    "capacity": "السعة",
+    "available": "متاح",
+    "soldOut": "نفذت الكمية",
+    "description": "الوصف",
+    "provider": "مقدم الخدمة",
+    "location": "الموقع",
+    "schedule": "الجدول",
+    "reviews": "التقييمات",
+    "perSession": "لكل جلسة",
+    "minutes": "دقيقة",
+    "hour": "ساعة",
+    "hours": "ساعات"
+  },
+  "booking": {
+    "title": "حجز الخدمة",
+    "selectDate": "اختر التاريخ",
+    "selectTime": "اختر الوقت",
+    "participants": "عدد المشاركين",
+    "totalPrice": "السعر الإجمالي",
+    "advancePayment": "الدفع المسبق",
+    "confirmBooking": "تأكيد الحجز",
+    "bookingConfirmed": "تم تأكيد الحجز!",
+    "bookingPending": "الحجز قيد الانتظار",
+    "bookingCancelled": "تم إلغاء الحجز",
+    "myBookings": "حجوزاتي",
+    "noBookings": "لا توجد حجوزات بعد",
+    "upcoming": "القادمة",
+    "past": "السابقة",
+    "cancelled": "الملغاة"
+  },
+  "provider": {
+    "dashboard": "لوحة تحكم مقدم الخدمة",
+    "myServices": "خدماتي",
+    "addService": "إضافة خدمة",
+    "editService": "تعديل الخدمة",
+    "manageAvailability": "إدارة التوفر",
+    "earnings": "الأرباح",
+    "requests": "طلبات الحجز",
+    "approve": "موافقة",
+    "decline": "رفض",
+    "noServices": "لا توجد خدمات بعد",
+    "createFirst": "أنشئ خدمتك الأولى"
+  },
+  "role": {
+    "seeker": "الباحث عن الخدمة",
+    "provider": "مقدم الخدمة",
+    "switchTo": "التبديل إلى"
+  },
+  "views": {
+    "list": "قائمة",
+    "map": "خريطة",
+    "calendar": "تقويم"
+  },
+  "landing": {
+    "hero": "ابحث عن الخدمة المثالية لك",
+    "heroSubtitle": "تواصل مع مقدمي الخدمات المحليين للصحة والعافية والتعليم والترفيه",
+    "howItWorks": "كيف يعمل",
+    "step1Title": "ابحث",
+    "step1Description": "ابحث عن الخدمات القريبة منك بناءً على تفضيلاتك",
+    "step2Title": "احجز",
+    "step2Description": "اختر الوقت المناسب لك",
+    "step3Title": "استمتع",
+    "step3Description": "استمتع بخدمات عالية الجودة من مقدمين موثوقين"
+  },
+  "errors": {
+    "somethingWentWrong": "حدث خطأ ما",
+    "tryAgain": "يرجى المحاولة مرة أخرى",
+    "notFound": "غير موجود",
+    "unauthorized": "يرجى تسجيل الدخول للمتابعة",
+    "networkError": "خطأ في الشبكة. يرجى التحقق من اتصالك."
+  }
+}

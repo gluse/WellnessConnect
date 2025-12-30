@@ -1,0 +1,138 @@
+{
+  "common": {
+    "search": "Rechercher",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "back": "Retour",
+    "next": "Suivant",
+    "submit": "Soumettre",
+    "close": "Fermer"
+  },
+  "nav": {
+    "home": "Accueil",
+    "services": "Services",
+    "bookings": "Réservations",
+    "calendar": "Calendrier",
+    "profile": "Profil",
+    "logout": "Déconnexion",
+    "login": "Connexion",
+    "getStarted": "Commencer"
+  },
+  "home": {
+    "title": "Trouvez des Services Près de Vous",
+    "subtitle": "Découvrez des services de santé, bien-être, éducation et divertissement dans votre région",
+    "searchPlaceholder": "Rechercher par nom ou description...",
+    "noServices": "Aucun service trouvé",
+    "noServicesDescription": "Essayez d'ajuster vos filtres ou de chercher dans une autre zone"
+  },
+  "filters": {
+    "title": "Filtres",
+    "searchServices": "Rechercher des Services",
+    "category": "Catégorie",
+    "allCategories": "Toutes les Catégories",
+    "location": "Emplacement",
+    "locationPlaceholder": "Entrez une adresse ou une ville",
+    "useCurrentLocation": "Utiliser la position actuelle",
+    "distance": "Distance",
+    "km": "km",
+    "date": "Date",
+    "serviceType": "Type de Service",
+    "allTypes": "Tous les Types",
+    "oneToOne": "Individuel",
+    "group": "Groupe",
+    "ageGroup": "Groupe d'Âge",
+    "clearFilters": "Effacer les Filtres"
+  },
+  "categories": {
+    "health_wellness": "Santé et Bien-être",
+    "education": "Éducation",
+    "entertainment": "Divertissement"
+  },
+  "ageGroups": {
+    "children": "Enfants (0-12)",
+    "teenagers": "Adolescents (13-17)",
+    "adults": "Adultes (18-64)",
+    "seniors": "Seniors (65+)"
+  },
+  "service": {
+    "bookNow": "Réserver Maintenant",
+    "viewDetails": "Voir les Détails",
+    "price": "Prix",
+    "duration": "Durée",
+    "capacity": "Capacité",
+    "available": "disponible",
+    "soldOut": "Complet",
+    "description": "Description",
+    "provider": "Prestataire",
+    "location": "Emplacement",
+    "schedule": "Horaire",
+    "reviews": "Avis",
+    "perSession": "par séance",
+    "minutes": "minutes",
+    "hour": "heure",
+    "hours": "heures"
+  },
+  "booking": {
+    "title": "Réserver un Service",
+    "selectDate": "Sélectionner la Date",
+    "selectTime": "Sélectionner l'Heure",
+    "participants": "Nombre de Participants",
+    "totalPrice": "Prix Total",
+    "advancePayment": "Acompte",
+    "confirmBooking": "Confirmer la Réservation",
+    "bookingConfirmed": "Réservation Confirmée!",
+    "bookingPending": "Réservation en Attente",
+    "bookingCancelled": "Réservation Annulée",
+    "myBookings": "Mes Réservations",
+    "noBookings": "Pas encore de réservations",
+    "upcoming": "À Venir",
+    "past": "Passées",
+    "cancelled": "Annulées"
+  },
+  "provider": {
+    "dashboard": "Tableau de Bord Prestataire",
+    "myServices": "Mes Services",
+    "addService": "Ajouter un Service",
+    "editService": "Modifier le Service",
+    "manageAvailability": "Gérer la Disponibilité",
+    "earnings": "Revenus",
+    "requests": "Demandes de Réservation",
+    "approve": "Approuver",
+    "decline": "Refuser",
+    "noServices": "Pas encore de services",
+    "createFirst": "Créez votre premier service"
+  },
+  "role": {
+    "seeker": "Chercheur de Services",
+    "provider": "Prestataire de Services",
+    "switchTo": "Passer à"
+  },
+  "views": {
+    "list": "Liste",
+    "map": "Carte",
+    "calendar": "Calendrier"
+  },
+  "landing": {
+    "hero": "Trouvez le Service Parfait pour Vous",
+    "heroSubtitle": "Connectez-vous avec des prestataires locaux de santé, bien-être, éducation et divertissement",
+    "howItWorks": "Comment Ça Marche",
+    "step1Title": "Rechercher",
+    "step1Description": "Trouvez des services près de vous selon vos préférences",
+    "step2Title": "Réserver",
+    "step2Description": "Choisissez un horaire qui vous convient",
+    "step3Title": "Profiter",
+    "step3Description": "Profitez de services de qualité de prestataires vérifiés"
+  },
+  "errors": {
+    "somethingWentWrong": "Une erreur s'est produite",
+    "tryAgain": "Veuillez réessayer",
+    "notFound": "Non trouvé",
+    "unauthorized": "Veuillez vous connecter pour continuer",
+    "networkError": "Erreur réseau. Veuillez vérifier votre connexion."
+  }
+}
