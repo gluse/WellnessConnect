@@ -56,6 +56,7 @@ export interface IStorage {
     longitude?: number;
     radius?: number;
     date?: string;
+    searchQuery?: string;
   }): Promise<ServiceWithProvider[]>;
 
   // Booking operations
@@ -158,6 +159,7 @@ export class DatabaseStorage implements IStorage {
     longitude?: number;
     radius?: number;
     date?: string;
+    searchQuery?: string;
   }): Promise<ServiceWithProvider[]> {
     const conditions = [eq(services.isActive, true)];
 
@@ -167,6 +169,14 @@ export class DatabaseStorage implements IStorage {
 
     if (filters.serviceType) {
       conditions.push(eq(services.serviceType, filters.serviceType as any));
+    }
+
+    // Search by name or description (case-insensitive)
+    if (filters.searchQuery && filters.searchQuery.trim()) {
+      const searchTerm = `%${filters.searchQuery.trim().toLowerCase()}%`;
+      conditions.push(
+        sql`(LOWER(${services.name}) LIKE ${searchTerm} OR LOWER(${services.description}) LIKE ${searchTerm})`
+      );
     }
 
     const results = await db

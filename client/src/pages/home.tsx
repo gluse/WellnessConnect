@@ -27,13 +27,14 @@ export default function Home() {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [locationName, setLocationName] = useState<string>("San Francisco, CA");
+  const [locationName, setLocationName] = useState<string>("");
   const [filters, setFilters] = useState({
     category: "health_wellness",
     ageGroups: [] as string[],
     serviceType: "",
     distance: 5,
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    searchQuery: ""
   });
 
   // Update user role mutation
@@ -165,6 +166,7 @@ export default function Home() {
         filters.ageGroups.forEach(age => params.append("ageGroups", age));
       }
       if (filters.date) params.append("date", filters.date);
+      if (filters.searchQuery) params.append("searchQuery", filters.searchQuery);
       if (userLocation) {
         params.append("latitude", userLocation.lat.toString());
         params.append("longitude", userLocation.lng.toString());

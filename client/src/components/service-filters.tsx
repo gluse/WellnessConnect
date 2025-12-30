@@ -13,6 +13,7 @@ interface ServiceFiltersProps {
     serviceType: string;
     distance: number;
     date: string;
+    searchQuery: string;
   };
   onFiltersChange: (filters: any) => void;
   locationName: string;
@@ -75,6 +76,21 @@ export default function ServiceFilters({
 
   return (
     <div className="p-4 space-y-4">
+      {/* Search by Name/Description */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium text-neutral-700">Search Services</Label>
+        <div className="relative">
+          <Search className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+          <Input 
+            placeholder="Search by name or description..." 
+            className="pl-10"
+            value={filters.searchQuery || ""}
+            onChange={(e) => onFiltersChange({ ...filters, searchQuery: e.target.value })}
+            data-testid="input-search-query"
+          />
+        </div>
+      </div>
+
       {/* Location Input */}
       <div className="space-y-2">
         <Label className="text-sm font-medium text-neutral-700">Location</Label>

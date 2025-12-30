@@ -221,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/services/search', async (req, res) => {
     try {
-      const { category, ageGroups, serviceType, latitude, longitude, radius, date } = req.query;
+      const { category, ageGroups, serviceType, latitude, longitude, radius, date, searchQuery } = req.query;
       
       const filters: any = {};
       if (category) filters.category = category;
@@ -231,6 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (longitude) filters.longitude = parseFloat(longitude as string);
       if (radius) filters.radius = parseFloat(radius as string);
       if (date) filters.date = date as string;
+      if (searchQuery) filters.searchQuery = searchQuery as string;
 
       const services = await storage.searchServices(filters);
       res.json(services);
