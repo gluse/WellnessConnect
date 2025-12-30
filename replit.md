@@ -70,6 +70,17 @@ WellnessFind is a full-stack web application that connects service seekers with 
 - **API Key Management**: Secure backend endpoint for Google Maps API key delivery
 - **API Requirements**: Google Maps API key must have Geocoding API enabled and proper restrictions configured
 
+### Multi-Language Support
+- **UI Internationalization**: react-i18next with 10 languages (English default, Spanish, Chinese, Hindi, Arabic, Portuguese, Russian, Japanese, German, French)
+- **Language Detection**: Automatic browser language detection with localStorage persistence
+- **Language Picker**: Header dropdown for manual language selection
+- **Translation Files**: Located in `client/src/lib/i18n.ts` - organized by language code
+- **AI-Powered Search**: OpenAI text-embedding-3-small for cross-language semantic search
+- **Embeddings Table**: `service_embeddings` table stores 1536-dimension vectors for each service
+- **Search Flow**: User query → embedding generation → cosine similarity → ranked results
+- **Fallback Behavior**: Falls back to text-based search if embeddings unavailable or no semantic matches
+- **Embedding Generation**: Embeddings auto-generated on service creation; POST `/api/admin/generate-embeddings` for providers to bulk-regenerate their own service embeddings
+
 ## Data Flow
 
 ### Service Discovery

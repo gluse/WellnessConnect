@@ -202,6 +202,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const service = await storage.createService(serviceData);
+      
+      // Generate embedding for the new service asynchronously
+      try {
+        const textContent = `${service.name} ${service.description || ''} ${service.category}`.trim();
+        const embedding = await generateEmbedding(textContent);
+        await storage.upsertServiceEmbedding({
+          serviceId: service.id,
+          embedding,
+          textContent,
+        });
+      } catch (embeddingError) {
+        console.error("Failed to generate embedding for new service:", embeddingError);
+        // Continue - embedding generation failure shouldn't block service creation
+      }
+      
       res.json(service);
     } catch (error) {
       console.error("Error creating service:", error);
@@ -362,15 +377,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Bulk generate embeddings for all services (admin endpoint)
+  // Only providers can generate embeddings for their own services
   app.post('/api/admin/generate-embeddings', isAuthenticated, async (req: any, res) => {
     try {
-      // Get all active services
-      const allServices = await storage.searchServices({});
+      const userId = req.user.claims.sub;
+      const user = await storage.getUserById(userId);
+      
+      // Only allow providers to generate embeddings for their own services
+      if (!user || user.role !== 'provider') {
+        return res.status(403).json({ message: "Only providers can generate embeddings" });
+      }
+      
+      // Get only this provider's services
+      const providerServices = await storage.getServicesByProvider(userId);
       
       let generated = 0;
       let failed = 0;
       
-      for (const service of allServices) {
+      for (const service of providerServices) {
         try {
           const textContent = `${service.name} ${service.description || ''} ${service.category}`.trim();
           const embedding = await generateEmbedding(textContent);
@@ -388,10 +412,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json({ 
-        message: "Embedding generation complete",
+        message: "Embedding generation complete for your services",
         generated,
         failed,
-        total: allServices.length
+        total: providerServices.length
       });
     } catch (error) {
       console.error("Error generating embeddings:", error);
