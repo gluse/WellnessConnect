@@ -57,6 +57,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     daysOfWeek: [] as number[],
     startTime: "09:00",
     endTime: "17:00",
+    slotDuration: 60,
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     recurrenceEndType: "never" as "never" | "after_events" | "on_date",
     recurrenceEndValue: "",
@@ -237,6 +238,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
         daysOfWeek: [],
         startTime: "09:00",
         endTime: "17:00",
+        slotDuration: 60,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         recurrenceEndType: "never",
         recurrenceEndValue: "",
@@ -1194,6 +1196,23 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                       data-testid="input-end-time"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="slotDuration">Booking Slot Duration</Label>
+                  <select
+                    id="slotDuration"
+                    className="w-full p-2 border rounded-md mt-2"
+                    value={newSchedule.slotDuration}
+                    onChange={(e) => setNewSchedule(prev => ({ ...prev, slotDuration: parseInt(e.target.value) }))}
+                    data-testid="select-slot-duration"
+                  >
+                    <option value={30}>30 minutes</option>
+                    <option value={60}>60 minutes (1 hour)</option>
+                    <option value={90}>90 minutes (1.5 hours)</option>
+                    <option value={120}>120 minutes (2 hours)</option>
+                  </select>
+                  <p className="text-xs text-neutral-500 mt-1">How long each bookable time slot should be</p>
                 </div>
 
                 <div>
