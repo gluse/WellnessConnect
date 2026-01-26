@@ -576,6 +576,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/availability/slots/:serviceId', async (req, res) => {
+    try {
+      const serviceId = parseInt(req.params.serviceId);
+      const dateStr = req.query.date as string;
+      const requestedDuration = req.query.duration ? parseInt(req.query.duration as string) : undefined;
+
+      if (!dateStr) {
+        return res.status(400).json({ message: "Date parameter is required" });
+      }
+
+      const date = new Date(dateStr);
+      const dayOfWeek = date.getDay();
+
+      const service = await storage.getServiceById(serviceId);
+      if (!service) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+
+      const availabilitySchedules = await storage.getAvailabilityByService(serviceId);
+      const existingBookings = await storage.getBookingsForServiceOnDate(serviceId, date);
+
+      const slots: Array<{
+        startTime: string;
+        endTime: string;
+        available: boolean;
+        slotDuration: number;
+      }> = [];
+
+      for (const schedule of availabilitySchedules) {
+        let isApplicable = false;
+
+        if (schedule.scheduleType === "specific") {
+          if (schedule.specificDate) {
+            const scheduleDate = new Date(schedule.specificDate);
+            isApplicable =
+              scheduleDate.getFullYear() === date.getFullYear() &&
+              scheduleDate.getMonth() === date.getMonth() &&
+              scheduleDate.getDate() === date.getDate();
+          }
+        } else if (schedule.scheduleType === "recurring") {
+          if (schedule.daysOfWeek && schedule.daysOfWeek.includes(dayOfWeek)) {
+            isApplicable = true;
+          }
+        }
+
+        if (!isApplicable) continue;
+
+        const slotDuration = requestedDuration || schedule.slotDuration || service.duration || 60;
+        const [startHour, startMin] = schedule.startTime.split(":").map(Number);
+        const [endHour, endMin] = schedule.endTime.split(":").map(Number);
+
+        const scheduleStartMinutes = startHour * 60 + startMin;
+        const scheduleEndMinutes = endHour * 60 + endMin;
+
+        for (let currentMinutes = scheduleStartMinutes; currentMinutes + slotDuration <= scheduleEndMinutes; currentMinutes += slotDuration) {
+          const slotStartHour = Math.floor(currentMinutes / 60);
+          const slotStartMin = currentMinutes % 60;
+          const slotEndMinutes = currentMinutes + slotDuration;
+          const slotEndHour = Math.floor(slotEndMinutes / 60);
+          const slotEndMin = slotEndMinutes % 60;
+
+          const slotStart = `${slotStartHour.toString().padStart(2, "0")}:${slotStartMin.toString().padStart(2, "0")}`;
+          const slotEnd = `${slotEndHour.toString().padStart(2, "0")}:${slotEndMin.toString().padStart(2, "0")}`;
+
+          const slotStartDateTime = new Date(date);
+          slotStartDateTime.setHours(slotStartHour, slotStartMin, 0, 0);
+          const slotEndDateTime = new Date(date);
+          slotEndDateTime.setHours(slotEndHour, slotEndMin, 0, 0);
+
+          const hasOverlap = existingBookings.some((booking) => {
+            const bookingStart = new Date(booking.scheduledDate);
+            const bookingDurationMins = booking.bookingDuration || service.duration || 60;
+            const bookingEnd = new Date(bookingStart.getTime() + bookingDurationMins * 60000);
+
+            return slotStartDateTime < bookingEnd && slotEndDateTime > bookingStart;
+          });
+
+          slots.push({
+            startTime: slotStart,
+            endTime: slotEnd,
+            available: !hasOverlap,
+            slotDuration,
+          });
+        }
+      }
+
+      slots.sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+      res.json({
+        date: dateStr,
+        serviceId,
+        serviceDuration: service.duration,
+        slots,
+        totalSlots: slots.length,
+        availableSlots: slots.filter((s) => s.available).length,
+      });
+    } catch (error) {
+      console.error("Error fetching available slots:", error);
+      res.status(500).json({ message: "Failed to fetch available slots" });
+    }
+  });
+
   app.get('/api/availability/provider', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

@@ -69,6 +69,7 @@ export interface IStorage {
   getBookingById(id: number): Promise<BookingWithDetails | undefined>;
   updateBookingStatus(id: number, status: string): Promise<Booking>;
   updateBookingPayment(id: number, paymentStatus: string): Promise<Booking>;
+  getBookingsForServiceOnDate(serviceId: number, date: Date): Promise<Booking[]>;
 
   // Availability operations
   createAvailability(availability: InsertAvailability): Promise<Availability>;
@@ -315,6 +316,26 @@ export class DatabaseStorage implements IStorage {
       .where(eq(bookings.id, id))
       .returning();
     return booking;
+  }
+
+  async getBookingsForServiceOnDate(serviceId: number, date: Date): Promise<Booking[]> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    return await db
+      .select()
+      .from(bookings)
+      .where(
+        and(
+          eq(bookings.serviceId, serviceId),
+          gte(bookings.scheduledDate, startOfDay),
+          lte(bookings.scheduledDate, endOfDay),
+          ne(bookings.status, "cancelled")
+        )
+      )
+      .orderBy(asc(bookings.scheduledDate));
   }
 
   // Availability operations
