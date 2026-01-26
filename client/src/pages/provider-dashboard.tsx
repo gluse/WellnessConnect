@@ -66,18 +66,24 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
   const { data: services = [], isLoading: servicesLoading } = useQuery({
     queryKey: ["/api/services/provider"],
     retry: false,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch provider bookings
   const { data: bookings = [], isLoading: bookingsLoading } = useQuery({
     queryKey: ["/api/bookings/provider"],
     retry: false,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch provider availability schedules
   const { data: schedules = [], isLoading: schedulesLoading } = useQuery({
     queryKey: ["/api/availability/provider"],
     retry: false,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   // Create service mutation
