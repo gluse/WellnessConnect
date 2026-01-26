@@ -71,6 +71,7 @@ export const bookings = pgTable("bookings", {
   providerId: varchar("provider_id").references(() => users.id).notNull(),
   participantCount: integer("participant_count").default(1),
   scheduledDate: timestamp("scheduled_date").notNull(),
+  bookingDuration: integer("booking_duration"), // Duration in minutes for this specific booking
   status: varchar("status", { enum: ["pending", "confirmed", "cancelled", "completed"] }).default("pending"),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   advanceAmount: decimal("advance_amount", { precision: 10, scale: 2 }).notNull(),
@@ -108,6 +109,9 @@ export const availability = pgTable("availability", {
   // Time slots (HH:MM format)
   startTime: varchar("start_time").notNull(),
   endTime: varchar("end_time").notNull(),
+  
+  // Slot duration in minutes (for dividing working hours into bookable slots)
+  slotDuration: integer("slot_duration").default(60), // 30, 60, 90, or custom
   
   // Timezone
   timezone: varchar("timezone").notNull().default("UTC"),
