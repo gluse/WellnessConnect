@@ -381,10 +381,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/generate-embeddings', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await storage.getUserById(userId);
+      const user = await storage.getUser(userId);
       
       // Only allow providers to generate embeddings for their own services
-      if (!user || user.role !== 'provider') {
+      if (!user || user.currentRole !== 'provider') {
         return res.status(403).json({ message: "Only providers can generate embeddings" });
       }
       
@@ -486,6 +486,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         seekerId: userId,
       });
+
+      const service = await storage.getServiceById(bookingData.serviceId);
+      if (!service) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+
+      const bookingDate = new Date(bookingData.scheduledDate);
+      const existingBookings = await storage.getBookingsForServiceOnDate(bookingData.serviceId, bookingDate);
+
+      const bookingDuration = bookingData.bookingDuration || service.duration || 60;
+      const bookingStart = bookingDate;
+      const bookingEnd = new Date(bookingStart.getTime() + bookingDuration * 60000);
+
+      const hasConflict = existingBookings.some((existing) => {
+        const existingStart = new Date(existing.scheduledDate);
+        const existingDuration = existing.bookingDuration || service.duration || 60;
+        const existingEnd = new Date(existingStart.getTime() + existingDuration * 60000);
+
+        return bookingStart < existingEnd && bookingEnd > existingStart;
+      });
+
+      if (hasConflict) {
+        return res.status(409).json({ message: "This time slot is no longer available. Please choose another time." });
+      }
       
       const booking = await storage.createBooking(bookingData);
       res.json(booking);

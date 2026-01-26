@@ -51,6 +51,9 @@ WellnessFind is a full-stack web application that connects service seekers with 
 - **Payment Integration**: Stripe-ready infrastructure (components present)
 - **Status Tracking**: Comprehensive booking lifecycle management
 - **Notifications**: Toast-based user feedback system
+- **Time Slot Booking**: Customers select from available time slots based on provider schedules
+- **Slot Duration**: Configurable slot durations (30, 60, 90, 120 minutes) per schedule
+- **Overlap Prevention**: Server-side validation prevents double-booking of time slots
 
 ### User Interface
 - **Design System**: Consistent component library with theme support
@@ -90,11 +93,14 @@ WellnessFind is a full-stack web application that connects service seekers with 
 4. Frontend displays cards with booking options
 
 ### Booking Process
-1. User selects service and specifies requirements
-2. System calculates pricing and advance payment
-3. Booking created with pending status
-4. Provider receives notification for manual approval
-5. Payment processing initiated upon confirmation
+1. User selects service and chooses a date
+2. System fetches available time slots (based on provider's schedule minus existing bookings)
+3. User selects an available time slot
+4. System calculates pricing and advance payment
+5. Booking created with selected time slot and duration
+6. Server validates no overlapping bookings exist before confirming
+7. Provider receives notification for manual approval (or instant confirmation if enabled)
+8. Payment processing initiated upon confirmation
 
 ### Provider Dashboard
 1. Providers manage service listings and availability
@@ -144,6 +150,7 @@ WellnessFind is a full-stack web application that connects service seekers with 
 
 ```
 Changelog:
+- January 26, 2026. Added recurring schedule with time slot booking: providers can set slot duration (30, 60, 90, 120 min) when creating schedules; customers see only available time slots when booking; system automatically calculates available slots by subtracting existing bookings from schedule; server-side validation prevents double-booking; booking modal now fetches real-time availability
 - December 30, 2025. Added service search by name/description: new search input field at top of filters; removed default "San Francisco, CA" location (now starts empty); search is case-insensitive and filters services in real-time
 - November 15, 2025. Added address search functionality: users can now type any address (city, street, etc.) to search for nearby services; location input is now editable with search button; implemented client-side geocoding using Google Maps JavaScript API; added loading states and error handling; supports Enter key for quick search; NOTE: Requires Google Maps API key with Geocoding API enabled and proper restrictions
 - October 09, 2025 (Update 4). Added calendar feature with timezone support: created CalendarView component showing monthly calendar of bookings and availability schedules; integrated calendar into provider dashboard for managing services; added Calendar tab to seeker home page for viewing bookings; calendar displays color-coded events (confirmed, pending, cancelled, completed); added image upload functionality using Replit Object Storage with ObjectUploader component; added external URL field to service creation form for linking to provider websites

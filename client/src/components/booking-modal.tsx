@@ -99,7 +99,7 @@ export default function BookingModal({ service, onClose }: BookingModalProps) {
       });
       onClose();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
@@ -109,6 +109,16 @@ export default function BookingModal({ service, onClose }: BookingModalProps) {
         setTimeout(() => {
           window.location.href = "/api/login";
         }, 500);
+        return;
+      }
+      if (error?.message?.includes('409') || error?.message?.includes('no longer available')) {
+        queryClient.invalidateQueries({ queryKey: ['/api/availability/slots', service.id] });
+        setSelectedSlot(null);
+        toast({
+          title: "Slot No Longer Available",
+          description: "This time slot was just booked by someone else. Please select another time.",
+          variant: "destructive",
+        });
         return;
       }
       toast({
