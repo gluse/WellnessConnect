@@ -91,10 +91,10 @@ export const serviceEmbeddings = pgTable("service_embeddings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Availability table
+// Availability table - now represents provider working hours (not tied to specific services)
 export const availability = pgTable("availability", {
   id: serial("id").primaryKey(),
-  serviceId: integer("service_id").references(() => services.id).notNull(),
+  serviceId: integer("service_id").references(() => services.id), // Optional - null means applies to all services
   providerId: varchar("provider_id").references(() => users.id).notNull(),
   
   // Schedule type
@@ -106,12 +106,15 @@ export const availability = pgTable("availability", {
   // For recurring schedules
   daysOfWeek: jsonb("days_of_week").$type<number[]>(), // [0-6] where 0=Sunday
   
-  // Time slots (HH:MM format)
+  // Time slots (HH:MM format) - working hours
   startTime: varchar("start_time").notNull(),
   endTime: varchar("end_time").notNull(),
   
-  // Slot duration in minutes (for dividing working hours into bookable slots)
-  slotDuration: integer("slot_duration").default(60), // 30, 60, 90, or custom
+  // Break times within working hours (e.g., lunch break)
+  breaks: jsonb("breaks").$type<{startTime: string, endTime: string}[]>(), // [{startTime: "13:00", endTime: "14:00"}]
+  
+  // Slot duration in minutes - kept for backward compatibility but service duration takes precedence
+  slotDuration: integer("slot_duration").default(60),
   
   // Timezone
   timezone: varchar("timezone").notNull().default("UTC"),

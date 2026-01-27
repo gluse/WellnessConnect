@@ -52,12 +52,13 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     externalUrl: "",
   });
   const [newSchedule, setNewSchedule] = useState({
-    serviceId: 0,
+    serviceId: null as number | null, // null = applies to all services
     scheduleType: "specific" as "specific" | "recurring",
     specificDate: "",
     daysOfWeek: [] as number[],
     startTime: "09:00",
-    endTime: "17:00",
+    endTime: "18:00",
+    breaks: [] as {startTime: string, endTime: string}[],
     slotDuration: 60,
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     recurrenceEndType: "never" as "never" | "after_events" | "on_date",
@@ -233,20 +234,21 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       queryClient.invalidateQueries({ queryKey: ["/api/availability/provider"] });
       setShowScheduleModal(false);
       setNewSchedule({
-        serviceId: 0,
+        serviceId: null,
         scheduleType: "specific",
         specificDate: "",
         daysOfWeek: [],
         startTime: "09:00",
-        endTime: "17:00",
+        endTime: "18:00",
+        breaks: [],
         slotDuration: 60,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         recurrenceEndType: "never",
         recurrenceEndValue: "",
       });
       toast({
-        title: "Schedule Created",
-        description: "Availability schedule has been added",
+        title: "Working Hours Created",
+        description: "Your availability schedule has been added",
       });
     },
     onError: (error) => {
@@ -432,12 +434,13 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
 
   const resetScheduleForm = () => {
     setNewSchedule({
-      serviceId: 0,
+      serviceId: null,
       scheduleType: "specific",
       specificDate: "",
       daysOfWeek: [],
       startTime: "09:00",
-      endTime: "17:00",
+      endTime: "18:00",
+      breaks: [],
       slotDuration: 60,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       recurrenceEndType: "never",
@@ -448,12 +451,13 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
   const handleEditSchedule = (schedule: any) => {
     setEditingSchedule(schedule);
     setNewSchedule({
-      serviceId: schedule.serviceId,
+      serviceId: schedule.serviceId || null,
       scheduleType: schedule.scheduleType,
       specificDate: schedule.specificDate ? new Date(schedule.specificDate).toISOString().split('T')[0] : "",
       daysOfWeek: schedule.daysOfWeek || [],
       startTime: schedule.startTime,
       endTime: schedule.endTime,
+      breaks: schedule.breaks || [],
       slotDuration: schedule.slotDuration || 60,
       timezone: schedule.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
       recurrenceEndType: "never",
@@ -463,20 +467,32 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
   };
 
   const handleSaveSchedule = () => {
-    if (newSchedule.serviceId === 0) {
-      toast({
-        title: "Error",
-        description: "Please select a service",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (editingSchedule) {
       updateAvailabilityMutation.mutate({ id: editingSchedule.id, data: newSchedule });
     } else {
       createAvailabilityMutation.mutate(newSchedule);
     }
+  };
+
+  const handleAddBreak = () => {
+    setNewSchedule(prev => ({
+      ...prev,
+      breaks: [...prev.breaks, { startTime: "13:00", endTime: "14:00" }]
+    }));
+  };
+
+  const handleRemoveBreak = (index: number) => {
+    setNewSchedule(prev => ({
+      ...prev,
+      breaks: prev.breaks.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleUpdateBreak = (index: number, field: 'startTime' | 'endTime', value: string) => {
+    setNewSchedule(prev => ({
+      ...prev,
+      breaks: prev.breaks.map((b, i) => i === index ? { ...b, [field]: value } : b)
+    }));
   };
 
   const handleDayToggle = (day: number) => {
@@ -1127,15 +1143,21 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                   <select
                     id="scheduleService"
                     className="w-full p-2 border rounded-md"
-                    value={newSchedule.serviceId}
-                    onChange={(e) => setNewSchedule(prev => ({ ...prev, serviceId: parseInt(e.target.value) }))}
+                    value={newSchedule.serviceId ?? "all"}
+                    onChange={(e) => setNewSchedule(prev => ({ 
+                      ...prev, 
+                      serviceId: e.target.value === "all" ? null : parseInt(e.target.value) 
+                    }))}
                     data-testid="select-service"
                   >
-                    <option value={0}>Select a service...</option>
+                    <option value="all">All Services (Working Hours)</option>
                     {(services as Service[]).map((service: Service) => (
                       <option key={service.id} value={service.id}>{service.name}</option>
                     ))}
                   </select>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Select "All Services" to set your general working hours
+                  </p>
                 </div>
 
                 <div>
@@ -1261,20 +1283,50 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                 </div>
 
                 <div>
-                  <Label htmlFor="slotDuration">Booking Slot Duration</Label>
-                  <select
-                    id="slotDuration"
-                    className="w-full p-2 border rounded-md mt-2"
-                    value={newSchedule.slotDuration}
-                    onChange={(e) => setNewSchedule(prev => ({ ...prev, slotDuration: parseInt(e.target.value) }))}
-                    data-testid="select-slot-duration"
-                  >
-                    <option value={30}>30 minutes</option>
-                    <option value={60}>60 minutes (1 hour)</option>
-                    <option value={90}>90 minutes (1.5 hours)</option>
-                    <option value={120}>120 minutes (2 hours)</option>
-                  </select>
-                  <p className="text-xs text-neutral-500 mt-1">How long each bookable time slot should be</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>Break Times</Label>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleAddBreak}
+                      data-testid="button-add-break"
+                    >
+                      <Plus className="w-4 h-4 mr-1" /> Add Break
+                    </Button>
+                  </div>
+                  {newSchedule.breaks.length === 0 ? (
+                    <p className="text-xs text-neutral-500">No breaks added. Add breaks like lunch time.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {newSchedule.breaks.map((breakTime, index) => (
+                        <div key={index} className="flex items-center gap-2 p-2 border rounded-md bg-neutral-50">
+                          <Input
+                            type="time"
+                            value={breakTime.startTime}
+                            onChange={(e) => handleUpdateBreak(index, 'startTime', e.target.value)}
+                            className="flex-1"
+                            data-testid={`input-break-start-${index}`}
+                          />
+                          <span className="text-neutral-500">to</span>
+                          <Input
+                            type="time"
+                            value={breakTime.endTime}
+                            onChange={(e) => handleUpdateBreak(index, 'endTime', e.target.value)}
+                            className="flex-1"
+                            data-testid={`input-break-end-${index}`}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveBreak(index)}
+                            data-testid={`button-remove-break-${index}`}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
