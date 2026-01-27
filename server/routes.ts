@@ -566,15 +566,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Verify service ownership
-      const service = await storage.getServiceById(req.body.serviceId);
-      if (!service || service.providerId !== userId) {
-        return res.status(403).json({ message: "Unauthorized - service not found or not owned by you" });
+      // Normalize serviceId: treat empty string, "null", undefined as null
+      const rawServiceId = req.body.serviceId;
+      const serviceId = (rawServiceId && rawServiceId !== "null" && rawServiceId !== "") 
+        ? parseInt(rawServiceId, 10) 
+        : null;
+      
+      // Verify service ownership only if serviceId is provided
+      // When serviceId is null, this is a general working hours schedule
+      if (serviceId !== null) {
+        const service = await storage.getServiceById(serviceId);
+        if (!service || service.providerId !== userId) {
+          return res.status(403).json({ message: "Unauthorized - service not found or not owned by you" });
+        }
       }
       
       // Parse and convert data
       const availabilityData = {
         ...req.body,
+        serviceId: serviceId, // Use normalized value
         providerId: userId,
         specificDate: req.body.specificDate ? new Date(req.body.specificDate) : null,
         daysOfWeek: req.body.daysOfWeek || null,
