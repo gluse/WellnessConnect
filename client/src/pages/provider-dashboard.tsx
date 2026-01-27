@@ -1378,17 +1378,29 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                         {(schedules as any[]).map((schedule: any) => (
                           <div key={schedule.id} className="flex items-center justify-between p-3 border rounded-lg">
                             <div className="flex-1">
-                              <p className="font-medium text-sm">
-                                {schedule.scheduleType === "specific" ? "Specific" : "Recurring"}
+                              <div className="flex items-center gap-2">
+                                <Badge variant={schedule.serviceId ? "secondary" : "default"} className="text-xs">
+                                  {schedule.serviceId 
+                                    ? (services as Service[]).find(s => s.id === schedule.serviceId)?.name || "Service"
+                                    : "All Services"}
+                                </Badge>
+                                <span className="text-xs text-neutral-500">
+                                  {schedule.scheduleType === "specific" ? "Specific" : "Recurring"}
+                                </span>
+                              </div>
+                              <p className="text-sm mt-1">
+                                {schedule.startTime} - {schedule.endTime}
                                 {schedule.scheduleType === "recurring" && schedule.daysOfWeek && (
-                                  <span className="text-xs text-neutral-500 ml-2">
+                                  <span className="text-neutral-500 ml-2">
                                     ({["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].filter((_, i) => schedule.daysOfWeek.includes(i)).join(", ")})
                                   </span>
                                 )}
                               </p>
-                              <p className="text-xs text-neutral-600">
-                                {schedule.startTime} - {schedule.endTime} ({schedule.slotDuration || 60} min slots)
-                              </p>
+                              {schedule.breaks && schedule.breaks.length > 0 && (
+                                <p className="text-xs text-neutral-500 mt-1">
+                                  Breaks: {schedule.breaks.map((b: any) => `${b.startTime}-${b.endTime}`).join(", ")}
+                                </p>
+                              )}
                             </div>
                             <div className="flex gap-1">
                               <Button

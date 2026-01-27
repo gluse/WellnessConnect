@@ -70,6 +70,7 @@ export interface IStorage {
   updateBookingStatus(id: number, status: string): Promise<Booking>;
   updateBookingPayment(id: number, paymentStatus: string): Promise<Booking>;
   getBookingsForServiceOnDate(serviceId: number, date: Date): Promise<Booking[]>;
+  getBookingsForProviderOnDate(providerId: string, date: Date): Promise<Booking[]>;
 
   // Availability operations
   createAvailability(availability: InsertAvailability): Promise<Availability>;
@@ -330,6 +331,26 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(bookings.serviceId, serviceId),
+          gte(bookings.scheduledDate, startOfDay),
+          lte(bookings.scheduledDate, endOfDay),
+          ne(bookings.status, "cancelled")
+        )
+      )
+      .orderBy(asc(bookings.scheduledDate));
+  }
+
+  async getBookingsForProviderOnDate(providerId: string, date: Date): Promise<Booking[]> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    return await db
+      .select()
+      .from(bookings)
+      .where(
+        and(
+          eq(bookings.providerId, providerId),
           gte(bookings.scheduledDate, startOfDay),
           lte(bookings.scheduledDate, endOfDay),
           ne(bookings.status, "cancelled")

@@ -604,7 +604,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const serviceId = parseInt(req.params.serviceId);
       const dateStr = req.query.date as string;
-      const requestedDuration = req.query.duration ? parseInt(req.query.duration as string) : undefined;
 
       if (!dateStr) {
         return res.status(400).json({ message: "Date parameter is required" });
@@ -618,8 +617,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Service not found" });
       }
 
-      const availabilitySchedules = await storage.getAvailabilityByService(serviceId);
-      const existingBookings = await storage.getBookingsForServiceOnDate(serviceId, date);
+      // Get service-specific schedules AND provider's general working hours
+      const serviceSchedules = await storage.getAvailabilityByService(serviceId);
+      const providerSchedules = await storage.getAvailabilityByProvider(service.providerId);
+      
+      // Filter provider schedules to only include general working hours (serviceId is null)
+      const generalWorkingHours = providerSchedules.filter(s => s.serviceId === null);
+      
+      // Combine both types of schedules
+      const availabilitySchedules = [...serviceSchedules, ...generalWorkingHours];
+      
+      // Get all bookings for this provider on this date (not just this service)
+      const existingBookings = await storage.getBookingsForProviderOnDate(service.providerId, date);
+
+      // Use service duration for slot calculation
+      const slotDuration = service.duration || 60;
+
+      // Helper to check if time overlaps with breaks
+      const isInBreak = (slotStartMins: number, slotEndMins: number, breaks: {startTime: string, endTime: string}[] | null) => {
+        if (!breaks || breaks.length === 0) return false;
+        return breaks.some(brk => {
+          const [bStartH, bStartM] = brk.startTime.split(":").map(Number);
+          const [bEndH, bEndM] = brk.endTime.split(":").map(Number);
+          const breakStart = bStartH * 60 + bStartM;
+          const breakEnd = bEndH * 60 + bEndM;
+          // Slot overlaps with break if: slotStart < breakEnd AND slotEnd > breakStart
+          return slotStartMins < breakEnd && slotEndMins > breakStart;
+        });
+      };
 
       const slots: Array<{
         startTime: string;
@@ -647,31 +672,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         if (!isApplicable) continue;
 
-        const slotDuration = requestedDuration || schedule.slotDuration || service.duration || 60;
         const [startHour, startMin] = schedule.startTime.split(":").map(Number);
         const [endHour, endMin] = schedule.endTime.split(":").map(Number);
 
         const scheduleStartMinutes = startHour * 60 + startMin;
         const scheduleEndMinutes = endHour * 60 + endMin;
 
-        for (let currentMinutes = scheduleStartMinutes; currentMinutes + slotDuration <= scheduleEndMinutes; currentMinutes += slotDuration) {
+        // Generate slots in 15-minute increments, but check if service duration fits
+        for (let currentMinutes = scheduleStartMinutes; currentMinutes + slotDuration <= scheduleEndMinutes; currentMinutes += 15) {
           const slotStartHour = Math.floor(currentMinutes / 60);
           const slotStartMin = currentMinutes % 60;
           const slotEndMinutes = currentMinutes + slotDuration;
           const slotEndHour = Math.floor(slotEndMinutes / 60);
           const slotEndMin = slotEndMinutes % 60;
 
+          // Skip if slot overlaps with any break time
+          if (isInBreak(currentMinutes, slotEndMinutes, schedule.breaks as any)) {
+            continue;
+          }
+
           const slotStart = `${slotStartHour.toString().padStart(2, "0")}:${slotStartMin.toString().padStart(2, "0")}`;
           const slotEnd = `${slotEndHour.toString().padStart(2, "0")}:${slotEndMin.toString().padStart(2, "0")}`;
+
+          // Check if this slot already exists (from another schedule)
+          if (slots.some(s => s.startTime === slotStart)) {
+            continue;
+          }
 
           const slotStartDateTime = new Date(date);
           slotStartDateTime.setHours(slotStartHour, slotStartMin, 0, 0);
           const slotEndDateTime = new Date(date);
           slotEndDateTime.setHours(slotEndHour, slotEndMin, 0, 0);
 
+          // Check for overlap with any existing booking
           const hasOverlap = existingBookings.some((booking) => {
             const bookingStart = new Date(booking.scheduledDate);
-            const bookingDurationMins = booking.bookingDuration || service.duration || 60;
+            const bookingDurationMins = booking.bookingDuration || 60;
             const bookingEnd = new Date(bookingStart.getTime() + bookingDurationMins * 60000);
 
             return slotStartDateTime < bookingEnd && slotEndDateTime > bookingStart;
@@ -692,7 +728,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         date: dateStr,
         serviceId,
         serviceDuration: service.duration,
-        slots,
+        slots: slots.filter(s => s.available), // Only return available slots
         totalSlots: slots.length,
         availableSlots: slots.filter((s) => s.available).length,
       });
