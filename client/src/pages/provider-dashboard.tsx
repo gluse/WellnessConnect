@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, Plus, Calendar, DollarSign, Star, Users, Check, X, Image as ImageIcon, Link as LinkIcon, Sparkles } from "lucide-react";
+import { Heart, Plus, Calendar, DollarSign, Star, Users, Check, X, Image as ImageIcon, Link as LinkIcon, Sparkles, Pencil } from "lucide-react";
 import RoleSwitcher from "@/components/role-switcher";
 import BottomNavigation from "@/components/bottom-navigation";
 import { ObjectUploader } from "@/components/ObjectUploader";
@@ -32,6 +32,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
   const [showAddService, setShowAddService] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<any | null>(null);
   const [newService, setNewService] = useState({
     name: "",
     description: "",
@@ -272,6 +273,31 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     },
   });
 
+  // Update availability mutation
+  const updateAvailabilityMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await apiRequest("PATCH", `/api/availability/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/availability/provider"] });
+      setShowScheduleModal(false);
+      setEditingSchedule(null);
+      resetScheduleForm();
+      toast({
+        title: "Schedule Updated",
+        description: "Availability schedule has been updated",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update schedule",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Generate embeddings mutation for AI-powered search
   const generateEmbeddingsMutation = useMutation({
     mutationFn: async () => {
@@ -404,7 +430,39 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     updateBookingMutation.mutate({ bookingId, status: action });
   };
 
-  const handleCreateSchedule = () => {
+  const resetScheduleForm = () => {
+    setNewSchedule({
+      serviceId: 0,
+      scheduleType: "specific",
+      specificDate: "",
+      daysOfWeek: [],
+      startTime: "09:00",
+      endTime: "17:00",
+      slotDuration: 60,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      recurrenceEndType: "never",
+      recurrenceEndValue: "",
+    });
+  };
+
+  const handleEditSchedule = (schedule: any) => {
+    setEditingSchedule(schedule);
+    setNewSchedule({
+      serviceId: schedule.serviceId,
+      scheduleType: schedule.scheduleType,
+      specificDate: schedule.specificDate ? new Date(schedule.specificDate).toISOString().split('T')[0] : "",
+      daysOfWeek: schedule.daysOfWeek || [],
+      startTime: schedule.startTime,
+      endTime: schedule.endTime,
+      slotDuration: schedule.slotDuration || 60,
+      timezone: schedule.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+      recurrenceEndType: "never",
+      recurrenceEndValue: "",
+    });
+    setShowScheduleModal(true);
+  };
+
+  const handleSaveSchedule = () => {
     if (newSchedule.serviceId === 0) {
       toast({
         title: "Error",
@@ -414,7 +472,11 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       return;
     }
 
-    createAvailabilityMutation.mutate(newSchedule);
+    if (editingSchedule) {
+      updateAvailabilityMutation.mutate({ id: editingSchedule.id, data: newSchedule });
+    } else {
+      createAvailabilityMutation.mutate(newSchedule);
+    }
   };
 
   const handleDayToggle = (day: number) => {
@@ -1053,8 +1115,8 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
           <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
             <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 max-w-md mx-auto max-h-[80vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">Manage Availability</h2>
-                <Button variant="ghost" size="sm" onClick={() => setShowScheduleModal(false)} data-testid="button-close-schedule">
+                <h2 className="text-xl font-semibold">{editingSchedule ? "Edit Schedule" : "Manage Availability"}</h2>
+                <Button variant="ghost" size="sm" onClick={() => { setShowScheduleModal(false); setEditingSchedule(null); resetScheduleForm(); }} data-testid="button-close-schedule">
                   <X className="w-5 h-5" />
                 </Button>
               </div>
@@ -1233,18 +1295,25 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                   <Button 
                     variant="outline" 
                     className="flex-1"
-                    onClick={() => setShowScheduleModal(false)}
+                    onClick={() => {
+                      setShowScheduleModal(false);
+                      setEditingSchedule(null);
+                      resetScheduleForm();
+                    }}
                     data-testid="button-cancel-schedule"
                   >
                     Cancel
                   </Button>
                   <Button 
                     className="flex-1"
-                    onClick={handleCreateSchedule}
-                    disabled={createAvailabilityMutation.isPending}
+                    onClick={handleSaveSchedule}
+                    disabled={createAvailabilityMutation.isPending || updateAvailabilityMutation.isPending}
                     data-testid="button-save-schedule"
                   >
-                    {createAvailabilityMutation.isPending ? "Creating..." : "Create Schedule"}
+                    {editingSchedule 
+                      ? (updateAvailabilityMutation.isPending ? "Updating..." : "Update Schedule")
+                      : (createAvailabilityMutation.isPending ? "Creating..." : "Create Schedule")
+                    }
                   </Button>
                 </div>
 
@@ -1259,19 +1328,34 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                             <div className="flex-1">
                               <p className="font-medium text-sm">
                                 {schedule.scheduleType === "specific" ? "Specific" : "Recurring"}
+                                {schedule.scheduleType === "recurring" && schedule.daysOfWeek && (
+                                  <span className="text-xs text-neutral-500 ml-2">
+                                    ({["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].filter((_, i) => schedule.daysOfWeek.includes(i)).join(", ")})
+                                  </span>
+                                )}
                               </p>
                               <p className="text-xs text-neutral-600">
-                                {schedule.startTime} - {schedule.endTime}
+                                {schedule.startTime} - {schedule.endTime} ({schedule.slotDuration || 60} min slots)
                               </p>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteAvailabilityMutation.mutate(schedule.id)}
-                              data-testid={`button-delete-schedule-${schedule.id}`}
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditSchedule(schedule)}
+                                data-testid={`button-edit-schedule-${schedule.id}`}
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteAvailabilityMutation.mutate(schedule.id)}
+                                data-testid={`button-delete-schedule-${schedule.id}`}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
                         ))}
                       </div>
