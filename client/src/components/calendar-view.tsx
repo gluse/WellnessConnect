@@ -37,16 +37,35 @@ export default function CalendarView({
       events[dateKey].bookings.push(booking);
     });
 
+    // Handle specific date schedules
     schedules.forEach(schedule => {
-      if (schedule.specificDate) {
+      if (schedule.scheduleType === 'specific' && schedule.specificDate) {
         const dateKey = format(new Date(schedule.specificDate), 'yyyy-MM-dd');
         if (!events[dateKey]) events[dateKey] = { bookings: [], schedules: [] };
         events[dateKey].schedules.push(schedule);
       }
     });
 
+    // Handle recurring schedules - add to each matching day in the visible month
+    const recurringSchedules = schedules.filter(s => s.scheduleType === 'recurring' && s.daysOfWeek);
+    daysInMonth.forEach(day => {
+      const dayOfWeek = day.getDay(); // 0=Sunday, 1=Monday, etc.
+      const dateKey = format(day, 'yyyy-MM-dd');
+      
+      recurringSchedules.forEach(schedule => {
+        const scheduleDays = schedule.daysOfWeek as number[];
+        if (scheduleDays.includes(dayOfWeek)) {
+          if (!events[dateKey]) events[dateKey] = { bookings: [], schedules: [] };
+          // Avoid duplicates
+          if (!events[dateKey].schedules.some(s => s.id === schedule.id)) {
+            events[dateKey].schedules.push(schedule);
+          }
+        }
+      });
+    });
+
     return events;
-  }, [bookings, schedules]);
+  }, [bookings, schedules, daysInMonth]);
 
   const handlePreviousMonth = () => {
     setCurrentDate(subMonths(currentDate, 1));
