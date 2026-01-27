@@ -48,9 +48,10 @@ export default function BookingModal({ service, onClose }: BookingModalProps) {
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
 
   const isGroupService = service.serviceType === "group";
-  const maxParticipants = isGroupService ? (service.maxCapacity - (service.availableCapacity || 0)) : 1;
+  const maxParticipants = isGroupService ? ((service.maxCapacity || 1) - (service.availableCapacity || 0)) : 1;
   const totalAmount = parseFloat(service.price) * participantCount;
-  const advanceAmount = (totalAmount * service.advancePaymentPercent) / 100;
+  const advancePaymentPercent = service.advancePaymentPercent || 0;
+  const advanceAmount = (totalAmount * advancePaymentPercent) / 100;
 
   const { data: slotsData, isLoading: slotsLoading, error: slotsError } = useQuery<AvailableSlotsResponse>({
     queryKey: ['/api/availability/slots', service.id, selectedDate],
@@ -277,7 +278,7 @@ export default function BookingModal({ service, onClose }: BookingModalProps) {
             </Card>
           </div>
           
-          {service.advancePaymentPercent > 0 && (
+          {advancePaymentPercent > 0 && (
             <Card className="border-amber-200 bg-amber-50">
               <CardContent className="p-3">
                 <div className="flex items-center space-x-2 mb-1">
@@ -285,7 +286,7 @@ export default function BookingModal({ service, onClose }: BookingModalProps) {
                   <span className="text-sm font-medium text-amber-800">Advance Payment Required</span>
                 </div>
                 <p className="text-sm text-amber-700">
-                  You'll be charged ${advanceAmount.toFixed(2)} ({service.advancePaymentPercent}%) now. 
+                  You'll be charged ${advanceAmount.toFixed(2)} ({advancePaymentPercent}%) now. 
                   The remaining ${(totalAmount - advanceAmount).toFixed(2)} will be charged after the service.
                 </p>
               </CardContent>
