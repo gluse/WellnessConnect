@@ -164,7 +164,7 @@ export default function CalendarView({
                   {format(day, 'd')}
                 </div>
                 {hasEvents && (
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     {dayEvents.bookings.slice(0, 2).map((booking, idx) => (
                       <div
                         key={`booking-${booking.id}-${idx}`}
@@ -174,13 +174,16 @@ export default function CalendarView({
                         {booking.service?.name?.substring(0, 10) || 'Booking'}
                       </div>
                     ))}
-                    {dayEvents.schedules.slice(0, 1).map((schedule, idx) => (
+                    {dayEvents.schedules
+                      .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
+                      .slice(0, Math.max(0, 3 - dayEvents.bookings.length))
+                      .map((schedule, idx) => (
                       <div
                         key={`schedule-${schedule.id}-${idx}`}
                         className="text-[10px] px-1 rounded truncate bg-purple-100 text-purple-800"
-                        title="Available"
+                        title={`Available: ${schedule.startTime} - ${schedule.endTime}`}
                       >
-                        Available
+                        {schedule.startTime?.substring(0, 5)}-{schedule.endTime?.substring(0, 5)}
                       </div>
                     ))}
                     {(dayEvents.bookings.length + dayEvents.schedules.length) > 3 && (
