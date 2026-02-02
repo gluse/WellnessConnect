@@ -7,6 +7,54 @@ import { z } from "zod";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { generateEmbedding, cosineSimilarity } from "./embeddings";
 
+// Helper to add English keywords to embedding text for cross-language search
+function enrichEmbeddingText(name: string, description: string | null, category: string): string {
+  let text = `${name} ${description || ''} ${category}`.trim();
+  
+  // Add category translations
+  const categoryTranslations: Record<string, string> = {
+    'health_wellness': 'health wellness spa massage sauna bath relaxation therapy healing',
+    'education': 'education learning teaching tutoring lessons classes school study math science language',
+    'entertainment': 'entertainment fun activities recreation leisure games events party',
+  };
+  
+  // Common Latvian to English translations for better cross-language search
+  const latvianToEnglish: Record<string, string> = {
+    'pirts': 'sauna bathhouse steam bath traditional bathing ritual',
+    'masāža': 'massage therapy bodywork',
+    'matemātika': 'math mathematics arithmetic algebra calculus',
+    'privātstundas': 'private lessons tutoring one-on-one teaching',
+    'joga': 'yoga stretching meditation wellness',
+    'fizika': 'physics science',
+    'ķīmija': 'chemistry science',
+    'valoda': 'language learning speaking',
+    'angļu': 'english language',
+    'vācu': 'german language',
+    'krievu': 'russian language',
+    'mūzika': 'music lessons instrument playing',
+    'māksla': 'art drawing painting creative',
+    'sports': 'sports fitness training exercise',
+    'dejas': 'dance dancing lessons',
+    'frizieris': 'hairdresser haircut styling barber',
+    'skaistumkopšana': 'beauty care cosmetics skincare',
+  };
+  
+  // Add category translation
+  if (categoryTranslations[category]) {
+    text += ` ${categoryTranslations[category]}`;
+  }
+  
+  // Check for Latvian keywords and add English equivalents
+  const lowerText = text.toLowerCase();
+  for (const [latvian, english] of Object.entries(latvianToEnglish)) {
+    if (lowerText.includes(latvian)) {
+      text += ` ${english}`;
+    }
+  }
+  
+  return text;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
@@ -205,7 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Generate embedding for the new service asynchronously
       try {
-        const textContent = `${service.name} ${service.description || ''} ${service.category}`.trim();
+        const textContent = enrichEmbeddingText(service.name, service.description, service.category);
         const embedding = await generateEmbedding(textContent);
         await storage.upsertServiceEmbedding({
           serviceId: service.id,
@@ -315,9 +363,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         scoredServices.push({ serviceId: embedding.serviceId, score });
       }
       
+      // Debug: log top 5 scores for visibility
+      const topScores = [...scoredServices].sort((a, b) => b.score - a.score).slice(0, 5);
+      console.log(`Semantic search for "${query}" - top scores:`, topScores.map(s => `${s.serviceId}:${s.score.toFixed(3)}`).join(', '));
+      
       // Sort by similarity score (highest first) and filter by threshold
-      // Use balanced threshold (0.35) - low enough to catch semantic matches, high enough to avoid noise
-      const SIMILARITY_THRESHOLD = 0.35;
+      // Use lower threshold (0.30) to catch more semantic matches
+      const SIMILARITY_THRESHOLD = 0.30;
       const relevantServiceIds = scoredServices
         .filter(s => s.score >= SIMILARITY_THRESHOLD)
         .sort((a, b) => b.score - a.score)
@@ -380,8 +432,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Service not found" });
       }
       
-      // Create text content for embedding
-      const textContent = `${service.name} ${service.description || ''} ${service.category}`.trim();
+      // Create text content for embedding with English translations
+      const textContent = enrichEmbeddingText(service.name, service.description, service.category);
       
       // Generate embedding
       const embedding = await generateEmbedding(textContent);
@@ -420,7 +472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       for (const service of providerServices) {
         try {
-          const textContent = `${service.name} ${service.description || ''} ${service.category}`.trim();
+          const textContent = enrichEmbeddingText(service.name, service.description, service.category);
           const embedding = await generateEmbedding(textContent);
           
           await storage.upsertServiceEmbedding({
