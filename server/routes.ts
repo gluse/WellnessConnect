@@ -316,8 +316,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Sort by similarity score (highest first) and filter by threshold
-      // Use higher threshold (0.5) to reduce false positives
-      const SIMILARITY_THRESHOLD = 0.5;
+      // Use balanced threshold (0.35) - low enough to catch semantic matches, high enough to avoid noise
+      const SIMILARITY_THRESHOLD = 0.35;
       const relevantServiceIds = scoredServices
         .filter(s => s.score >= SIMILARITY_THRESHOLD)
         .sort((a, b) => b.score - a.score)
