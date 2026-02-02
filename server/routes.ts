@@ -266,16 +266,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Search query is required" });
       }
 
-      // Get all service embeddings
+      // First, try exact text search - prioritize exact name/description matches
+      const textMatchServices = await storage.searchServices({ 
+        searchQuery: query,
+        category: category as string,
+      });
+      
+      // If we found exact text matches, return those (prioritizes exact name matches)
+      if (textMatchServices.length > 0) {
+        // Apply location filter if specified
+        let filteredServices = textMatchServices;
+        if (latitude && longitude && radius) {
+          const lat = parseFloat(latitude as string);
+          const lng = parseFloat(longitude as string);
+          const rad = parseFloat(radius as string);
+          
+          filteredServices = textMatchServices.filter(s => {
+            if (s.latitude === null || s.longitude === null) return false;
+            const R = 6371;
+            const dLat = (s.latitude - lat) * Math.PI / 180;
+            const dLon = (s.longitude - lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat * Math.PI/180) * Math.cos(s.latitude * Math.PI/180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+            return distance <= rad;
+          });
+        }
+        return res.json(filteredServices);
+      }
+
+      // No exact text matches - try semantic search for cross-language matching
       const allEmbeddings = await storage.getAllServiceEmbeddings();
       
       if (allEmbeddings.length === 0) {
-        // Fall back to text search if no embeddings exist
-        const services = await storage.searchServices({ 
-          searchQuery: query,
-          category: category as string,
-        });
-        return res.json(services);
+        // No embeddings exist, return empty (text search already found nothing)
+        return res.json([]);
       }
 
       // Generate embedding for the search query
@@ -289,19 +316,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Sort by similarity score (highest first) and filter by threshold
-      const SIMILARITY_THRESHOLD = 0.3;
+      // Use higher threshold (0.5) to reduce false positives
+      const SIMILARITY_THRESHOLD = 0.5;
       const relevantServiceIds = scoredServices
         .filter(s => s.score >= SIMILARITY_THRESHOLD)
         .sort((a, b) => b.score - a.score)
         .map(s => s.serviceId);
       
       if (relevantServiceIds.length === 0) {
-        // No semantic matches, fall back to text search
-        const services = await storage.searchServices({ 
-          searchQuery: query,
-          category: category as string,
-        });
-        return res.json(services);
+        // No semantic matches either
+        return res.json([]);
       }
       
       // Fetch the matched services
