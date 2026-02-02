@@ -170,7 +170,11 @@ export class DatabaseStorage implements IStorage {
     longitude?: number;
     radius?: number;
     date?: string;
+    dateEnd?: string;
+    time?: string;
+    timeEnd?: string;
     searchQuery?: string;
+    availableOnly?: boolean;
   }): Promise<ServiceWithProvider[]> {
     const conditions = [eq(services.isActive, true)];
 
@@ -201,6 +205,14 @@ export class DatabaseStorage implements IStorage {
       ...result.services,
       provider: result.users!,
     }));
+
+    // Filter by age groups if specified
+    if (filters.ageGroups && filters.ageGroups.length > 0) {
+      servicesWithProviders = servicesWithProviders.filter(service => {
+        if (!service.ageGroups || service.ageGroups.length === 0) return false;
+        return filters.ageGroups!.some(ag => service.ageGroups?.includes(ag));
+      });
+    }
 
     // Calculate distance if user location is provided
     if (filters.latitude !== undefined && filters.longitude !== undefined) {
@@ -235,6 +247,86 @@ export class DatabaseStorage implements IStorage {
         if (b.distance === undefined) return -1;
         return a.distance - b.distance;
       });
+    }
+
+    // Filter by availability if requested
+    if (filters.availableOnly && filters.date) {
+      const startDate = new Date(filters.date);
+      const endDate = filters.dateEnd ? new Date(filters.dateEnd) : startDate;
+      
+      // Get all availability schedules
+      const allAvailability = await db.select().from(availability);
+      
+      // Get all bookings to check for conflicts
+      const allBookings = await db.select().from(bookings);
+      
+      // Build a map of provider ID -> available time slots
+      const providerAvailability = new Map<string, boolean>();
+      
+      // Check each date in the range
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const currentDate = new Date(d);
+        const dayOfWeek = currentDate.getDay();
+        const dateStr = currentDate.toISOString().split('T')[0];
+        
+        for (const schedule of allAvailability) {
+          if (!schedule.isActive) continue;
+          
+          // Check if schedule applies to this date
+          const scheduleApplies = 
+            (schedule.scheduleType === 'specific' && 
+             schedule.specificDate && 
+             new Date(schedule.specificDate).toISOString().split('T')[0] === dateStr) ||
+            (schedule.scheduleType === 'recurring' && 
+             schedule.daysOfWeek && 
+             (schedule.daysOfWeek as number[]).includes(dayOfWeek));
+          
+          if (!scheduleApplies) continue;
+          
+          // Parse schedule times
+          const schedStart = schedule.startTime || "00:00";
+          const schedEnd = schedule.endTime || "23:59";
+          const breaks = (schedule.breaks as { startTime: string; endTime: string }[] | null) || [];
+          
+          // If time filters specified, check for overlap
+          if (filters.time || filters.timeEnd) {
+            const filterStart = filters.time || "00:00";
+            const filterEnd = filters.timeEnd || "23:59";
+            
+            // Check if requested time range overlaps with schedule
+            const hasOverlap = filterStart < schedEnd && filterEnd > schedStart;
+            
+            if (hasOverlap) {
+              // Check if there's any overlap with a break (any overlap = blocked during that time)
+              const overlapsWithBreak = breaks.some(brk => 
+                filterStart < brk.endTime && filterEnd > brk.startTime
+              );
+              
+              // If no break overlap, or if the available time outside breaks still covers filter range
+              if (!overlapsWithBreak) {
+                providerAvailability.set(schedule.providerId, true);
+              } else {
+                // Check if there's still available time outside breaks that covers the filter range
+                // For simplicity, if any break overlaps with the requested time, we're conservative
+                // and still allow if schedule extends beyond the break
+                const scheduleCoversBeforeBreak = breaks.every(brk => 
+                  filterEnd <= brk.startTime || filterStart >= brk.endTime
+                );
+                if (scheduleCoversBeforeBreak) {
+                  providerAvailability.set(schedule.providerId, true);
+                }
+              }
+            }
+          } else {
+            // No time filter - just check if any schedule exists for the date
+            providerAvailability.set(schedule.providerId, true);
+          }
+        }
+      }
+      
+      servicesWithProviders = servicesWithProviders.filter(
+        service => providerAvailability.get(service.providerId) === true
+      );
     }
 
     return servicesWithProviders;

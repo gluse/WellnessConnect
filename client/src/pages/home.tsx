@@ -6,7 +6,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import RoleSwitcher from "@/components/role-switcher";
-import ServiceFilters from "@/components/service-filters";
+import ServiceFilters, { SearchFilters } from "@/components/service-filters";
 import ServiceCard from "@/components/service-card";
 import GoogleMap from "@/components/google-map";
 import BookingModal from "@/components/booking-modal";
@@ -16,8 +16,129 @@ import ProviderDashboard from "@/pages/provider-dashboard";
 import CalendarView from "@/components/calendar-view";
 import { LanguagePicker } from "@/components/language-picker";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, List, Map, Target, Calendar } from "lucide-react";
+import { Heart, MapPin, List, Map, Target, Calendar, X } from "lucide-react";
+import { format } from "date-fns";
 import type { ServiceWithProvider, BookingWithDetails } from "@shared/schema";
+
+interface ActiveFiltersBarProps {
+  filters: SearchFilters;
+  locationName: string;
+  onFiltersChange: (filters: SearchFilters) => void;
+  onLocationClear: () => void;
+}
+
+function ActiveFiltersBar({ filters, locationName, onFiltersChange, onLocationClear }: ActiveFiltersBarProps) {
+  const activeFilters: { key: string; label: string; onRemove: () => void }[] = [];
+
+  if (filters.category) {
+    const categoryLabels: Record<string, string> = {
+      health_wellness: "🏥 Health & Wellness",
+      education: "🎓 Education",
+      entertainment: "🎵 Entertainment"
+    };
+    activeFilters.push({
+      key: "category",
+      label: categoryLabels[filters.category] || filters.category,
+      onRemove: () => onFiltersChange({ ...filters, category: "" })
+    });
+  }
+
+  if (filters.searchQuery) {
+    activeFilters.push({
+      key: "search",
+      label: `"${filters.searchQuery}"`,
+      onRemove: () => onFiltersChange({ ...filters, searchQuery: "" })
+    });
+  }
+
+  if (filters.serviceType) {
+    activeFilters.push({
+      key: "serviceType",
+      label: filters.serviceType === "one_to_one" ? "One-to-One" : "Group",
+      onRemove: () => onFiltersChange({ ...filters, serviceType: "" })
+    });
+  }
+
+  if (filters.ageGroups.length > 0) {
+    activeFilters.push({
+      key: "audience",
+      label: `Audience: ${filters.ageGroups.map(a => a.charAt(0).toUpperCase() + a.slice(1)).join(", ")}`,
+      onRemove: () => onFiltersChange({ ...filters, ageGroups: [] })
+    });
+  }
+
+  if (locationName) {
+    activeFilters.push({
+      key: "location",
+      label: `📍 ${locationName}`,
+      onRemove: onLocationClear
+    });
+  }
+
+  if (filters.date) {
+    const dateLabel = filters.dateEnd 
+      ? `${format(new Date(filters.date), "MMM d")} - ${format(new Date(filters.dateEnd), "MMM d")}`
+      : format(new Date(filters.date), "MMM d, yyyy");
+    activeFilters.push({
+      key: "date",
+      label: `📅 ${dateLabel}`,
+      onRemove: () => onFiltersChange({ ...filters, date: "", dateEnd: "", time: "", timeEnd: "" })
+    });
+  }
+
+  if (filters.availableOnly) {
+    activeFilters.push({
+      key: "available",
+      label: "Available only",
+      onRemove: () => onFiltersChange({ ...filters, availableOnly: false })
+    });
+  }
+
+  if (activeFilters.length === 0) return null;
+
+  return (
+    <div className="px-4 pb-3 lg:px-0">
+      <div className="flex flex-wrap gap-2">
+        {activeFilters.map(({ key, label, onRemove }) => (
+          <span
+            key={key}
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-primary/10 text-primary rounded-full"
+          >
+            {label}
+            <button
+              onClick={onRemove}
+              className="ml-1 hover:bg-primary/20 rounded-full p-0.5"
+              aria-label={`Remove ${label} filter`}
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </span>
+        ))}
+        <button
+          onClick={() => {
+            onFiltersChange({
+              category: "",
+              searchQuery: "",
+              searchMode: "exact",
+              serviceType: "",
+              ageGroups: [],
+              distance: 50,
+              date: "",
+              dateEnd: "",
+              time: "",
+              timeEnd: "",
+              availableOnly: false
+            });
+            onLocationClear();
+          }}
+          className="text-xs text-neutral-500 hover:text-neutral-700 underline"
+        >
+          Clear all
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const { t } = useTranslation();
@@ -31,13 +152,18 @@ export default function Home() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationName, setLocationName] = useState<string>("");
-  const [filters, setFilters] = useState({
-    category: "health_wellness",
-    ageGroups: [] as string[],
+  const [filters, setFilters] = useState<SearchFilters>({
+    category: "",
+    searchQuery: "",
+    searchMode: "exact",
     serviceType: "",
-    distance: 5,
-    date: new Date().toISOString().split('T')[0],
-    searchQuery: ""
+    ageGroups: [],
+    distance: 50,
+    date: "",
+    dateEnd: "",
+    time: "",
+    timeEnd: "",
+    availableOnly: false
   });
 
   // Update user role mutation
@@ -158,10 +284,39 @@ export default function Home() {
     }
   };
 
-  // Search services query - uses semantic search for cross-language support when search query provided
+  // Search services query - uses semantic or exact search based on mode
   const { data: services = [], isLoading: servicesLoading } = useQuery({
-    queryKey: ["/api/services/search", filters, userLocation],
+    queryKey: ["/api/services/search", filters, userLocation, locationName],
     queryFn: async () => {
+      const searchQuery = filters.searchQuery?.trim();
+      
+      // Use semantic search if mode is set to semantic and there's a query
+      if (searchQuery && filters.searchMode === "semantic") {
+        const semanticParams = new URLSearchParams();
+        semanticParams.append("query", searchQuery);
+        if (filters.category) semanticParams.append("category", filters.category);
+        if (filters.serviceType) semanticParams.append("serviceType", filters.serviceType);
+        if (userLocation) {
+          semanticParams.append("latitude", userLocation.lat.toString());
+          semanticParams.append("longitude", userLocation.lng.toString());
+          semanticParams.append("radius", filters.distance.toString());
+        }
+        if (filters.ageGroups.length > 0) {
+          filters.ageGroups.forEach(age => semanticParams.append("ageGroups", age));
+        }
+        if (filters.date) semanticParams.append("date", filters.date);
+        if (filters.dateEnd) semanticParams.append("dateEnd", filters.dateEnd);
+        if (filters.time) semanticParams.append("time", filters.time);
+        if (filters.timeEnd) semanticParams.append("timeEnd", filters.timeEnd);
+        if (filters.availableOnly) semanticParams.append("availableOnly", "true");
+        
+        const response = await fetch(`/api/services/semantic-search?${semanticParams}`);
+        if (response.ok) {
+          return response.json();
+        }
+      }
+      
+      // Regular exact search
       const params = new URLSearchParams();
       if (filters.category) params.append("category", filters.category);
       if (filters.serviceType) params.append("serviceType", filters.serviceType);
@@ -169,26 +324,10 @@ export default function Home() {
         filters.ageGroups.forEach(age => params.append("ageGroups", age));
       }
       if (filters.date) params.append("date", filters.date);
-      
-      // Use semantic search if search query is provided for cross-language matching
-      const searchQuery = filters.searchQuery?.trim();
-      if (searchQuery) {
-        const semanticParams = new URLSearchParams();
-        semanticParams.append("query", searchQuery);
-        if (filters.category) semanticParams.append("category", filters.category);
-        if (userLocation) {
-          semanticParams.append("latitude", userLocation.lat.toString());
-          semanticParams.append("longitude", userLocation.lng.toString());
-          semanticParams.append("radius", filters.distance.toString());
-        }
-        
-        const response = await fetch(`/api/services/semantic-search?${semanticParams}`);
-        if (response.ok) {
-          return response.json();
-        }
-        // Fall through to regular search if semantic search fails
-      }
-      
+      if (filters.dateEnd) params.append("dateEnd", filters.dateEnd);
+      if (filters.time) params.append("time", filters.time);
+      if (filters.timeEnd) params.append("timeEnd", filters.timeEnd);
+      if (filters.availableOnly) params.append("availableOnly", "true");
       if (searchQuery) params.append("searchQuery", searchQuery);
       if (userLocation) {
         params.append("latitude", userLocation.lat.toString());
@@ -292,6 +431,17 @@ export default function Home() {
               onGeocodeLocation={handleGeocodeLocation}
             />
           </div>
+
+          {/* Active Filters Chips */}
+          <ActiveFiltersBar 
+            filters={filters}
+            locationName={locationName}
+            onFiltersChange={setFilters}
+            onLocationClear={() => {
+              setLocationName("");
+              setUserLocation(null);
+            }}
+          />
 
           {/* View Toggle */}
           <div className="px-4 pb-4 lg:px-0">
