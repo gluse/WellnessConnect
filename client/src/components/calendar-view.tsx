@@ -3,14 +3,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns";
 import type { Service, BookingWithDetails, Availability } from "@shared/schema";
+
+export interface ScheduleClickEvent {
+  schedule: Availability;
+  date: Date;
+  isRecurring: boolean;
+}
 
 interface CalendarViewProps {
   services?: Service[];
   bookings?: BookingWithDetails[];
   schedules?: Availability[];
   onDateClick?: (date: Date) => void;
+  onScheduleClick?: (event: ScheduleClickEvent) => void;
   userTimezone?: string;
 }
 
@@ -19,6 +26,7 @@ export default function CalendarView({
   bookings = [], 
   schedules = [],
   onDateClick,
+  onScheduleClick,
   userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -27,7 +35,6 @@ export default function CalendarView({
   const monthEnd = endOfMonth(currentDate);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // Group bookings and schedules by date
   const eventsByDate = useMemo(() => {
     const events: Record<string, { bookings: BookingWithDetails[], schedules: Availability[] }> = {};
 
@@ -37,7 +44,6 @@ export default function CalendarView({
       events[dateKey].bookings.push(booking);
     });
 
-    // Handle specific date schedules
     schedules.forEach(schedule => {
       if (schedule.scheduleType === 'specific' && schedule.specificDate) {
         const dateKey = format(new Date(schedule.specificDate), 'yyyy-MM-dd');
@@ -46,17 +52,15 @@ export default function CalendarView({
       }
     });
 
-    // Handle recurring schedules - add to each matching day in the visible month
     const recurringSchedules = schedules.filter(s => s.scheduleType === 'recurring' && s.daysOfWeek);
     daysInMonth.forEach(day => {
-      const dayOfWeek = day.getDay(); // 0=Sunday, 1=Monday, etc.
+      const dayOfWeek = day.getDay();
       const dateKey = format(day, 'yyyy-MM-dd');
       
       recurringSchedules.forEach(schedule => {
         const scheduleDays = schedule.daysOfWeek as number[];
         if (scheduleDays.includes(dayOfWeek)) {
           if (!events[dateKey]) events[dateKey] = { bookings: [], schedules: [] };
-          // Avoid duplicates
           if (!events[dateKey].schedules.some(s => s.id === schedule.id)) {
             events[dateKey].schedules.push(schedule);
           }
@@ -88,6 +92,15 @@ export default function CalendarView({
       default:
         return 'bg-neutral-100 text-neutral-800';
     }
+  };
+
+  const handleScheduleClick = (e: React.MouseEvent, schedule: Availability, day: Date) => {
+    e.stopPropagation();
+    onScheduleClick?.({
+      schedule,
+      date: day,
+      isRecurring: schedule.scheduleType === 'recurring',
+    });
   };
 
   return (
@@ -126,7 +139,6 @@ export default function CalendarView({
         </div>
       </CardHeader>
       <CardContent>
-        {/* Day headers */}
         <div className="grid grid-cols-7 gap-2 mb-2">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
             <div key={day} className="text-center text-xs font-semibold text-neutral-600 py-2">
@@ -135,14 +147,11 @@ export default function CalendarView({
           ))}
         </div>
 
-        {/* Calendar grid */}
         <div className="grid grid-cols-7 gap-2">
-          {/* Empty cells for days before month starts */}
           {Array.from({ length: monthStart.getDay() }).map((_, index) => (
             <div key={`empty-${index}`} className="aspect-square" />
           ))}
 
-          {/* Days of the month */}
           {daysInMonth.map(day => {
             const dateKey = format(day, 'yyyy-MM-dd');
             const dayEvents = eventsByDate[dateKey];
@@ -180,8 +189,10 @@ export default function CalendarView({
                       .map((schedule, idx) => (
                       <div
                         key={`schedule-${schedule.id}-${idx}`}
-                        className="text-[10px] px-1 rounded truncate bg-purple-100 text-purple-800"
-                        title={`Available: ${schedule.startTime} - ${schedule.endTime}`}
+                        className={`text-[10px] px-1 rounded truncate bg-purple-100 text-purple-800 ${onScheduleClick ? 'hover:bg-purple-200 hover:ring-1 hover:ring-purple-400 cursor-pointer' : ''}`}
+                        title={`Available: ${schedule.startTime} - ${schedule.endTime} (click to edit)`}
+                        onClick={(e) => handleScheduleClick(e, schedule, day)}
+                        data-testid={`schedule-event-${schedule.id}-${dateKey}`}
                       >
                         {schedule.startTime?.substring(0, 5)}-{schedule.endTime?.substring(0, 5)}
                       </div>
@@ -198,7 +209,6 @@ export default function CalendarView({
           })}
         </div>
 
-        {/* Legend */}
         <div className="mt-6 flex flex-wrap gap-3 text-xs">
           <div className="flex items-center space-x-1">
             <div className="w-3 h-3 rounded bg-green-100" />
@@ -210,7 +220,7 @@ export default function CalendarView({
           </div>
           <div className="flex items-center space-x-1">
             <div className="w-3 h-3 rounded bg-purple-100" />
-            <span>Available</span>
+            <span>Available (click to edit)</span>
           </div>
           <div className="flex items-center space-x-1">
             <div className="w-3 h-3 rounded bg-blue-100" />
