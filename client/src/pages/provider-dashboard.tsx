@@ -18,6 +18,8 @@ import RoleSwitcher from "@/components/role-switcher";
 import BottomNavigation from "@/components/bottom-navigation";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import CalendarView from "@/components/calendar-view";
+import type { ScheduleClickEvent } from "@/components/calendar-view";
+import ScheduleEditModal from "@/components/schedule-edit-modal";
 import { format } from "date-fns";
 import type { Service, BookingWithDetails, Availability } from "@shared/schema";
 
@@ -33,6 +35,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<any | null>(null);
+  const [calendarEditEvent, setCalendarEditEvent] = useState<ScheduleClickEvent | null>(null);
   const [newService, setNewService] = useState({
     name: "",
     description: "",
@@ -233,6 +236,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/availability/provider"] });
       setShowScheduleModal(false);
+      setCalendarEditEvent(null);
       setNewSchedule({
         serviceId: null,
         scheduleType: "specific",
@@ -268,6 +272,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/availability/provider"] });
+      setCalendarEditEvent(null);
       toast({
         title: "Schedule Deleted",
         description: "Availability schedule has been removed",
@@ -285,6 +290,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       queryClient.invalidateQueries({ queryKey: ["/api/availability/provider"] });
       setShowScheduleModal(false);
       setEditingSchedule(null);
+      setCalendarEditEvent(null);
       resetScheduleForm();
       toast({
         title: "Schedule Updated",
@@ -502,6 +508,55 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
         ? prev.daysOfWeek.filter(d => d !== day)
         : [...prev.daysOfWeek, day]
     }));
+  };
+
+  const handleCalendarScheduleClick = (event: ScheduleClickEvent) => {
+    setCalendarEditEvent(event);
+  };
+
+  const handleCalendarScheduleSave = (data: {
+    mode: "this_occurrence" | "all_occurrences" | "single";
+    scheduleId: number;
+    updates: any;
+    newSpecificDate?: string;
+  }) => {
+    if (data.mode === "this_occurrence") {
+      createAvailabilityMutation.mutate({
+        ...data.updates,
+        scheduleType: "specific",
+        specificDate: data.newSpecificDate,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+    } else {
+      updateAvailabilityMutation.mutate({ id: data.scheduleId, data: data.updates });
+    }
+    setCalendarEditEvent(null);
+  };
+
+  const handleCalendarScheduleDelete = (data: {
+    mode: "this_occurrence" | "all_occurrences" | "single";
+    scheduleId: number;
+    specificDate?: string;
+  }) => {
+    if (data.mode === "this_occurrence" && data.specificDate) {
+      const schedule = (schedules as Availability[]).find(s => s.id === data.scheduleId);
+      if (schedule) {
+        createAvailabilityMutation.mutate({
+          scheduleType: "specific",
+          specificDate: data.specificDate,
+          startTime: schedule.startTime,
+          endTime: schedule.endTime,
+          breaks: schedule.breaks || [],
+          slotDuration: schedule.slotDuration || 60,
+          serviceId: schedule.serviceId,
+          timezone: schedule.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+          isActive: false,
+        });
+      }
+    } else {
+      deleteAvailabilityMutation.mutate(data.scheduleId);
+    }
+    setCalendarEditEvent(null);
   };
 
   // Calculate stats
@@ -747,6 +802,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                     description: `You selected ${format(date, 'MMMM d, yyyy')}`,
                   });
                 }}
+                onScheduleClick={handleCalendarScheduleClick}
               />
             </div>
           </div>
@@ -1429,6 +1485,19 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
               </div>
             </div>
           </div>
+        )}
+
+        {calendarEditEvent && (
+          <ScheduleEditModal
+            schedule={calendarEditEvent.schedule}
+            clickedDate={calendarEditEvent.date}
+            isRecurring={calendarEditEvent.isRecurring}
+            services={services as Service[]}
+            onSave={handleCalendarScheduleSave}
+            onDelete={handleCalendarScheduleDelete}
+            onClose={() => setCalendarEditEvent(null)}
+            isPending={updateAvailabilityMutation.isPending || createAvailabilityMutation.isPending || deleteAvailabilityMutation.isPending}
+          />
         )}
 
         {/* Bottom Navigation - Mobile Only */}

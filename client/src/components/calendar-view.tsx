@@ -44,18 +44,25 @@ export default function CalendarView({
       events[dateKey].bookings.push(booking);
     });
 
+    const inactiveSpecificDates = new Set<string>();
     schedules.forEach(schedule => {
       if (schedule.scheduleType === 'specific' && schedule.specificDate) {
         const dateKey = format(new Date(schedule.specificDate), 'yyyy-MM-dd');
-        if (!events[dateKey]) events[dateKey] = { bookings: [], schedules: [] };
-        events[dateKey].schedules.push(schedule);
+        if (schedule.isActive === false) {
+          inactiveSpecificDates.add(dateKey);
+        } else {
+          if (!events[dateKey]) events[dateKey] = { bookings: [], schedules: [] };
+          events[dateKey].schedules.push(schedule);
+        }
       }
     });
 
-    const recurringSchedules = schedules.filter(s => s.scheduleType === 'recurring' && s.daysOfWeek);
+    const recurringSchedules = schedules.filter(s => s.scheduleType === 'recurring' && s.daysOfWeek && s.isActive !== false);
     daysInMonth.forEach(day => {
       const dayOfWeek = day.getDay();
       const dateKey = format(day, 'yyyy-MM-dd');
+      
+      if (inactiveSpecificDates.has(dateKey)) return;
       
       recurringSchedules.forEach(schedule => {
         const scheduleDays = schedule.daysOfWeek as number[];
