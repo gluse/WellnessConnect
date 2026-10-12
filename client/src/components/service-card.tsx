@@ -12,7 +12,7 @@ interface ServiceCardProps {
 
 export default function ServiceCard({ service, onBook, onViewDetails }: ServiceCardProps) {
   const isGroupService = service.serviceType === "group";
-  const availableSpots = isGroupService ? (service.maxCapacity - (service.availableCapacity || 0)) : 1;
+  const availableSpots = isGroupService ? ((service.maxCapacity || 1) - (service.availableCapacity || 0)) : 1;
 
   return (
     <Card className="shadow-sm hover:shadow-md transition-shadow">
@@ -20,10 +20,10 @@ export default function ServiceCard({ service, onBook, onViewDetails }: ServiceC
         <div className="flex space-x-3">
           {/* Service Image Placeholder */}
           <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg flex items-center justify-center">
-            <span className="text-2xl">
+            {service.imageUrl ? <img src={service.imageUrl} alt={service.name} className="w-16 h-16 rounded-lg object-cover" loading="lazy" /> : <span className="text-2xl">
               {service.category === "health_wellness" ? "🏥" : 
                service.category === "education" ? "🎓" : "🎵"}
-            </span>
+            </span>}
           </div>
           
           <div className="flex-1">

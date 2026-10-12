@@ -40,13 +40,14 @@ function calculateDistance(
 }
 
 export interface IStorage {
-  // User operations (required for Replit Auth)
+  // Application profile operations for Supabase Auth identities.
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserRole(id: string, role: "seeker" | "provider"): Promise<User>;
 
   // Service operations
   createService(service: InsertService): Promise<Service>;
+  copyService(serviceId: number, providerId: string): Promise<Service | undefined>;
   getServicesByProvider(providerId: string): Promise<Service[]>;
   getServiceById(id: number): Promise<ServiceWithProvider | undefined>;
   updateService(id: number, updates: Partial<InsertService>): Promise<Service>;
@@ -124,6 +125,21 @@ export class DatabaseStorage implements IStorage {
       .values(service)
       .returning();
     return newService;
+  }
+
+  async copyService(serviceId: number, providerId: string): Promise<Service | undefined> {
+    return db.transaction(async (tx) => {
+      const [source] = await tx.select().from(services)
+        .where(and(eq(services.id, serviceId), eq(services.providerId, providerId)));
+      if (!source) return undefined;
+      const { id, createdAt, updatedAt, ...listing } = source;
+      const [copy] = await tx.insert(services).values({
+        ...listing,
+        name: `${source.name} (copy)`,
+        isActive: false,
+      }).returning();
+      return copy;
+    });
   }
 
   async getServicesByProvider(providerId: string): Promise<Service[]> {

@@ -15,7 +15,7 @@ import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Session storage table (required for Replit Auth)
+// Express session storage for Supabase authentication.
 export const sessions = pgTable(
   "sessions",
   {
@@ -24,9 +24,9 @@ export const sessions = pgTable(
     expire: timestamp("expire").notNull(),
   },
   (table) => [index("IDX_session_expire").on(table.expire)],
-);
+).enableRLS();
 
-// User storage table (required for Replit Auth)
+// Application profiles keyed by Supabase Auth user IDs.
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
@@ -36,7 +36,7 @@ export const users = pgTable("users", {
   currentRole: varchar("current_role", { enum: ["seeker", "provider"] }).default("seeker"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}).enableRLS();
 
 // Services table
 export const services = pgTable("services", {
@@ -61,7 +61,7 @@ export const services = pgTable("services", {
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}).enableRLS();
 
 // Bookings table
 export const bookings = pgTable("bookings", {
@@ -79,7 +79,7 @@ export const bookings = pgTable("bookings", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}).enableRLS();
 
 // Service embeddings table for semantic search
 export const serviceEmbeddings = pgTable("service_embeddings", {
@@ -89,7 +89,7 @@ export const serviceEmbeddings = pgTable("service_embeddings", {
   textContent: text("text_content").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}).enableRLS();
 
 // Availability table - now represents provider working hours (not tied to specific services)
 export const availability = pgTable("availability", {
@@ -128,7 +128,7 @@ export const availability = pgTable("availability", {
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}).enableRLS();
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
@@ -189,7 +189,9 @@ export type InsertServiceEmbedding = typeof serviceEmbeddings.$inferInsert;
 export type ServiceEmbedding = typeof serviceEmbeddings.$inferSelect;
 
 // Schemas
-export const insertServiceSchema = createInsertSchema(services).omit({
+export const insertServiceSchema = createInsertSchema(services, {
+  ageGroups: z.array(z.string()).nullable().optional(),
+}).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -212,7 +214,10 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
   }),
 });
 
-export const insertAvailabilitySchema = createInsertSchema(availability).omit({
+export const insertAvailabilitySchema = createInsertSchema(availability, {
+  daysOfWeek: z.array(z.number().int().min(0).max(6)).nullable().optional(),
+  breaks: z.array(z.object({ startTime: z.string(), endTime: z.string() })).nullable().optional(),
+}).omit({
   id: true,
   createdAt: true,
 });

@@ -74,6 +74,7 @@ export default function ServiceDetailModal({ service, open, onClose, onBook }: S
         </DialogHeader>
 
         <div className="space-y-6">
+          {service.imageUrl && <img src={service.imageUrl} alt={service.name} className="w-full max-h-72 object-cover rounded-xl" />}
           {/* Provider Info */}
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center">

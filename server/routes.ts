@@ -1,11 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { insertServiceSchema, insertBookingSchema, insertAvailabilitySchema } from "@shared/schema";
 import { z } from "zod";
-import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { createImageUpload, validateOwnedImage, canReadImage, downloadImage, ImageStorageError } from "./imageStorage";
 import { generateEmbedding, cosineSimilarity } from "./embeddings";
+import { geocodeAddress, GeocodingError } from "./geocoding";
 
 // Helper to add English keywords to embedding text for cross-language search
 function enrichEmbeddingText(name: string, description: string | null, category: string): string {
@@ -62,63 +63,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Object Storage routes
   app.post('/api/objects/upload', isAuthenticated, async (req: any, res) => {
     try {
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
+      const upload = await createImageUpload(req.user.claims.sub, req.body.contentType, req.body.size);
+      res.json(upload);
     } catch (error) {
       console.error("Error getting upload URL:", error);
-      res.status(500).json({ message: "Failed to get upload URL" });
+      res.status(error instanceof ImageStorageError ? error.status : 500).json({ message: error instanceof ImageStorageError ? error.message : "Failed to get upload URL" });
     }
   });
 
   app.get("/objects/:objectPath(*)", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
-    const objectStorageService = new ObjectStorageService();
     try {
-      const objectFile = await objectStorageService.getObjectEntityFile(
-        req.path,
-      );
-      const canAccess = await objectStorageService.canAccessObjectEntity({
-        objectFile,
-        userId: userId,
-        requestedPermission: undefined,
-      });
+      const canAccess = await canReadImage(req.path, userId);
       if (!canAccess) {
-        return res.sendStatus(401);
+        return res.sendStatus(403);
       }
-      objectStorageService.downloadObject(objectFile, res);
+      const image = await downloadImage(req.path);
+      res.set({ "Content-Type": image.contentType, "Cache-Control": "private, max-age=300", "X-Content-Type-Options": "nosniff" });
+      res.send(image.bytes);
     } catch (error) {
       console.error("Error checking object access:", error);
-      if (error instanceof ObjectNotFoundError) {
-        return res.sendStatus(404);
-      }
-      return res.sendStatus(500);
+      return res.status(error instanceof ImageStorageError ? error.status : 500).json({ message: error instanceof ImageStorageError ? error.message : "Unable to load image" });
     }
   });
 
   app.put("/api/service-images", isAuthenticated, async (req: any, res) => {
-    if (!req.body.imageURL) {
-      return res.status(400).json({ error: "imageURL is required" });
+    if (typeof req.body.objectPath !== "string") {
+      return res.status(400).json({ message: "objectPath is required" });
     }
 
     const userId = req.user?.claims?.sub;
 
     try {
-      const objectStorageService = new ObjectStorageService();
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
-        req.body.imageURL,
-        {
-          owner: userId,
-          visibility: "public",
-        },
-      );
+      const objectPath = req.body.objectPath;
+      await validateOwnedImage(objectPath, userId);
 
       res.status(200).json({
         objectPath: objectPath,
       });
     } catch (error) {
       console.error("Error setting service image:", error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(error instanceof ImageStorageError ? error.status : 500).json({ message: error instanceof ImageStorageError ? error.message : "Failed to confirm image" });
     }
   });
 
@@ -141,85 +126,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Geocoding endpoint for address search
-  app.get('/api/geocode', async (req: any, res) => {
-    try {
-      const address = req.query.address as string;
-      
-      if (!address) {
-        return res.status(400).json({ message: "Address is required" });
-      }
-
-      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-      if (!apiKey) {
-        console.error("Google Maps API key not configured");
-        return res.status(500).json({ message: "Google Maps API key not configured" });
-      }
-
-      const encodedAddress = encodeURIComponent(address);
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${apiKey}`;
-      
-      const response = await fetch(geocodeUrl);
-      const data = await response.json();
-      
-      console.log("Geocoding API response status:", data.status);
-      console.log("Geocoding API error message:", data.error_message);
-
-      if (data.status === 'OK' && data.results.length > 0) {
-        const result = data.results[0];
-        res.json({
-          lat: result.geometry.location.lat,
-          lng: result.geometry.location.lng,
-          formattedAddress: result.formatted_address,
-        });
-      } else {
-        console.error(`Geocoding failed for "${address}": status=${data.status}, error=${data.error_message || 'none'}`);
-        res.status(400).json({ 
-          message: `Address not found. Status: ${data.status}` 
-        });
-      }
-    } catch (error) {
-      console.error("Geocoding error:", error);
-      res.status(500).json({ message: "Failed to verify address" });
+  const geocodingFailure = (error: unknown, res: import("express").Response) => {
+    if (error instanceof GeocodingError) {
+      console.error("Geocoding failed:", error.code);
+      return res.status(error.status).json({ message: error.message, code: error.code });
     }
+    return res.status(503).json({ message: "Address lookup is temporarily unavailable.", code: "UNAVAILABLE" });
+  };
+
+  app.get('/api/geocode', async (req, res) => {
+    try {
+      res.json(await geocodeAddress(req.query.address));
+    } catch (error) { geocodingFailure(error, res); }
   });
 
-  // Geocoding endpoint for address verification (POST for service creation)
-  app.post('/api/geocode', isAuthenticated, async (req: any, res) => {
+  app.post('/api/geocode', isAuthenticated, async (req, res) => {
     try {
-      const { address } = req.body;
-      
-      if (!address) {
-        return res.status(400).json({ message: "Address is required" });
-      }
-
-      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-      if (!apiKey) {
-        return res.status(500).json({ message: "Google Maps API key not configured" });
-      }
-
-      const encodedAddress = encodeURIComponent(address);
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${apiKey}`;
-      
-      const response = await fetch(geocodeUrl);
-      const data = await response.json();
-
-      if (data.status === 'OK' && data.results.length > 0) {
-        const result = data.results[0];
-        res.json({
-          latitude: result.geometry.location.lat,
-          longitude: result.geometry.location.lng,
-          formattedAddress: result.formatted_address,
-        });
-      } else {
-        res.status(400).json({ 
-          message: "Address not found. Please enter a valid address." 
-        });
-      }
-    } catch (error) {
-      console.error("Geocoding error:", error);
-      res.status(500).json({ message: "Failed to verify address" });
-    }
+      const result = await geocodeAddress(req.body.address);
+      res.json({ latitude: result.lat, longitude: result.lng, formattedAddress: result.formattedAddress });
+    } catch (error) { geocodingFailure(error, res); }
   });
 
   // User routes
@@ -248,6 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         providerId: userId,
       });
+      if (serviceData.imageUrl) await validateOwnedImage(serviceData.imageUrl, userId);
       
       const service = await storage.createService(serviceData);
       
@@ -268,7 +194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(service);
     } catch (error) {
       console.error("Error creating service:", error);
-      res.status(500).json({ message: "Failed to create service" });
+      res.status(error instanceof ImageStorageError ? error.status : 500).json({ message: error instanceof ImageStorageError ? error.message : "Failed to create service" });
     }
   });
 
@@ -390,7 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch the matched services
       const servicesPromises = relevantServiceIds.map(id => storage.getServiceById(id));
       const servicesResults = await Promise.all(servicesPromises);
-      let services = servicesResults.filter((s): s is NonNullable<typeof s> => s !== undefined);
+      let services = servicesResults.filter((s): s is NonNullable<typeof s> => s !== undefined && s.isActive === true);
       
       // Apply category filter if specified
       if (category) {
@@ -511,7 +437,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const serviceId = parseInt(req.params.id);
       const service = await storage.getServiceById(serviceId);
       
-      if (!service) {
+      if (!service || !service.isActive) {
         return res.status(404).json({ message: "Service not found" });
       }
       
@@ -519,6 +445,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching service:", error);
       res.status(500).json({ message: "Failed to fetch service" });
+    }
+  });
+
+  app.post('/api/services/:id/copy', isAuthenticated, async (req, res) => {
+    const serviceId = Number(req.params.id);
+    if (!Number.isSafeInteger(serviceId) || serviceId < 1) {
+      return res.status(400).json({ message: "Invalid service ID" });
+    }
+    try {
+      const copy = await storage.copyService(serviceId, req.user!.claims.sub);
+      if (!copy) return res.status(404).json({ message: "Service not found" });
+      res.status(201).json(copy);
+    } catch (error) {
+      console.error("Failed to copy service:", error instanceof Error ? error.name : "Error");
+      res.status(500).json({ message: "Failed to copy service" });
     }
   });
 
@@ -533,12 +474,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
-      const updates = req.body;
+      const updates = insertServiceSchema.omit({ providerId: true }).partial().parse(req.body);
+      if (updates.imageUrl) await validateOwnedImage(updates.imageUrl, userId);
       const updatedService = await storage.updateService(serviceId, updates);
       res.json(updatedService);
     } catch (error) {
       console.error("Error updating service:", error);
-      res.status(500).json({ message: "Failed to update service" });
+      res.status(error instanceof ImageStorageError ? error.status : 500).json({ message: error instanceof ImageStorageError ? error.message : "Failed to update service" });
     }
   });
 
@@ -571,7 +513,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const service = await storage.getServiceById(bookingData.serviceId);
-      if (!service) {
+      if (!service || !service.isActive) {
         return res.status(404).json({ message: "Service not found" });
       }
 

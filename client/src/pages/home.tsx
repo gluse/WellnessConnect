@@ -4,11 +4,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
+import { isUnauthorizedError, logout } from "@/lib/authUtils";
 import RoleSwitcher from "@/components/role-switcher";
 import ServiceFilters, { SearchFilters } from "@/components/service-filters";
 import ServiceCard from "@/components/service-card";
 import GoogleMap from "@/components/google-map";
+import { loadGeocoder } from "@/lib/google-maps";
 import BookingModal from "@/components/booking-modal";
 import ServiceDetailModal from "@/components/service-detail-modal";
 import BottomNavigation from "@/components/bottom-navigation";
@@ -225,38 +226,10 @@ export default function Home() {
     );
   };
 
-  const loadGoogleMapsAPI = async (apiKey: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      if ((window as any).google?.maps) {
-        resolve();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load Google Maps'));
-      document.head.appendChild(script);
-    });
-  };
-
   const handleGeocodeLocation = async (address: string) => {
     try {
-      // Get Google Maps API key
-      const configResponse = await fetch('/api/config/maps');
-      const config = await configResponse.json();
-      
-      if (!config.apiKey) {
-        throw new Error("Maps API key not configured");
-      }
-
-      // Load Google Maps API if not already loaded
-      await loadGoogleMapsAPI(config.apiKey);
-
-      // Use Google Maps Geocoder on the client side
-      const geocoder = new (window as any).google.maps.Geocoder();
+      const { Geocoder } = await loadGeocoder();
+      const geocoder = new Geocoder();
       const result = await new Promise<any>((resolve, reject) => {
         geocoder.geocode({ address }, (results: any, status: any) => {
           if (status === 'OK' && results && results.length > 0) {
@@ -390,7 +363,7 @@ export default function Home() {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => window.location.href = "/api/logout"}
+                onClick={() => void logout().catch(() => toast({ title: "Unable to sign out", variant: "destructive" }))}
                 className="w-8 h-8 p-0"
               >
                 <div className="w-6 h-6 bg-neutral-200 rounded-full flex items-center justify-center">

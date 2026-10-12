@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
+import { isUnauthorizedError, logout } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,10 +13,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, Plus, Calendar, DollarSign, Star, Users, Check, X, Image as ImageIcon, Link as LinkIcon, Sparkles, Pencil } from "lucide-react";
+import { Heart, Plus, Calendar, DollarSign, Star, Users, Check, X, Image as ImageIcon, Link as LinkIcon, Sparkles, Pencil, Copy } from "lucide-react";
 import RoleSwitcher from "@/components/role-switcher";
 import BottomNavigation from "@/components/bottom-navigation";
-import { ObjectUploader } from "@/components/ObjectUploader";
+import { ImageUploader } from "@/components/ImageUploader";
 import CalendarView from "@/components/calendar-view";
 import type { ScheduleClickEvent } from "@/components/calendar-view";
 import ScheduleEditModal from "@/components/schedule-edit-modal";
@@ -53,6 +53,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     longitude: null as number | null,
     imageUrl: "",
     externalUrl: "",
+    isActive: true,
   });
   const [newSchedule, setNewSchedule] = useState({
     serviceId: null as number | null, // null = applies to all services
@@ -69,7 +70,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
   });
 
   // Fetch provider services
-  const { data: services = [], isLoading: servicesLoading } = useQuery({
+  const { data: services = [], isLoading: servicesLoading } = useQuery<Service[]>({
     queryKey: ["/api/services/provider"],
     retry: false,
     staleTime: 30000,
@@ -77,7 +78,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
   });
 
   // Fetch provider bookings
-  const { data: bookings = [], isLoading: bookingsLoading } = useQuery({
+  const { data: bookings = [], isLoading: bookingsLoading } = useQuery<BookingWithDetails[]>({
     queryKey: ["/api/bookings/provider"],
     retry: false,
     staleTime: 30000,
@@ -85,7 +86,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
   });
 
   // Fetch provider availability schedules
-  const { data: schedules = [], isLoading: schedulesLoading } = useQuery({
+  const { data: schedules = [], isLoading: schedulesLoading } = useQuery<Availability[]>({
     queryKey: ["/api/availability/provider"],
     retry: false,
     staleTime: 30000,
@@ -100,6 +101,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/services/provider"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/services/search"] });
       setShowAddService(false);
       setEditingService(null);
       setNewService({
@@ -117,6 +119,9 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
         address: "",
         latitude: null,
         longitude: null,
+        imageUrl: "",
+        externalUrl: "",
+        isActive: true,
       });
       toast({
         title: "Service Created",
@@ -151,6 +156,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/services/provider"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/services/search"] });
       setShowAddService(false);
       setEditingService(null);
       setNewService({
@@ -168,6 +174,9 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
         address: "",
         latitude: null,
         longitude: null,
+        imageUrl: "",
+        externalUrl: "",
+        isActive: true,
       });
       toast({
         title: "Service Updated",
@@ -191,6 +200,22 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
         description: "Failed to update service",
         variant: "destructive",
       });
+    },
+  });
+
+  const copyServiceMutation = useMutation({
+    mutationFn: async (serviceId: number): Promise<Service> => {
+      const response = await apiRequest("POST", `/api/services/${serviceId}/copy`);
+      return response.json();
+    },
+    onSuccess: (copy) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/services/provider"] });
+      handleEditService(copy);
+      toast({ title: "Service copied", description: "An inactive copy is ready to edit. Publish it when you are ready." });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) { window.location.assign("/api/login"); return; }
+      toast({ title: "Unable to copy service", description: "Please try again.", variant: "destructive" });
     },
   });
 
@@ -354,7 +379,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       return;
     }
 
-    if (!newService.address || !newService.latitude || !newService.longitude) {
+    if (!newService.address || newService.latitude == null || newService.longitude == null) {
       toast({
         title: "Location Required",
         description: "Please provide an address and coordinates (verify address or enter manually)",
@@ -392,12 +417,13 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       ageGroups: (service.ageGroups as string[]) || [],
       targetGender: service.targetGender || "both",
       instantBooking: service.instantBooking || false,
-      advancePaymentPercent: service.advancePaymentPercent || 50,
+      advancePaymentPercent: service.advancePaymentPercent ?? 50,
       address: service.address || "",
-      latitude: service.latitude || null,
-      longitude: service.longitude || null,
+      latitude: service.latitude ?? null,
+      longitude: service.longitude ?? null,
       imageUrl: (service as any).imageUrl || "",
       externalUrl: (service as any).externalUrl || "",
+      isActive: service.isActive ?? false,
     });
     setShowAddService(true);
   };
@@ -422,6 +448,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       longitude: null,
       imageUrl: "",
       externalUrl: "",
+      isActive: true,
     });
   };
 
@@ -587,7 +614,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => window.location.href = "/api/logout"}
+                onClick={() => void logout().catch(() => toast({ title: "Unable to sign out", variant: "destructive" }))}
                 className="w-8 h-8 p-0"
               >
                 <div className="w-6 h-6 bg-neutral-200 rounded-full flex items-center justify-center">
@@ -684,7 +711,10 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                   <Card key={service.id}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-semibold text-neutral-800">{service.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-neutral-800">{service.name}</h3>
+                          {!service.isActive && <Badge variant="outline">Inactive</Badge>}
+                        </div>
                         <Badge variant={service.serviceType === "one_to_one" ? "default" : "secondary"}>
                           {service.serviceType === "one_to_one" ? "One-to-One" : "Group"}
                         </Badge>
@@ -703,14 +733,13 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                         <Badge variant={service.instantBooking ? "default" : "outline"}>
                           {service.instantBooking ? "Instant Book" : "Approval Required"}
                         </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditService(service)}
-                          data-testid={`button-edit-service-${service.id}`}
-                        >
-                          Edit
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => copyServiceMutation.mutate(service.id)} disabled={copyServiceMutation.isPending} data-testid={`button-copy-service-${service.id}`}>
+                            <Copy className="w-4 h-4 mr-1" />
+                            {copyServiceMutation.isPending && copyServiceMutation.variables === service.id ? "Copying…" : "Copy"}
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleEditService(service)} data-testid={`button-edit-service-${service.id}`}>Edit</Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -1030,9 +1059,12 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                             description: "Location coordinates set successfully",
                           });
                         } catch (error) {
+                          const unavailable = error instanceof Error && /^(500|502|503|429):/.test(error.message);
                           toast({
-                            title: "Verification Failed",
-                            description: "Unable to verify address automatically. Please enter coordinates manually below.",
+                            title: unavailable ? "Address lookup unavailable" : "Verification Failed",
+                            description: unavailable
+                              ? "Address lookup is temporarily unavailable. Please try again later or enter coordinates manually below."
+                              : "Try the street address, town, and country, or enter coordinates manually below.",
                             variant: "destructive",
                           });
                         }
@@ -1090,44 +1122,13 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                 <div>
                   <Label>Service Image (Optional)</Label>
                   <div className="mt-2">
-                    <ObjectUploader
-                      maxNumberOfFiles={1}
-                      maxFileSize={10485760}
-                      onGetUploadParameters={async () => {
-                        const response = await apiRequest("POST", "/api/objects/upload", {});
-                        const data = await response.json();
-                        return {
-                          method: 'PUT' as const,
-                          url: data.uploadURL,
-                        };
-                      }}
-                      onComplete={(result) => {
-                        if (result.successful.length > 0) {
-                          const uploadedUrl = result.successful[0].uploadURL;
-                          apiRequest("PUT", "/api/service-images", { imageURL: uploadedUrl })
-                            .then((res) => res.json())
-                            .then((data) => {
-                              setNewService(prev => ({ ...prev, imageUrl: data.objectPath }));
-                              toast({
-                                title: "Image Uploaded",
-                                description: "Service image uploaded successfully",
-                              });
-                            })
-                            .catch((error) => {
-                              console.error("Error setting image:", error);
-                              toast({
-                                title: "Error",
-                                description: "Failed to set service image",
-                                variant: "destructive",
-                              });
-                            });
-                        }
-                      }}
+                    <ImageUploader
+                      onComplete={(objectPath) => setNewService(prev => ({ ...prev, imageUrl: objectPath }))}
                       buttonClassName="w-full"
                     >
                       <ImageIcon className="w-4 h-4 mr-2" />
                       {newService.imageUrl ? "Change Image" : "Upload Image"}
-                    </ObjectUploader>
+                    </ImageUploader>
                     {newService.imageUrl && (
                       <p className="text-xs text-green-600 mt-2">
                         ✓ Image uploaded
@@ -1156,6 +1157,14 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                 
                 <Separator />
                 
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <Label htmlFor="service-published">Publish service</Label>
+                    <p className="text-xs text-neutral-500 mt-1">Make this listing visible in service search.</p>
+                  </div>
+                  <Switch id="service-published" checked={newService.isActive} onCheckedChange={isActive => setNewService(prev => ({ ...prev, isActive }))} data-testid="switch-service-published" />
+                </div>
+
                 <div className="flex space-x-3">
                   <Button 
                     variant="outline" 
@@ -1171,10 +1180,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                     disabled={createServiceMutation.isPending || updateServiceMutation.isPending}
                     data-testid="button-save-service"
                   >
-                    {editingService
-                      ? (updateServiceMutation.isPending ? "Updating..." : "Update Service")
-                      : (createServiceMutation.isPending ? "Creating..." : "Create Service")
-                    }
+                    {createServiceMutation.isPending || updateServiceMutation.isPending ? "Saving…" : newService.isActive ? (editingService ? "Save and Publish" : "Create Service") : "Save Inactive Service"}
                   </Button>
                 </div>
               </div>

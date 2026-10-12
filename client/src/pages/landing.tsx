@@ -115,7 +115,7 @@ export default function Landing() {
             {t('nav.getStarted')}
           </Button>
           <p className="text-center text-sm text-neutral-500 mt-4">
-            Sign in with Google, GitHub, or email to get started
+            Create an account or sign in to get started
           </p>
         </div>
       </div>

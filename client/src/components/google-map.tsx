@@ -1,6 +1,6 @@
 /// <reference types="@types/google.maps" />
 import { useEffect, useRef, useState } from "react";
-import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
+import { loadMapLibraries } from "@/lib/google-maps";
 import type { ServiceWithProvider } from "@shared/schema";
 
 interface GoogleMapProps {
@@ -19,44 +19,32 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
-  const [apiKey, setApiKey] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
   const [mapReady, setMapReady] = useState(false);
-
-  // Fetch API key
-  useEffect(() => {
-    fetch('/api/config/maps')
-      .then(res => res.json())
-      .then(data => {
-        setApiKey(data.apiKey);
-        setIsLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to load maps config:', err);
-        setIsLoading(false);
-      });
-  }, []);
+  const latestLocation = useRef(userLocation);
+  latestLocation.current = userLocation;
 
   // Initialize map
   useEffect(() => {
-    if (!mapRef.current || !apiKey || isLoading) return;
+    let cancelled = false;
+    const mapsWindow = window as typeof window & { gm_authFailure?: () => void };
+    const previousAuthFailure = mapsWindow.gm_authFailure;
+    const authFailure = () => {
+      if (!cancelled) {
+        console.error("Google Maps authentication failed. Check Maps JavaScript API access and the browser key's allowed website origins.");
+        setError("The map is unavailable. Please try again later.");
+        setIsLoading(false);
+      }
+      previousAuthFailure?.();
+    };
+    mapsWindow.gm_authFailure = authFailure;
 
-    const defaultCenter = userLocation 
-      ? { lat: userLocation.lat, lng: userLocation.lng }
-      : { lat: 37.7749, lng: -122.4194 };
-
-    // Configure the loader with API key
-    setOptions({ 
-      key: apiKey,
-      v: "weekly"
-    });
-
-    // Load the maps library
-    importLibrary("maps").then(({ Map }) => {
-      if (!mapRef.current) return;
+    loadMapLibraries().then(({ Map }) => {
+      if (cancelled || !mapRef.current) return;
 
       googleMapRef.current = new Map(mapRef.current, {
-        center: defaultCenter,
+        center: latestLocation.current || { lat: 37.7749, lng: -122.4194 },
         zoom: 12,
         mapTypeControl: false,
         streetViewControl: false,
@@ -64,20 +52,25 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
       });
       
       setMapReady(true);
+      setIsLoading(false);
     }).catch(err => {
+      if (cancelled) return;
       console.error('Failed to load Google Maps:', err);
+      setError("The map could not load. Check your connection and try again.");
       setIsLoading(false);
     });
 
     return () => {
+      cancelled = true;
+      if (mapsWindow.gm_authFailure === authFailure) mapsWindow.gm_authFailure = previousAuthFailure;
+      if (googleMapRef.current) google.maps.event.clearInstanceListeners(googleMapRef.current);
       googleMapRef.current = null;
-      setMapReady(false);
     };
-  }, [apiKey, isLoading, userLocation]);
+  }, []);
 
   // Add markers
   useEffect(() => {
-    if (!googleMapRef.current || !apiKey || !mapReady) return;
+    if (!googleMapRef.current || !mapReady) return;
 
     // Clear existing markers
     markersRef.current.forEach(marker => marker.setMap(null));
@@ -117,7 +110,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
 
     // Add service markers
     services.forEach((service) => {
-      if (service.latitude && service.longitude && googleMapRef.current) {
+      if (service.latitude != null && service.longitude != null && googleMapRef.current) {
         const marker = new google.maps.Marker({
           position: { lat: service.latitude, lng: service.longitude },
           map: googleMapRef.current,
@@ -176,35 +169,18 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
     return () => {
       markersRef.current.forEach(marker => marker.setMap(null));
     };
-  }, [services, userLocation, onServiceSelect, apiKey, mapReady]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-full rounded-xl bg-neutral-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-neutral-600">Loading map...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!apiKey) {
-    return (
-      <div className="w-full h-full rounded-xl bg-neutral-100 flex items-center justify-center border-2 border-dashed border-neutral-300">
-        <div className="text-center p-6">
-          <p className="text-neutral-700 font-medium">Map Unavailable</p>
-          <p className="text-sm text-neutral-500">Google Maps API key not configured</p>
-        </div>
-      </div>
-    );
-  }
+  }, [services, userLocation, onServiceSelect, mapReady]);
 
   return (
-    <div 
-      ref={mapRef} 
-      className="w-full h-full rounded-xl overflow-hidden"
-      style={{ minHeight: "400px" }}
-    />
+    <div className="relative w-full h-full rounded-xl overflow-hidden" style={{ minHeight: "400px" }}>
+      <div ref={mapRef} className="absolute inset-0" />
+      {(isLoading || error) && <div className="absolute inset-0 bg-neutral-100 flex items-center justify-center">
+        <div className="text-center p-6" role={error ? "alert" : "status"}>
+          {isLoading && !error && <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />}
+          <p className="text-neutral-600">{error || "Loading map…"}</p>
+          {error && <button type="button" className="mt-3 text-primary underline" onClick={() => window.location.reload()}>Reload page</button>}
+        </div>
+      </div>}
+    </div>
   );
 }
