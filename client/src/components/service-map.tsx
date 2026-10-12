@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { ServiceWithProvider } from "@shared/schema";
+import { getProviderName } from "@shared/provider";
 
 interface ServiceMapProps {
   services: ServiceWithProvider[];
@@ -61,14 +62,15 @@ export default function ServiceMap({ services, userLocation, onServiceSelect }: 
           }),
         }).addTo(mapRef.current);
 
-        const providerName = service.provider 
-          ? `${service.provider.firstName || ''} ${service.provider.lastName || ''}`.trim() || 'Unknown Provider'
+        const providerName = service.provider
+          ? getProviderName(service.provider)
           : 'Unknown Provider';
         
         const popupContent = `
           <div style="min-width: 200px;">
             <h3 style="font-weight: bold; margin-bottom: 4px;">${escapeHtml(service.name)}</h3>
             <p style="font-size: 14px; color: #666; margin-bottom: 4px;">${escapeHtml(providerName)}</p>
+            ${service.employee?.name ? `<p style="font-size: 14px; color: #666; margin-bottom: 4px;">With ${escapeHtml(service.employee.name)}</p>` : ''}
             <p style="font-size: 14px; font-weight: bold; color: #10b981;">$${Number(service.price).toFixed(2)}</p>
             ${service.distance ? `<p style="font-size: 12px; color: #999;">${Number(service.distance).toFixed(1)} km away</p>` : ''}
           </div>

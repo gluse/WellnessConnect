@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, Clock, Users, MapPin } from "lucide-react";
 import type { ServiceWithProvider } from "@shared/schema";
+import { getProviderName } from "@shared/provider";
 
 interface ServiceCardProps {
   service: ServiceWithProvider;
@@ -42,7 +43,7 @@ export default function ServiceCard({ service, onBook, onViewDetails }: ServiceC
             
             <div className="flex items-center space-x-2 mb-2">
               <p className="text-sm text-neutral-600">
-                {service.provider.firstName} {service.provider.lastName}
+                {getProviderName(service.provider)}
               </p>
               {service.distance !== undefined && (
                 <>
@@ -56,6 +57,7 @@ export default function ServiceCard({ service, onBook, onViewDetails }: ServiceC
                 </>
               )}
             </div>
+            {service.employee?.name && <p className="text-sm text-neutral-500 mb-2">With {service.employee.name}</p>}
             
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-2">

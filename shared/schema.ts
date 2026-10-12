@@ -34,14 +34,27 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   currentRole: varchar("current_role", { enum: ["seeker", "provider"] }).default("seeker"),
+  providerType: varchar("provider_type", { enum: ["individual", "company"] }).notNull().default("individual"),
+  companyName: varchar("company_name", { length: 150 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }).enableRLS();
+
+// Employees are managed by the company administrator; they do not need login accounts.
+export const employees = pgTable("employees", {
+  id: serial("id").primaryKey(),
+  providerId: varchar("provider_id").references(() => users.id).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  showName: boolean("show_name").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [index("employees_provider_idx").on(table.providerId)]).enableRLS();
 
 // Services table
 export const services = pgTable("services", {
   id: serial("id").primaryKey(),
   providerId: varchar("provider_id").references(() => users.id).notNull(),
+  employeeId: integer("employee_id").references(() => employees.id),
   name: varchar("name").notNull(),
   description: text("description"),
   category: varchar("category", { enum: ["health_wellness", "education", "entertainment"] }).notNull(),
@@ -69,6 +82,8 @@ export const bookings = pgTable("bookings", {
   serviceId: integer("service_id").references(() => services.id).notNull(),
   seekerId: varchar("seeker_id").references(() => users.id).notNull(),
   providerId: varchar("provider_id").references(() => users.id).notNull(),
+  // Snapshot the assigned employee so editing a listing does not move existing bookings.
+  employeeId: integer("employee_id").references(() => employees.id),
   participantCount: integer("participant_count").default(1),
   scheduledDate: timestamp("scheduled_date").notNull(),
   bookingDuration: integer("booking_duration"), // Duration in minutes for this specific booking
@@ -79,7 +94,7 @@ export const bookings = pgTable("bookings", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-}).enableRLS();
+}, (table) => [index("bookings_employee_date_idx").on(table.employeeId, table.scheduledDate)]).enableRLS();
 
 // Service embeddings table for semantic search
 export const serviceEmbeddings = pgTable("service_embeddings", {
@@ -175,6 +190,18 @@ export const availabilityRelations = relations(availability, ({ one }) => ({
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+export type Employee = typeof employees.$inferSelect;
+
+export const providerProfileSchema = z.object({
+  providerType: z.enum(["individual", "company"]),
+  companyName: z.string().trim().max(150).nullable().optional(),
+}).refine(data => data.providerType !== "company" || Boolean(data.companyName), {
+  message: "Company name is required", path: ["companyName"],
+});
+export const employeeSchema = z.object({
+  name: z.string().trim().min(1, "Employee name is required").max(100),
+  showName: z.boolean().default(false),
+});
 
 export type InsertService = typeof services.$inferInsert;
 export type Service = typeof services.$inferSelect;
@@ -191,6 +218,7 @@ export type ServiceEmbedding = typeof serviceEmbeddings.$inferSelect;
 // Schemas
 export const insertServiceSchema = createInsertSchema(services, {
   ageGroups: z.array(z.string()).nullable().optional(),
+  employeeId: z.number().int().positive().nullable().optional(),
 }).omit({
   id: true,
   createdAt: true,
@@ -225,6 +253,7 @@ export const insertAvailabilitySchema = createInsertSchema(availability, {
 // Extended service type for API responses
 export type ServiceWithProvider = Service & {
   provider: User;
+  employee: { id: number; name: string | null } | null;
   availableCapacity?: number;
   nextAvailability?: string;
   distance?: number; // Distance in kilometers from user's location
@@ -234,4 +263,5 @@ export type BookingWithDetails = Booking & {
   service: Service;
   seeker: User;
   provider: User;
+  employee?: { id: number; name: string | null } | null;
 };

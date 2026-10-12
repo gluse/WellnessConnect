@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Separator } from "@/components/ui/separator";
 import { Star, Clock, Users, MapPin, DollarSign, Calendar, CheckCircle } from "lucide-react";
 import type { ServiceWithProvider } from "@shared/schema";
+import { getProviderName } from "@shared/provider";
 
 interface ServiceDetailModalProps {
   service: ServiceWithProvider | null;
@@ -79,13 +80,14 @@ export default function ServiceDetailModal({ service, open, onClose, onBook }: S
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center">
               <span className="text-xl font-semibold">
-                {service.provider.firstName?.[0] || ''}{service.provider.lastName?.[0] || ''}
+                {getProviderName(service.provider).split(/\s+/).slice(0, 2).map(word => word[0]).join("")}
               </span>
             </div>
             <div>
               <p className="font-semibold text-neutral-800" data-testid="text-provider-name">
-                {service.provider.firstName} {service.provider.lastName}
+                {getProviderName(service.provider)}
               </p>
+              {service.employee?.name && <p className="text-sm text-neutral-600">With {service.employee.name}</p>}
               <div className="flex items-center space-x-2">
                 <Star className="w-4 h-4 text-amber-400 fill-current" />
                 <span className="text-sm font-medium">4.8</span>

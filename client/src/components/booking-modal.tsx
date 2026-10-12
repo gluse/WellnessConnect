@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { CalendarCheck, CreditCard, X, AlertCircle, Clock, Loader2 } from "lucide-react";
 import type { ServiceWithProvider } from "@shared/schema";
+import { getProviderName } from "@shared/provider";
 
 interface TimeSlot {
   startTime: string;
@@ -153,7 +154,8 @@ export default function BookingModal({ service, onClose }: BookingModalProps) {
             <CalendarCheck className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-xl font-semibold mb-2">Confirm Your Booking</h2>
-          <p className="text-neutral-600">{service.name} with {service.provider.firstName}</p>
+          <p className="text-neutral-600">{service.name} with {getProviderName(service.provider)}</p>
+          {service.employee?.name && <p className="text-sm text-neutral-500">Employee: {service.employee.name}</p>}
         </div>
         
         <div className="space-y-4">

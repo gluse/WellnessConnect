@@ -18,10 +18,11 @@ import RoleSwitcher from "@/components/role-switcher";
 import BottomNavigation from "@/components/bottom-navigation";
 import { ImageUploader } from "@/components/ImageUploader";
 import CalendarView from "@/components/calendar-view";
+import ProviderProfile from "@/components/provider-profile";
 import type { ScheduleClickEvent } from "@/components/calendar-view";
 import ScheduleEditModal from "@/components/schedule-edit-modal";
 import { format } from "date-fns";
-import type { Service, BookingWithDetails, Availability } from "@shared/schema";
+import type { Service, BookingWithDetails, Availability, Employee } from "@shared/schema";
 
 interface ProviderDashboardProps {
   onRoleSwitch?: (role: "seeker" | "provider") => void;
@@ -54,6 +55,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     imageUrl: "",
     externalUrl: "",
     isActive: true,
+    employeeId: null as number | null,
   });
   const [newSchedule, setNewSchedule] = useState({
     serviceId: null as number | null, // null = applies to all services
@@ -70,6 +72,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
   });
 
   // Fetch provider services
+  const { data: employees = [] } = useQuery<Employee[]>({ queryKey: ["/api/provider/employees"] });
   const { data: services = [], isLoading: servicesLoading } = useQuery<Service[]>({
     queryKey: ["/api/services/provider"],
     retry: false,
@@ -122,6 +125,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
         imageUrl: "",
         externalUrl: "",
         isActive: true,
+        employeeId: null,
       });
       toast({
         title: "Service Created",
@@ -177,6 +181,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
         imageUrl: "",
         externalUrl: "",
         isActive: true,
+        employeeId: null,
       });
       toast({
         title: "Service Updated",
@@ -369,7 +374,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
     }
   };
 
-  const handleCreateService = () => {
+  const handleCreateService = (isActive: boolean) => {
     if (!newService.name || !newService.price) {
       toast({
         title: "Error",
@@ -393,12 +398,14 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
         id: editingService.id,
         serviceData: {
           ...newService,
+          isActive,
           price: newService.price,
         },
       });
     } else {
       createServiceMutation.mutate({
         ...newService,
+        isActive,
         price: newService.price,
       });
     }
@@ -424,6 +431,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       imageUrl: (service as any).imageUrl || "",
       externalUrl: (service as any).externalUrl || "",
       isActive: service.isActive ?? false,
+      employeeId: service.employeeId,
     });
     setShowAddService(true);
   };
@@ -449,6 +457,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       imageUrl: "",
       externalUrl: "",
       isActive: true,
+      employeeId: null,
     });
   };
 
@@ -629,6 +638,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
       {/* Main Content */}
       <main className="pb-20 lg:pb-8">
         <div className="max-w-7xl mx-auto p-4 lg:p-6 space-y-6">
+          {user && <ProviderProfile user={user} />}
           {/* Stats */}
           <div className="grid grid-cols-3 lg:grid-cols-4 gap-4">
               <Card>
@@ -719,6 +729,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                           {service.serviceType === "one_to_one" ? "One-to-One" : "Group"}
                         </Badge>
                       </div>
+                      {service.employeeId != null && <p className="text-sm text-neutral-600 mb-2">Employee: {employees.find(employee => employee.id === service.employeeId)?.name || "Assigned employee"}</p>}
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
                           <span className="text-neutral-600">Price:</span>
@@ -776,6 +787,7 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                               {booking.seeker.firstName} {booking.seeker.lastName}
                             </p>
                             <p className="text-sm text-neutral-600">{booking.service.name}</p>
+                            {booking.employeeId != null && <p className="text-sm text-neutral-500">Employee: {employees.find(employee => employee.id === booking.employeeId)?.name || "Assigned employee"}</p>}
                           </div>
                         </div>
                         <div className="text-right">
@@ -840,15 +852,24 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
         {/* Add/Edit Service Modal */}
         {showAddService && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
-            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 max-w-md mx-auto max-h-[80vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
+            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-w-md mx-auto max-h-[80vh] flex flex-col overflow-hidden">
+              <div className="flex shrink-0 items-center justify-between p-6 pb-4">
                 <h2 className="text-xl font-semibold">{editingService ? "Edit Service" : "Add New Service"}</h2>
                 <Button variant="ghost" size="sm" onClick={handleCloseModal} data-testid="button-close-modal">
                   <X className="w-5 h-5" />
                 </Button>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-4 min-h-0 overflow-y-auto px-6 pb-6">
+                {user?.providerType === "company" && <div>
+                  <Label htmlFor="service-employee">Employee (optional)</Label>
+                  <select id="service-employee" className="w-full border rounded-md p-2 bg-white" value={newService.employeeId ?? "none"}
+                    onChange={event => setNewService(prev => ({ ...prev, employeeId: event.target.value === "none" ? null : Number(event.target.value) }))} data-testid="select-service-employee">
+                    <option value="none">No specific employee (shared schedule)</option>
+                    {employees.map(employee => <option key={employee.id} value={employee.id}>{employee.name}</option>)}
+                  </select>
+                  <p className="text-xs text-neutral-500 mt-1">Offers assigned to different employees can be booked at the same time. Customer name visibility is set in Employees.</p>
+                </div>}
                 <div>
                   <Label htmlFor="serviceName">Service Name *</Label>
                   <Input
@@ -1155,34 +1176,36 @@ export default function ProviderDashboard({ onRoleSwitch }: ProviderDashboardPro
                   </p>
                 </div>
                 
-                <Separator />
-                
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <Label htmlFor="service-published">Publish service</Label>
-                    <p className="text-xs text-neutral-500 mt-1">Make this listing visible in service search.</p>
-                  </div>
-                  <Switch id="service-published" checked={newService.isActive} onCheckedChange={isActive => setNewService(prev => ({ ...prev, isActive }))} data-testid="switch-service-published" />
-                </div>
-
-                <div className="flex space-x-3">
-                  <Button 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={handleCloseModal}
-                    data-testid="button-cancel-service"
+              </div>
+              <div className="shrink-0 border-t bg-white p-4">
+                <p className="text-xs text-neutral-500 mb-3">
+                  Save and Publish makes this service visible in search. Inactive services stay hidden.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleCreateService(false)}
+                    disabled={createServiceMutation.isPending || updateServiceMutation.isPending}
+                    data-testid="button-save-inactive-service"
                   >
-                    Cancel
+                    Save Inactive
                   </Button>
-                  <Button 
-                    className="flex-1"
-                    onClick={handleCreateService}
+                  <Button
+                    onClick={() => handleCreateService(true)}
                     disabled={createServiceMutation.isPending || updateServiceMutation.isPending}
                     data-testid="button-save-service"
                   >
-                    {createServiceMutation.isPending || updateServiceMutation.isPending ? "Saving…" : newService.isActive ? (editingService ? "Save and Publish" : "Create Service") : "Save Inactive Service"}
+                    {createServiceMutation.isPending || updateServiceMutation.isPending ? "Saving…" : "Save and Publish"}
                   </Button>
                 </div>
+                <Button
+                  variant="ghost"
+                  className="w-full mt-1"
+                  onClick={handleCloseModal}
+                  data-testid="button-cancel-service"
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
           </div>

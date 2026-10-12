@@ -33,7 +33,7 @@ try {
   assert.equal((await request("/api/auth/login", { method: "POST", body: { email: "nobody@example.com", password: "invalid-password" }, requestOrigin: "https://untrusted.example" })).status, 403, "Reject cross-origin session changes");
   for (let index = 0; index < 2; index++) {
     const email = `wellness-test-${randomUUID()}@example.com`;
-    const password = randomBytes(32).toString("hex");
+    const password = `Aa1!${randomBytes(32).toString("hex")}`;
     const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
     assert.equal(error, null, "Temporary identity creation must succeed");
     identities.push({ id: data.user.id, email, password });
@@ -117,9 +117,90 @@ try {
   await pool.query("UPDATE services SET is_active=false WHERE id=$1", [inserted.rows[0].id]);
   assert.equal((await request(signed.objectPath, { cookie: otherCookie })).status, 403, "Unpublished services must stop exposing their images");
 
+  // Companies retain the administrator's ownership while employees have separate booking resources.
+  await pool.query("UPDATE bookings SET scheduled_date='2020-01-01' WHERE provider_id=$1", [owner.id]);
+  assert.equal((await request("/api/provider/profile", { method: "PATCH", body: { providerType: "company", companyName: "Test salon" } })).status, 401);
+  assert.equal((await request("/api/provider/profile", { method: "PATCH", cookie: ownerCookie, body: { providerType: "company", companyName: " " } })).status, 400);
+  assert.equal((await request("/api/provider/employees", { method: "POST", cookie: ownerCookie, body: { name: "Staff" } })).status, 400, "Individual providers must set up a company first");
+  const companyName = `Test salon ${randomUUID()}`;
+  await pool.query("UPDATE users SET first_name='Private administrator',last_name='Hidden name' WHERE id=$1", [owner.id]);
+  assert.equal((await request("/api/provider/profile", { method: "PATCH", cookie: ownerCookie, body: { providerType: "company", companyName } })).status, 200);
+  assert.equal((await request("/api/provider/profile", { method: "PATCH", cookie: otherCookie, body: { providerType: "company", companyName: "Other salon" } })).status, 200);
+  const addEmployee = async (cookie, name, showName) => {
+    const response = await request("/api/provider/employees", { method: "POST", cookie, body: { name, showName, providerId: other.id } });
+    assert.equal(response.status, 201);
+    return response.json();
+  };
+  const massage = await addEmployee(ownerCookie, "Private massage therapist", false);
+  const hair = await addEmployee(ownerCookie, "Public hair stylist", true);
+  const foreign = await addEmployee(otherCookie, "Other company's staff", false);
+  assert.equal(massage.providerId, owner.id, "Employee owner must come from the session");
+  assert.equal((await request(`/api/provider/employees/${massage.id}`, { method: "PATCH", cookie: otherCookie, body: { name: "Stolen employee", showName: true } })).status, 404);
+  assert.equal((await request(`/api/provider/employees/${massage.id}`, { method: "DELETE", cookie: otherCookie })).status, 404);
+  assert.deepEqual((await (await request("/api/provider/employees", { cookie: ownerCookie })).json()).map(employee => employee.id).sort(), [massage.id, hair.id].sort());
+  assert.equal((await request(`/api/services/${sourceId}`, { method: "PATCH", cookie: ownerCookie, body: { employeeId: foreign.id } })).status, 400, "Reject foreign employee assignments");
+  assert.equal((await request("/api/services", { method: "POST", cookie: ownerCookie, body: { name: "Invalid staff assignment", category: "health_wellness", serviceType: "one_to_one", price: "1", duration: 30, employeeId: foreign.id } })).status, 400);
+  assert.equal((await request(`/api/services/${sourceId}`, { method: "PATCH", cookie: ownerCookie, body: { employeeId: massage.id, isActive: true } })).status, 200);
+  assert.equal((await request(`/api/services/${copy.id}`, { method: "PATCH", cookie: ownerCookie, body: { employeeId: massage.id, isActive: true } })).status, 200);
+  const hairId = (await pool.query("INSERT INTO services (provider_id,employee_id,name,category,service_type,price,duration) VALUES ($1,$2,'Temporary haircut','health_wellness','one_to_one',1,30) RETURNING id", [owner.id, hair.id])).rows[0].id;
+  const companySearch = await (await request(`/api/services/search?searchQuery=${encodeURIComponent(companyName)}`)).json();
+  assert.equal(companySearch.length, 3, "Customers must be able to find offers by company name");
+  const privateListing = companySearch.find(service => service.id === sourceId);
+  assert.equal(privateListing.provider.companyName, companyName);
+  assert.equal(privateListing.provider.firstName, null, "Do not expose the administrator's personal name");
+  assert.equal(privateListing.provider.lastName, null);
+  assert.equal(privateListing.provider.email, null);
+  assert.equal(privateListing.employee.name, null, "Hide private employee names in API responses too");
+  assert.equal(companySearch.find(service => service.id === hairId).employee.name, hair.name);
+  assert.equal((await request(`/api/provider/employees/${massage.id}`, { method: "DELETE", cookie: ownerCookie })).status, 409, "Keep employees linked to services");
+  assert.equal((await request("/api/provider/profile", { method: "PATCH", cookie: ownerCookie, body: { providerType: "individual" } })).status, 409, "Avoid hiding a company with staff assignments");
+  await request(`/api/provider/employees/${massage.id}`, { method: "PATCH", cookie: ownerCookie, body: { name: massage.name, showName: true } });
+  assert.equal((await (await request(`/api/services/${sourceId}`)).json()).employee.name, massage.name, "Employee name visibility must update on existing offers");
+  await request(`/api/provider/employees/${massage.id}`, { method: "PATCH", cookie: ownerCookie, body: { name: massage.name, showName: false } });
+  const staffCopyResponse = await request(`/api/services/${sourceId}/copy`, { method: "POST", cookie: ownerCookie });
+  assert.equal(staffCopyResponse.status, 201);
+  const staffCopy = await staffCopyResponse.json();
+  assert.equal(staffCopy.employeeId, massage.id, "Copy must retain the employee assignment");
+  assert.equal(staffCopy.isActive, false);
+
+  const dateString = "2030-01-14";
+  const appointment = new Date(dateString);
+  appointment.setHours(10, 0, 0, 0);
+  assert.equal((await request("/api/availability", { method: "POST", cookie: ownerCookie, body: { serviceId: sourceId, scheduleType: "specific", specificDate: dateString, startTime: "09:00", endTime: "16:00", timezone: "UTC" } })).status, 200);
+  const scheduledOffers = await (await request(`/api/services/search?searchQuery=${encodeURIComponent(companyName)}&availableOnly=true&date=${dateString}`)).json();
+  assert.deepEqual(scheduledOffers.map(service => service.id), [sourceId], "A service-specific schedule must not make all company offers appear available");
+  assert.equal((await request("/api/availability", { method: "POST", cookie: ownerCookie, body: { serviceId: null, scheduleType: "specific", specificDate: dateString, startTime: "09:00", endTime: "16:00", timezone: "UTC" } })).status, 200);
+  const book = (serviceId, scheduledDate = appointment.toISOString()) => request("/api/bookings", { method: "POST", cookie: otherCookie, body: {
+    serviceId, providerId: other.id, employeeId: foreign.id, scheduledDate, bookingDuration: 1, totalAmount: "1", advanceAmount: "0",
+  } });
+  const massageBooking = await book(sourceId);
+  assert.equal(massageBooking.status, 200);
+  const booking = await massageBooking.json();
+  assert.equal(booking.providerId, owner.id, "Booking owner must come from the service");
+  assert.equal(booking.employeeId, massage.id, "Ignore forged booking employee IDs");
+  assert.equal(booking.bookingDuration, 30, "Use the service duration");
+  assert.equal((await book(copy.id)).status, 409, "Two offers for the same employee must share conflicts");
+  const massageSlots = await (await request(`/api/availability/slots/${copy.id}?date=${dateString}`)).json();
+  const hairSlots = await (await request(`/api/availability/slots/${hairId}?date=${dateString}`)).json();
+  assert.ok(!massageSlots.slots.some(slot => slot.startTime === "10:00"), "Hide slots occupied by another offer for the same employee");
+  assert.ok(hairSlots.slots.some(slot => slot.startTime === "10:00"), "Another employee must remain available");
+  assert.equal((await book(hairId)).status, 200, "Different employees can accept simultaneous bookings");
+  assert.equal((await request(`/api/services/${sourceId}`, { method: "PATCH", cookie: ownerCookie, body: { employeeId: hair.id } })).status, 409, "Protect employee assignments with upcoming bookings");
+  const noon = new Date(appointment);
+  noon.setHours(12, 0, 0, 0);
+  const simultaneous = await Promise.all([book(sourceId, noon.toISOString()), book(copy.id, noon.toISOString())]);
+  assert.deepEqual(simultaneous.map(response => response.status).sort(), [200, 409], "Concurrent bookings for one employee must not double-book");
+  await request(`/api/bookings/${booking.id}/status`, { method: "PATCH", cookie: ownerCookie, body: { status: "cancelled" } });
+  assert.equal((await book(copy.id)).status, 200, "Cancelled appointments must release the employee");
+  const seekerBookings = await (await request("/api/bookings/seeker", { cookie: otherCookie })).json();
+  assert.equal(seekerBookings.find(row => row.id === booking.id).provider.companyName, companyName);
+  assert.equal(seekerBookings.find(row => row.id === booking.id).employee.name, null);
+  const refreshedCookie = await login(owner);
+  assert.equal((await (await request("/api/auth/user", { cookie: refreshedCookie })).json()).companyName, companyName, "Logging in again must preserve the company profile");
+
   assert.equal((await request("/api/logout", { method: "POST", cookie: ownerCookie })).status, 200);
   assert.equal((await request("/api/auth/user", { cookie: ownerCookie })).status, 401, "Logout must invalidate the session");
-  console.log("Passed: Auth/Storage checks plus service copying, owner-only access, independent edits, draft visibility, and publication.");
+  console.log("Passed: Auth/Storage, copying/publication, company search, optional names, employee ownership, independent schedules, and concurrent booking protection.");
 } finally {
   if (files.length) {
     const { error } = await admin.storage.from(bucket).remove(files);
@@ -131,6 +212,7 @@ try {
     await pool.query("DELETE FROM availability WHERE provider_id=ANY($1::text[])", [ids]);
     await pool.query("DELETE FROM service_embeddings WHERE service_id IN (SELECT id FROM services WHERE provider_id=ANY($1::text[]))", [ids]);
     await pool.query("DELETE FROM services WHERE provider_id=ANY($1::text[])", [ids]);
+    await pool.query("DELETE FROM employees WHERE provider_id=ANY($1::text[])", [ids]);
     await pool.query("DELETE FROM sessions WHERE sess->'auth'->>'userId'=ANY($1::text[])", [ids]);
     await pool.query("DELETE FROM users WHERE id=ANY($1::text[])", [ids]);
     for (const id of ids) {

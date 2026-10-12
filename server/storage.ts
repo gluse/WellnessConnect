@@ -1,11 +1,13 @@
 import {
   users,
+  employees,
   services,
   bookings,
   availability,
   serviceEmbeddings,
   type User,
   type UpsertUser,
+  type Employee,
   type Service,
   type InsertService,
   type Booking,
@@ -19,6 +21,9 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, asc, desc, sql, ne } from "drizzle-orm";
+import { publicProvider } from "@shared/provider";
+
+export class BookingConflictError extends Error {}
 
 // Haversine formula to calculate distance between two points in kilometers
 function calculateDistance(
@@ -44,6 +49,10 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserRole(id: string, role: "seeker" | "provider"): Promise<User>;
+  updateProviderProfile(id: string, profile: { providerType: "individual" | "company"; companyName: string | null }): Promise<User>;
+  getEmployees(providerId: string): Promise<Employee[]>;
+  saveEmployee(providerId: string, employee: { name: string; showName: boolean }, id?: number): Promise<Employee | undefined>;
+  deleteEmployee(providerId: string, id: number): Promise<boolean>;
 
   // Service operations
   createService(service: InsertService): Promise<Service>;
@@ -72,6 +81,7 @@ export interface IStorage {
   updateBookingPayment(id: number, paymentStatus: string): Promise<Booking>;
   getBookingsForServiceOnDate(serviceId: number, date: Date): Promise<Booking[]>;
   getBookingsForProviderOnDate(providerId: string, date: Date): Promise<Booking[]>;
+  getBookingsForResourceOnDate(service: Service, date: Date): Promise<Booking[]>;
 
   // Availability operations
   createAvailability(availability: InsertAvailability): Promise<Availability>;
@@ -119,6 +129,30 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Service operations
+  async updateProviderProfile(id: string, profile: { providerType: "individual" | "company"; companyName: string | null }): Promise<User> {
+    const [user] = await db.update(users).set({ ...profile, updatedAt: new Date() }).where(eq(users.id, id)).returning();
+    return user;
+  }
+
+  async getEmployees(providerId: string): Promise<Employee[]> {
+    return db.select().from(employees).where(eq(employees.providerId, providerId)).orderBy(asc(employees.name));
+  }
+
+  async saveEmployee(providerId: string, employee: { name: string; showName: boolean }, id?: number): Promise<Employee | undefined> {
+    if (id !== undefined) {
+      const [updated] = await db.update(employees).set({ ...employee, updatedAt: new Date() })
+        .where(and(eq(employees.id, id), eq(employees.providerId, providerId))).returning();
+      return updated;
+    }
+    const [created] = await db.insert(employees).values({ ...employee, providerId }).returning();
+    return created;
+  }
+
+  async deleteEmployee(providerId: string, id: number): Promise<boolean> {
+    const removed = await db.delete(employees).where(and(eq(employees.id, id), eq(employees.providerId, providerId))).returning();
+    return removed.length > 0;
+  }
+
   async createService(service: InsertService): Promise<Service> {
     const [newService] = await db
       .insert(services)
@@ -155,13 +189,15 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(services)
       .leftJoin(users, eq(services.providerId, users.id))
+      .leftJoin(employees, eq(services.employeeId, employees.id))
       .where(eq(services.id, id));
 
     if (!result) return undefined;
 
     return {
       ...result.services,
-      provider: result.users!,
+      provider: publicProvider(result.users!),
+      employee: result.employees ? { id: result.employees.id, name: result.employees.showName ? result.employees.name : null } : null,
     };
   }
 
@@ -206,7 +242,9 @@ export class DatabaseStorage implements IStorage {
     if (filters.searchQuery && filters.searchQuery.trim()) {
       const searchTerm = `%${filters.searchQuery.trim().toLowerCase()}%`;
       conditions.push(
-        sql`(LOWER(${services.name}) LIKE ${searchTerm} OR LOWER(${services.description}) LIKE ${searchTerm})`
+        sql`(LOWER(${services.name}) LIKE ${searchTerm} OR LOWER(${services.description}) LIKE ${searchTerm}
+          OR (${users.providerType} = 'company' AND LOWER(${users.companyName}) LIKE ${searchTerm})
+          OR (${employees.showName} = true AND LOWER(${employees.name}) LIKE ${searchTerm}))`
       );
     }
 
@@ -214,12 +252,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(services)
       .leftJoin(users, eq(services.providerId, users.id))
+      .leftJoin(employees, eq(services.employeeId, employees.id))
       .where(and(...conditions))
       .orderBy(desc(services.createdAt));
 
     let servicesWithProviders: ServiceWithProvider[] = results.map(result => ({
       ...result.services,
-      provider: result.users!,
+      provider: publicProvider(result.users!),
+      employee: result.employees ? { id: result.employees.id, name: result.employees.showName ? result.employees.name : null } : null,
     }));
 
     // Filter by age groups if specified
@@ -273,10 +313,7 @@ export class DatabaseStorage implements IStorage {
       // Get all availability schedules
       const allAvailability = await db.select().from(availability);
       
-      // Get all bookings to check for conflicts
-      const allBookings = await db.select().from(bookings);
-      
-      // Build a map of provider ID -> available time slots
+      // Track general and service-specific working hours separately for company offers.
       const providerAvailability = new Map<string, boolean>();
       
       // Check each date in the range
@@ -287,6 +324,7 @@ export class DatabaseStorage implements IStorage {
         
         for (const schedule of allAvailability) {
           if (!schedule.isActive) continue;
+          const scheduleKey = `${schedule.providerId}:${schedule.serviceId ?? "all"}`;
           
           // Check if schedule applies to this date
           const scheduleApplies = 
@@ -320,7 +358,7 @@ export class DatabaseStorage implements IStorage {
               
               // If no break overlap, or if the available time outside breaks still covers filter range
               if (!overlapsWithBreak) {
-                providerAvailability.set(schedule.providerId, true);
+                providerAvailability.set(scheduleKey, true);
               } else {
                 // Check if there's still available time outside breaks that covers the filter range
                 // For simplicity, if any break overlaps with the requested time, we're conservative
@@ -329,19 +367,20 @@ export class DatabaseStorage implements IStorage {
                   filterEnd <= brk.startTime || filterStart >= brk.endTime
                 );
                 if (scheduleCoversBeforeBreak) {
-                  providerAvailability.set(schedule.providerId, true);
+                  providerAvailability.set(scheduleKey, true);
                 }
               }
             }
           } else {
             // No time filter - just check if any schedule exists for the date
-            providerAvailability.set(schedule.providerId, true);
+            providerAvailability.set(scheduleKey, true);
           }
         }
       }
       
       servicesWithProviders = servicesWithProviders.filter(
-        service => providerAvailability.get(service.providerId) === true
+        service => providerAvailability.get(`${service.providerId}:all`) === true
+          || providerAvailability.get(`${service.providerId}:${service.id}`) === true
       );
     }
 
@@ -350,11 +389,23 @@ export class DatabaseStorage implements IStorage {
 
   // Booking operations
   async createBooking(booking: InsertBooking): Promise<Booking> {
-    const [newBooking] = await db
-      .insert(bookings)
-      .values(booking)
-      .returning();
-    return newBooking;
+    return db.transaction(async tx => {
+      // Serialize check + insert for this administrator, including simultaneous requests.
+      await tx.execute(sql`SELECT id FROM users WHERE id = ${booking.providerId} FOR UPDATE`);
+      const start = booking.scheduledDate;
+      const end = new Date(start.getTime() + (booking.bookingDuration || 60) * 60_000);
+      const resource = booking.employeeId != null
+        ? eq(bookings.employeeId, booking.employeeId)
+        : sql`${bookings.employeeId} IS NULL`;
+      const overlapping = await tx.select({ id: bookings.id }).from(bookings)
+        .leftJoin(services, eq(bookings.serviceId, services.id))
+        .where(and(eq(bookings.providerId, booking.providerId), resource, ne(bookings.status, "cancelled"),
+          sql`${bookings.scheduledDate} < ${end.toISOString()}::timestamp`,
+          sql`${bookings.scheduledDate} + COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) * interval '1 minute' > ${start.toISOString()}::timestamp`));
+      if (overlapping.length) throw new BookingConflictError("This employee is already booked at that time.");
+      const [created] = await tx.insert(bookings).values(booking).returning();
+      return created;
+    });
   }
 
   async getBookingsBySeeker(seekerId: string): Promise<BookingWithDetails[]> {
@@ -363,6 +414,7 @@ export class DatabaseStorage implements IStorage {
       .from(bookings)
       .leftJoin(services, eq(bookings.serviceId, services.id))
       .leftJoin(users, eq(bookings.providerId, users.id))
+      .leftJoin(employees, eq(bookings.employeeId, employees.id))
       .where(eq(bookings.seekerId, seekerId))
       .orderBy(desc(bookings.createdAt));
 
@@ -370,7 +422,8 @@ export class DatabaseStorage implements IStorage {
       ...result.bookings,
       service: result.services!,
       seeker: { id: seekerId } as User,
-      provider: result.users!,
+      provider: publicProvider(result.users!),
+      employee: result.employees ? { id: result.employees.id, name: result.employees.showName ? result.employees.name : null } : null,
     }));
   }
 
@@ -468,6 +521,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Availability operations
+  async getBookingsForResourceOnDate(service: Service, date: Date): Promise<Booking[]> {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    const rows = await db.select({ booking: bookings, duration: services.duration }).from(bookings)
+      .leftJoin(services, eq(bookings.serviceId, services.id))
+      .where(and(eq(bookings.providerId, service.providerId), ne(bookings.status, "cancelled"),
+        service.employeeId != null ? eq(bookings.employeeId, service.employeeId) : sql`${bookings.employeeId} IS NULL`,
+        sql`${bookings.scheduledDate} < ${end.toISOString()}::timestamp`,
+        sql`${bookings.scheduledDate} + COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) * interval '1 minute' > ${start.toISOString()}::timestamp`));
+    return rows.map(row => ({ ...row.booking, bookingDuration: row.booking.bookingDuration ?? row.duration ?? 60 }));
+  }
+
   async createAvailability(availabilityData: InsertAvailability): Promise<Availability> {
     const [newAvailability] = await db
       .insert(availability)

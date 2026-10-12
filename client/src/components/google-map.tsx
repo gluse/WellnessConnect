@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { loadMapLibraries } from "@/lib/google-maps";
 import type { ServiceWithProvider } from "@shared/schema";
+import { getProviderName } from "@shared/provider";
 
 interface GoogleMapProps {
   services: ServiceWithProvider[];
@@ -125,14 +126,15 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
           title: service.name,
         });
 
-        const providerName = service.provider 
-          ? `${service.provider.firstName || ''} ${service.provider.lastName || ''}`.trim() || 'Unknown Provider'
+        const providerName = service.provider
+          ? getProviderName(service.provider)
           : 'Unknown Provider';
 
         const infoWindowContent = `
           <div style="padding: 12px; min-width: 200px;">
             <h3 style="font-weight: bold; margin: 0 0 8px 0; font-size: 16px;">${escapeHtml(service.name)}</h3>
             <p style="margin: 0 0 4px 0; color: #666; font-size: 14px;">${escapeHtml(providerName)}</p>
+            ${service.employee?.name ? `<p style="margin: 0 0 4px 0; color: #666; font-size: 14px;">With ${escapeHtml(service.employee.name)}</p>` : ''}
             <p style="margin: 0 0 4px 0; font-weight: bold; color: #10b981; font-size: 14px;">$${Number(service.price).toFixed(2)}</p>
             ${service.distance ? `<p style="margin: 0; color: #999; font-size: 12px;">${Number(service.distance).toFixed(1)} km away</p>` : ''}
           </div>
