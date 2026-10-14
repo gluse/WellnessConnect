@@ -9,7 +9,7 @@ and private image storage.
 1. Install a supported Node.js version (Node 22 or newer) and run `npm ci`.
 2. Copy `.env.example` to `.env` and fill in the Supabase database/API credentials,
    session secret, Google Maps key, and OpenAI key. Keep `.env` private.
-3. For a fresh database, run `npm run db:push` to create the seven application tables
+3. For a fresh database, run `npm run db:push` to create the ten application tables
    with row-level security enabled.
 4. Run `npm run storage:setup` to configure the private image bucket.
 5. Configure email and optional Google login using the
@@ -27,7 +27,7 @@ Do not create tables with `db:push` before restoring a database dump.
 - Browse service lists, Google Maps, and calendars.
 - Create provider listings and availability schedules.
 - Offer services as an individual or a company, with employees managed by one
-  administrator and optional public employee names.
+  or more administrators, separate employee logins, and optional public employee names.
 - Copy an owned listing into an inactive service, edit its details, and publish
   it using the editor's Save and Publish button. Use Save Inactive to keep it hidden.
   Copies reuse the same image and employee assignment and
@@ -46,15 +46,18 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run build` | Compile frontend and backend into `dist/` |
 | `npm start` | Serve the production build |
 | `npm run db:push` | Apply reviewed application schema changes |
-| `npm run db:setup-company` | Add company profiles and employees to an existing Supabase database |
+| `npm run db:setup-company` | Add company workspaces, employees, and team permissions; preserve existing records |
 | `npm run storage:setup` | Configure the private image bucket |
 | `npm run test:integration` | Live Auth/Storage, company, employee, and booking tests with temporary users |
+| `npm run test:teams` | Live team permissions, invitation sign-in, rescheduling, and ownership tests without sending emails |
+| `npm run test:invite-ui` | Invitation session expiry and stale password-state regression tests |
 
 ## Company providers
 
-In the provider dashboard, choose **Company** in **Provider profile**, enter the
-company name, and click **Save Profile**. The same administrator manages all
-company offers and bookings. Existing offers use the saved company name too.
+On `/login`, choose **Create a company**, enter the company name, email, and
+password, and verify the email. Personal names are optional. The verified creator
+becomes the company owner. Existing personal accounts can create a company from
+**Provider profile**; the initial conversion preserves their offers and schedules.
 
 Add employees using a name or an internal label (for example, "Massage therapist").
 Leave **Show this name to customers** off to show only the company publicly.
@@ -69,9 +72,28 @@ working hours apply to all employees; service-specific schedules can define
 different hours. Employee assignment cannot change while a service has upcoming
 bookings, and employees with booking history are retained.
 
-Each administrator account has one provider profile. Employees do not need their
-own login accounts. To update an existing installation, run
-`npm run db:setup-company` before restarting the backend.
+Use **Workspace** to switch between personal offers and companies you belong to.
+Each account can create one company and join other companies by invitation.
+Employees can remain managed records, or receive separate logins through
+**Company team**. Invite by email, choose access and the associated employee,
+then send the email or share the generated invitation link. Existing Supabase
+accounts receive a shareable link when Supabase cannot send an Auth invitation.
+Invitations expire after seven days and can be revoked.
+
+| Access | Permissions |
+| --- | --- |
+| Owner | Company management, team management, ownership transfer, close/reopen |
+| Administrator | All company services, schedules, team access, and reservations |
+| Service provider | View, confirm, cancel, and reschedule assigned reservations |
+| Read-only | View assigned services and reservations; no company changes |
+
+Company membership is checked on the backend for every request. Removing a
+member or changing access applies to existing sessions. Public listings show the
+company name, with employee names optional. Owners can close companies without
+destroying reservation history, then reopen them. Personal workspaces retain
+separate offers. To update an existing installation, run
+`npm run db:setup-company` before restarting the backend. Existing company
+administrators are migrated to owner memberships automatically.
 
 ## Deployment
 
@@ -100,7 +122,9 @@ changing `.env`. A place/business name may need its full street address to match
 - `server/imageStorage.ts`: signed uploads and image ownership checks
 - `server/db.ts`: PostgreSQL connection pool
 - `server/routes.ts`: service, booking, availability, and image endpoints
-- `shared/schema.ts`: seven application tables and validation schemas
+- `server/companyRoutes.ts`: invitations, team access, workspace selection, and ownership
+- `server/companyAccess.ts`: company authorization and signup conversion
+- `shared/schema.ts`: ten application tables and validation schemas
 - `docs/`: Supabase setup and migration instructions
 
 ## License

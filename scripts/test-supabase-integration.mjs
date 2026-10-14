@@ -142,7 +142,8 @@ try {
   assert.equal((await request("/api/services", { method: "POST", cookie: ownerCookie, body: { name: "Invalid staff assignment", category: "health_wellness", serviceType: "one_to_one", price: "1", duration: 30, employeeId: foreign.id } })).status, 400);
   assert.equal((await request(`/api/services/${sourceId}`, { method: "PATCH", cookie: ownerCookie, body: { employeeId: massage.id, isActive: true } })).status, 200);
   assert.equal((await request(`/api/services/${copy.id}`, { method: "PATCH", cookie: ownerCookie, body: { employeeId: massage.id, isActive: true } })).status, 200);
-  const hairId = (await pool.query("INSERT INTO services (provider_id,employee_id,name,category,service_type,price,duration) VALUES ($1,$2,'Temporary haircut','health_wellness','one_to_one',1,30) RETURNING id", [owner.id, hair.id])).rows[0].id;
+  const ownerCompanyId = (await (await request("/api/company/context", { cookie: ownerCookie })).json()).company.id;
+  const hairId = (await pool.query("INSERT INTO services (provider_id,employee_id,company_id,name,category,service_type,price,duration) VALUES ($1,$2,$3,'Temporary haircut','health_wellness','one_to_one',1,30) RETURNING id", [owner.id, hair.id, ownerCompanyId])).rows[0].id;
   const companySearch = await (await request(`/api/services/search?searchQuery=${encodeURIComponent(companyName)}`)).json();
   assert.equal(companySearch.length, 3, "Customers must be able to find offers by company name");
   const privateListing = companySearch.find(service => service.id === sourceId);
@@ -165,7 +166,7 @@ try {
 
   const dateString = "2030-01-14";
   const appointment = new Date(dateString);
-  appointment.setHours(10, 0, 0, 0);
+  appointment.setUTCHours(10, 0, 0, 0);
   assert.equal((await request("/api/availability", { method: "POST", cookie: ownerCookie, body: { serviceId: sourceId, scheduleType: "specific", specificDate: dateString, startTime: "09:00", endTime: "16:00", timezone: "UTC" } })).status, 200);
   const scheduledOffers = await (await request(`/api/services/search?searchQuery=${encodeURIComponent(companyName)}&availableOnly=true&date=${dateString}`)).json();
   assert.deepEqual(scheduledOffers.map(service => service.id), [sourceId], "A service-specific schedule must not make all company offers appear available");
@@ -187,7 +188,7 @@ try {
   assert.equal((await book(hairId)).status, 200, "Different employees can accept simultaneous bookings");
   assert.equal((await request(`/api/services/${sourceId}`, { method: "PATCH", cookie: ownerCookie, body: { employeeId: hair.id } })).status, 409, "Protect employee assignments with upcoming bookings");
   const noon = new Date(appointment);
-  noon.setHours(12, 0, 0, 0);
+  noon.setUTCHours(12, 0, 0, 0);
   const simultaneous = await Promise.all([book(sourceId, noon.toISOString()), book(copy.id, noon.toISOString())]);
   assert.deepEqual(simultaneous.map(response => response.status).sort(), [200, 409], "Concurrent bookings for one employee must not double-book");
   await request(`/api/bookings/${booking.id}/status`, { method: "PATCH", cookie: ownerCookie, body: { status: "cancelled" } });
@@ -195,6 +196,30 @@ try {
   const seekerBookings = await (await request("/api/bookings/seeker", { cookie: otherCookie })).json();
   assert.equal(seekerBookings.find(row => row.id === booking.id).provider.companyName, companyName);
   assert.equal(seekerBookings.find(row => row.id === booking.id).employee.name, null);
+  const weekly = { serviceId: null, timezone: "Europe/Riga", days: Array.from({ length: 7 }, (_, day) => ({ day, intervals: day === 1 ? [{ startTime: "09:00", endTime: "12:00" }, { startTime: "13:00", endTime: "17:00" }] : [] })) };
+  assert.equal((await request("/api/availability/weekly", { method: "PUT", cookie: ownerCookie, body: weekly })).status, 200);
+  assert.equal((await request("/api/availability/weekly", { method: "PUT", cookie: ownerCookie, body: { ...weekly, timezone: "Invalid/Zone" } })).status, 400);
+  const slotDate = "2030-01-21";
+  const rigaSlots = await (await request(`/api/availability/slots/${sourceId}?date=${slotDate}&timezone=Europe%2FRiga`)).json();
+  assert.equal(rigaSlots.slots[0].startTime, "09:00");
+  assert.equal(rigaSlots.slots[0].startsAt, "2030-01-21T07:00:00.000Z", "Interpret working hours in the saved timezone");
+  assert.ok(!rigaSlots.slots.some(slot => slot.startTime === "12:00"), "Exclude breaks between working ranges");
+  const month = await (await request(`/api/availability/month/${sourceId}?month=2030-01&timezone=Europe%2FRiga`)).json();
+  assert.equal(month.days.find(day => day.date === slotDate).availableSlots, rigaSlots.slots.length);
+  assert.equal(month.days.find(day => day.date === "2030-01-22").availableSlots, 0);
+  assert.equal((await book(sourceId, "2030-01-21T05:00:00Z")).status, 409, "Reject bookings outside working hours");
+  assert.equal((await book(sourceId, rigaSlots.slots[0].startsAt)).status, 200);
+  const offDay = { serviceId: null, timezone: "Europe/Riga", date: slotDate, intervals: [] };
+  assert.equal((await request("/api/availability/override", { method: "PUT", cookie: ownerCookie, body: offDay })).status, 200);
+  assert.equal((await (await request(`/api/availability/slots/${sourceId}?date=${slotDate}&timezone=Europe%2FRiga`)).json()).slots.length, 0, "A day off replaces weekly availability");
+  assert.equal((await request(`/api/availability/override?serviceId=all&date=${slotDate}`, { method: "DELETE", cookie: ownerCookie })).status, 200);
+  assert.ok((await (await request(`/api/availability/slots/${sourceId}?date=${slotDate}&timezone=Europe%2FRiga`)).json()).slots.length > 0, "Removing an exception restores weekly hours");
+  const customWeek = { ...weekly, serviceId: copy.id, days: weekly.days.map(item => ({ ...item, intervals: item.day === 2 ? [{ startTime: "10:00", endTime: "11:00" }] : [] })) };
+  assert.equal((await request("/api/availability/weekly", { method: "PUT", cookie: otherCookie, body: customWeek })).status, 403, "Reject changes to another company's hours");
+  assert.equal((await request("/api/availability/weekly", { method: "PUT", cookie: ownerCookie, body: customWeek })).status, 200);
+  assert.equal((await (await request(`/api/availability/slots/${copy.id}?date=${slotDate}&timezone=Europe%2FRiga`)).json()).slots.length, 0, "A custom service week replaces general hours");
+  assert.equal((await request("/api/availability/weekly", { method: "PUT", cookie: ownerCookie, body: { ...customWeek, inherit: true } })).status, 200);
+  assert.ok((await (await request(`/api/availability/slots/${copy.id}?date=${slotDate}&timezone=Europe%2FRiga`)).json()).slots.length > 0);
   const refreshedCookie = await login(owner);
   assert.equal((await (await request("/api/auth/user", { cookie: refreshedCookie })).json()).companyName, companyName, "Logging in again must preserve the company profile");
 
@@ -212,7 +237,10 @@ try {
     await pool.query("DELETE FROM availability WHERE provider_id=ANY($1::text[])", [ids]);
     await pool.query("DELETE FROM service_embeddings WHERE service_id IN (SELECT id FROM services WHERE provider_id=ANY($1::text[]))", [ids]);
     await pool.query("DELETE FROM services WHERE provider_id=ANY($1::text[])", [ids]);
+    await pool.query("DELETE FROM company_invitations WHERE company_id IN (SELECT id FROM companies WHERE provider_id=ANY($1::text[]))", [ids]);
+    await pool.query("DELETE FROM company_memberships WHERE company_id IN (SELECT id FROM companies WHERE provider_id=ANY($1::text[]))", [ids]);
     await pool.query("DELETE FROM employees WHERE provider_id=ANY($1::text[])", [ids]);
+    await pool.query("DELETE FROM companies WHERE provider_id=ANY($1::text[])", [ids]);
     await pool.query("DELETE FROM sessions WHERE sess->'auth'->>'userId'=ANY($1::text[])", [ids]);
     await pool.query("DELETE FROM users WHERE id=ANY($1::text[])", [ids]);
     for (const id of ids) {

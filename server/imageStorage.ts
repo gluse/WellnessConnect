@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import { services } from "@shared/schema";
+import { services, companies, type WorkspaceContext } from "@shared/schema";
 import { db } from "./db";
 import { storageBucket, supabaseAdmin } from "./supabase";
 
@@ -57,10 +57,22 @@ export async function validateOwnedImage(objectPath: string, userId: string) {
   await downloadImage(objectPath);
 }
 
-export async function canReadImage(objectPath: string, userId: string) {
+export async function validateServiceImage(objectPath: string, userId: string, companyId?: number) {
   const key = objectKey(objectPath);
-  if (key.split("/")[0] === userId) return true;
-  const published = await db.select({ id: services.id }).from(services)
-    .where(and(eq(services.imageUrl, objectPath), eq(services.isActive, true))).limit(1);
-  return published.length > 0;
+  if (key.split("/")[0] !== userId) {
+    const linked = companyId == null ? [] : await db.select({ id: services.id }).from(services)
+      .where(and(eq(services.companyId, companyId), eq(services.imageUrl, objectPath))).limit(1);
+    if (!linked.length) throw new ImageStorageError(403, "Choose an image uploaded by you or already used by this company.");
+  }
+  await downloadImage(objectPath);
+}
+
+export async function canReadImage(objectPath: string, userId: string, workspace?: WorkspaceContext) {
+  const key = objectKey(objectPath);
+  const linked = await db.select({ service: services, company: companies }).from(services)
+    .leftJoin(companies, eq(services.companyId, companies.id)).where(eq(services.imageUrl, objectPath));
+  if (!linked.length) return key.split("/")[0] === userId;
+  return linked.some(({ service, company }) => (service.isActive && (!company || company.isActive))
+    || (service.companyId == null && service.providerId === userId)
+    || (workspace?.company?.id === service.companyId && (workspace.permissions.readAll || (workspace.membership?.employeeId != null && service.employeeId === workspace.membership.employeeId))));
 }

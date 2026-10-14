@@ -4,7 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError, logout } from "@/lib/authUtils";
+import { isUnauthorizedError } from "@/lib/authUtils";
+import AccountMenu from "@/components/account-menu";
 import RoleSwitcher from "@/components/role-switcher";
 import ServiceFilters, { SearchFilters } from "@/components/service-filters";
 import ServiceCard from "@/components/service-card";
@@ -14,7 +15,7 @@ import BookingModal from "@/components/booking-modal";
 import ServiceDetailModal from "@/components/service-detail-modal";
 import BottomNavigation from "@/components/bottom-navigation";
 import ProviderDashboard from "@/pages/provider-dashboard";
-import CalendarView from "@/components/calendar-view";
+import AppointmentAgenda from "@/components/appointment-agenda";
 import { LanguagePicker } from "@/components/language-picker";
 import { Button } from "@/components/ui/button";
 import { Heart, MapPin, List, Map, Target, Calendar, X } from "lucide-react";
@@ -316,7 +317,7 @@ export default function Home() {
   });
 
   // Fetch seeker bookings for calendar
-  const { data: bookings = [] } = useQuery({
+  const { data: bookings = [] } = useQuery<BookingWithDetails[]>({
     queryKey: ["/api/bookings/seeker"],
     enabled: currentRole === "seeker" && viewMode === "calendar",
     retry: false,
@@ -360,16 +361,7 @@ export default function Home() {
                 currentRole={currentRole} 
                 onRoleChange={handleRoleSwitch}
               />
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => void logout().catch(() => toast({ title: "Unable to sign out", variant: "destructive" }))}
-                className="w-8 h-8 p-0"
-              >
-                <div className="w-6 h-6 bg-neutral-200 rounded-full flex items-center justify-center">
-                  <span className="text-xs">👤</span>
-                </div>
-              </Button>
+              <AccountMenu />
             </div>
           </div>
         </div>
@@ -506,16 +498,7 @@ export default function Home() {
           {/* Calendar View */}
           {viewMode === "calendar" && (
             <div className="px-4 lg:px-0">
-              <CalendarView
-                bookings={bookings as BookingWithDetails[]}
-                schedules={[]}
-                onDateClick={(date) => {
-                  toast({
-                    title: "Date Selected",
-                    description: `Selected date: ${date.toLocaleDateString()}`,
-                  });
-                }}
-              />
+              <AppointmentAgenda bookings={bookings} />
             </div>
           )}
         </main>

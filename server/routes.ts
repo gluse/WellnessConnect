@@ -2,11 +2,24 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage, BookingConflictError } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertServiceSchema, insertBookingSchema, insertAvailabilitySchema, providerProfileSchema, employeeSchema } from "@shared/schema";
+import { insertServiceSchema, insertBookingSchema, insertAvailabilitySchema, providerProfileSchema, employeeSchema, accountDetailsSchema } from "@shared/schema";
+import { supabaseAdmin } from "./supabase";
 import { z } from "zod";
-import { createImageUpload, validateOwnedImage, canReadImage, downloadImage, ImageStorageError } from "./imageStorage";
+import { createImageUpload, validateOwnedImage, validateServiceImage, canReadImage, downloadImage, ImageStorageError } from "./imageStorage";
 import { generateEmbedding, cosineSimilarity } from "./embeddings";
 import { geocodeAddress, GeocodingError } from "./geocoding";
+import { setupCompanyRoutes } from "./companyRoutes";
+import { setupSchedulingRoutes } from "./schedulingRoutes";
+import { scope, assertService, assertBooking, ensureCompany, workspaceContext, saveWorkspaceSession, AccessError } from "./companyAccess";
+import { db } from "./db";
+import { companies } from "@shared/schema";
+import { eq } from "drizzle-orm";
+
+function apiFailure(error: unknown, res: import("express").Response, fallback: string) {
+  const known = error instanceof AccessError || error instanceof ImageStorageError;
+  res.status(known ? error.status : error instanceof z.ZodError ? 400 : error instanceof BookingConflictError ? 409 : 500)
+    .json({ message: known || error instanceof BookingConflictError ? error.message : error instanceof z.ZodError ? error.issues[0].message : fallback });
+}
 
 // Helper to add English keywords to embedding text for cross-language search
 function enrichEmbeddingText(name: string, description: string | null, category: string): string {
@@ -59,22 +72,26 @@ function enrichEmbeddingText(name: string, description: string | null, category:
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+  setupCompanyRoutes(app);
+  setupSchedulingRoutes(app);
 
   // Object Storage routes
   app.post('/api/objects/upload', isAuthenticated, async (req: any, res) => {
     try {
+      scope(req, "manageServices");
       const upload = await createImageUpload(req.user.claims.sub, req.body.contentType, req.body.size);
       res.json(upload);
     } catch (error) {
       console.error("Error getting upload URL:", error);
-      res.status(error instanceof ImageStorageError ? error.status : 500).json({ message: error instanceof ImageStorageError ? error.message : "Failed to get upload URL" });
+      apiFailure(error, res, "Failed to get upload URL");
     }
   });
 
   app.get("/objects/:objectPath(*)", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     try {
-      const canAccess = await canReadImage(req.path, userId);
+      const workspace = await workspaceContext(userId, req.session.activeCompanyId);
+      const canAccess = await canReadImage(req.path, userId, workspace);
       if (!canAccess) {
         return res.sendStatus(403);
       }
@@ -83,7 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.send(image.bytes);
     } catch (error) {
       console.error("Error checking object access:", error);
-      return res.status(error instanceof ImageStorageError ? error.status : 500).json({ message: error instanceof ImageStorageError ? error.message : "Unable to load image" });
+      return apiFailure(error, res, "Unable to load image");
     }
   });
 
@@ -95,6 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const userId = req.user?.claims?.sub;
 
     try {
+      scope(req, "manageServices");
       const objectPath = req.body.objectPath;
       await validateOwnedImage(objectPath, userId);
 
@@ -103,7 +121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error setting service image:", error);
-      res.status(error instanceof ImageStorageError ? error.status : 500).json({ message: error instanceof ImageStorageError ? error.message : "Failed to confirm image" });
+      apiFailure(error, res, "Failed to confirm image");
     }
   });
 
@@ -115,7 +133,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
+      apiFailure(error, res, "Failed to fetch user");
+    }
+  });
+
+  app.patch('/api/auth/user', isAuthenticated, async (req, res) => {
+    try {
+      const names = accountDetailsSchema.parse(req.body);
+      const userId = req.user!.claims.sub;
+      if (!await storage.getUser(userId)) return res.status(404).json({ message: "Account not found." });
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        user_metadata: { first_name: names.firstName, last_name: names.lastName },
+      });
+      if (error) return res.status(503).json({ message: "Unable to save account details. Please try again." });
+      res.json(await storage.updateUserNames(userId, names));
+    } catch (error) {
+      apiFailure(error, res, "Unable to save account details. Please try again.");
     }
   });
 
@@ -161,7 +194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(user);
     } catch (error) {
       console.error("Error updating user role:", error);
-      res.status(500).json({ message: "Failed to update user role" });
+      apiFailure(error, res, "Failed to update user role");
     }
   });
 
@@ -170,6 +203,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.claims.sub;
       const profile = providerProfileSchema.parse(req.body);
+      const current = scope(req);
+      if (current.companyId) {
+        scope(req, "manageCompany");
+        if (profile.providerType !== "company") throw new AccessError(409, "Choose Personal workspace to manage individual offers.");
+        await db.update(companies).set({ name: profile.companyName! }).where(eq(companies.id, current.companyId));
+        return res.json({ ...await storage.getUser(userId), providerType: "company", companyName: profile.companyName });
+      }
+      if (profile.providerType === "company") {
+        const company = await ensureCompany(userId, profile.companyName!);
+        req.session.activeCompanyId = company.id;
+        await saveWorkspaceSession(req);
+        return res.json(await storage.getUser(userId));
+      }
       if (profile.providerType === "individual") {
         const listings = await storage.getServicesByProvider(userId);
         if (listings.some(service => service.employeeId != null)) {
@@ -178,29 +224,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(await storage.updateProviderProfile(userId, {
         providerType: profile.providerType,
-        companyName: profile.providerType === "company" ? profile.companyName! : null,
+        companyName: null,
       }));
     } catch (error) {
-      res.status(error instanceof z.ZodError ? 400 : 500).json({ message: error instanceof z.ZodError ? error.issues[0].message : "Unable to save provider profile" });
+      apiFailure(error, res, "Unable to save provider profile");
     }
   });
 
   app.get('/api/provider/employees', isAuthenticated, async (req, res) => {
-    try { res.json(await storage.getEmployees(req.user!.claims.sub)); }
-    catch { res.status(500).json({ message: "Unable to load employees" }); }
+    try {
+      const current = scope(req);
+      const employees = await storage.getEmployees(current.providerId, current.companyId);
+      res.json(current.ctx.permissions.readAll ? employees : employees.filter(employee => employee.id === current.employeeId));
+    } catch (error) { apiFailure(error, res, "Unable to load employees"); }
   });
 
   const saveEmployee: import("express").RequestHandler = async (req, res) => {
     try {
       const userId = req.user!.claims.sub;
-      const user = await storage.getUser(userId);
-      if (user?.providerType !== "company") return void res.status(400).json({ message: "Set up a company profile before adding employees." });
+      const current = scope(req);
+      if (!current.companyId) return void res.status(400).json({ message: "Set up a company profile before adding employees." });
+      scope(req, "manageTeam");
       const id = req.params.id ? z.coerce.number().int().positive().parse(req.params.id) : undefined;
-      const employee = await storage.saveEmployee(userId, employeeSchema.parse(req.body), id);
+      const employee = await storage.saveEmployee(current.providerId, employeeSchema.parse(req.body), id, current.companyId);
       if (!employee) return void res.status(404).json({ message: "Employee not found" });
       res.status(id ? 200 : 201).json(employee);
     } catch (error) {
-      res.status(error instanceof z.ZodError ? 400 : 500).json({ message: error instanceof z.ZodError ? error.issues[0].message : "Unable to save employee" });
+      apiFailure(error, res, "Unable to save employee");
     }
   };
   app.post('/api/provider/employees', isAuthenticated, saveEmployee);
@@ -208,21 +258,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/provider/employees/:id', isAuthenticated, async (req, res) => {
     try {
       const id = z.coerce.number().int().positive().parse(req.params.id);
-      if (!await storage.deleteEmployee(req.user!.claims.sub, id)) return void res.status(404).json({ message: "Employee not found" });
+      const current = scope(req, "manageTeam");
+      if (!await storage.deleteEmployee(current.providerId, id, current.companyId)) return void res.status(404).json({ message: "Employee not found" });
       res.json({ message: "Employee removed" });
     } catch (error) {
       const referenced = (error as { code?: string }).code === "23503";
+      if (error instanceof AccessError) return void apiFailure(error, res, "Unable to remove employee");
       res.status(referenced ? 409 : error instanceof z.ZodError ? 400 : 500).json({ message: referenced
-        ? "This employee is linked to services or bookings. Remove service assignments first; employees with booking history must be kept."
+        ? "This employee is linked to services, bookings, or team access. Remove those links first; employees with booking history must be kept."
         : "Unable to remove employee" });
     }
   });
 
-  async function validateEmployeeAssignment(employeeId: number | null | undefined, userId: string) {
+  async function validateEmployeeAssignment(employeeId: number | null | undefined, req: import("express").Request) {
     if (employeeId == null) return;
-    const user = await storage.getUser(userId);
-    const employees = await storage.getEmployees(userId);
-    if (user?.providerType !== "company" || !employees.some(employee => employee.id === employeeId)) {
+    const current = scope(req);
+    const employees = await storage.getEmployees(current.providerId, current.companyId);
+    if (!current.companyId || !employees.some(employee => employee.id === employeeId)) {
       throw new z.ZodError([{ code: "custom", path: ["employeeId"], message: "Choose an employee from your company." }]);
     }
   }
@@ -230,12 +282,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/services', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      const current = scope(req, "manageServices");
       const serviceData = insertServiceSchema.parse({
         ...req.body,
-        providerId: userId,
+        providerId: current.providerId,
+        companyId: current.companyId ?? null,
       });
-      if (serviceData.imageUrl) await validateOwnedImage(serviceData.imageUrl, userId);
-      await validateEmployeeAssignment(serviceData.employeeId, userId);
+      if (serviceData.imageUrl) await validateServiceImage(serviceData.imageUrl, userId, current.companyId);
+      await validateEmployeeAssignment(serviceData.employeeId, req);
       
       const service = await storage.createService(serviceData);
       
@@ -256,18 +310,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(service);
     } catch (error) {
       console.error("Error creating service:", error);
-      res.status(error instanceof ImageStorageError ? error.status : error instanceof z.ZodError ? 400 : 500).json({ message: error instanceof ImageStorageError ? error.message : error instanceof z.ZodError ? error.issues[0].message : "Failed to create service" });
+      apiFailure(error, res, "Failed to create service");
     }
   });
 
   app.get('/api/services/provider', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const services = await storage.getServicesByProvider(userId);
-      res.json(services);
+      const current = scope(req);
+      const services = await storage.getServicesByProvider(current.providerId, current.companyId);
+      res.json(current.ctx.permissions.readAll ? services : services.filter(service => current.employeeId != null && service.employeeId === current.employeeId));
     } catch (error) {
       console.error("Error fetching provider services:", error);
-      res.status(500).json({ message: "Failed to fetch services" });
+      apiFailure(error, res, "Failed to fetch services");
     }
   });
 
@@ -296,7 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(services);
     } catch (error) {
       console.error("Error searching services:", error);
-      res.status(500).json({ message: "Failed to search services" });
+      apiFailure(error, res, "Failed to search services");
     }
   });
 
@@ -378,7 +433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch the matched services
       const servicesPromises = relevantServiceIds.map(id => storage.getServiceById(id));
       const servicesResults = await Promise.all(servicesPromises);
-      let services = servicesResults.filter((s): s is NonNullable<typeof s> => s !== undefined && s.isActive === true);
+      let services = servicesResults.filter((s): s is NonNullable<typeof s> => s !== undefined && s.isActive === true && s.companyActive === true);
       
       // Apply category filter if specified
       if (category) {
@@ -426,6 +481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!service) {
         return res.status(404).json({ message: "Service not found" });
       }
+      assertService(req, service, true);
       
       // Create text content for embedding with English translations
       const textContent = enrichEmbeddingText(service.name, service.description, service.category);
@@ -443,7 +499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Embedding generated successfully", id: result.id });
     } catch (error) {
       console.error("Error generating embedding:", error);
-      res.status(500).json({ message: "Failed to generate embedding" });
+      apiFailure(error, res, "Failed to generate embedding");
     }
   });
 
@@ -460,7 +516,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get only this provider's services
-      const providerServices = await storage.getServicesByProvider(userId);
+      const current = scope(req, "manageServices");
+      const providerServices = await storage.getServicesByProvider(current.providerId, current.companyId);
       
       let generated = 0;
       let failed = 0;
@@ -490,7 +547,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error generating embeddings:", error);
-      res.status(500).json({ message: "Failed to generate embeddings" });
+      apiFailure(error, res, "Failed to generate embeddings");
     }
   });
 
@@ -499,14 +556,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const serviceId = parseInt(req.params.id);
       const service = await storage.getServiceById(serviceId);
       
-      if (!service || !service.isActive) {
+      if (!service || !service.isActive || !service.companyActive) {
         return res.status(404).json({ message: "Service not found" });
       }
       
       res.json(service);
     } catch (error) {
       console.error("Error fetching service:", error);
-      res.status(500).json({ message: "Failed to fetch service" });
+      apiFailure(error, res, "Failed to fetch service");
     }
   });
 
@@ -516,12 +573,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ message: "Invalid service ID" });
     }
     try {
-      const copy = await storage.copyService(serviceId, req.user!.claims.sub);
+      const current = scope(req, "manageServices");
+      const copy = await storage.copyService(serviceId, current.providerId, current.companyId);
       if (!copy) return res.status(404).json({ message: "Service not found" });
       res.status(201).json(copy);
     } catch (error) {
       console.error("Failed to copy service:", error instanceof Error ? error.name : "Error");
-      res.status(500).json({ message: "Failed to copy service" });
+      apiFailure(error, res, "Failed to copy service");
     }
   });
 
@@ -532,24 +590,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Verify service belongs to user
       const service = await storage.getServiceById(serviceId);
-      if (!service || service.providerId !== userId) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
+      const current = assertService(req, service, true);
       
-      const updates = insertServiceSchema.omit({ providerId: true }).partial().parse(req.body);
-      if (updates.imageUrl) await validateOwnedImage(updates.imageUrl, userId);
-      await validateEmployeeAssignment(updates.employeeId, userId);
-      if (updates.employeeId !== undefined && updates.employeeId !== service.employeeId) {
-        const upcoming = (await storage.getBookingsByProvider(userId)).some(booking => booking.serviceId === serviceId
+      const updates = insertServiceSchema.omit({ providerId: true, companyId: true }).partial().parse(req.body);
+      if (updates.imageUrl) await validateServiceImage(updates.imageUrl, userId, current.companyId);
+      await validateEmployeeAssignment(updates.employeeId, req);
+      if (updates.employeeId !== undefined && updates.employeeId !== service!.employeeId) {
+        const upcoming = (await storage.getBookingsByProvider(current.providerId, current.companyId)).some(booking => booking.serviceId === serviceId
           && (booking.status === "pending" || booking.status === "confirmed")
-          && new Date(booking.scheduledDate).getTime() + (booking.bookingDuration ?? service.duration) * 60_000 > Date.now());
+          && new Date(booking.scheduledDate).getTime() + (booking.bookingDuration ?? service!.duration) * 60_000 > Date.now());
         if (upcoming) return res.status(409).json({ message: "This service has upcoming bookings. Keep its assigned employee or resolve those bookings before changing the assignment." });
       }
       const updatedService = await storage.updateService(serviceId, updates);
       res.json(updatedService);
     } catch (error) {
       console.error("Error updating service:", error);
-      res.status(error instanceof ImageStorageError ? error.status : error instanceof z.ZodError ? 400 : 500).json({ message: error instanceof ImageStorageError ? error.message : error instanceof z.ZodError ? error.issues[0].message : "Failed to update service" });
+      apiFailure(error, res, "Failed to update service");
     }
   });
 
@@ -560,15 +616,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Verify service belongs to user
       const service = await storage.getServiceById(serviceId);
-      if (!service || service.providerId !== userId) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
+      assertService(req, service, true);
       
       await storage.deleteService(serviceId);
       res.json({ message: "Service deleted successfully" });
     } catch (error) {
       console.error("Error deleting service:", error);
-      res.status(500).json({ message: "Failed to delete service" });
+      apiFailure(error, res, "Failed to delete service");
     }
   });
 
@@ -578,18 +632,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const serviceId = z.number().int().positive().parse(req.body.serviceId);
       const service = await storage.getServiceById(serviceId);
-      if (!service || !service.isActive) {
+      if (!service || !service.isActive || !service.companyActive) {
         return res.status(404).json({ message: "Service not found" });
       }
 
+      const scheduledDate = z.string().datetime().transform(value => new Date(value)).refine(value => value.getTime() > Date.now(), "Choose a future appointment time.").parse(req.body.scheduledDate);
+      const participantCount = z.number().int().min(1).max(service.serviceType === "group" ? service.maxCapacity ?? 1 : 1).parse(req.body.participantCount ?? 1);
+      const total = Number(service.price) * participantCount;
       const bookingData = insertBookingSchema.parse({
         ...req.body,
         seekerId: userId,
         providerId: service.providerId,
+        companyId: service.companyId,
         employeeId: service.employeeId,
         bookingDuration: service.duration,
         status: service.instantBooking ? "confirmed" : "pending",
         paymentStatus: "pending",
+        scheduledDate,
+        participantCount,
+        totalAmount: total.toFixed(2),
+        advanceAmount: (total * (service.advancePaymentPercent ?? 0) / 100).toFixed(2),
       });
       
       const booking = await storage.createBooking(bookingData);
@@ -609,18 +671,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(bookings);
     } catch (error) {
       console.error("Error fetching seeker bookings:", error);
-      res.status(500).json({ message: "Failed to fetch bookings" });
+      apiFailure(error, res, "Failed to fetch bookings");
     }
   });
 
   app.get('/api/bookings/provider', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const bookings = await storage.getBookingsByProvider(userId);
-      res.json(bookings);
+      const current = scope(req);
+      const bookings = await storage.getBookingsByProvider(current.providerId, current.companyId);
+      res.json(current.ctx.permissions.readAll ? bookings : bookings.filter(booking => current.employeeId != null && booking.employeeId === current.employeeId));
     } catch (error) {
       console.error("Error fetching provider bookings:", error);
-      res.status(500).json({ message: "Failed to fetch bookings" });
+      apiFailure(error, res, "Failed to fetch bookings");
     }
   });
 
@@ -628,26 +691,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const bookingId = parseInt(req.params.id);
-      const { status } = req.body;
+      const { status } = z.object({ status: z.enum(["pending", "confirmed", "cancelled", "completed"]) }).parse(req.body);
       
       // Verify booking belongs to user (as provider)
       const booking = await storage.getBookingById(bookingId);
-      if (!booking || booking.providerId !== userId) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
+      assertBooking(req, booking, true);
       
       const updatedBooking = await storage.updateBookingStatus(bookingId, status);
       res.json(updatedBooking);
     } catch (error) {
       console.error("Error updating booking status:", error);
-      res.status(500).json({ message: "Failed to update booking status" });
+      apiFailure(error, res, "Failed to update booking status");
     }
   });
 
   // Availability routes
+  app.patch('/api/bookings/:id/reschedule', isAuthenticated, async (req, res) => {
+    try {
+      const id = z.coerce.number().int().positive().parse(req.params.id);
+      const date = z.string().datetime().transform(value => new Date(value)).refine(value => value.getTime() > Date.now(), "Choose a future appointment time.").parse(req.body.scheduledDate);
+      const booking = await storage.getBookingById(id);
+      assertBooking(req, booking, true);
+      res.json(await storage.rescheduleBooking(id, date));
+    } catch (error) { apiFailure(error, res, "Unable to reschedule reservation"); }
+  });
+
   app.post('/api/availability', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      const current = scope(req, "manageSchedules");
       
       // Normalize serviceId: treat empty string, "null", undefined as null
       const rawServiceId = req.body.serviceId;
@@ -659,16 +731,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // When serviceId is null, this is a general working hours schedule
       if (serviceId !== null) {
         const service = await storage.getServiceById(serviceId);
-        if (!service || service.providerId !== userId) {
-          return res.status(403).json({ message: "Unauthorized - service not found or not owned by you" });
-        }
+        assertService(req, service, true);
       }
       
       // Parse and convert data
       const availabilityData = {
         ...req.body,
         serviceId: serviceId, // Use normalized value
-        providerId: userId,
+        providerId: current.providerId,
+        companyId: current.companyId ?? null,
         specificDate: req.body.specificDate ? new Date(req.body.specificDate) : null,
         daysOfWeek: req.body.daysOfWeek || null,
       };
@@ -678,167 +749,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(availability);
     } catch (error) {
       console.error("Error creating availability:", error);
-      res.status(500).json({ message: "Failed to create availability" });
+      apiFailure(error, res, "Failed to create availability");
     }
   });
 
   app.get('/api/availability/service/:serviceId', async (req, res) => {
     try {
       const serviceId = parseInt(req.params.serviceId);
+      const service = await storage.getServiceById(serviceId);
+      if (!service?.isActive || !service.companyActive) return res.status(404).json({ message: "Service not found" });
       const availability = await storage.getAvailabilityByService(serviceId);
       res.json(availability);
     } catch (error) {
       console.error("Error fetching availability:", error);
-      res.status(500).json({ message: "Failed to fetch availability" });
-    }
-  });
-
-  app.get('/api/availability/slots/:serviceId', async (req, res) => {
-    try {
-      const serviceId = parseInt(req.params.serviceId);
-      const dateStr = req.query.date as string;
-
-      if (!dateStr) {
-        return res.status(400).json({ message: "Date parameter is required" });
-      }
-
-      const date = new Date(dateStr);
-      const dayOfWeek = date.getDay();
-
-      const service = await storage.getServiceById(serviceId);
-      if (!service || !service.isActive) {
-        return res.status(404).json({ message: "Service not found" });
-      }
-
-      // Get service-specific schedules AND provider's general working hours
-      const serviceSchedules = await storage.getAvailabilityByService(serviceId);
-      const providerSchedules = await storage.getAvailabilityByProvider(service.providerId);
-      
-      // Filter provider schedules to only include general working hours (serviceId is null)
-      const generalWorkingHours = providerSchedules.filter(s => s.serviceId === null);
-      
-      // Combine both types of schedules
-      const availabilitySchedules = [...serviceSchedules, ...generalWorkingHours];
-      
-      // Get all bookings for this provider on this date (not just this service)
-      const existingBookings = await storage.getBookingsForResourceOnDate(service, date);
-
-      // Use service duration for slot calculation
-      const slotDuration = service.duration || 60;
-
-      // Helper to check if time overlaps with breaks
-      const isInBreak = (slotStartMins: number, slotEndMins: number, breaks: {startTime: string, endTime: string}[] | null) => {
-        if (!breaks || breaks.length === 0) return false;
-        return breaks.some(brk => {
-          const [bStartH, bStartM] = brk.startTime.split(":").map(Number);
-          const [bEndH, bEndM] = brk.endTime.split(":").map(Number);
-          const breakStart = bStartH * 60 + bStartM;
-          const breakEnd = bEndH * 60 + bEndM;
-          // Slot overlaps with break if: slotStart < breakEnd AND slotEnd > breakStart
-          return slotStartMins < breakEnd && slotEndMins > breakStart;
-        });
-      };
-
-      const slots: Array<{
-        startTime: string;
-        endTime: string;
-        available: boolean;
-        slotDuration: number;
-      }> = [];
-
-      for (const schedule of availabilitySchedules) {
-        let isApplicable = false;
-
-        if (schedule.scheduleType === "specific") {
-          if (schedule.specificDate) {
-            const scheduleDate = new Date(schedule.specificDate);
-            isApplicable =
-              scheduleDate.getFullYear() === date.getFullYear() &&
-              scheduleDate.getMonth() === date.getMonth() &&
-              scheduleDate.getDate() === date.getDate();
-          }
-        } else if (schedule.scheduleType === "recurring") {
-          if (schedule.daysOfWeek && schedule.daysOfWeek.includes(dayOfWeek)) {
-            isApplicable = true;
-          }
-        }
-
-        if (!isApplicable) continue;
-
-        const [startHour, startMin] = schedule.startTime.split(":").map(Number);
-        const [endHour, endMin] = schedule.endTime.split(":").map(Number);
-
-        const scheduleStartMinutes = startHour * 60 + startMin;
-        const scheduleEndMinutes = endHour * 60 + endMin;
-
-        // Generate slots in 15-minute increments, but check if service duration fits
-        for (let currentMinutes = scheduleStartMinutes; currentMinutes + slotDuration <= scheduleEndMinutes; currentMinutes += 15) {
-          const slotStartHour = Math.floor(currentMinutes / 60);
-          const slotStartMin = currentMinutes % 60;
-          const slotEndMinutes = currentMinutes + slotDuration;
-          const slotEndHour = Math.floor(slotEndMinutes / 60);
-          const slotEndMin = slotEndMinutes % 60;
-
-          // Skip if slot overlaps with any break time
-          if (isInBreak(currentMinutes, slotEndMinutes, schedule.breaks as any)) {
-            continue;
-          }
-
-          const slotStart = `${slotStartHour.toString().padStart(2, "0")}:${slotStartMin.toString().padStart(2, "0")}`;
-          const slotEnd = `${slotEndHour.toString().padStart(2, "0")}:${slotEndMin.toString().padStart(2, "0")}`;
-
-          // Check if this slot already exists (from another schedule)
-          if (slots.some(s => s.startTime === slotStart)) {
-            continue;
-          }
-
-          const slotStartDateTime = new Date(date);
-          slotStartDateTime.setHours(slotStartHour, slotStartMin, 0, 0);
-          const slotEndDateTime = new Date(date);
-          slotEndDateTime.setHours(slotEndHour, slotEndMin, 0, 0);
-
-          // Check for overlap with any existing booking
-          const hasOverlap = existingBookings.some((booking) => {
-            const bookingStart = new Date(booking.scheduledDate);
-            const bookingDurationMins = booking.bookingDuration || 60;
-            const bookingEnd = new Date(bookingStart.getTime() + bookingDurationMins * 60000);
-
-            return slotStartDateTime < bookingEnd && slotEndDateTime > bookingStart;
-          });
-
-          slots.push({
-            startTime: slotStart,
-            endTime: slotEnd,
-            available: !hasOverlap,
-            slotDuration,
-          });
-        }
-      }
-
-      slots.sort((a, b) => a.startTime.localeCompare(b.startTime));
-
-      res.json({
-        date: dateStr,
-        serviceId,
-        serviceDuration: service.duration,
-        slots: slots.filter(s => s.available), // Only return available slots
-        totalSlots: slots.length,
-        availableSlots: slots.filter((s) => s.available).length,
-      });
-    } catch (error) {
-      console.error("Error fetching available slots:", error);
-      res.status(500).json({ message: "Failed to fetch available slots" });
+      apiFailure(error, res, "Failed to fetch availability");
     }
   });
 
   app.get('/api/availability/provider', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const availability = await storage.getAvailabilityByProvider(userId);
-      res.json(availability);
+      const current = scope(req);
+      const availability = await storage.getAvailabilityByProvider(current.providerId, current.companyId);
+      const assigned = current.ctx.permissions.readAll ? [] : await storage.getServicesByProvider(current.providerId, current.companyId);
+      res.json(current.ctx.permissions.readAll ? availability : availability.filter(schedule => schedule.serviceId == null || assigned.some(service => service.id === schedule.serviceId && service.employeeId === current.employeeId)));
     } catch (error) {
       console.error("Error fetching provider availability:", error);
-      res.status(500).json({ message: "Failed to fetch availability" });
+      apiFailure(error, res, "Failed to fetch availability");
     }
   });
 
@@ -848,23 +785,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const availabilityId = parseInt(req.params.id);
       
       // Verify ownership
-      const existing = await storage.getAvailabilityByProvider(userId);
+      const current = scope(req, "manageSchedules");
+      const existing = await storage.getAvailabilityByProvider(current.providerId, current.companyId);
       const availability = existing.find(a => a.id === availabilityId);
       if (!availability) {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
       // Convert date if provided
-      const updates = {
+      const updates = insertAvailabilitySchema.omit({ providerId: true, companyId: true }).partial().parse({
         ...req.body,
         specificDate: req.body.specificDate ? new Date(req.body.specificDate) : undefined,
-      };
+      });
+      if (updates.serviceId != null) assertService(req, await storage.getServiceById(updates.serviceId), true);
       
       const updated = await storage.updateAvailability(availabilityId, updates);
       res.json(updated);
     } catch (error) {
       console.error("Error updating availability:", error);
-      res.status(500).json({ message: "Failed to update availability" });
+      apiFailure(error, res, "Failed to update availability");
     }
   });
 
@@ -874,11 +813,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const availabilityId = parseInt(req.params.id);
       
       // Delete with ownership verification in storage layer
-      await storage.deleteAvailability(availabilityId, userId);
+      const current = scope(req, "manageSchedules");
+      const existing = await storage.getAvailabilityByProvider(current.providerId, current.companyId);
+      if (!existing.some(schedule => schedule.id === availabilityId)) throw new AccessError(403, "Schedule is not in this workspace.");
+      await storage.deleteAvailability(availabilityId, current.providerId, current.companyId);
       res.json({ success: true });
     } catch (error) {
       console.error("Error deleting availability:", error);
-      res.status(500).json({ message: "Failed to delete availability" });
+      apiFailure(error, res, "Failed to delete availability");
     }
   });
 
@@ -886,6 +828,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/payments/process', isAuthenticated, async (req: any, res) => {
     try {
       const { bookingId, amount, paymentMethod } = req.body;
+      const booking = await storage.getBookingById(bookingId);
+      if (!booking || booking.seekerId !== req.user.claims.sub) throw new AccessError(403, "This payment is not for your reservation.");
       
       // Mock payment processing
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -900,7 +844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error processing payment:", error);
-      res.status(500).json({ message: "Failed to process payment" });
+      apiFailure(error, res, "Failed to process payment");
     }
   });
 

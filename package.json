@@ -13,7 +13,11 @@
     "db:transfer": "node scripts/migrate-to-supabase.mjs",
     "storage:setup": "node scripts/setup-storage.mjs",
     "test:integration": "node scripts/test-supabase-integration.mjs",
-    "test:maps": "node --import tsx scripts/test-map-lifecycle.mjs"
+    "test:teams": "node scripts/test-company-teams.mjs",
+    "test:invite-ui": "node --import tsx scripts/test-invite-ui.mjs",
+    "test:maps": "node --import tsx scripts/test-map-lifecycle.mjs",
+    "test:account": "node --import tsx scripts/test-account-details.mjs",
+    "test:booking-completion": "node --import tsx scripts/test-booking-completion.mjs"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^2.0.1",

@@ -25,6 +25,7 @@ export default function ProviderProfile({ user }: { user: User }) {
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/company/context"] });
     queryClient.invalidateQueries({ queryKey: ["/api/provider/employees"] });
     queryClient.invalidateQueries({ predicate: query => String(query.queryKey[0]).startsWith("/api/services/") });
     queryClient.invalidateQueries({ queryKey: ["/api/bookings/seeker"] });

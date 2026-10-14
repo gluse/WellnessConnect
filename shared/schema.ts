@@ -10,6 +10,8 @@ import {
   decimal,
   boolean,
   real,
+  primaryKey,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -27,6 +29,11 @@ export const sessions = pgTable(
 ).enableRLS();
 
 // Application profiles keyed by Supabase Auth user IDs.
+export const accountDetailsSchema = z.object({
+  firstName: z.string().trim().max(100, "Name must be 100 characters or fewer."),
+  lastName: z.string().trim().max(100, "Surname must be 100 characters or fewer."),
+}).strict();
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
@@ -40,20 +47,55 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 }).enableRLS();
 
-// Employees are managed by the company administrator; they do not need login accounts.
+export const companies = pgTable("companies", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 150 }).notNull(),
+  ownerId: varchar("owner_id").references(() => users.id).notNull(),
+  // Stable legacy billing/storage anchor; ownership can transfer independently.
+  providerId: varchar("provider_id").references(() => users.id).notNull().unique(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+}).enableRLS();
+
+// Employees may be linked to a login through a company membership.
 export const employees = pgTable("employees", {
   id: serial("id").primaryKey(),
   providerId: varchar("provider_id").references(() => users.id).notNull(),
+  companyId: integer("company_id").references(() => companies.id),
   name: varchar("name", { length: 100 }).notNull(),
   showName: boolean("show_name").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [index("employees_provider_idx").on(table.providerId)]).enableRLS();
 
+export const companyRoles = ["owner", "admin", "provider", "viewer"] as const;
+export type CompanyRole = typeof companyRoles[number];
+export const companyMemberships = pgTable("company_memberships", {
+  companyId: integer("company_id").references(() => companies.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  role: varchar("role", { enum: companyRoles }).notNull(),
+  employeeId: integer("employee_id").references(() => employees.id),
+  createdAt: timestamp("created_at").defaultNow(),
+}, table => [primaryKey({ columns: [table.companyId, table.userId] }), uniqueIndex("company_memberships_employee_idx").on(table.employeeId)]).enableRLS();
+
+export const companyInvitations = pgTable("company_invitations", {
+  id: varchar("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id).notNull(),
+  email: varchar("email").notNull(),
+  role: varchar("role", { enum: ["admin", "provider", "viewer"] }).notNull(),
+  employeeId: integer("employee_id").references(() => employees.id),
+  tokenHash: varchar("token_hash").notNull().unique(),
+  invitedBy: varchar("invited_by").references(() => users.id).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  acceptedAt: timestamp("accepted_at"),
+  revokedAt: timestamp("revoked_at"),
+}).enableRLS();
+
 // Services table
 export const services = pgTable("services", {
   id: serial("id").primaryKey(),
   providerId: varchar("provider_id").references(() => users.id).notNull(),
+  companyId: integer("company_id").references(() => companies.id),
   employeeId: integer("employee_id").references(() => employees.id),
   name: varchar("name").notNull(),
   description: text("description"),
@@ -82,6 +124,7 @@ export const bookings = pgTable("bookings", {
   serviceId: integer("service_id").references(() => services.id).notNull(),
   seekerId: varchar("seeker_id").references(() => users.id).notNull(),
   providerId: varchar("provider_id").references(() => users.id).notNull(),
+  companyId: integer("company_id").references(() => companies.id),
   // Snapshot the assigned employee so editing a listing does not move existing bookings.
   employeeId: integer("employee_id").references(() => employees.id),
   participantCount: integer("participant_count").default(1),
@@ -111,6 +154,7 @@ export const availability = pgTable("availability", {
   id: serial("id").primaryKey(),
   serviceId: integer("service_id").references(() => services.id), // Optional - null means applies to all services
   providerId: varchar("provider_id").references(() => users.id).notNull(),
+  companyId: integer("company_id").references(() => companies.id),
   
   // Schedule type
   scheduleType: varchar("schedule_type", { enum: ["specific", "recurring"] }).notNull(),
@@ -191,6 +235,15 @@ export const availabilityRelations = relations(availability, ({ one }) => ({
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type Employee = typeof employees.$inferSelect;
+export type Company = typeof companies.$inferSelect;
+export type CompanyMembership = typeof companyMemberships.$inferSelect;
+export type WorkspaceContext = {
+  company: Company | null;
+  membership: CompanyMembership | null;
+  workspaces: { id: number; name: string; role: CompanyRole }[];
+  invalid: boolean;
+  permissions: { manageCompany: boolean; manageTeam: boolean; manageServices: boolean; manageSchedules: boolean; manageBookings: boolean; readAll: boolean; isOwner: boolean };
+};
 
 export const providerProfileSchema = z.object({
   providerType: z.enum(["individual", "company"]),
@@ -253,6 +306,7 @@ export const insertAvailabilitySchema = createInsertSchema(availability, {
 // Extended service type for API responses
 export type ServiceWithProvider = Service & {
   provider: User;
+  companyActive?: boolean;
   employee: { id: number; name: string | null } | null;
   availableCapacity?: number;
   nextAvailability?: string;

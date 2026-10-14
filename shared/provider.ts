@@ -1,4 +1,4 @@
-import type { User } from "./schema";
+import type { User, Company } from "./schema";
 
 export function getProviderName(provider: Pick<User, "providerType" | "companyName" | "firstName" | "lastName">): string {
   if (provider.providerType === "company") return provider.companyName?.trim() || "Company";
@@ -6,7 +6,8 @@ export function getProviderName(provider: Pick<User, "providerType" | "companyNa
 }
 
 // Company administrators' personal details are not part of their public business profile.
-export function publicProvider(provider: User): User {
+export function publicProvider(user: User, company?: Company | null): User {
+  const provider = { ...user, providerType: company ? "company" as const : "individual" as const, companyName: company?.name ?? null };
   return {
     ...provider, email: null,
     ...(provider.providerType === "company" ? { firstName: null, lastName: null, profileImageUrl: null } : {}),

@@ -8,6 +8,8 @@ import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
+import Invite from "@/pages/invite";
+import Account from "@/pages/account";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -15,6 +17,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/invite" component={Invite} />
+      <Route path="/account" component={Account} />
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (

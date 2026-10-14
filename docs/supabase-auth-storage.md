@@ -3,7 +3,7 @@
 The frontend calls Express using an HTTP-only session cookie. Supabase validates
 email/password or Google identities; Express stores access/refresh tokens in the
 PostgreSQL `sessions` table and creates an application profile in `public.users`.
-Tokens, passwords, and the privileged storage key are not returned to the browser.
+Normal login tokens, passwords, and the privileged storage key are not returned to the browser.
 Auth clients are created per request to prevent sharing session state across users.
 
 ## Configuration
@@ -38,9 +38,39 @@ or ports. Production startup requires HTTPS; local HTTP cookies work in developm
    If the browser session is lost, return to `/login` after confirming and sign in
    with email/password.
 
-The signup flow stores names only; user metadata cannot set provider ownership or
-application roles. Signup creates the application profile when the identity is
-verified. Confirmed accounts use the same profile on subsequent logins.
+Signup supports Personal and Create a company. First and last names are optional.
+Company signup metadata requests creation of a new workspace after verification;
+it cannot grant membership or permissions in an existing company. Membership roles
+are stored in the database. Confirmed accounts use the same profile on subsequent
+logins. Company creation is idempotent and preserves legacy company records.
+
+## Company invitations
+
+Run `npm run db:setup-company` to add company workspaces and team memberships to
+an existing installation. The existing company administrator becomes its owner.
+Managers invite members from Company team and assign their employee and access.
+Read-only and provider access are restricted to the assigned employee.
+
+New users can receive a Supabase invitation email. Keep the Invite user email
+template's `{{ .ConfirmationURL }}` link and the existing
+`${APP_URL}/api/callback` redirect allowlist entry. The default invitation flow
+returns tokens in the URL fragment; the callback redirects to `/invite`, which
+exchanges the refresh token for an HTTP-only session and removes the fragment.
+The invited user sets a password and explicitly accepts company membership.
+If the sign-in expires before password setup, the invitation and login pages
+offer **Send fresh sign-in email**. Enter the invited address and open the newest
+link in the same browser. This uses the Supabase **Magic Link** email template
+and the existing `${APP_URL}/api/callback` redirect. No password is needed for
+recovery; verified email and a pending invitation are still required before
+password setup. It does not create accounts for unknown email addresses.
+The server requires the verified email to match the pending invitation.
+
+Every invitation also returns a shareable application link. Use it for existing
+accounts, or when Supabase email sending is unavailable. The recipient signs in
+or signs up, confirms their email, and accepts. Existing accounts keep their
+credentials. Shareable tokens are stored as hashes, invitations expire in seven
+days, and acceptance is single-use. Supabase Auth link expiry is independent;
+an expired email sign-in link can be replaced or the user can sign in normally.
 
 ## Google login
 
@@ -54,7 +84,8 @@ verified. Confirmed accounts use the same profile on subsequent logins.
 
 The login page then shows Google. The backend starts a PKCE flow, exchanges the
 callback code, verifies the user with Supabase, and regenerates the Express
-session before redirecting to `/`. Invalid/missing codes return to the login page.
+session before redirecting to `/`. Invalid codes return to the login page;
+callbacks without a code go to the invitation page for the implicit invite flow.
 Google's external consent flow requires provider configuration and an interactive
 browser check; it is not exercised by the automated integration test.
 
@@ -72,8 +103,10 @@ prefix and a random filename; files cannot overwrite existing objects.
 
 Express verifies ownership, size, and basic file signatures before accepting an
 image for a listing. Images are read through `/objects/...` using the session
-cookie. Owners can view their own uploads. Other signed-in users can view images
-attached to active services. Unattached uploads and inactive listings stay private.
+cookie. Administrators can reuse images already linked to their company, including
+images uploaded by another manager. Private company images are available only to
+company managers and the assigned employee. Other signed-in users can view images
+attached to published services of active companies. Unattached uploads stay private.
 Application tables are not exposed through the Supabase Data API.
 
 ## Verification
@@ -81,6 +114,8 @@ Application tables are not exposed through the Supabase Data API.
 - `npm run check` verifies TypeScript.
 - `npm run build` builds the frontend and backend.
 - Start `npm run dev`, then run `npm run test:integration` explicitly.
+- Run `npm run test:teams` to verify company signup and team access, including a
+  generated Supabase invitation sign-in without sending email.
 
 The integration test uses two temporary confirmed Auth users without sending
 email. It checks failed/successful password login, cookie flags, session isolation,

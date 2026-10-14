@@ -18,13 +18,17 @@ WellnessFind is a full-stack web application that connects service seekers with 
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js
 - **Language**: TypeScript with ES modules
-- **Database**: PostgreSQL with Neon serverless
+- **Database**: Supabase PostgreSQL using a standard pg connection pool
 - **ORM**: Drizzle ORM with type-safe queries
-- **Authentication**: Replit Auth with OpenID Connect
+- **Authentication**: Supabase email/password and optional Google login
 - **Session Management**: Express sessions with PostgreSQL storage
 
 ### Database Design
 - **Users**: Profile management with dual roles (seeker/provider)
+- **Companies**: Separate workspaces with transferable ownership
+- **Company Memberships**: Owner, administrator, provider, and read-only access
+- **Company Invitations**: Email-bound invitations with expiry and revocation
+- **Employees**: Optional public names and links to team-member logins
 - **Services**: Categorized offerings with pricing and availability
 - **Bookings**: Transaction records with payment tracking
 - **Availability**: Time-slot management for service providers
@@ -33,9 +37,9 @@ WellnessFind is a full-stack web application that connects service seekers with 
 ## Key Components
 
 ### Authentication System
-- **Provider**: Replit Auth with OIDC integration
+- **Provider**: Supabase Auth with verified email identities
 - **Session Storage**: PostgreSQL-backed sessions with configurable TTL
-- **Authorization**: Role-based access control with middleware protection
+- **Authorization**: Backend checks company membership and employee scope for every company action
 - **Security**: HTTP-only cookies, secure transport, CSRF protection
 
 ### Service Management
