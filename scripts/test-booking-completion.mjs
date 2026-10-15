@@ -10,7 +10,7 @@ globalThis.window = { location: { pathname: "/", search: "", hash: "" }, addEven
 globalThis.document = { visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
 const { useToast } = await import("../client/src/hooks/use-toast.ts");
-const { default: ProviderDashboard } = await import("../client/src/pages/provider-dashboard.tsx");
+const { default: AppointmentsPage } = await import("../client/src/pages/provider/appointments.tsx");
 const { default: AppointmentAgenda } = await import("../client/src/components/appointment-agenda.tsx");
 const { act, create } = renderer;
 const user = { id: "provider", firstName: "Test", lastName: "Provider", email: "provider@example.com", providerType: "individual" };
@@ -46,7 +46,7 @@ let component;
 await act(async () => {
   component = create(React.createElement(QueryClientProvider, { client: queryClient },
     React.createElement(Router, { hook: memoryLocation({ path: "/" }).hook },
-      React.createElement(React.Fragment, null, React.createElement(ProviderDashboard), React.createElement(ToastProbe)))));
+      React.createElement(React.Fragment, null, React.createElement(AppointmentsPage), React.createElement(ToastProbe)))));
 });
 const buttons = label => component.root.findAllByType("button").filter(node => node.children.includes(label));
 const click = async label => act(async () => buttons(label)[0].props.onClick());

@@ -32,18 +32,18 @@ export default function AppointmentAgenda({ bookings, employees = [], provider =
     const key = format(new Date(booking.scheduledDate), "yyyy-MM-dd");
     groups.set(key, [...(groups.get(key) || []), booking]);
   }
-  return <section className="border rounded-xl bg-white p-4 sm:p-6 space-y-5">
+  return <section className="border rounded-xl bg-white p-3 sm:p-6 space-y-5">
     <div className="flex flex-wrap gap-3 justify-between items-center">
       <h2 className="text-lg font-semibold flex items-center gap-2"><CalendarDays className="w-5 h-5" />Appointments</h2>
-      <div className="flex gap-1 bg-neutral-100 p-1 rounded-lg" aria-label="Appointment view">{(["upcoming", "date", "past"] as const).map(item => <Button key={item} size="sm" variant={view === item ? "default" : "ghost"} aria-pressed={view === item} onClick={() => setView(item)}>{item === "upcoming" ? "Upcoming" : item === "date" ? "By date" : "Past & cancelled"}</Button>)}</div>
+      <div className="flex flex-wrap gap-1 bg-neutral-100 p-1 rounded-lg" aria-label="Appointment view">{(["upcoming", "date", "past"] as const).map(item => <Button key={item} size="sm" variant={view === item ? "default" : "ghost"} aria-pressed={view === item} onClick={() => setView(item)}>{item === "upcoming" ? "Upcoming" : item === "date" ? "By date" : "Past & cancelled"}</Button>)}</div>
     </div>
     <div className="flex flex-wrap gap-3 text-sm">
       <div className="flex items-center gap-2"><Label htmlFor={provider ? "provider-appointment-status" : "seeker-appointment-status"}>Status</Label><select id={provider ? "provider-appointment-status" : "seeker-appointment-status"} className="border rounded-md p-2 bg-white" value={status} onChange={event => setStatus(event.target.value)}><option value="all">All statuses</option>{["pending", "confirmed", "completed", "cancelled"].map(item => <option key={item} value={item}>{item[0].toUpperCase() + item.slice(1)}</option>)}</select></div>
-      {provider && employees.length > 0 && <div className="flex items-center gap-2"><Label htmlFor="appointment-employee">Employee</Label><select id="appointment-employee" className="border rounded-md p-2 bg-white" value={employeeId} onChange={event => setEmployeeId(event.target.value)}><option value="all">All employees</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.name}</option>)}</select></div>}
+      {provider && employees.length > 0 && <div className="flex items-center gap-2 min-w-0 max-w-full"><Label htmlFor="appointment-employee">Employee</Label><select id="appointment-employee" className="border rounded-md p-2 bg-white min-w-0" value={employeeId} onChange={event => setEmployeeId(event.target.value)}><option value="all">All employees</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.name}</option>)}</select></div>}
       <p className="text-xs text-neutral-500 self-center">Times shown in {Intl.DateTimeFormat().resolvedOptions().timeZone}</p>
     </div>
     <div className={view === "date" ? "grid md:grid-cols-[auto_1fr] gap-6" : ""}>
-      {view === "date" && <Calendar mode="single" weekStartsOn={1} selected={date} onSelect={value => { if (value) setDate(value); }} modifiers={{ booked: filtered.map(booking => new Date(booking.scheduledDate)) }} modifiersClassNames={{ booked: "font-bold underline decoration-primary underline-offset-4" }} className="border rounded-xl h-fit w-fit mx-auto" />}
+      {view === "date" && <Calendar mode="single" weekStartsOn={1} selected={date} onSelect={value => { if (value) setDate(value); }} modifiers={{ booked: filtered.map(booking => new Date(booking.scheduledDate)) }} modifiersClassNames={{ booked: "font-bold underline decoration-primary underline-offset-4" }} className="border rounded-xl h-fit w-fit mx-auto p-1 sm:p-3" />}
       <div className="min-w-0 space-y-5">
         {loading ? <p role="status" className="text-sm text-neutral-500">Loading appointments…</p> : !displayed.length ? <p className="text-sm text-neutral-500 py-6">{view === "date" ? `No appointments on ${format(date, "d MMMM yyyy")}.` : "No appointments in this view."}</p> : Array.from(groups).map(([day, dayBookings]) => <div key={day} className="space-y-2">
           <h3 className="text-sm font-semibold text-neutral-700">{format(new Date(`${day}T12:00:00`), "EEEE, d MMMM yyyy")}</h3>

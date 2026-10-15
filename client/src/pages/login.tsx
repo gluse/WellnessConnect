@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, Redirect } from "wouter";
+import { isAllowedAuthReturnTo } from "@shared/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
 import InvitationRecovery from "@/components/invitation-recovery";
@@ -21,8 +22,8 @@ export default function Login() {
   const [accountType, setAccountType] = useState("personal");
   const [companyName, setCompanyName] = useState("");
   const requestedReturn = new URLSearchParams(window.location.search).get("returnTo");
-  const returnTo = requestedReturn && (requestedReturn === "/account" || /^\/invite(?:\?|$)/.test(requestedReturn)) ? requestedReturn : "/";
-  const [message, setMessage] = useState("");
+  const returnTo = isAllowedAuthReturnTo(requestedReturn) ? requestedReturn : "/";
+  const [message, setMessage] = useState(new URLSearchParams(window.location.search).get("passwordUpdated") === "1" ? "Password updated. Sign in with your new password." : "");
   const loginError = new URLSearchParams(window.location.search).get("error");
   const [error, setError] = useState(loginError === "invitation_session_expired" ? "Your invitation sign-in expired. Request a fresh sign-in email below, or sign in if you already have a password." : loginError ? "Sign-in could not be completed. Please try again." : "");
   const { data: providers } = useQuery<{ google: boolean }>({ queryKey: ["/api/auth/providers"] });
@@ -53,7 +54,7 @@ export default function Login() {
           <p className="text-sm text-neutral-500">WellnessFind</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {providers?.google && <Button className="w-full" variant="outline" disabled={busy} onClick={() => window.location.assign("/api/auth/google")}>Continue with Google</Button>}
+          {providers?.google && <Button className="w-full" variant="outline" disabled={busy} onClick={() => window.location.assign(`/api/auth/google?returnTo=${encodeURIComponent(returnTo)}`)}>Continue with Google</Button>}
           <form onSubmit={submit} className="space-y-4">
             {signup && returnTo === "/" && <div>
               <Label htmlFor="signup-type">Account type</Label>
@@ -72,7 +73,7 @@ export default function Login() {
             {message && <p role="status" className="text-sm text-green-700">{message}</p>}
             <Button type="submit" className="w-full" disabled={busy}>{busy ? "Please wait…" : signup ? "Create account" : "Sign in"}</Button>
           </form>
-          {returnTo !== "/" && <InvitationRecovery returnTo={returnTo} />}
+          {/^\/invite(?:\?|$)/.test(returnTo) && <InvitationRecovery returnTo={returnTo} />}
           <Button type="button" variant="ghost" className="w-full" disabled={busy} onClick={() => { setSignup(!signup); setMessage(""); setError(""); setPassword(""); }}>{signup ? "Already have an account? Sign in" : "New here? Create an account"}</Button>
           <Link href="/" className="block text-center text-sm text-neutral-500 hover:text-primary">Back to WellnessFind</Link>
         </CardContent>

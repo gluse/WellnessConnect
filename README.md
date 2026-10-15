@@ -24,8 +24,12 @@ Do not create tables with `db:push` before restoring a database dump.
 ## Features
 
 - Search services by location, category, audience, date, and keywords.
-- Browse service lists, Google Maps, and calendars.
+- Browse service lists and Google Maps.
+- View customer appointments on the separate My Bookings page, with upcoming,
+  date, status, and booking history filters.
 - Create provider listings and availability schedules.
+- Manage appointments, services, availability, and settings on separate My Services
+  pages, with a shared workspace selector and responsive section navigation.
 - Offer services as an individual or a company, with employees managed by one
   or more administrators, separate employee logins, and optional public employee names.
 - Copy an owned listing into an inactive service, edit its details, and publish
@@ -34,6 +38,8 @@ Do not create tables with `db:push` before restoring a database dump.
   do not duplicate bookings, service-specific schedules, or AI embeddings.
 - Request bookings and manage their status.
 - Sign up and sign in using Supabase email/password or configured Google login.
+- Update your password from Account details after verifying your current password.
+- Browse all registered accounts from Administration with application support access.
 - Upload private service images, with access controlled by Express.
 - Find related services using OpenAI embeddings.
 
@@ -41,7 +47,7 @@ Do not create tables with `db:push` before restoring a database dump.
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Full backend and frontend development server |
+| `npm run dev` | Frontend hot reload and automatic backend restarts |
 | `npm run check` | TypeScript check |
 | `npm run build` | Compile frontend and backend into `dist/` |
 | `npm start` | Serve the production build |
@@ -51,6 +57,41 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run test:integration` | Live Auth/Storage, company, employee, and booking tests with temporary users |
 | `npm run test:teams` | Live team permissions, invitation sign-in, rescheduling, and ownership tests without sending emails |
 | `npm run test:invite-ui` | Invitation session expiry and stale password-state regression tests |
+| `npm run test:provider-navigation` | Provider routes, service editing, workspace switching, and permission regression tests |
+| `npm run test:customer-bookings` | Customer booking navigation, authentication, filters, loading, errors, and retry tests |
+| `npm run test:administration` | Support access, user directory pagination, response privacy, and administration UI regression tests |
+| `npm run test:password` | Password validation, current-password verification, and session handling regression tests |
+| `npm run test:api-transport` | Real local HTTP, API fallback, password response, and session cookie tests; Supabase is mocked |
+
+## Application administration
+
+Set `APP_ADMIN_USER_IDS` on the backend to a comma-separated list of trusted
+support staff's Supabase Auth user IDs, then restart the server. Find these IDs
+in Supabase **Authentication > Users**. Empty configuration grants no access.
+Company owners and administrators do not automatically receive application
+support access. Signup data and editable user metadata cannot grant it.
+
+Authorized staff can open **Administration** from the account menu or visit
+`/administration`. The **App users** directory lists all Supabase Auth accounts,
+including users who have not verified their email or signed in. It shows their
+name, user ID, email verification, account status, company affiliations and roles,
+registration time, and last sign-in. Search by name/email or company, combine
+email verification and account status filters, or select an inclusive registration
+date range in the timezone shown on the page. Sort by name or registration date
+in either direction. Apply filters to search, or Clear filters to reset them.
+Paging supports 25, 50, or 100 users, defaults to 50, and shows the matching count.
+Company information includes every ownership/membership, including closed companies.
+Account status is **Blocked** for a current Supabase Auth ban or a deleted Auth
+account, and **Active** otherwise; email verification is independent. The directory
+is read-only and does not change accounts or company access.
+
+Search, filters, and sorting apply across the whole directory before paging.
+The backend reads Auth accounts in batches on each request and joins application
+company memberships; only the selected result page is sent to the browser.
+Refresh reloads the current filters and page from the source records.
+Every directory request verifies the signed-in identity and configured access;
+Auth metadata and credentials are not included in directory responses.
+No database migration is required.
 
 ## Company providers
 

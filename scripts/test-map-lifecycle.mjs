@@ -24,6 +24,8 @@ class FakeMarker {
 const api = {
   maps: {
     Map: FakeMap, Marker: FakeMarker,
+    Size: class { constructor(width, height) { this.width = width; this.height = height; } },
+    Point: class { constructor(x, y) { this.x = x; this.y = y; } },
     LatLngBounds: class { constructor() { this.points = []; } extend(point) { this.points.push(point); } },
     InfoWindow: class { open() {} },
     SymbolPath: { CIRCLE: "circle" },

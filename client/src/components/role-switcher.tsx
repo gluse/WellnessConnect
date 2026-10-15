@@ -1,29 +1,35 @@
 import { Button } from "@/components/ui/button";
+import { Link, useLocation } from "wouter";
 
-interface RoleSwitcherProps {
-  currentRole: "seeker" | "provider";
-  onRoleChange: (role: "seeker" | "provider") => void;
-}
-
-export default function RoleSwitcher({ currentRole, onRoleChange }: RoleSwitcherProps) {
+export default function RoleSwitcher() {
+  const [location] = useLocation();
+  const inMyServices = location === "/my-services" || location.startsWith("/my-services/");
   return (
-    <div className="bg-neutral-100 p-1 rounded-lg flex">
+    <nav aria-label="Services" className="bg-neutral-100 p-1 rounded-lg flex">
       <Button
-        variant={currentRole === "seeker" ? "default" : "ghost"}
+        asChild
+        variant={location === "/" ? "default" : "ghost"}
         size="sm"
-        onClick={() => onRoleChange("seeker")}
-        className="px-3 py-1 text-sm font-medium"
+        className="flex-1 sm:flex-none px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium"
       >
-        Find Services
+        <Link href="/" aria-current={location === "/" ? "page" : undefined}>Find Services</Link>
       </Button>
       <Button
-        variant={currentRole === "provider" ? "default" : "ghost"}
+        asChild
+        variant={location === "/my-bookings" ? "default" : "ghost"}
         size="sm"
-        onClick={() => onRoleChange("provider")}
-        className="px-3 py-1 text-sm font-medium"
+        className="flex-1 sm:flex-none px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium"
       >
-        My Services
+        <Link href="/my-bookings" aria-current={location === "/my-bookings" ? "page" : undefined}>My Bookings</Link>
       </Button>
-    </div>
+      <Button
+        asChild
+        variant={inMyServices ? "default" : "ghost"}
+        size="sm"
+        className="flex-1 sm:flex-none px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium"
+      >
+        <Link href="/my-services" aria-current={inMyServices ? "page" : undefined}>My Services</Link>
+      </Button>
+    </nav>
   );
 }

@@ -1,4 +1,6 @@
 import session from "express-session";
+import { isAllowedAuthReturnTo } from "@shared/navigation";
+import { updatePassword } from "./password";
 import connectPg from "connect-pg-simple";
 import { rateLimit } from "express-rate-limit";
 import type { Express, Request, Response, RequestHandler } from "express";
@@ -97,6 +99,7 @@ export async function setupAuth(app: Express) {
   const authLimit = rateLimit({ windowMs: 10 * 60 * 1000, limit: 30, standardHeaders: "draft-7", legacyHeaders: false, message: { message: "Too many login attempts. Please try again later." } });
   app.get("/api/login", (_req, res) => res.redirect("/login"));
   app.get("/api/auth/providers", (_req, res) => res.json({ google: process.env.SUPABASE_GOOGLE_ENABLED === "true" }));
+  app.post("/api/auth/password", isAuthenticated, authLimit, updatePassword);
 
   app.post("/api/auth/login", authLimit, async (req, res, next) => {
     const parsed = credentials.safeParse(req.body);
@@ -115,7 +118,7 @@ export async function setupAuth(app: Express) {
     if (!parsed.success) return res.status(400).json({ message: parsed.error.issues[0].message });
     try {
       const { email, password, firstName, lastName, accountType, companyName } = parsed.data;
-      if (typeof req.body.returnTo === "string" && (req.body.returnTo === "/account" || /^\/invite(?:\?|$)/.test(req.body.returnTo))) req.session.authReturnTo = req.body.returnTo.slice(0, 512);
+      if (isAllowedAuthReturnTo(req.body.returnTo)) req.session.authReturnTo = req.body.returnTo.slice(0, 512);
       const { data, error } = await pkceClient(req).auth.signUp({
         email, password,
         options: { emailRedirectTo: `${appUrl}/api/callback`, data: { first_name: firstName, last_name: lastName, ...(accountType === "company" ? { requested_company_name: companyName } : {}) } },
@@ -133,6 +136,7 @@ export async function setupAuth(app: Express) {
   app.get("/api/auth/google", authLimit, async (req, res, next) => {
     if (process.env.SUPABASE_GOOGLE_ENABLED !== "true") return res.redirect("/login?error=google_disabled");
     try {
+      req.session.authReturnTo = isAllowedAuthReturnTo(req.query.returnTo) ? req.query.returnTo.slice(0, 512) : "/";
       const { data, error } = await pkceClient(req).auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${appUrl}/api/callback`, skipBrowserRedirect: true } });
       if (error || !data.url) return res.redirect("/login?error=login_failed");
       await save(req);

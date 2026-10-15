@@ -54,11 +54,11 @@ export default function ServiceMap({ services, userLocation, onServiceSelect }: 
     services.forEach((service) => {
       if (service.latitude && service.longitude && mapRef.current) {
         const marker = L.marker([service.latitude, service.longitude], {
-          icon: L.divIcon({
-            className: "custom-service-marker",
-            html: '<div style="background-color: #10b981; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>',
-            iconSize: [16, 16],
-            iconAnchor: [8, 8],
+          icon: L.icon({
+            iconUrl: '/service-location-pin.svg',
+            iconSize: [32, 42],
+            iconAnchor: [16, 40],
+            popupAnchor: [0, -40],
           }),
         }).addTo(mapRef.current);
 

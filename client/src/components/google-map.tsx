@@ -116,12 +116,9 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
           position: { lat: service.latitude, lng: service.longitude },
           map: googleMapRef.current,
           icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 6,
-            fillColor: '#10b981',
-            fillOpacity: 1,
-            strokeColor: '#ffffff',
-            strokeWeight: 2,
+            url: '/service-location-pin.svg',
+            scaledSize: new google.maps.Size(32, 42),
+            anchor: new google.maps.Point(16, 40),
           },
           title: service.name,
         });

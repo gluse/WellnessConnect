@@ -42,7 +42,7 @@ const input = id => component.root.findAllByType("input").find(node => node.prop
 const edit = async (id, value) => act(async () => input(id).props.onChange({ target: { value } }));
 const submit = async () => {
   await act(async () => {
-    component.root.findByType("form").props.onSubmit({ preventDefault() {} });
+    component.root.findByProps({ id: "account-details-form" }).props.onSubmit({ preventDefault() {} });
     await new Promise(resolve => setTimeout(resolve, 40));
   });
 };

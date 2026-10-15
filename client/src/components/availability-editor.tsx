@@ -8,24 +8,23 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const dayOrder = [1, 2, 3, 4, 5, 6, 0];
 const defaultRange = () => ({ startTime: "09:00", endTime: "17:00" });
 function RangeInputs({ ranges, onChange, label }: { ranges: TimeRange[]; onChange: (ranges: TimeRange[]) => void; label: string }) {
-  return <div className="space-y-2">
+  return <div className="space-y-2 w-full sm:w-auto min-w-0">
     {ranges.map((range, index) => <div key={index} className="flex items-center gap-2">
-      <Input type="time" aria-label={`${label} start ${index + 1}`} value={range.startTime} onChange={event => onChange(ranges.map((item, i) => i === index ? { ...item, startTime: event.target.value } : item))} className="w-28" />
+      <Input type="time" aria-label={`${label} start ${index + 1}`} value={range.startTime} onChange={event => onChange(ranges.map((item, i) => i === index ? { ...item, startTime: event.target.value } : item))} className="w-24 min-w-0 flex-1" />
       <span className="text-neutral-500">–</span>
-      <Input type="time" aria-label={`${label} end ${index + 1}`} value={range.endTime} onChange={event => onChange(ranges.map((item, i) => i === index ? { ...item, endTime: event.target.value } : item))} className="w-28" />
+      <Input type="time" aria-label={`${label} end ${index + 1}`} value={range.endTime} onChange={event => onChange(ranges.map((item, i) => i === index ? { ...item, endTime: event.target.value } : item))} className="w-24 min-w-0 flex-1" />
       <Button type="button" size="icon" variant="ghost" aria-label={`Remove ${label} hours ${index + 1}`} onClick={() => onChange(ranges.filter((_, i) => i !== index))}><X className="w-4 h-4" /></Button>
     </div>)}
     <Button type="button" size="sm" variant="ghost" disabled={ranges.length >= 8} onClick={() => onChange([...ranges, defaultRange()])}><Plus className="w-3 h-3 mr-1" />Add hours</Button>
   </div>;
 }
 
-export default function AvailabilityEditor({ services, schedules, onClose }: { services: Service[]; schedules: Availability[]; onClose: () => void }) {
+export default function AvailabilityEditor({ services, schedules }: { services: Service[]; schedules: Availability[] }) {
   const [serviceId, setServiceId] = useState<number | null>(null);
   const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [week, setWeek] = useState<TimeRange[][]>(Array.from({ length: 7 }, () => []));
@@ -55,9 +54,7 @@ export default function AvailabilityEditor({ services, schedules, onClose }: { s
   });
   const weeklyBody = { serviceId, timezone, days: week.map((intervals, day) => ({ day, intervals })) };
   const exceptions = Array.from(new Set(scoped.filter(item => item.scheduleType === "specific").map(scheduleDate).filter((date): date is string => Boolean(date)))).sort();
-  return <Dialog open onOpenChange={open => { if (!open && !save.isPending) onClose(); }}>
-    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" onEscapeKeyDown={event => { if (save.isPending) event.preventDefault(); }} onInteractOutside={event => { if (save.isPending) event.preventDefault(); }}>
-      <DialogHeader><DialogTitle>Availability</DialogTitle><DialogDescription>Set your normal week, then adjust individual dates. Existing appointments stay in place.</DialogDescription></DialogHeader>
+  return <div className="border rounded-xl bg-white p-3 sm:p-6">
       <fieldset disabled={save.isPending} className="space-y-6 min-w-0">
         <div className="grid sm:grid-cols-2 gap-4">
           <div><Label htmlFor="availability-service">Applies to</Label><select id="availability-service" className="w-full border rounded-md p-2 bg-white" value={serviceId ?? "all"} onChange={event => setServiceId(event.target.value === "all" ? null : Number(event.target.value))}><option value="all">All services · general hours</option>{services.map(service => <option key={service.id} value={service.id}>{service.name}</option>)}</select></div>
@@ -94,8 +91,6 @@ export default function AvailabilityEditor({ services, schedules, onClose }: { s
           </div>
         </section>
         {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-        <div className="flex justify-end border-t pt-4"><Button variant="outline" onClick={onClose}>Done</Button></div>
       </fieldset>
-    </DialogContent>
-  </Dialog>;
+  </div>;
 }

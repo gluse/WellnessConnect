@@ -6,6 +6,13 @@ PostgreSQL `sessions` table and creates an application profile in `public.users`
 Normal login tokens, passwords, and the privileged storage key are not returned to the browser.
 Auth clients are created per request to prevent sharing session state across users.
 
+Account details includes a password update form. The authenticated endpoint
+`POST /api/auth/password` verifies the current password against the signed-in
+account, then uses the user's Supabase session to update the password. Project
+password policies still apply. A successful update rotates the Express session
+and preserves the selected workspace. If the password changed but session storage
+failed, the user is directed to sign in with the new password.
+
 ## Configuration
 
 Populate the variables in `.env.example`, retaining the existing `DATABASE_URL`.

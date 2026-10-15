@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/hooks/useAuth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
-import AccountMenu from "@/components/account-menu";
-import RoleSwitcher from "@/components/role-switcher";
 import ServiceFilters, { SearchFilters } from "@/components/service-filters";
 import ServiceCard from "@/components/service-card";
 import GoogleMap from "@/components/google-map";
@@ -14,13 +9,10 @@ import { loadGeocoder } from "@/lib/google-maps";
 import BookingModal from "@/components/booking-modal";
 import ServiceDetailModal from "@/components/service-detail-modal";
 import BottomNavigation from "@/components/bottom-navigation";
-import ProviderDashboard from "@/pages/provider-dashboard";
-import AppointmentAgenda from "@/components/appointment-agenda";
-import { LanguagePicker } from "@/components/language-picker";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, List, Map, Target, Calendar, X } from "lucide-react";
+import { MapPin, List, Map, Target, X } from "lucide-react";
 import { format } from "date-fns";
-import type { ServiceWithProvider, BookingWithDetails } from "@shared/schema";
+import type { ServiceWithProvider } from "@shared/schema";
 
 interface ActiveFiltersBarProps {
   filters: SearchFilters;
@@ -144,11 +136,8 @@ function ActiveFiltersBar({ filters, locationName, onFiltersChange, onLocationCl
 
 export default function Home() {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [currentRole, setCurrentRole] = useState<"seeker" | "provider">((user as any)?.currentRole || "seeker");
-  const [viewMode, setViewMode] = useState<"list" | "map" | "calendar">("list");
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [selectedService, setSelectedService] = useState<ServiceWithProvider | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -166,35 +155,6 @@ export default function Home() {
     time: "",
     timeEnd: "",
     availableOnly: false
-  });
-
-  // Update user role mutation
-  const updateRoleMutation = useMutation({
-    mutationFn: async (role: "seeker" | "provider") => {
-      const response = await apiRequest("PATCH", "/api/users/role", { role });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Error",
-        description: "Failed to update role",
-        variant: "destructive",
-      });
-    },
   });
 
   const handleGetCurrentLocation = () => {
@@ -313,20 +273,7 @@ export default function Home() {
       if (!response.ok) throw new Error("Failed to fetch services");
       return response.json();
     },
-    enabled: currentRole === "seeker",
   });
-
-  // Fetch seeker bookings for calendar
-  const { data: bookings = [] } = useQuery<BookingWithDetails[]>({
-    queryKey: ["/api/bookings/seeker"],
-    enabled: currentRole === "seeker" && viewMode === "calendar",
-    retry: false,
-  });
-
-  const handleRoleSwitch = (role: "seeker" | "provider") => {
-    setCurrentRole(role);
-    updateRoleMutation.mutate(role);
-  };
 
   const handleBookService = (service: ServiceWithProvider) => {
     setSelectedService(service);
@@ -338,35 +285,8 @@ export default function Home() {
     setShowDetailModal(true);
   };
 
-  if (currentRole === "provider") {
-    return <ProviderDashboard onRoleSwitch={handleRoleSwitch} />;
-  }
-
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Heart className="w-4 h-4 text-white" />
-              </div>
-              <h1 className="text-lg font-semibold text-neutral-800">WellnessFind</h1>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <LanguagePicker />
-              <RoleSwitcher 
-                currentRole={currentRole} 
-                onRoleChange={handleRoleSwitch}
-              />
-              <AccountMenu />
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <div className="max-w-7xl mx-auto lg:flex lg:gap-6 lg:px-4 lg:py-6">
         {/* Filters Sidebar - Desktop */}
@@ -431,16 +351,6 @@ export default function Home() {
                 <Map className="w-4 h-4 mr-2" />
                 {t('views.map')}
               </Button>
-              <Button
-                variant={viewMode === "calendar" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("calendar")}
-                className="flex-1"
-                data-testid="button-view-calendar"
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                {t('views.calendar')}
-              </Button>
             </div>
           </div>
 
@@ -495,12 +405,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Calendar View */}
-          {viewMode === "calendar" && (
-            <div className="px-4 lg:px-0">
-              <AppointmentAgenda bookings={bookings} />
-            </div>
-          )}
         </main>
       </div>
 

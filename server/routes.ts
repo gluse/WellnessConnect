@@ -10,6 +10,7 @@ import { generateEmbedding, cosineSimilarity } from "./embeddings";
 import { geocodeAddress, GeocodingError } from "./geocoding";
 import { setupCompanyRoutes } from "./companyRoutes";
 import { setupSchedulingRoutes } from "./schedulingRoutes";
+import { setupAdminRoutes } from "./adminRoutes";
 import { scope, assertService, assertBooking, ensureCompany, workspaceContext, saveWorkspaceSession, AccessError } from "./companyAccess";
 import { db } from "./db";
 import { companies } from "@shared/schema";
@@ -72,6 +73,7 @@ function enrichEmbeddingText(name: string, description: string | null, category:
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+  setupAdminRoutes(app);
   setupCompanyRoutes(app);
   setupSchedulingRoutes(app);
 
@@ -504,18 +506,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Bulk generate embeddings for all services (admin endpoint)
-  // Only providers can generate embeddings for their own services
+  // Workspace permissions control who can generate embeddings for its services.
   app.post('/api/admin/generate-embeddings', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      // Only allow providers to generate embeddings for their own services
-      if (!user || user.currentRole !== 'provider') {
-        return res.status(403).json({ message: "Only providers can generate embeddings" });
-      }
-      
-      // Get only this provider's services
       const current = scope(req, "manageServices");
       const providerServices = await storage.getServicesByProvider(current.providerId, current.companyId);
       

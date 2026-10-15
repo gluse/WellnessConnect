@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { LogOut, UserRound } from "lucide-react";
+import { LogOut, UserRound, Shield } from "lucide-react";
 import type { WorkspaceContext } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
+import { useAppAdmin } from "@/hooks/use-app-admin";
 import { useToast } from "@/hooks/use-toast";
 import { logout } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
 
 export default function AccountMenu() {
   const { user } = useAuth();
+  const { data: adminAccess } = useAppAdmin();
   const { toast } = useToast();
   const [signingOut, setSigningOut] = useState(false);
   const { data: context } = useQuery<WorkspaceContext>({
@@ -50,6 +52,9 @@ export default function AccountMenu() {
         <DropdownMenuItem disabled={signingOut} onSelect={() => void signOut()}>
           <LogOut aria-hidden="true" /> Sign Out
         </DropdownMenuItem>
+        {adminAccess?.isAdmin && <DropdownMenuItem asChild>
+          <Link href="/administration"><Shield aria-hidden="true" /> Administration</Link>
+        </DropdownMenuItem>}
       </DropdownMenuContent>
     </DropdownMenu>;
 }

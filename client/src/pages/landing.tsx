@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Users, MapPin, Star, Shield, Clock } from "lucide-react";
-import { LanguagePicker } from "@/components/language-picker";
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -13,11 +12,6 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
       <div className="max-w-md mx-auto bg-white shadow-xl min-h-screen">
-        {/* Language Picker */}
-        <div className="flex justify-end px-4 pt-4">
-          <LanguagePicker />
-        </div>
-        
         {/* Header */}
         <div className="px-6 py-8 text-center">
           <div className="w-16 h-16 bg-primary rounded-2xl mx-auto mb-4 flex items-center justify-center">

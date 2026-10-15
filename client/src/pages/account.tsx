@@ -1,16 +1,16 @@
 import { useState, type FormEvent } from "react";
 import { Link, Redirect } from "wouter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Heart, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { accountDetailsSchema, type User, type WorkspaceContext } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import AccountMenu from "@/components/account-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import AccountPasswordForm from "@/components/account-password-form";
 
 function AccountDetailsForm({ user }: { user: User }) {
   const queryClient = useQueryClient();
@@ -59,7 +59,7 @@ function AccountDetailsForm({ user }: { user: User }) {
       <CardDescription>Update the name and surname on your account.</CardDescription>
     </CardHeader>
     <CardContent>
-      <form onSubmit={submit} className="space-y-6">
+      <form id="account-details-form" onSubmit={submit} className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="account-name">Name</Label>
@@ -93,16 +93,11 @@ export default function Account() {
   if (!user) return <Redirect to="/login?returnTo=%2Faccount" />;
 
   return <div className="min-h-screen bg-neutral-50">
-    <header className="bg-white border-b border-neutral-200">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-semibold text-xl"><Heart className="w-6 h-6 text-primary" aria-hidden="true" />WellnessFind</Link>
-        <AccountMenu />
-      </div>
-    </header>
     <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <Button variant="ghost" asChild className="-ml-3"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />Back to dashboard</Link></Button>
-      <div><h1 className="text-2xl font-semibold">Account details</h1><p className="mt-2 text-neutral-600">Manage your personal information.</p></div>
+      <div><h1 className="text-2xl font-semibold">Account details</h1><p className="mt-2 text-neutral-600">Manage your personal information and password.</p></div>
       <AccountDetailsForm key={user.id} user={user} />
+      <AccountPasswordForm key={`password-${user.id}`} />
     </main>
   </div>;
 }

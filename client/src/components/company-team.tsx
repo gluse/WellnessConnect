@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CompanyRole, Employee, WorkspaceContext } from "@shared/schema";
+import { roleLabels } from "@/components/provider/company-role-labels";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export const roleLabels: Record<CompanyRole, string> = { owner: "Owner", admin: "Administrator", provider: "Service provider", viewer: "Read-only" };
 type Member = { userId: string; email: string; firstName: string | null; lastName: string | null; role: CompanyRole; employeeId: number | null };
 type Team = { members: Member[]; invitations: { id: string; email: string; role: CompanyRole; employeeId: number | null; expiresAt: string }[] };
 const selectClass = "w-full border rounded-md p-2 bg-white";
@@ -34,7 +34,7 @@ function MemberEditor({ member, employees, busy, onSave, onRemove }: { member: M
   </li>;
 }
 
-export default function CompanyTeam({ context, employees, onWorkspaceChange }: { context: WorkspaceContext; employees: Employee[]; onWorkspaceChange: () => void }) {
+export default function CompanyTeam({ context, employees }: { context: WorkspaceContext; employees: Employee[] }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
@@ -57,30 +57,19 @@ export default function CompanyTeam({ context, employees, onWorkspaceChange }: {
       const response = await apiRequest(action.method, action.path, action.body); return response.json();
     },
     onSuccess: async (data, action) => {
-      if (action.path === "/api/company/context") {
-        onWorkspaceChange();
-        queryClient.setQueryData(["/api/company/context"], data);
-        await queryClient.resetQueries({ predicate: query => /\/api\/(provider|company\/team|services\/provider|bookings\/provider|availability\/provider)/.test(String(query.queryKey[0])) });
-      } else {
-        if (data.invitationUrl) { setInvitationUrl(data.invitationUrl); setEmail(""); toast({ title: data.emailSent ? "Invitation emailed" : "Share invitation link", description: data.message }); }
-        await invalidateWorkspace(queryClient);
-      }
+      if (data.invitationUrl) { setInvitationUrl(data.invitationUrl); setEmail(""); toast({ title: data.emailSent ? "Invitation emailed" : "Share invitation link", description: data.message }); }
+      await invalidateWorkspace(queryClient);
     },
     onError: errorToast,
   });
   const run = (method: string, path: string, body?: unknown) => change.mutate({ method, path, body });
   return <Card>
-    <CardHeader><CardTitle>Workspace</CardTitle></CardHeader>
+    <CardHeader><CardTitle>Company team</CardTitle></CardHeader>
     <CardContent className="space-y-4">
-      <div><Label htmlFor="workspace">Manage offers for</Label><select id="workspace" className={selectClass} value={context.company?.id ?? "personal"} disabled={change.isPending}
-        onChange={event => run("POST", "/api/company/context", { companyId: event.target.value === "personal" ? null : Number(event.target.value) })}>
-        <option value="personal">Personal workspace</option>{context.workspaces.map(company => <option key={company.id} value={company.id}>{company.name} · {roleLabels[company.role]}</option>)}
-      </select></div>
       {context.company && <p className="text-sm text-neutral-600">{context.company.name} · {roleLabels[context.membership!.role]}{!context.company.isActive ? " · Closed" : ""}</p>}
       {context.membership?.role === "viewer" && <p className="text-sm">You can view reservations assigned to you. Contact an administrator for changes.</p>}
       {context.membership?.role === "provider" && <p className="text-sm">You can confirm, complete, cancel, and reschedule your assigned reservations.</p>}
       {context.company && canViewTeam && <div className="space-y-4 border-t pt-4">
-        <h3 className="font-semibold">Company team</h3>
         {team.isLoading ? <p>Loading team…</p> : team.isError ? <p role="alert">Unable to load the team.</p> : <ul className="space-y-2">
           {team.data?.members.map(member => <MemberEditor key={member.userId} member={member} employees={employees} busy={change.isPending || !context.permissions.manageTeam}
             onSave={(userId, role, employeeId) => run("PATCH", `/api/company/members/${userId}`, { role, employeeId })} onRemove={userId => run("DELETE", `/api/company/members/${userId}`)} />)}
