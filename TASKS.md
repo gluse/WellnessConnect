@@ -18,6 +18,9 @@ and verification.
 
 - [ ] **TASK-003 — Support social sign-in.** Add or complete authentication
   through Google, Facebook, Apple, and Microsoft.
+  **Status:** App integration implemented; provider setup and live sign-in testing pending.
+  Follow [the setup guide](docs/social-sign-in.md) to configure each provider in
+  Supabase and its developer console before enabling it.
 - [ ] **TASK-004 — Allow service searches without signing in.** Let visitors
   search for services and browse results without authentication.
 

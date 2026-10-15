@@ -20,6 +20,7 @@
     "test:booking-completion": "node --import tsx scripts/test-booking-completion.mjs",
     "test:customer-bookings": "node --import tsx scripts/test-customer-bookings.mjs",
     "test:administration": "node --import tsx scripts/test-administration.mjs",
+    "test:social-auth": "node --import tsx scripts/test-social-auth.mjs",
     "test:provider-navigation": "node --import tsx scripts/test-provider-navigation.mjs",
     "test:password": "node --import tsx scripts/test-password-update.mjs",
     "test:api-transport": "node --import tsx scripts/test-api-transport.mjs"

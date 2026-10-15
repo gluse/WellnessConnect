@@ -1,7 +1,8 @@
 # Supabase Auth and image storage
 
 The frontend calls Express using an HTTP-only session cookie. Supabase validates
-email/password or Google identities; Express stores access/refresh tokens in the
+email/password or configured Google, Facebook, Apple, and Microsoft identities;
+Express stores access/refresh tokens in the
 PostgreSQL `sessions` table and creates an application profile in `public.users`.
 Normal login tokens, passwords, and the privileged storage key are not returned to the browser.
 Auth clients are created per request to prevent sharing session state across users.
@@ -24,6 +25,9 @@ Populate the variables in `.env.example`, retaining the existing `DATABASE_URL`.
 | `SUPABASE_SECRET_KEY` | Backend-only secret key from Settings > API Keys |
 | `SUPABASE_STORAGE_BUCKET` | `service-images` by default |
 | `SUPABASE_GOOGLE_ENABLED` | `true` only after configuring Google |
+| `SUPABASE_FACEBOOK_ENABLED` | `true` only after configuring Facebook |
+| `SUPABASE_APPLE_ENABLED` | `true` only after configuring Apple web OAuth |
+| `SUPABASE_MICROSOFT_ENABLED` | `true` only after configuring Azure (Microsoft) |
 | `APP_URL` | `http://localhost:5000` locally; your HTTPS origin in production |
 | `SESSION_SECRET` | At least 32 random characters |
 | `PORT` | `5000` locally; your hosting service's port in production |
@@ -50,6 +54,9 @@ Company signup metadata requests creation of a new workspace after verification;
 it cannot grant membership or permissions in an existing company. Membership roles
 are stored in the database. Confirmed accounts use the same profile on subsequent
 logins. Company creation is idempotent and preserves legacy company records.
+Company signup also supports configured social providers: the company name is
+validated and stored in the server session before OAuth, then provisioned for
+the verified identity. Existing companies are reused rather than renamed.
 
 ## Company invitations
 
@@ -79,22 +86,19 @@ credentials. Shareable tokens are stored as hashes, invitations expire in seven
 days, and acceptance is single-use. Supabase Auth link expiry is independent;
 an expired email sign-in link can be replaced or the user can sign in normally.
 
-## Google login
+## Social login
 
-1. Create a Google OAuth web client for your app.
-2. Add the Supabase callback URL shown in Authentication > Providers > Google to
-   the Google client's authorized redirect URLs (normally
-   `https://PROJECT_REF.supabase.co/auth/v1/callback`).
-3. Enter the Google client ID/secret in Supabase and enable the provider.
-4. Allow `${APP_URL}/api/callback` in Supabase Auth URL Configuration.
-5. Set `SUPABASE_GOOGLE_ENABLED=true` and restart the backend.
+Google, Facebook, Apple, and Microsoft share the server-side PKCE flow. Enable
+each provider in Supabase and set its backend flag after configuring its OAuth
+application. Microsoft uses the Supabase `azure` provider and requests email scope.
+Follow the [social sign-in setup guide](social-sign-in.md) for credentials,
+callback URLs, provider-specific setup, and live verification.
 
-The login page then shows Google. The backend starts a PKCE flow, exchanges the
-callback code, verifies the user with Supabase, and regenerates the Express
-session before redirecting to `/`. Invalid codes return to the login page;
-callbacks without a code go to the invitation page for the implicit invite flow.
-Google's external consent flow requires provider configuration and an interactive
-browser check; it is not exercised by the automated integration test.
+The backend saves the PKCE verifier before redirecting, exchanges the callback
+code, verifies the user, and rotates the Express session. It returns to a
+validated application destination. Cancelled/expired attempts return to login
+without exposing provider error details. Callbacks without a code retain the
+implicit invitation flow. Tokens stay in the server-side session.
 
 ## Private image bucket
 

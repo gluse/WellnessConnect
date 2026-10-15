@@ -37,7 +37,8 @@ Do not create tables with `db:push` before restoring a database dump.
   Copies reuse the same image and employee assignment and
   do not duplicate bookings, service-specific schedules, or AI embeddings.
 - Request bookings and manage their status.
-- Sign up and sign in using Supabase email/password or configured Google login.
+- Sign up and sign in using Supabase email/password or configured Google,
+  Facebook, Apple, and Microsoft login. See the [social sign-in setup guide](docs/social-sign-in.md).
 - Update your password from Account details after verifying your current password.
 - Browse all registered accounts from Administration with application support access.
 - Upload private service images, with access controlled by Express.
@@ -60,6 +61,7 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run test:provider-navigation` | Provider routes, service editing, workspace switching, and permission regression tests |
 | `npm run test:customer-bookings` | Customer booking navigation, authentication, filters, loading, errors, and retry tests |
 | `npm run test:administration` | Support access, user directory pagination, response privacy, and administration UI regression tests |
+| `npm run test:social-auth` | Social buttons, provider flags/scopes, PKCE callbacks, redirects, and profile/session regression tests with Auth mocked |
 | `npm run test:password` | Password validation, current-password verification, and session handling regression tests |
 | `npm run test:api-transport` | Real local HTTP, API fallback, password response, and session cookie tests; Supabase is mocked |
 

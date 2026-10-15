@@ -1,5 +1,7 @@
 import session from "express-session";
 import { isAllowedAuthReturnTo } from "@shared/navigation";
+import { socialProviders } from "@shared/social-auth";
+import { authProfileNames, enabledAuthProviders, loginFailureUrl, oauthSettings } from "./social-auth";
 import { updatePassword } from "./password";
 import connectPg from "connect-pg-simple";
 import { rateLimit } from "express-rate-limit";
@@ -27,6 +29,7 @@ declare module "express-session" {
     canSetInvitationPassword?: boolean;
     authReturnTo?: string;
     invitationRecoveryEmail?: string;
+    socialCompanySignup?: { companyName: string; expiresAt: number };
   }
 }
 declare global {
@@ -40,6 +43,8 @@ const credentials = z.object({ email: z.string().email().max(254), password: z.s
 const save = (req: Request) => new Promise<void>((resolve, reject) => req.session.save(error => error ? reject(error) : resolve()));
 const regenerate = (req: Request) => new Promise<void>((resolve, reject) => req.session.regenerate(error => error ? reject(error) : resolve()));
 const destroy = (req: Request) => new Promise<void>((resolve, reject) => req.session.destroy(error => error ? reject(error) : resolve()));
+const socialCompanySchema = z.object({ companyName: z.string().trim().min(1).max(150), returnTo: z.string().max(512).default("/") }).strict();
+const socialCompanyIntentSchema = z.object({ companyName: z.string().trim().min(1).max(150), expiresAt: z.number().finite() }).strict();
 
 function pkceClient(req: Request) {
   req.session.oauthStorage ||= {};
@@ -50,22 +55,23 @@ function pkceClient(req: Request) {
   });
 }
 
-async function establishSession(req: Request, tokens: Session) {
+async function establishSession(req: Request, tokens: Session, socialCompanyName?: string, provisionCompany = ensureCompany) {
   const { data, error } = await createAuthClient().auth.getUser(tokens.access_token);
   if (error || !data.user) throw new Error("Unable to verify login");
   const user: SupabaseUser = data.user;
   const existing = await storage.getUser(user.id);
   const requestedCompany = z.string().trim().min(1).max(150).safeParse(user.user_metadata.requested_company_name);
+  const newCompanyName = socialCompanyName ?? (requestedCompany.success ? requestedCompany.data : undefined);
   const profile = await storage.upsertUser({
     id: user.id,
     email: user.email,
-    firstName: (user.user_metadata.first_name ?? user.user_metadata.given_name) || null,
-    lastName: (user.user_metadata.last_name ?? user.user_metadata.family_name) || null,
-    profileImageUrl: user.user_metadata.avatar_url || null,
-    ...(!existing && requestedCompany.success ? { providerType: "company", companyName: requestedCompany.data, currentRole: "provider" } as const : {}),
+    ...authProfileNames(user, existing),
+    profileImageUrl: existing?.profileImageUrl || (typeof user.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null),
+    ...(!existing && newCompanyName ? { providerType: "company", companyName: newCompanyName, currentRole: "provider" } as const : {}),
   });
   // Signup metadata can request a NEW workspace; it never supplies membership roles.
-  if (profile.providerType === "company" && profile.companyName) await ensureCompany(user.id, profile.companyName);
+  const companyName = profile.providerType === "company" && profile.companyName ? profile.companyName : socialCompanyName;
+  if (companyName) await provisionCompany(user.id, companyName);
   await regenerate(req);
   req.session.auth = {
     userId: user.id, accessToken: tokens.access_token,
@@ -83,7 +89,7 @@ export const requireSameOrigin: RequestHandler = (req, res, next) => {
   next();
 };
 
-export async function setupAuth(app: Express) {
+export async function setupAuth(app: Express, provisionSocialCompany = ensureCompany) {
   const secret = process.env.SESSION_SECRET;
   if (!secret || secret.length < 32) throw new Error("SESSION_SECRET must contain at least 32 characters.");
   if (process.env.NODE_ENV === "production" && !appUrl.startsWith("https://")) throw new Error("APP_URL must use HTTPS in production.");
@@ -98,7 +104,10 @@ export async function setupAuth(app: Express) {
   }));
   const authLimit = rateLimit({ windowMs: 10 * 60 * 1000, limit: 30, standardHeaders: "draft-7", legacyHeaders: false, message: { message: "Too many login attempts. Please try again later." } });
   app.get("/api/login", (_req, res) => res.redirect("/login"));
-  app.get("/api/auth/providers", (_req, res) => res.json({ google: process.env.SUPABASE_GOOGLE_ENABLED === "true" }));
+  app.get("/api/auth/providers", (_req, res) => {
+    res.set("Cache-Control", "no-store");
+    res.json(enabledAuthProviders());
+  });
   app.post("/api/auth/password", isAuthenticated, authLimit, updatePassword);
 
   app.post("/api/auth/login", authLimit, async (req, res, next) => {
@@ -118,6 +127,7 @@ export async function setupAuth(app: Express) {
     if (!parsed.success) return res.status(400).json({ message: parsed.error.issues[0].message });
     try {
       const { email, password, firstName, lastName, accountType, companyName } = parsed.data;
+      delete req.session.socialCompanySignup;
       if (isAllowedAuthReturnTo(req.body.returnTo)) req.session.authReturnTo = req.body.returnTo.slice(0, 512);
       const { data, error } = await pkceClient(req).auth.signUp({
         email, password,
@@ -133,22 +143,59 @@ export async function setupAuth(app: Express) {
     } catch (error) { next(error); }
   });
 
-  app.get("/api/auth/google", authLimit, async (req, res, next) => {
-    if (process.env.SUPABASE_GOOGLE_ENABLED !== "true") return res.redirect("/login?error=google_disabled");
-    try {
-      req.session.authReturnTo = isAllowedAuthReturnTo(req.query.returnTo) ? req.query.returnTo.slice(0, 512) : "/";
-      const { data, error } = await pkceClient(req).auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${appUrl}/api/callback`, skipBrowserRedirect: true } });
-      if (error || !data.url) return res.redirect("/login?error=login_failed");
-      await save(req);
-      res.redirect(data.url);
-    } catch (error) { next(error); }
-  });
+  // Explicit routes avoid intercepting other /api/auth/* endpoints.
+  const startSocialSignIn = async (req: Request, provider: typeof socialProviders[number], returnTo: string, companyName?: string) => {
+    req.session.authReturnTo = returnTo;
+    req.session.oauthStorage = {};
+    delete req.session.invitationRecoveryEmail;
+    if (companyName) req.session.socialCompanySignup = { companyName, expiresAt: Date.now() + 60 * 60_000 };
+    else delete req.session.socialCompanySignup;
+    const { provider: supabaseProvider, scopes } = oauthSettings(provider);
+    const { data, error } = await pkceClient(req).auth.signInWithOAuth({ provider: supabaseProvider, options: {
+      redirectTo: `${appUrl}/api/callback`, skipBrowserRedirect: true, ...(scopes ? { scopes } : {}),
+    } });
+    if (error || !data.url) throw new Error("Unable to start social sign-in");
+    await save(req);
+    return data.url;
+  };
+  const clearSocialAttempt = (req: Request) => {
+    delete req.session.oauthStorage;
+    delete req.session.authReturnTo;
+    delete req.session.socialCompanySignup;
+  };
+  for (const provider of socialProviders) {
+    app.get(`/api/auth/${provider}`, authLimit, async (req, res) => {
+      const returnTo = isAllowedAuthReturnTo(req.query.returnTo) ? req.query.returnTo.slice(0, 512) : "/";
+      if (!enabledAuthProviders()[provider]) return res.redirect(loginFailureUrl("social_disabled", returnTo));
+      try {
+        res.redirect(await startSocialSignIn(req, provider, returnTo));
+      } catch {
+        clearSocialAttempt(req);
+        res.redirect(loginFailureUrl("login_failed", returnTo));
+      }
+    });
+    // A same-origin POST records company creation intent in the server session;
+    // the OAuth URL and callback query cannot supply a company or membership ID.
+    app.post(`/api/auth/${provider}`, authLimit, async (req, res) => {
+      const parsed = socialCompanySchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Enter a company name of 1 to 150 characters." });
+      if (!enabledAuthProviders()[provider]) return res.status(503).json({ message: "This sign-in option is currently unavailable. Choose another option." });
+      const returnTo = isAllowedAuthReturnTo(parsed.data.returnTo) ? parsed.data.returnTo : "/";
+      try {
+        res.json({ url: await startSocialSignIn(req, provider, returnTo, parsed.data.companyName) });
+      } catch {
+        clearSocialAttempt(req);
+        res.status(503).json({ message: "Unable to start sign-in. Please try again." });
+      }
+    });
+  }
   app.post("/api/auth/invite-recovery", authLimit, async (req, res) => {
     const parsed = z.object({ email: z.string().trim().email().max(254).transform(value => value.toLowerCase()), returnTo: z.string().max(512).regex(/^\/invite(?:\?|$)/).default("/invite") }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "Enter your invited email address." });
     try {
       const pending = await db.select({ id: companyInvitations.id }).from(companyInvitations).where(and(eq(companyInvitations.email, parsed.data.email), isNull(companyInvitations.acceptedAt), isNull(companyInvitations.revokedAt), gt(companyInvitations.expiresAt, new Date()))).limit(1);
       if (pending.length) {
+        delete req.session.socialCompanySignup;
         // A fresh email proof is required; the application invitation alone is
         // never sufficient to authenticate or set a password.
         const { error } = await pkceClient(req).auth.signInWithOtp({ email: parsed.data.email, options: { shouldCreateUser: false, emailRedirectTo: `${appUrl}/api/callback` } });
@@ -161,24 +208,31 @@ export async function setupAuth(app: Express) {
     } catch { res.status(503).json({ message: "Unable to send a sign-in email. Please try again later." }); }
   });
   app.get("/api/callback", authLimit, async (req, res) => {
-    if (req.query.error) return res.redirect("/login?error=login_failed");
+    const returnTo = isAllowedAuthReturnTo(req.session.authReturnTo) ? req.session.authReturnTo : "/";
+    const fail = (error: string) => {
+      clearSocialAttempt(req);
+      delete req.session.invitationRecoveryEmail;
+      return res.redirect(loginFailureUrl(error, returnTo));
+    };
+    if (req.query.error) return fail(req.query.error === "access_denied" ? "social_cancelled" : "login_failed");
     // Supabase team invitation emails use the implicit flow. The browser carries
     // the URL fragment across this redirect; /invite exchanges it server-side.
     if (typeof req.query.code !== "string") return res.redirect("/invite");
-    if (!req.session.oauthStorage) return res.redirect("/login?error=login_failed");
+    if (!req.query.code || req.query.code.length > 4096 || !req.session.oauthStorage) return fail("social_session_expired");
+    const companyIntent = req.session.socialCompanySignup === undefined ? undefined : socialCompanyIntentSchema.safeParse(req.session.socialCompanySignup);
+    if (companyIntent && (!companyIntent.success || companyIntent.data.expiresAt <= Date.now())) return fail("social_session_expired");
     try {
       const { data, error } = await pkceClient(req).auth.exchangeCodeForSession(req.query.code);
-      if (error || !data.session) return res.redirect("/login?error=login_failed");
-      const returnTo = req.session.authReturnTo || "/";
+      if (error || !data.session) return fail("social_session_expired");
       const recoveryEmail = req.session.invitationRecoveryEmail;
-      const user = await establishSession(req, data.session);
+      const user = await establishSession(req, data.session, companyIntent?.success ? companyIntent.data.companyName : undefined, provisionSocialCompany);
       if (recoveryEmail && user.email_confirmed_at && user.email?.toLowerCase() === recoveryEmail) {
         const pending = await db.select({ id: companyInvitations.id }).from(companyInvitations).where(and(eq(companyInvitations.email, recoveryEmail), isNull(companyInvitations.acceptedAt), isNull(companyInvitations.revokedAt), gt(companyInvitations.expiresAt, new Date()))).limit(1);
         req.session.canSetInvitationPassword = pending.length > 0;
         await save(req);
       }
       res.redirect(returnTo);
-    } catch { res.redirect("/login?error=login_failed"); }
+    } catch { fail("login_failed"); }
   });
   app.post("/api/auth/invite-session", authLimit, async (req, res) => {
     const parsed = z.object({ refreshToken: z.string().min(1).max(4096) }).safeParse(req.body);
