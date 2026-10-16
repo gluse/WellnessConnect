@@ -6,6 +6,7 @@ import ServiceRating from "@/components/service-rating";
 import type { ServiceWithProvider } from "@shared/schema";
 import { getProviderName } from "@shared/provider";
 import { currentLocation } from "@shared/locations";
+import { useCategories } from "@/hooks/use-categories";
 import { useTranslation } from "react-i18next";
 
 interface ServiceCardProps {
@@ -18,6 +19,7 @@ interface ServiceCardProps {
 export default function ServiceCard({ service, onBook, onViewDetails, onViewProvider }: ServiceCardProps) {
   service = currentLocation(service);
   const { t } = useTranslation();
+  const categories = useCategories();
   const isGroupService = service.serviceType === "group";
   const availableSpots = isGroupService ? ((service.maxCapacity || 1) - (service.availableCapacity || 0)) : 1;
 
@@ -28,8 +30,7 @@ export default function ServiceCard({ service, onBook, onViewDetails, onViewProv
           {/* Service Image Placeholder */}
           <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg flex items-center justify-center">
             {service.imageUrl ? <img src={service.imageUrl} alt={service.name} className="w-16 h-16 rounded-lg object-cover" loading="lazy" /> : <span className="text-2xl">
-              {service.category === "health_wellness" ? "🏥" : 
-               service.category === "education" ? "🎓" : "🎵"}
+              {categories.data?.find(category => category.key === service.category)?.icon || "📋"}
             </span>}
           </div>
           

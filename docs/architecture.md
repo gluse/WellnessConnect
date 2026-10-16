@@ -33,6 +33,7 @@ See the [README](../README.md) for local setup, commands, and deployment, and th
 - **Company Invitations**: Email-bound invitations with expiry and revocation
 - **Employees**: Optional public names and links to team-member logins
 - **Services**: Categorized offerings with pricing and availability
+- **Categories**: Shared database catalog with stable keys referenced by services
 - **Bookings**: Transaction records with payment tracking
 - **Availability**: Time-slot management for service providers
 - **Sessions**: Secure session storage for authentication
@@ -46,7 +47,8 @@ See the [README](../README.md) for local setup, commands, and deployment, and th
 - **Security**: HTTP-only cookies, secure transport, CSRF protection
 
 ### Service Management
-- **Categories**: Health & Wellness, Education, Entertainment
+- **Categories**: Managed by application administrators at `/administration`, seeded
+  with Health & Wellness, Education, and Entertainment; see [category setup](categories.md)
 - **Service Types**: One-to-one and group services
 - **Pricing**: Flexible pricing with advance payment options
 - **Availability**: Real-time capacity tracking and scheduling
@@ -61,6 +63,11 @@ See the [README](../README.md) for local setup, commands, and deployment, and th
 - **Time Slot Booking**: Customers select from available time slots based on provider schedules
 - **Slot Duration**: Configurable slot durations (30, 60, 90, 120 minutes) per schedule
 - **Overlap Prevention**: Server-side validation prevents double-booking of time slots
+- **Preparation and Cleanup**: Each service can reserve extra minutes after an
+  appointment. Bookings snapshot this value; slot generation, transactional
+  booking/rescheduling checks, and resource range queries include it. Working
+  hours and breaks constrain the entire interval; customer-facing duration
+  excludes the extra time. See [setup and behavior](../README.md#preparation-and-cleanup-time).
 
 ### User Interface
 - **Design System**: Consistent component library with theme support

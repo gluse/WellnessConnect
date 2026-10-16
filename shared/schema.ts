@@ -92,6 +92,14 @@ export const companyInvitations = pgTable("company_invitations", {
   revokedAt: timestamp("revoked_at"),
 }).enableRLS();
 
+export const categories = pgTable("categories", {
+  key: varchar("key", { length: 64 }).primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  icon: varchar("icon", { length: 16 }).notNull().default(""),
+  searchKeywords: text("search_keywords").notNull().default(""),
+}, table => [uniqueIndex("categories_name_idx").on(sql`lower(${table.name})`)]).enableRLS();
+export type Category = typeof categories.$inferSelect;
+
 // Services table
 export const services = pgTable("services", {
   id: serial("id").primaryKey(),
@@ -100,10 +108,11 @@ export const services = pgTable("services", {
   employeeId: integer("employee_id").references(() => employees.id),
   name: varchar("name").notNull(),
   description: text("description"),
-  category: varchar("category", { enum: ["health_wellness", "education", "entertainment"] }).notNull(),
+  category: varchar("category").notNull().references(() => categories.key),
   serviceType: varchar("service_type", { enum: ["one_to_one", "group"] }).notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   duration: integer("duration").notNull(), // in minutes
+  cleanupTime: integer("cleanup_time").notNull().default(0), // Extra minutes after the service
   maxCapacity: integer("max_capacity").default(1),
   ageGroups: jsonb("age_groups").$type<string[]>().default([]), // ["children", "teens", "adults", "seniors"]
   targetGender: varchar("target_gender", { enum: ["females", "males", "both"] }).default("both"),
@@ -122,7 +131,7 @@ export const services = pgTable("services", {
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-}, table => [index("services_google_expiry_idx").on(table.locationExpiresAt).where(sql`${table.locationSource} = 'google'`)]).enableRLS();
+}, table => [index("services_google_expiry_idx").on(table.locationExpiresAt).where(sql`${table.locationSource} = 'google'`), index("services_category_idx").on(table.category), check("services_cleanup_time_check", sql`${table.cleanupTime} BETWEEN 0 AND 1440`)]).enableRLS();
 
 // Only accepted Google coordinates, never Google's formatted address or response.
 // Place IDs may survive coordinate expiry; the key hashes the user's address.
@@ -146,6 +155,7 @@ export const bookings = pgTable("bookings", {
   participantCount: integer("participant_count").default(1),
   scheduledDate: timestamp("scheduled_date").notNull(),
   bookingDuration: integer("booking_duration"), // Duration in minutes for this specific booking
+  bookingCleanupTime: integer("booking_cleanup_time").notNull().default(0), // Snapshot; listing edits do not change reservations
   status: varchar("status", { enum: ["pending", "confirmed", "cancelled", "completed"] }).default("pending"),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   advanceAmount: decimal("advance_amount", { precision: 10, scale: 2 }).notNull(),
@@ -153,7 +163,7 @@ export const bookings = pgTable("bookings", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => [index("bookings_employee_date_idx").on(table.employeeId, table.scheduledDate)]).enableRLS();
+}, (table) => [index("bookings_employee_date_idx").on(table.employeeId, table.scheduledDate), check("bookings_cleanup_time_check", sql`${table.bookingCleanupTime} BETWEEN 0 AND 1440`)]).enableRLS();
 
 // One review per completed booking; the booking supplies its customer and service.
 export const serviceReviews = pgTable("service_reviews", {
@@ -300,6 +310,8 @@ export type ServiceEmbedding = typeof serviceEmbeddings.$inferSelect;
 
 // Schemas
 export const insertServiceSchema = createInsertSchema(services, {
+  cleanupTime: z.number().int().min(0).max(1440).optional(),
+  category: z.string().trim().min(1, "Choose a category.").max(64),
   ageGroups: z.array(z.string()).nullable().optional(),
   employeeId: z.number().int().positive().nullable().optional(),
   latitude: z.number().finite().min(-90).max(90).nullable().optional(),

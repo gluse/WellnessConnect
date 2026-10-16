@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { categoryFixtures } from "./fixtures/categories.mjs";
 import { readFile } from "node:fs/promises";
 import React from "react";
 import renderer from "react-test-renderer";
@@ -64,6 +65,7 @@ assert.ok(Number.isFinite(sortServices([service(10, "10", { latitude: 0, longitu
 
 let requests = [], responseRows = rows, component;
 globalThis.fetch = async url => {
+  if (url === "/api/categories") return new Response(JSON.stringify(categoryFixtures));
   requests.push(url);
   assert.ok(url.startsWith("/api/services/search?") || url.startsWith("/api/services/semantic-search?"), `Unexpected request: ${url}`);
   return new Response(JSON.stringify(responseRows));

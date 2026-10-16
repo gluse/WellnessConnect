@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, List, Map, Target, X } from "lucide-react";
 import { format } from "date-fns";
 import type { ServiceWithProvider } from "@shared/schema";
+import { useCategories } from "@/hooks/use-categories";
 
 interface ActiveFiltersBarProps {
   filters: SearchFilters;
@@ -25,17 +26,14 @@ interface ActiveFiltersBarProps {
 }
 
 function ActiveFiltersBar({ filters, locationName, onFiltersChange, onLocationClear }: ActiveFiltersBarProps) {
+  const categories = useCategories();
   const activeFilters: { key: string; label: string; onRemove: () => void }[] = [];
 
   if (filters.category) {
-    const categoryLabels: Record<string, string> = {
-      health_wellness: "🏥 Health & Wellness",
-      education: "🎓 Education",
-      entertainment: "🎵 Entertainment"
-    };
+    const category = categories.data?.find(category => category.key === filters.category);
     activeFilters.push({
       key: "category",
-      label: categoryLabels[filters.category] || filters.category,
+      label: category ? `${category.icon} ${category.name}`.trim() : filters.category,
       onRemove: () => onFiltersChange({ ...filters, category: "" })
     });
   }

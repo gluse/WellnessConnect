@@ -206,5 +206,10 @@
     "notFound": "Nav atrasts",
     "unauthorized": "Lūdzu, pieslēdzieties, lai turpinātu",
     "networkError": "Tīkla kļūda. Lūdzu, pārbaudiet interneta savienojumu."
+  },
+  "serviceCleanup": {
+    "label": "Sagatavošanās un uzkopšana pēc pakalpojuma (min)",
+    "help": "Papildu laiks pēc katra pieraksta darba laikā un ārpus pārtraukumiem. Klienti redz tikai pakalpojuma ilgumu. Ja nav nepieciešams, ievadiet 0.",
+    "invalid": "Ievadiet veselu skaitli no 0 līdz 1440 sagatavošanās un uzkopšanas laikam."
   }
 }

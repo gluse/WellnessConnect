@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useCategories } from "@/hooks/use-categories";
 
 export interface SearchFilters {
   category: string;
@@ -44,6 +45,7 @@ export default function ServiceFilters({
   onGeocodeLocation
 }: ServiceFiltersProps) {
   const { t } = useTranslation();
+  const categories = useCategories();
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [inputAddress, setInputAddress] = useState(locationName);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -162,11 +164,10 @@ export default function ServiceFilters({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="health_wellness">🏥 Health & Wellness</SelectItem>
-                <SelectItem value="education">🎓 Education</SelectItem>
-                <SelectItem value="entertainment">🎵 Entertainment</SelectItem>
+                {categories.data?.map(category => <SelectItem key={category.key} value={category.key}>{category.icon} {category.name}</SelectItem>)}
               </SelectContent>
             </Select>
+            {categories.isError && <p role="alert" className="text-xs text-red-700">Unable to load categories. <button className="underline" onClick={() => void categories.refetch()}>Try again</button></p>}
           </div>
         )}
       </div>

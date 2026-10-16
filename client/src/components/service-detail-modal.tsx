@@ -8,6 +8,7 @@ import type { ServiceWithProvider } from "@shared/schema";
 import { getProviderName } from "@shared/provider";
 import { currentLocation } from "@shared/locations";
 import { useTranslation } from "react-i18next";
+import { useCategories } from "@/hooks/use-categories";
 
 interface ServiceDetailModalProps {
   service: ServiceWithProvider | null;
@@ -19,24 +20,14 @@ interface ServiceDetailModalProps {
 
 export default function ServiceDetailModal({ service, open, onClose, onBook, onViewProvider }: ServiceDetailModalProps) {
   const { t } = useTranslation();
+  const categories = useCategories();
   if (!service) return null;
   service = currentLocation(service);
 
   const isGroupService = service.serviceType === "group";
   const availableSpots = isGroupService ? ((service.maxCapacity || 1) - (service.availableCapacity || 0)) : 1;
 
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case "health_wellness":
-        return "Health & Wellness";
-      case "education":
-        return "Education";
-      case "entertainment":
-        return "Entertainment";
-      default:
-        return category;
-    }
-  };
+  const getCategoryLabel = (key: string) => categories.data?.find(category => category.key === key)?.name ?? key;
 
   const getAgeGroupLabel = (ageGroup: string) => {
     switch (ageGroup) {

@@ -73,9 +73,9 @@ function withinRecurrence(schedule: Availability, day: string) {
 }
 
 export function bookableSlots({ service, schedules, bookings, date, timezone, now = new Date() }: {
-  service: Pick<Service, "id" | "duration">;
+  service: Pick<Service, "id" | "duration"> & Partial<Pick<Service, "cleanupTime">>;
   schedules: Availability[];
-  bookings: Pick<Booking, "scheduledDate" | "bookingDuration" | "status">[];
+  bookings: (Pick<Booking, "scheduledDate" | "bookingDuration" | "status"> & Partial<Pick<Booking, "bookingCleanupTime">>)[];
   date: string;
   timezone: string;
   now?: Date;
@@ -83,6 +83,7 @@ export function bookableSlots({ service, schedules, bookings, date, timezone, no
   const relevant = schedules.filter(item => item.isActive !== false && (item.serviceId == null || item.serviceId === service.id));
   const result = new Map<string, BookableSlot>();
   const duration = service.duration;
+  const occupiedDuration = duration + (service.cleanupTime ?? 0);
   if (duration <= 0) return [];
   const zones = Array.from(new Set(relevant.map(item => item.timezone))).filter(validTimezone);
   for (const zone of zones) {
@@ -98,15 +99,16 @@ export function bookableSlots({ service, schedules, bookings, date, timezone, no
         : (relevant.some(item => item.serviceId === service.id && item.scheduleType === "recurring") ? serviceWeekly : generalWeekly).filter(item => item.daysOfWeek?.includes(weekday) && withinRecurrence(item, day));
       const offsets = zoneOffsets(day, zone);
       for (const schedule of selected) for (const range of workingRanges(schedule)) {
-        for (let start = minutes(range.startTime); start + duration <= minutes(range.endTime); start += 15) {
+        for (let start = minutes(range.startTime); start + occupiedDuration <= minutes(range.endTime); start += 15) {
           for (const instant of localInstants(day, time(start), zone, offsets)) {
             const end = new Date(instant.getTime() + duration * 60_000);
-            if (instant <= now || dateInZone(instant, timezone) !== date || dateInZone(end, zone) !== day || timeInZone(end, zone) > range.endTime || timeInZone(end, zone) < range.startTime) continue;
-            if (offsets.length > 1 && Array.from({ length: Math.ceil(duration / 15) }, (_, index) => new Date(instant.getTime() + index * 15 * 60_000)).some(point => dateInZone(point, zone) !== day || timeInZone(point, zone) < range.startTime || timeInZone(point, zone) >= range.endTime)) continue;
+            const occupiedEnd = new Date(instant.getTime() + occupiedDuration * 60_000);
+            if (instant <= now || dateInZone(instant, timezone) !== date || dateInZone(occupiedEnd, zone) !== day || timeInZone(occupiedEnd, zone) > range.endTime || timeInZone(occupiedEnd, zone) < range.startTime) continue;
+            if (offsets.length > 1 && Array.from({ length: Math.ceil(occupiedDuration / 15) }, (_, index) => new Date(instant.getTime() + index * 15 * 60_000)).some(point => dateInZone(point, zone) !== day || timeInZone(point, zone) < range.startTime || timeInZone(point, zone) >= range.endTime)) continue;
             if (bookings.some(booking => {
               if (booking.status === "cancelled") return false;
               const busyStart = new Date(booking.scheduledDate).getTime();
-              return instant.getTime() < busyStart + (booking.bookingDuration ?? 60) * 60_000 && end.getTime() > busyStart;
+              return instant.getTime() < busyStart + ((booking.bookingDuration ?? 60) + (booking.bookingCleanupTime ?? 0)) * 60_000 && occupiedEnd.getTime() > busyStart;
             })) continue;
             result.set(instant.toISOString(), { startsAt: instant.toISOString(), endsAt: end.toISOString(), timezone, startTime: timeInZone(instant, timezone), endTime: timeInZone(end, timezone), slotDuration: duration, available: true });
           }

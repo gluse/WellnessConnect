@@ -5,8 +5,9 @@ export function createServiceDraft(service?: Service) {
   if (service) service = currentLocation(service);
   return {
     name: service?.name ?? "", description: service?.description ?? "",
-    category: service?.category ?? "health_wellness", serviceType: service?.serviceType ?? "one_to_one",
+    category: service?.category ?? "", serviceType: service?.serviceType ?? "one_to_one",
     price: service?.price ?? "", duration: service?.duration ?? 60, maxCapacity: service?.maxCapacity ?? 1,
+    cleanupTime: service?.cleanupTime ?? 0,
     ageGroups: service?.ageGroups ?? [] as string[], targetGender: service?.targetGender ?? "both",
     instantBooking: service?.instantBooking ?? false, advancePaymentPercent: service?.advancePaymentPercent ?? 50,
     address: service?.address ?? "", latitude: service?.latitude ?? null, longitude: service?.longitude ?? null,

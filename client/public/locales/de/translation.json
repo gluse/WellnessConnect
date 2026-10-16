@@ -206,5 +206,10 @@
     "notFound": "Nicht gefunden",
     "unauthorized": "Bitte melden Sie sich an, um fortzufahren",
     "networkError": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung."
+  },
+  "serviceCleanup": {
+    "label": "Vorbereitung und Reinigung nach dem Service (Min.)",
+    "help": "Zusätzliche Zeit nach jedem Termin, innerhalb der Arbeitszeit und außerhalb der Pausen. Kunden sehen nur die Servicedauer. Geben Sie 0 ein, wenn keine zusätzliche Zeit nötig ist.",
+    "invalid": "Geben Sie für die Vorbereitungs- und Reinigungszeit eine ganze Zahl von 0 bis 1440 ein."
   }
 }

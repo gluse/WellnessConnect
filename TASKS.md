@@ -36,12 +36,13 @@ Keep tasks awaiting testing or external setup here, and preserve task IDs when a
 - [ ] **TASK-005 — Refactor the landing page.** Agree on the desired layout,
   content, and behavior when starting this task, then implement the refactor.
 
-## Scheduling
 
-- [ ] **TASK-006 — Add preparation and cleanup time.** Allow providers to add
-  extra time after a service for cleaning the workspace and preparing for the
-  next customer. Include this time when checking availability and preventing
-  overlapping appointments.
+## Claim my service page
+- [ ] **TASK-012 - Turn Service providers page**
+I want to increase profit by allowing service providers to display their servises as a separate page. Similar Like when you are in amazon and you click to specific Store.
+Work on this item in planning mode firts to agree with me what would be best approach
+  **Agreed requirement:** Storefront availability is restricted to users with a Pro subscription plan.
+  **Status:** Planning; subscription scope and billing approach still to be agreed before implementation.
 
 ## Translations
 - [ ] **Make sure interface is translated in multiple languages ** All labels , button names, tooltip texts should be translated when user switch language.
@@ -58,9 +59,6 @@ Keep tasks awaiting testing or external setup here, and preserve task IDs when a
   - Show all company / organization affiliations, roles, and closed-company status.
   - Search by company / organization name across the full user directory.
   **Status:** Ready for testing
-
-## Categories
-Move hardcoded categories to separate categories database table. Allow Administrators to manage Categories from /administration page
 
 ## Audit
 

@@ -58,7 +58,7 @@ export function setupSchedulingRoutes(app: Express) {
       const timezone = timezoneSchema.parse(req.query.timezone ?? "UTC");
       const month = req.query.month == null ? null : monthSchema.parse(req.query.month);
       const { first, last } = month ? monthBounds(month) : { first: dateSchema.parse(req.query.date), last: dateSchema.parse(req.query.date) };
-      const service = { ...booking!.service, providerId: booking!.providerId, companyId: booking!.companyId, employeeId: booking!.employeeId, duration: booking!.bookingDuration ?? booking!.service.duration };
+      const service = { ...booking!.service, providerId: booking!.providerId, companyId: booking!.companyId, employeeId: booking!.employeeId, duration: booking!.bookingDuration ?? booking!.service.duration, cleanupTime: booking!.bookingCleanupTime ?? 0 };
       const [schedules, allBookings] = await Promise.all([
         storage.getAvailabilityByProvider(service.providerId, service.companyId ?? undefined),
         storage.getBookingsForResourceRange(service, new Date(`${addDateDays(first, -1)}T00:00:00Z`), new Date(`${addDateDays(last, 2)}T00:00:00Z`)),

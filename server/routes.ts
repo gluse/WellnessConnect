@@ -12,6 +12,9 @@ import { registerLocation, resolveServiceLocation } from "./registeredLocations"
 import { setupCompanyRoutes } from "./companyRoutes";
 import { setupSchedulingRoutes } from "./schedulingRoutes";
 import { setupAdminRoutes } from "./adminRoutes";
+import { setupCategoryRoutes } from "./categoryRoutes";
+import { categoryStore } from "./categories";
+import { CategoryError } from "@shared/categories";
 import { setupReviewRoutes } from "./reviewRoutes";
 import { setupProviderCatalogRoutes } from "./providerCatalogRoutes";
 import { scope, assertService, assertBooking, ensureCompany, workspaceContext, saveWorkspaceSession, AccessError } from "./companyAccess";
@@ -20,21 +23,19 @@ import { companies } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
 function apiFailure(error: unknown, res: import("express").Response, fallback: string) {
-  const known = error instanceof AccessError || error instanceof ImageStorageError || error instanceof GeocodingError;
+  const pgError = (error as any)?.cause ?? error;
+  if ((pgError as any)?.code === "23503" && (pgError as any)?.constraint === "services_category_categories_key_fk") {
+    return res.status(400).json({ message: "Choose an existing category." });
+  }
+  const known = error instanceof AccessError || error instanceof ImageStorageError || error instanceof GeocodingError || error instanceof CategoryError;
   res.status(known ? error.status : error instanceof z.ZodError ? 400 : error instanceof BookingConflictError ? 409 : 500)
     .json({ message: known || error instanceof BookingConflictError ? error.message : error instanceof z.ZodError ? error.issues[0].message : fallback });
 }
 
 // Helper to add English keywords to embedding text for cross-language search
-function enrichEmbeddingText(name: string, description: string | null, category: string): string {
-  let text = `${name} ${description || ''} ${category}`.trim();
-  
-  // Add category translations
-  const categoryTranslations: Record<string, string> = {
-    'health_wellness': 'health wellness spa massage sauna bath relaxation therapy healing',
-    'education': 'education learning teaching tutoring lessons classes school study math science language',
-    'entertainment': 'entertainment fun activities recreation leisure games events party',
-  };
+async function enrichEmbeddingText(name: string, description: string | null, category: string): Promise<string> {
+  const details = (await categoryStore.list()).find(item => item.key === category);
+  let text = `${name} ${description || ''} ${category} ${details?.name ?? ''} ${details?.searchKeywords ?? ''}`.trim();
   
   // Common Latvian to English translations for better cross-language search
   const latvianToEnglish: Record<string, string> = {
@@ -57,11 +58,6 @@ function enrichEmbeddingText(name: string, description: string | null, category:
     'skaistumkopšana': 'beauty care cosmetics skincare',
   };
   
-  // Add category translation
-  if (categoryTranslations[category]) {
-    text += ` ${categoryTranslations[category]}`;
-  }
-  
   // Check for Latvian keywords and add English equivalents
   const lowerText = text.toLowerCase();
   for (const [latvian, english] of Object.entries(latvianToEnglish)) {
@@ -82,6 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
   setupAdminRoutes(app);
+  setupCategoryRoutes(app);
   setupCompanyRoutes(app);
   setupSchedulingRoutes(app);
   setupReviewRoutes(app);
@@ -290,6 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         providerId: current.providerId,
         companyId: current.companyId ?? null,
       });
+      if (!(await categoryStore.list()).some(category => category.key === serviceData.category)) throw new CategoryError(400, "Choose an existing category.");
       Object.assign(serviceData, await resolveServiceLocation(serviceData, req.body));
       if (serviceData.imageUrl) await validateServiceImage(serviceData.imageUrl, userId, current.companyId);
       await validateEmployeeAssignment(serviceData.employeeId, req);
@@ -298,7 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Generate embedding for the new service asynchronously
       try {
-        const textContent = enrichEmbeddingText(service.name, service.description, service.category);
+        const textContent = await enrichEmbeddingText(service.name, service.description, service.category);
         const embedding = await generateEmbedding(textContent);
         await storage.upsertServiceEmbedding({
           serviceId: service.id,
@@ -487,7 +485,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       assertService(req, service, true);
       
       // Create text content for embedding with English translations
-      const textContent = enrichEmbeddingText(service.name, service.description, service.category);
+      const textContent = await enrichEmbeddingText(service.name, service.description, service.category);
       
       // Generate embedding
       const embedding = await generateEmbedding(textContent);
@@ -518,7 +516,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       for (const service of providerServices) {
         try {
-          const textContent = enrichEmbeddingText(service.name, service.description, service.category);
+          const textContent = await enrichEmbeddingText(service.name, service.description, service.category);
           const embedding = await generateEmbedding(textContent);
           
           await storage.upsertServiceEmbedding({
@@ -587,13 +585,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const current = assertService(req, service, true);
       
       const updates = insertServiceSchema.omit({ providerId: true, companyId: true }).partial().parse(req.body);
+      if (updates.category !== undefined && !(await categoryStore.list()).some(category => category.key === updates.category)) throw new CategoryError(400, "Choose an existing category.");
       Object.assign(updates, await resolveServiceLocation(updates, req.body, service));
       if (updates.imageUrl) await validateServiceImage(updates.imageUrl, userId, current.companyId);
       await validateEmployeeAssignment(updates.employeeId, req);
       if (updates.employeeId !== undefined && updates.employeeId !== service!.employeeId) {
         const upcoming = (await storage.getBookingsByProvider(current.providerId, current.companyId)).some(booking => booking.serviceId === serviceId
           && (booking.status === "pending" || booking.status === "confirmed")
-          && new Date(booking.scheduledDate).getTime() + (booking.bookingDuration ?? service!.duration) * 60_000 > Date.now());
+          && new Date(booking.scheduledDate).getTime() + ((booking.bookingDuration ?? service!.duration) + (booking.bookingCleanupTime ?? 0)) * 60_000 > Date.now());
         if (upcoming) return res.status(409).json({ message: "This service has upcoming bookings. Keep its assigned employee or resolve those bookings before changing the assignment." });
       }
       const updatedService = await storage.updateService(serviceId, updates);
@@ -641,6 +640,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         companyId: service.companyId,
         employeeId: service.employeeId,
         bookingDuration: service.duration,
+        bookingCleanupTime: service.cleanupTime,
         status: service.instantBooking ? "confirmed" : "pending",
         paymentStatus: "pending",
         scheduledDate,

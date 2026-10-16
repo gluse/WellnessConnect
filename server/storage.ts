@@ -442,14 +442,14 @@ export class DatabaseStorage implements IStorage {
     return db.transaction(async tx => {
       // Serialize check + insert for this administrator, including simultaneous requests.
       await tx.execute(sql`SELECT id FROM users WHERE id = ${booking.providerId} FOR UPDATE`);
-      const [service] = await tx.select().from(services).where(eq(services.id, booking.serviceId));
+      const [service] = await tx.select().from(services).where(eq(services.id, booking.serviceId)).for("share");
       if (!service?.isActive || service.providerId !== booking.providerId || service.employeeId !== (booking.employeeId ?? null)) throw new BookingConflictError("The service has changed. Please choose a time again.");
       const schedules = await tx.select().from(availability).where(and(
         service.companyId != null ? eq(availability.companyId, service.companyId) : and(eq(availability.providerId, service.providerId), isNull(availability.companyId)), eq(availability.isActive, true)));
       const offered = bookableSlots({ service, schedules, bookings: [], date: booking.scheduledDate.toISOString().slice(0, 10), timezone: "UTC" });
       if (!offered.some(slot => slot.startsAt === booking.scheduledDate.toISOString())) throw new BookingConflictError("This time is outside the available working hours.");
       const start = booking.scheduledDate;
-      const end = new Date(start.getTime() + (booking.bookingDuration || 60) * 60_000);
+      const end = new Date(start.getTime() + (service.duration + service.cleanupTime) * 60_000);
       const resource = booking.employeeId != null
         ? eq(bookings.employeeId, booking.employeeId)
         : sql`${bookings.employeeId} IS NULL`;
@@ -457,9 +457,9 @@ export class DatabaseStorage implements IStorage {
         .leftJoin(services, eq(bookings.serviceId, services.id))
         .where(and(eq(bookings.providerId, booking.providerId), resource, ne(bookings.status, "cancelled"),
           sql`${bookings.scheduledDate} < ${end.toISOString()}::timestamp`,
-          sql`${bookings.scheduledDate} + COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) * interval '1 minute' > ${start.toISOString()}::timestamp`));
+          sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${start.toISOString()}::timestamp`));
       if (overlapping.length) throw new BookingConflictError("This employee is already booked at that time.");
-      const [created] = await tx.insert(bookings).values(booking).returning();
+      const [created] = await tx.insert(bookings).values({ ...booking, bookingDuration: service.duration, bookingCleanupTime: service.cleanupTime }).returning();
       return created;
     });
   }
@@ -613,14 +613,14 @@ export class DatabaseStorage implements IStorage {
       const [service] = await tx.select().from(services).where(eq(services.id, booking.serviceId));
       const schedules = await tx.select().from(availability).where(and(
         booking.companyId != null ? eq(availability.companyId, booking.companyId) : and(eq(availability.providerId, booking.providerId), isNull(availability.companyId)), eq(availability.isActive, true)));
-      const offered = bookableSlots({ service: { ...service, duration: booking.bookingDuration ?? service.duration }, schedules, bookings: [], date: date.toISOString().slice(0, 10), timezone: "UTC" });
+      const offered = bookableSlots({ service: { ...service, duration: booking.bookingDuration ?? service.duration, cleanupTime: booking.bookingCleanupTime ?? 0 }, schedules, bookings: [], date: date.toISOString().slice(0, 10), timezone: "UTC" });
       if (!offered.some(slot => slot.startsAt === date.toISOString())) throw new BookingConflictError("Choose a time within the available working hours.");
-      const end = new Date(date.getTime() + (booking.bookingDuration ?? service.duration) * 60_000);
+      const end = new Date(date.getTime() + ((booking.bookingDuration ?? service.duration) + (booking.bookingCleanupTime ?? 0)) * 60_000);
       const overlap = await tx.select({ id: bookings.id }).from(bookings).leftJoin(services, eq(bookings.serviceId, services.id)).where(and(
         ne(bookings.id, id), eq(bookings.providerId, booking.providerId), ne(bookings.status, "cancelled"),
         booking.employeeId != null ? eq(bookings.employeeId, booking.employeeId) : isNull(bookings.employeeId),
         sql`${bookings.scheduledDate} < ${end.toISOString()}::timestamp`,
-        sql`${bookings.scheduledDate} + COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) * interval '1 minute' > ${date.toISOString()}::timestamp`));
+        sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${date.toISOString()}::timestamp`));
       if (overlap.length) throw new BookingConflictError("This time slot is no longer available.");
       const [updated] = await tx.update(bookings).set({ scheduledDate: date, updatedAt: new Date() }).where(eq(bookings.id, id)).returning();
       return updated;
@@ -682,7 +682,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(bookings.providerId, service.providerId), ne(bookings.status, "cancelled"),
         service.employeeId != null ? eq(bookings.employeeId, service.employeeId) : sql`${bookings.employeeId} IS NULL`,
         sql`${bookings.scheduledDate} < ${end.toISOString()}::timestamp`,
-        sql`${bookings.scheduledDate} + COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) * interval '1 minute' > ${start.toISOString()}::timestamp`));
+        sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${start.toISOString()}::timestamp`));
     return rows.map(row => ({ ...row.booking, bookingDuration: row.booking.bookingDuration ?? row.duration ?? 60 }));
   }
 

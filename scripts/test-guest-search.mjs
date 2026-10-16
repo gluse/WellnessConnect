@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { categoryFixtures } from "./fixtures/categories.mjs";
 import { readFile } from "node:fs/promises";
 import React from "react";
 import renderer from "react-test-renderer";
@@ -11,6 +12,7 @@ globalThis.React = React;
 const record = { id: 1, providerId: "provider", companyId: 7, name: "Public service", category: "health_wellness", price: "20", duration: 30, serviceType: "one_to_one", isActive: true, companyActive: true, employee: null, rating: 4, reviewCount: 1, latitude: 56.95, longitude: 24.1, provider: { providerType: "company", companyName: "Public Company" } };
 let requests = [], holdAuth = false, releaseAuth, component, location;
 globalThis.fetch = async url => {
+  if (url === "/api/categories") return new Response(JSON.stringify(categoryFixtures));
   if (String(url).startsWith("/locales/")) return new Response(await readFile(`client/public${url}`, "utf8"));
   requests.push(url);
   if (url === "/api/auth/user") {

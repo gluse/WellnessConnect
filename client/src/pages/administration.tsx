@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import AdminUserFiltersForm from "@/components/admin-user-filters";
+import AdminCategories from "@/components/admin-categories";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from "@/components/ui/table";
 
 const signInUrl = "/login?returnTo=%2Fadministration";
@@ -30,19 +31,21 @@ export default function Administration() {
 function AdministrationContent() {
   const access = useAppAdmin();
   const queryClient = useQueryClient();
+  const [section, setSection] = useState<"users" | "categories">("users");
+  const [categoryAccessError, setCategoryAccessError] = useState<Error | null>(null);
   const [options, setOptions] = useState(() => ({ page: 1, pageSize: 50,
     filters: { ...defaultAdminUserFilters, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
   }));
   const users = useQuery<AdminUsersPage>({
-    queryKey: ["/api/admin/users", options], enabled: access.isSuccess && access.data.isAdmin,
+    queryKey: ["/api/admin/users", options], enabled: access.isSuccess && access.data.isAdmin && section === "users",
     queryFn: async ({ signal }) => {
       const params = new URLSearchParams({ page: String(options.page), pageSize: String(options.pageSize), ...options.filters });
       return (await apiRequest("GET", `/api/admin/users?${params}`, undefined, signal)).json();
     },
     staleTime: 0, gcTime: 0, retry: false,
   });
-  const expired = isUnauthorizedError(access.error) || isUnauthorizedError(users.error);
-  const forbidden = users.error instanceof Error && users.error.message.startsWith("403:");
+  const expired = isUnauthorizedError(access.error) || isUnauthorizedError(users.error) || isUnauthorizedError(categoryAccessError);
+  const forbidden = (users.error instanceof Error && users.error.message.startsWith("403:")) || Boolean(categoryAccessError?.message.startsWith("403:"));
   useEffect(() => {
     if (expired) queryClient.setQueryData(["/api/auth/user"], null);
     if (forbidden) queryClient.setQueryData(["/api/admin/access"], { isAdmin: false });
@@ -57,13 +60,17 @@ function AdministrationContent() {
   return <div className="min-h-[calc(100dvh-4rem)] bg-neutral-50">
     <main className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
       <div><h1 className="text-2xl font-semibold">Administration</h1><p className="mt-2 text-neutral-600">Application support</p></div>
+      {access.data?.isAdmin && !denied && <nav aria-label="Administration sections" className="flex gap-2">
+        <Button variant={section === "users" ? "default" : "outline"} aria-pressed={section === "users"} onClick={() => setSection("users")}>App users</Button>
+        <Button variant={section === "categories" ? "default" : "outline"} aria-pressed={section === "categories"} onClick={() => setSection("categories")}>Categories</Button>
+      </nav>}
       {access.isPending ? <p role="status">Checking support access…</p> : denied ? <div role="alert" className="space-y-3">
         <p>Application support access is required to view this page.</p>
         <Button asChild variant="outline"><Link href="/">Find Services</Link></Button>
       </div> : access.isError ? <div role="alert" className="space-y-3">
         <p>Unable to check support access. Please try again.</p>
         <Button disabled={access.isFetching} onClick={() => void access.refetch()}>Try again</Button>
-      </div> : <section aria-labelledby="app-users-heading" className="border rounded-xl bg-white p-4 sm:p-6 space-y-4">
+      </div> : section === "categories" ? <AdminCategories onAccessError={setCategoryAccessError} /> : <section aria-labelledby="app-users-heading" className="border rounded-xl bg-white p-4 sm:p-6 space-y-4">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div><h2 id="app-users-heading" className="text-lg font-semibold">App users</h2><p className="text-sm text-neutral-600">All registered accounts, including users who have not signed in.</p></div>
           <Button variant="outline" disabled={users.isFetching} onClick={() => void users.refetch()}>Refresh</Button>

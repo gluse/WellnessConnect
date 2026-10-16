@@ -4,6 +4,44 @@ Archive of completed FitsMyTime tasks. Active tasks, including those awaiting
 testing or external setup, remain in [TASKS.md](TASKS.md). Preserve task IDs when
 moving tasks between these files.
 
+## Scheduling
+
+- [x] **TASK-006 — Add preparation and cleanup time.** Allow providers to add
+  extra time after a service for cleaning the workspace and preparing for the
+  next customer. Include this time when checking availability and preventing
+  overlapping appointments.
+  **Status:** Completed.
+  - Add a translated preparation/cleanup field to the service editor, defaulting
+    to zero, and preserve it when copying services.
+  - Include the entire service plus cleanup interval in daily/monthly availability,
+    working hours, breaks, employee conflicts, booking creation, and rescheduling.
+  - Save trusted duration and cleanup snapshots on each booking so listing edits
+    do not change existing reservations. Customer appointment duration excludes cleanup.
+  - Apply the additive migration to the configured database, preserving existing
+    reservations with zero extra minutes. Other databases need
+    `npm run db:setup-cleanup-time`; see [setup and behavior](README.md#preparation-and-cleanup-time).
+  - Verified with `npm run test:cleanup-time`, `npm run test:cleanup-time-db`,
+    provider navigation, customer bookings, booking completion, guest search,
+    provider catalog regression tests, `npm run check`, and `npm run build`.
+
+## Categories
+
+- [x] **TASK-011 — Move hardcoded categories to a separate database table.**
+  Allow application administrators to manage categories from `/administration`.
+  **Status:** Completed.
+  - Add, edit, and delete categories under Administration → Categories, using the
+    existing application administrator allowlist. Company roles do not grant access.
+  - Read the shared catalog in provider forms, search filters and chips, service
+    details, card placeholders, and landing previews.
+  - Keep stable category keys, reject unknown service categories, and prevent
+    deleting categories referenced by services, including inactive listings.
+  - Apply the category migration to the configured database, preserving existing
+    services and category keys. Other databases need `npm run db:setup-categories`.
+    See [category setup and behavior](docs/categories.md).
+  - Verified category UI/API tests, real PostgreSQL migration/constraint/security
+    checks, administration, guest search, provider navigation/catalog and search
+    sorting regressions, `npm run check`, and `npm run build`.
+
 ## Map view
 
 - [x] **TASK-001 — Replace service markers with location pins.** Replace the

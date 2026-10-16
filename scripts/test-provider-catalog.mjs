@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { categoryFixtures } from "./fixtures/categories.mjs";
 import { readFile } from "node:fs/promises";
 import React from "react";
 import renderer from "react-test-renderer";
@@ -33,6 +34,7 @@ const service = (id, companyId, providerId) => ({ id, companyId, providerId, nam
 const source = service(1, 7, "team-member-1"), another = service(2, 7, "team-member-2"), personal = service(3, null, "person");
 let component, requests = [], hold = true, release, fail = false, responseRows = [source, another], booked, details;
 globalThis.fetch = async url => {
+  if (url === "/api/categories") return new Response(JSON.stringify(categoryFixtures));
   requests.push(url);
   const respond = () => new Response(JSON.stringify(fail ? { message: "Unavailable" } : responseRows), { status: fail ? 500 : 200 });
   return hold ? new Promise(resolve => { release = () => resolve(respond()); }) : respond();

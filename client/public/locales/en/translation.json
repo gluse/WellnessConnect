@@ -206,5 +206,10 @@
     "notFound": "Not found",
     "unauthorized": "Please log in to continue",
     "networkError": "Network error. Please check your connection."
+  },
+  "serviceCleanup": {
+    "label": "Preparation and cleanup after service (min)",
+    "help": "Extra time reserved after each appointment, within working hours and outside breaks. Customers still see only the service duration. Use 0 for none.",
+    "invalid": "Enter a whole number from 0 to 1440 for preparation and cleanup time."
   }
 }

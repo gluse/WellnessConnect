@@ -206,5 +206,10 @@
     "notFound": "Não encontrado",
     "unauthorized": "Por favor, faça login para continuar",
     "networkError": "Erro de rede. Por favor, verifique sua conexão."
+  },
+  "serviceCleanup": {
+    "label": "Preparação e limpeza após o serviço (min)",
+    "help": "Tempo adicional reservado após cada atendimento, dentro do horário de trabalho e fora dos intervalos. Os clientes veem apenas a duração do serviço. Use 0 se não for necessário.",
+    "invalid": "Insira um número inteiro de 0 a 1440 para o tempo de preparação e limpeza."
   }
 }

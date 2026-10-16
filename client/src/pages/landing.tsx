@@ -3,9 +3,11 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Users, MapPin, Star, Shield, Clock } from "lucide-react";
+import { useCategories } from "@/hooks/use-categories";
 
 export default function Landing() {
   const { t } = useTranslation();
+  const categories = useCategories();
   const handleLogin = () => {
     window.location.href = "/api/login";
   };
@@ -85,19 +87,13 @@ export default function Landing() {
         <div className="px-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">Service Categories</h2>
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-primary/5 rounded-lg p-4 text-center">
-              <Heart className="w-6 h-6 text-primary mx-auto mb-2" />
-              <span className="text-sm font-medium">Health & Wellness</span>
-            </div>
-            <div className="bg-secondary/5 rounded-lg p-4 text-center">
-              <Users className="w-6 h-6 text-secondary mx-auto mb-2" />
-              <span className="text-sm font-medium">Education</span>
-            </div>
-            <div className="bg-accent/5 rounded-lg p-4 text-center">
-              <Clock className="w-6 h-6 text-accent mx-auto mb-2" />
-              <span className="text-sm font-medium">Entertainment</span>
-            </div>
+            {categories.data?.map(category => <Link key={category.key} href="/search" className="bg-primary/5 rounded-lg p-4 text-center">
+              <span className="block text-2xl mb-2" aria-hidden="true">{category.icon || "📋"}</span>
+              <span className="text-sm font-medium">{category.name}</span>
+            </Link>)}
           </div>
+          {categories.isPending && <p role="status">Loading categories…</p>}
+          {categories.isError && <p role="alert">Unable to load categories. <button className="underline" onClick={() => void categories.refetch()}>Try again</button></p>}
         </div>
 
         {/* Call to Action */}

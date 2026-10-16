@@ -33,6 +33,7 @@ Do not create tables with `db:push` before restoring a database dump.
 - View customer appointments on the separate My Bookings page, with upcoming,
   date, status, and booking history filters.
 - Create provider listings and availability schedules.
+- Reserve preparation and cleanup time after services when checking booking availability.
 - Reuse eligible registered locations instead of repeatedly geocoding addresses;
   see [location registration and retention](docs/registered-locations.md).
 - Manage appointments, services, availability, and settings on separate My Services
@@ -50,6 +51,8 @@ Do not create tables with `db:push` before restoring a database dump.
   Facebook, Apple, and Microsoft login. See the [social sign-in setup guide](docs/social-sign-in.md).
 - Update your password from Account details after verifying your current password.
 - Browse all registered accounts from Administration with application support access.
+- Manage the database-backed category catalog from Administration → Categories;
+  see [category management and setup](docs/categories.md).
 - Upload private service images, with access controlled by Express.
 - Find related services using OpenAI embeddings.
 
@@ -64,6 +67,8 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run db:push` | Apply reviewed application schema changes |
 | `npm run db:setup-company` | Add company workspaces, employees, and team permissions; preserve existing records |
 | `npm run db:setup-reviews` | Add the reviews table and constraints to an existing database; preserve existing data |
+| `npm run db:setup-cleanup-time` | Add preparation/cleanup settings and booking snapshots; preserve existing reservations |
+| `npm run db:setup-categories` | Seed the category catalog and link existing services without changing their keys |
 | `npm run db:setup-locations` | Add registered locations, coordinate cache and independent hourly expiry cleanup |
 | `npm run test:geocoding` | Mocked geocoding quality, reuse/expiry, concurrency and address editor checks |
 | `npm run test:geocoding-db` | PostgreSQL location cache, reuse boundaries and cleanup using temporary tables |
@@ -73,6 +78,8 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run test:invite-ui` | Invitation session expiry and stale password-state regression tests |
 | `npm run test:provider-navigation` | Provider routes, service editing, workspace switching, and permission regression tests |
 | `npm run test:customer-bookings` | Customer booking navigation, authentication, filters, loading, errors, and retry tests |
+| `npm run test:cleanup-time` | Preparation/cleanup editor, validation, slot boundaries, breaks, and booking/rescheduling API tests |
+| `npm run test:cleanup-time-db` | PostgreSQL migration, snapshots, employee conflicts, and rescheduling using temporary tables |
 | `npm run test:search-sorting` | Search sort controls, numeric prices, coordinate distances, missing ratings, stable ordering, and translations |
 | `npm run test:guest-search` | Visitor routes, public search/maps/details, booking sign-in prompts, safe return URLs, and public/private image access |
 | `npm run test:provider-catalog` | Company/provider catalog selection, preserved search filters, service actions, loading/retry, and public endpoint validation |
@@ -80,6 +87,8 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run test:public-reviews` | Clickable ratings, public review details, relative dates, pagination, loading/retry, and endpoint validation |
 | `npm run test:reviews-db` | PostgreSQL review storage and rating aggregation checks using connection-local temporary test tables |
 | `npm run test:administration` | Support access, user directory pagination, response privacy, and administration UI regression tests |
+| `npm run test:categories` | Category management, dynamic selectors, public display, access control, and validation |
+| `npm run test:categories-db` | Category migration, CRUD, foreign keys, and RLS checks using temporary tables |
 | `npm run test:social-auth` | Social buttons, provider flags/scopes, PKCE callbacks, redirects, and profile/session regression tests with Auth mocked |
 | `npm run test:password` | Password validation, current-password verification, and session handling regression tests |
 | `npm run test:api-transport` | Real local HTTP, API fallback, password response, and session cookie tests; Supabase is mocked |
@@ -184,6 +193,27 @@ Refresh reloads the current filters and page from the source records.
 Every directory request verifies the signed-in identity and configured access;
 Auth metadata and credentials are not included in directory responses.
 No database migration is required.
+
+## Preparation and cleanup time
+
+In **My Services → Services**, create or edit a service and set **Preparation and
+cleanup after service (min)** under **Booking and pricing**. Enter whole minutes
+from 0 to 1440; 0 keeps the existing behavior. Copies retain the setting.
+
+A 30-minute appointment with 15 minutes of preparation and cleanup reserves
+45 minutes for its employee. The customer still sees a 30-minute appointment.
+Both the service and its extra time must fit within working hours and outside
+breaks. Pending, confirmed, and completed bookings block the full reserved
+interval; cancelled bookings release it. The next appointment can start exactly
+when cleanup ends. The existing employee and unassigned-provider conflict rules
+also apply across different services.
+
+Each new booking saves its duration and cleanup time. Later listing edits apply
+to new bookings; existing bookings and their rescheduling keep their saved times.
+For existing databases, run `npm run db:setup-cleanup-time` before starting the
+updated backend. The additive migration was applied to the currently configured
+database. Historical bookings and services default to zero extra minutes.
+See [the detailed setup and verification guide](docs/preparation-cleanup-time.md).
 
 ## Company providers
 

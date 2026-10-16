@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
@@ -15,6 +16,7 @@ import ServiceLocationFields from "./service-location-fields";
 import ServiceMediaFields from "./service-media-fields";
 
 export default function ServiceEditor({ service, employees, company }: { service?: Service; employees: Employee[]; company: boolean }) {
+  const { t } = useTranslation();
   const [newService, setNewService] = useState(() => createServiceDraft(service));
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
@@ -42,6 +44,8 @@ export default function ServiceEditor({ service, employees, company }: { service
   const submit = (isActive: boolean) => {
     if (save.isPending) return;
     if (!newService.name.trim() || !newService.price) { setError("Enter a service name and price."); return; }
+    if (!newService.category) { setError("Choose a category."); return; }
+    if (!Number.isInteger(newService.cleanupTime) || newService.cleanupTime < 0 || newService.cleanupTime > 1440) { setError(t("serviceCleanup.invalid")); return; }
     if (!Number.isFinite(Number(newService.price)) || Number(newService.price) < 0 || newService.duration < 1 || newService.maxCapacity < 1) { setError("Use a non-negative price and a positive duration and capacity."); return; }
     if (!newService.address.trim() || !validCoordinates(newService.latitude, newService.longitude)) { setError("Enter an address and verify it, or provide valid coordinates manually."); return; }
     if ((!service || newService.address !== service.address) && addressError(newService.address)) { setError(addressError(newService.address)!); return; }

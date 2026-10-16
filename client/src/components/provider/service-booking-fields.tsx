@@ -4,8 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { useTranslation } from "react-i18next";
 
 export default function ServiceBookingFields({ newService, setNewService }: { newService: ServiceDraft; setNewService: Dispatch<SetStateAction<ServiceDraft>> }) {
+  const { t } = useTranslation();
   const handleAgeGroupToggle = (ageGroup: string) => setNewService(prev => ({ ...prev, ageGroups: prev.ageGroups.includes(ageGroup) ? prev.ageGroups.filter(group => group !== ageGroup) : [...prev.ageGroups, ageGroup] }));
   return <section className="space-y-4">
     <div className="grid grid-cols-2 gap-3">
@@ -33,6 +35,15 @@ export default function ServiceBookingFields({ newService, setNewService }: { ne
           onChange={(e) => setNewService(prev => ({ ...prev, duration: parseInt(e.target.value) || 60 }))}
         />
       </div>
+    </div>
+
+    <div>
+      <Label htmlFor="cleanupTime">{t("serviceCleanup.label")}</Label>
+      <Input id="cleanupTime" type="number" min="0" max="1440" step="1"
+        value={Number.isNaN(newService.cleanupTime) ? "" : newService.cleanupTime}
+        onChange={event => setNewService(prev => ({ ...prev, cleanupTime: event.target.value === "" ? NaN : Number(event.target.value) }))}
+        aria-describedby="cleanupTime-help" data-testid="input-cleanup-time" />
+      <p id="cleanupTime-help" className="mt-1 text-sm text-neutral-500">{t("serviceCleanup.help")}</p>
     </div>
 
     {newService.serviceType === "group" && (

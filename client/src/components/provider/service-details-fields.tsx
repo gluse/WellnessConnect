@@ -5,8 +5,10 @@ import { Label } from "@/components/ui/label";
 import type { Employee } from "@shared/schema";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCategories } from "@/hooks/use-categories";
 
 export default function ServiceDetailsFields({ newService, setNewService, company, employees }: { newService: ServiceDraft; setNewService: Dispatch<SetStateAction<ServiceDraft>>; company: boolean; employees: Employee[] }) {
+  const categories = useCategories();
 
   return <section className="space-y-4">
     {company && <div>
@@ -43,18 +45,20 @@ export default function ServiceDetailsFields({ newService, setNewService, compan
       <div>
         <Label htmlFor="category">Category</Label>
         <Select
+          required
+          disabled={!categories.data?.length}
           value={newService.category}
           onValueChange={(value) => setNewService(prev => ({ ...prev, category: value as ServiceDraft["category"] }))}
         >
-          <SelectTrigger>
-            <SelectValue />
+          <SelectTrigger id="category">
+            <SelectValue placeholder="Choose a category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="health_wellness">Health & Wellness</SelectItem>
-            <SelectItem value="education">Education</SelectItem>
-            <SelectItem value="entertainment">Entertainment</SelectItem>
+            {categories.data?.map(category => <SelectItem key={category.key} value={category.key}>{category.icon} {category.name}</SelectItem>)}
           </SelectContent>
         </Select>
+        {categories.isError ? <p role="alert" className="text-sm text-red-700">Unable to load categories. <button type="button" className="underline" onClick={() => void categories.refetch()}>Try again</button></p>
+          : categories.isPending ? <p role="status" className="text-sm">Loading categories…</p> : !categories.data.length && <p className="text-sm">Ask an administrator to add a category before creating a service.</p>}
       </div>
 
       <div>
