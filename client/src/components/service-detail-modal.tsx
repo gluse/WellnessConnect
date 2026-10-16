@@ -6,6 +6,7 @@ import { Clock, Users, MapPin, DollarSign, Calendar, CheckCircle } from "lucide-
 import ServiceRating from "@/components/service-rating";
 import type { ServiceWithProvider } from "@shared/schema";
 import { getProviderName } from "@shared/provider";
+import { currentLocation } from "@shared/locations";
 import { useTranslation } from "react-i18next";
 
 interface ServiceDetailModalProps {
@@ -19,6 +20,7 @@ interface ServiceDetailModalProps {
 export default function ServiceDetailModal({ service, open, onClose, onBook, onViewProvider }: ServiceDetailModalProps) {
   const { t } = useTranslation();
   if (!service) return null;
+  service = currentLocation(service);
 
   const isGroupService = service.serviceType === "group";
   const availableSpots = isGroupService ? ((service.maxCapacity || 1) - (service.availableCapacity || 0)) : 1;

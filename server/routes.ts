@@ -7,7 +7,8 @@ import { supabaseAdmin } from "./supabase";
 import { z } from "zod";
 import { createImageUpload, validateOwnedImage, validateServiceImage, canReadImage, downloadImage, ImageStorageError } from "./imageStorage";
 import { generateEmbedding, cosineSimilarity } from "./embeddings";
-import { geocodeAddress, GeocodingError } from "./geocoding";
+import { GeocodingError } from "./geocoding";
+import { registerLocation, resolveServiceLocation } from "./registeredLocations";
 import { setupCompanyRoutes } from "./companyRoutes";
 import { setupSchedulingRoutes } from "./schedulingRoutes";
 import { setupAdminRoutes } from "./adminRoutes";
@@ -19,7 +20,7 @@ import { companies } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
 function apiFailure(error: unknown, res: import("express").Response, fallback: string) {
-  const known = error instanceof AccessError || error instanceof ImageStorageError;
+  const known = error instanceof AccessError || error instanceof ImageStorageError || error instanceof GeocodingError;
   res.status(known ? error.status : error instanceof z.ZodError ? 400 : error instanceof BookingConflictError ? 409 : 500)
     .json({ message: known || error instanceof BookingConflictError ? error.message : error instanceof z.ZodError ? error.issues[0].message : fallback });
 }
@@ -75,6 +76,11 @@ function enrichEmbeddingText(name: string, description: string | null, category:
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+  // Coordinate retention is managed explicitly, not by intermediary HTTP caches.
+  app.use(["/api/services", "/api/bookings", "/api/geocode"], (_req, res, next) => {
+    res.set("Cache-Control", "no-store");
+    next();
+  });
   setupAdminRoutes(app);
   setupCompanyRoutes(app);
   setupSchedulingRoutes(app);
@@ -93,13 +99,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/objects/:objectPath(*)", isAuthenticated, async (req: any, res) => {
+  app.get("/objects/:objectPath(*)", async (req, res, next) => {
+    try {
+      if (await canReadImage(req.path)) return next();
+      return isAuthenticated(req, res, next);
+    } catch (error) { return apiFailure(error, res, "Unable to load image"); }
+  }, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     try {
-      const workspace = await workspaceContext(userId, req.session.activeCompanyId);
-      const canAccess = await canReadImage(req.path, userId, workspace);
-      if (!canAccess) {
-        return res.sendStatus(403);
+      if (userId) {
+        const workspace = await workspaceContext(userId, req.session.activeCompanyId);
+        if (!await canReadImage(req.path, userId, workspace)) return res.sendStatus(403);
       }
       const image = await downloadImage(req.path);
       res.set({ "Content-Type": image.contentType, "Cache-Control": "private, max-age=300", "X-Content-Type-Options": "nosniff" });
@@ -165,25 +175,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  const geocodingFailure = (error: unknown, res: import("express").Response) => {
-    if (error instanceof GeocodingError) {
-      console.error("Geocoding failed:", error.code);
-      return res.status(error.status).json({ message: error.message, code: error.code });
-    }
-    return res.status(503).json({ message: "Address lookup is temporarily unavailable.", code: "UNAVAILABLE" });
-  };
-
-  app.get('/api/geocode', async (req, res) => {
-    try {
-      res.json(await geocodeAddress(req.query.address));
-    } catch (error) { geocodingFailure(error, res); }
-  });
-
   app.post('/api/geocode', isAuthenticated, async (req, res) => {
     try {
-      const result = await geocodeAddress(req.body.address);
-      res.json({ latitude: result.lat, longitude: result.lng, formattedAddress: result.formattedAddress });
-    } catch (error) { geocodingFailure(error, res); }
+      const current = scope(req, "manageServices");
+      res.json(await registerLocation(req.body.address, current));
+    } catch (error) { apiFailure(error, res, "Address lookup is temporarily unavailable."); }
   });
 
   // User routes
@@ -294,6 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         providerId: current.providerId,
         companyId: current.companyId ?? null,
       });
+      Object.assign(serviceData, await resolveServiceLocation(serviceData, req.body));
       if (serviceData.imageUrl) await validateServiceImage(serviceData.imageUrl, userId, current.companyId);
       await validateEmployeeAssignment(serviceData.employeeId, req);
       
@@ -315,7 +312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(service);
     } catch (error) {
-      console.error("Error creating service:", error);
+      console.error("Error creating service:", error instanceof Error ? error.name : "Error");
       apiFailure(error, res, "Failed to create service");
     }
   });
@@ -590,6 +587,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const current = assertService(req, service, true);
       
       const updates = insertServiceSchema.omit({ providerId: true, companyId: true }).partial().parse(req.body);
+      Object.assign(updates, await resolveServiceLocation(updates, req.body, service));
       if (updates.imageUrl) await validateServiceImage(updates.imageUrl, userId, current.companyId);
       await validateEmployeeAssignment(updates.employeeId, req);
       if (updates.employeeId !== undefined && updates.employeeId !== service!.employeeId) {
@@ -601,7 +599,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedService = await storage.updateService(serviceId, updates);
       res.json(updatedService);
     } catch (error) {
-      console.error("Error updating service:", error);
+      console.error("Error updating service:", error instanceof Error ? error.name : "Error");
       apiFailure(error, res, "Failed to update service");
     }
   });

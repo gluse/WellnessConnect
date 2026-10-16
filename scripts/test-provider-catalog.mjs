@@ -95,7 +95,7 @@ await act(async () => component.root.findByType(ServiceDetailModal).props.onView
 assert.equal(component.root.findByType(ProviderServicesDialog).props.source.companyId, 7, "Provider names in details open the same company catalog");
 await act(async () => component.unmount()); queryClient.clear();
 
-for (const locale of ["en", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"]) {
+for (const locale of ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"]) {
   const data = JSON.parse(await readFile(new URL(`../client/public/locales/${locale}/translation.json`, import.meta.url), "utf8"));
   for (const key of Object.keys(translation.catalog)) assert.ok(data.catalog[key], `${locale}: missing ${key}`);
 }

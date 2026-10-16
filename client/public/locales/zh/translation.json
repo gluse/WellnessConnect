@@ -1,4 +1,13 @@
 {
+  "guestSearch": {
+    "browse": "浏览服务",
+    "landingNote": "无需账户即可浏览，准备预约时再登录。",
+    "signInToBook": "登录以预约",
+    "checkingAccount": "正在检查您的账户…",
+    "bookingNote": "无需账户即可搜索和查看服务。请登录或创建账户以预约。",
+    "signInOrCreate": "登录或创建账户",
+    "continueBrowsing": "继续浏览"
+  },
   "catalog": {
     "view": "查看{{name}}的全部服务",
     "title": "{{name}}提供的服务",

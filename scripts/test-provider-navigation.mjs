@@ -107,7 +107,7 @@ assert.equal(saved.isActive, false);
 assert.equal(saved.advancePaymentPercent, 30);
 assert.equal(saved.imageUrl, "/private/image");
 await visit("/my-services/services/new");
-for (const [id, value] of [["serviceName", "New offer"], ["price", "40"], ["address", "Riga"], ["latitude", "56.95"], ["longitude", "24.1"]]) await act(async () => input(id).props.onChange({ target: { value } }));
+for (const [id, value] of [["serviceName", "New offer"], ["price", "40"], ["address", "Brīvības iela 10, Rīga, Latvia"], ["latitude", "56.95"], ["longitude", "24.1"]]) await act(async () => input(id).props.onChange({ target: { value } }));
 await act(async () => component.root.findByType("form").props.onSubmit({ preventDefault() {} }));
 await flush();
 assert.equal(location.history.at(-1), "/my-services/services");

@@ -1,8 +1,11 @@
-# WellnessFind - Service Booking Platform
+# FitsMyTime Architecture
 
 ## Overview
 
-WellnessFind is a full-stack web application that connects service seekers with local service providers in health, wellness, education, and entertainment sectors. The platform features a mobile-first design with dual-role functionality, allowing users to both seek and provide services.
+FitsMyTime is a full-stack web application that connects service seekers with local service providers in health, wellness, education, and entertainment sectors. The platform features a mobile-first design with dual-role functionality, allowing users to both seek and provide services.
+
+See the [README](../README.md) for local setup, commands, and deployment, and the
+[authentication and storage guide](supabase-auth-storage.md) for Supabase configuration.
 
 ## System Architecture
 
@@ -20,7 +23,7 @@ WellnessFind is a full-stack web application that connects service seekers with 
 - **Language**: TypeScript with ES modules
 - **Database**: Supabase PostgreSQL using a standard pg connection pool
 - **ORM**: Drizzle ORM with type-safe queries
-- **Authentication**: Supabase email/password and optional Google login
+- **Authentication**: Supabase email/password and optional Google, Facebook, Apple, and Microsoft login
 - **Session Management**: Express sessions with PostgreSQL storage
 
 ### Database Design
@@ -47,7 +50,7 @@ WellnessFind is a full-stack web application that connects service seekers with 
 - **Service Types**: One-to-one and group services
 - **Pricing**: Flexible pricing with advance payment options
 - **Availability**: Real-time capacity tracking and scheduling
-- **Media**: Image upload support via Replit Object Storage
+- **Media**: Private Supabase Storage with signed uploads and Express image access checks
 - **External Links**: Optional external URLs for additional information
 
 ### Booking System
@@ -78,10 +81,10 @@ WellnessFind is a full-stack web application that connects service seekers with 
 - **API Requirements**: Google Maps API key must have Geocoding API enabled and proper restrictions configured
 
 ### Multi-Language Support
-- **UI Internationalization**: react-i18next with 10 languages (English default, Spanish, Chinese, Hindi, Arabic, Portuguese, Russian, Japanese, German, French)
+- **UI Internationalization**: react-i18next with 11 languages (English default, Latvian, Spanish, Chinese, Hindi, Arabic, Portuguese, Russian, Japanese, German, French)
 - **Language Detection**: Automatic browser language detection with localStorage persistence
 - **Language Picker**: Header dropdown for manual language selection
-- **Translation Files**: Located in `client/src/lib/i18n.ts` - organized by language code
+- **Translation Files**: Located in `client/public/locales/<language>/translation.json`, configured by `client/src/lib/i18n.ts`
 - **AI-Powered Search**: OpenAI text-embedding-3-small for cross-language semantic search
 - **Embeddings Table**: `service_embeddings` table stores 1536-dimension vectors for each service
 - **Search Flow**: User query → embedding generation → cosine similarity → ranked results
@@ -115,10 +118,10 @@ WellnessFind is a full-stack web application that connects service seekers with 
 ## External Dependencies
 
 ### Database & Infrastructure
-- **Neon Database**: Serverless PostgreSQL with connection pooling
-- **Replit Platform**: Development environment and deployment
-- **WebSocket Support**: Real-time features via ws library
-- **Object Storage**: Replit Object Storage (Google Cloud Storage) for image uploads
+- **Supabase PostgreSQL**: Database and Express sessions through a standard `pg` connection pool
+- **Node.js Hosting**: Express serves the API and built frontend on the configured port
+- **Supabase Auth**: Verified email identities and configured social sign-in providers
+- **Supabase Storage**: Private service image bucket with access controlled by Express
 
 ### UI & Styling
 - **Radix UI**: Accessible component primitives
@@ -130,7 +133,7 @@ WellnessFind is a full-stack web application that connects service seekers with 
 - **Stripe**: Payment processing infrastructure (configured)
 - **React Query**: Server state synchronization
 - **Date-fns**: Date manipulation and formatting
-- **Uppy**: File upload with AWS S3-compatible API for object storage
+- **ImageUploader**: Signed uploads to Supabase Storage
 
 ## Deployment Strategy
 
@@ -160,7 +163,7 @@ Changelog:
 - January 26, 2026. Added recurring schedule with time slot booking: providers can set slot duration (30, 60, 90, 120 min) when creating schedules; customers see only available time slots when booking; system automatically calculates available slots by subtracting existing bookings from schedule; server-side validation prevents double-booking; booking modal now fetches real-time availability
 - December 30, 2025. Added service search by name/description: new search input field at top of filters; removed default "San Francisco, CA" location (now starts empty); search is case-insensitive and filters services in real-time
 - November 15, 2025. Added address search functionality: users can now type any address (city, street, etc.) to search for nearby services; location input is now editable with search button; implemented client-side geocoding using Google Maps JavaScript API; added loading states and error handling; supports Enter key for quick search; NOTE: Requires Google Maps API key with Geocoding API enabled and proper restrictions
-- October 09, 2025 (Update 4). Added calendar feature with timezone support: created CalendarView component showing monthly calendar of bookings and availability schedules; integrated calendar into provider dashboard for managing services; added Calendar tab to seeker home page for viewing bookings; calendar displays color-coded events (confirmed, pending, cancelled, completed); added image upload functionality using Replit Object Storage with ObjectUploader component; added external URL field to service creation form for linking to provider websites
+- October 09, 2025 (Update 4). Added calendar feature with timezone support: created CalendarView component showing monthly calendar of bookings and availability schedules; integrated calendar into provider dashboard for managing services; added Calendar tab to seeker home page for viewing bookings; calendar displays color-coded events (confirmed, pending, cancelled, completed); added initial image upload functionality (since replaced by Supabase Storage and ImageUploader); added external URL field to service creation form for linking to provider websites
 - October 09, 2025 (Update 3). Enhanced service creation with manual coordinate entry: added latitude/longitude input fields for international addresses that can't be auto-verified by Google Maps; both auto-verification and manual entry now supported; unified UX flow so clicking services from both list and map views shows detail modal first, with option to proceed to booking
 - October 09, 2025 (Update 2). Enhanced service discovery UX: changed distance filter from dropdown to manual input (1-500km); added comprehensive service detail modal for seekers showing full service information; fixed booking creation bug by updating schema to accept ISO string dates; made service names clickable to view details
 - October 09, 2025. Switched from Leaflet to Google Maps for interactive map view; fixed location search UX with read-only input and clear instructions; added HTML escaping for XSS protection in map popups; added secure backend endpoint for Google Maps API key delivery

@@ -113,11 +113,12 @@ path with Express. The secret key is never exposed. Each path has a user-ID
 prefix and a random filename; files cannot overwrite existing objects.
 
 Express verifies ownership, size, and basic file signatures before accepting an
-image for a listing. Images are read through `/objects/...` using the session
-cookie. Administrators can reuse images already linked to their company, including
+image for a listing. Images are read through `/objects/...`; images attached to
+published services of active companies are available to visitors without a session.
+Other images require a verified session and ownership or workspace access.
+Administrators can reuse images already linked to their company, including
 images uploaded by another manager. Private company images are available only to
-company managers and the assigned employee. Other signed-in users can view images
-attached to published services of active companies. Unattached uploads stay private.
+company managers and the assigned employee. Unattached uploads stay private.
 Application tables are not exposed through the Supabase Data API.
 
 ## Verification

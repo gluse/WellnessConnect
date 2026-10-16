@@ -1,4 +1,13 @@
 {
+  "guestSearch": {
+    "browse": "サービスを見る",
+    "landingNote": "アカウントなしで閲覧できます。予約する際にログインしてください。",
+    "signInToBook": "予約するにはログイン",
+    "checkingAccount": "アカウントを確認中…",
+    "bookingNote": "アカウントなしでサービスを検索・閲覧できます。予約するにはログインするかアカウントを作成してください。",
+    "signInOrCreate": "ログインまたはアカウント作成",
+    "continueBrowsing": "閲覧を続ける"
+  },
   "catalog": {
     "view": "{{name}}のすべてのサービスを見る",
     "title": "{{name}}のサービス",

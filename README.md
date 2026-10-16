@@ -1,4 +1,4 @@
-# WellnessFind
+# FitsMyTime
 
 A service marketplace for local health, wellness, education, and entertainment.
 The app uses React, Express, Drizzle, and Supabase for PostgreSQL, authentication,
@@ -11,6 +11,7 @@ and private image storage.
    session secret, Google Maps key, and OpenAI key. Keep `.env` private.
 3. For a fresh database, run `npm run db:push` to create the application tables
    with row-level security enabled.
+   Then run `npm run db:setup-locations` to schedule coordinate expiry cleanup.
 4. Run `npm run storage:setup` to configure the private image bucket.
 5. Configure email and optional Google login using the
    [authentication and storage guide](docs/supabase-auth-storage.md).
@@ -24,12 +25,16 @@ Do not create tables with `db:push` before restoring a database dump.
 ## Features
 
 - Search services by location, category, audience, date, and keywords.
+- Browse services without an account from **Browse services** or `/search`; sign
+  in only when booking or using account features.
 - Browse service lists and Google Maps.
 - Click company or provider names in search results to browse all their published
   services, view details, and book without losing your search filters.
 - View customer appointments on the separate My Bookings page, with upcoming,
   date, status, and booking history filters.
 - Create provider listings and availability schedules.
+- Reuse eligible registered locations instead of repeatedly geocoding addresses;
+  see [location registration and retention](docs/registered-locations.md).
 - Manage appointments, services, availability, and settings on separate My Services
   pages, with a shared workspace selector and responsive section navigation.
 - Offer services as an individual or a company, with employees managed by one
@@ -59,6 +64,9 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run db:push` | Apply reviewed application schema changes |
 | `npm run db:setup-company` | Add company workspaces, employees, and team permissions; preserve existing records |
 | `npm run db:setup-reviews` | Add the reviews table and constraints to an existing database; preserve existing data |
+| `npm run db:setup-locations` | Add registered locations, coordinate cache and independent hourly expiry cleanup |
+| `npm run test:geocoding` | Mocked geocoding quality, reuse/expiry, concurrency and address editor checks |
+| `npm run test:geocoding-db` | PostgreSQL location cache, reuse boundaries and cleanup using temporary tables |
 | `npm run storage:setup` | Configure the private image bucket |
 | `npm run test:integration` | Live Auth/Storage, company, employee, and booking tests with temporary users |
 | `npm run test:teams` | Live team permissions, invitation sign-in, rescheduling, and ownership tests without sending emails |
@@ -66,6 +74,7 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run test:provider-navigation` | Provider routes, service editing, workspace switching, and permission regression tests |
 | `npm run test:customer-bookings` | Customer booking navigation, authentication, filters, loading, errors, and retry tests |
 | `npm run test:search-sorting` | Search sort controls, numeric prices, coordinate distances, missing ratings, stable ordering, and translations |
+| `npm run test:guest-search` | Visitor routes, public search/maps/details, booking sign-in prompts, safe return URLs, and public/private image access |
 | `npm run test:provider-catalog` | Company/provider catalog selection, preserved search filters, service actions, loading/retry, and public endpoint validation |
 | `npm run test:reviews` | Review prompts, validation, retries, session expiry, protected endpoint, and translations without external services |
 | `npm run test:public-reviews` | Clickable ratings, public review details, relative dates, pagination, loading/retry, and endpoint validation |
@@ -74,6 +83,20 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run test:social-auth` | Social buttons, provider flags/scopes, PKCE callbacks, redirects, and profile/session regression tests with Auth mocked |
 | `npm run test:password` | Password validation, current-password verification, and session handling regression tests |
 | `npm run test:api-transport` | Real local HTTP, API fallback, password response, and session cookie tests; Supabase is mocked |
+
+## Browsing without an account
+
+Use **Browse services** on the landing page or header, or open `/search` directly.
+Visitors can use exact and AI search, filters, sorting, maps, service details,
+provider catalogs, and customer reviews. Published listing images are available
+through Express while the Supabase image bucket remains private. Draft listings,
+closed-company images, and unattached uploads retain their access restrictions.
+
+Choosing to book prompts visitors to sign in or create an account. **Continue
+browsing** closes the prompt and preserves the current search; successful sign-in
+returns to `/search`. Creating reservations, uploading images, and account pages
+continue to require authentication. Signed-in customers retain the existing booking
+form, and the current landing page remains at `/` for visitors.
 
 ## Search result sorting
 
@@ -214,8 +237,6 @@ callback URL. Local `.env` changes do not update a deployed host's settings.
 
 Keep frontend and API on the same origin. Serve HTTPS through the host's proxy.
 The production server loads development tooling only when running in development.
-Replit-specific login, image storage, and Vite plugins are no longer required.
-The optional `.replit` file still describes how to launch the app on that host.
 
 For Google Maps, enable Maps JavaScript and Geocoding APIs. Use a browser key in
 `GOOGLE_MAPS_API_KEY`, restricted to your local and production website origins.
@@ -235,7 +256,8 @@ changing `.env`. A place/business name may need its full street address to match
 - `server/companyRoutes.ts`: invitations, team access, workspace selection, and ownership
 - `server/companyAccess.ts`: company authorization and signup conversion
 - `shared/schema.ts`: ten application tables and validation schemas
-- `docs/`: Supabase setup and migration instructions
+- `docs/architecture.md`: application architecture and historical changelog
+- `docs/`: architecture, Supabase setup, and migration instructions
 
 ## License
 

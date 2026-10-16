@@ -1,4 +1,13 @@
 {
+  "guestSearch": {
+    "browse": "Dienstleistungen ansehen",
+    "landingNote": "Ohne Konto stöbern. Melden Sie sich an, wenn Sie buchen möchten.",
+    "signInToBook": "Zum Buchen anmelden",
+    "checkingAccount": "Ihr Konto wird geprüft…",
+    "bookingNote": "Sie können Dienstleistungen ohne Konto suchen und ansehen. Melden Sie sich an oder erstellen Sie ein Konto, um zu buchen.",
+    "signInOrCreate": "Anmelden oder Konto erstellen",
+    "continueBrowsing": "Weiter stöbern"
+  },
   "catalog": {
     "view": "Alle Dienstleistungen von {{name}} ansehen",
     "title": "Dienstleistungen von {{name}}",

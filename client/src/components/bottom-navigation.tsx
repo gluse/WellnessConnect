@@ -4,6 +4,7 @@ import { Home, Calendar, User } from "lucide-react";
 
 export default function BottomNavigation() {
   const [location] = useLocation();
+  const isActive = (href: string) => location === href || (href === "/" && location === "/search");
 
   const tabs = [
     { href: "/", label: "Home", icon: Home },
@@ -23,10 +24,10 @@ export default function BottomNavigation() {
               variant="ghost"
               size="sm"
               className={`flex flex-col items-center py-2 px-3 relative ${
-                location === tab.href ? "text-primary" : "text-neutral-400"
+                isActive(tab.href) ? "text-primary" : "text-neutral-400"
               }`}
             >
-              <Link href={tab.href} aria-current={location === tab.href ? "page" : undefined}>
+              <Link href={tab.href} aria-current={isActive(tab.href) ? "page" : undefined}>
                 <Icon className="w-5 h-5 mb-1" aria-hidden="true" />
                 <span className="text-xs font-medium">{tab.label}</span>
               </Link>

@@ -9,7 +9,7 @@ import {
   integer,
   decimal,
   boolean,
-  real,
+  doublePrecision,
   primaryKey,
   uniqueIndex,
   check,
@@ -109,14 +109,29 @@ export const services = pgTable("services", {
   targetGender: varchar("target_gender", { enum: ["females", "males", "both"] }).default("both"),
   instantBooking: boolean("instant_booking").default(false),
   advancePaymentPercent: integer("advance_payment_percent").default(50),
-  latitude: real("latitude"),
-  longitude: real("longitude"),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
   address: text("address"),
+  locationSource: varchar("location_source", { enum: ["legacy", "manual", "google"] }).notNull().default("legacy"),
+  locationKey: varchar("location_key"),
+  locationPlaceId: text("location_place_id"),
+  locationExpiresAt: timestamp("location_expires_at", { withTimezone: true }),
+  locationAddressSource: varchar("location_address_source", { enum: ["user", "google"] }).notNull().default("user"),
   imageUrl: text("image_url"),
   externalUrl: text("external_url"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+}, table => [index("services_google_expiry_idx").on(table.locationExpiresAt).where(sql`${table.locationSource} = 'google'`)]).enableRLS();
+
+// Only accepted Google coordinates, never Google's formatted address or response.
+// Place IDs may survive coordinate expiry; the key hashes the user's address.
+export const geocodingCache = pgTable("geocoding_cache", {
+  addressKey: varchar("address_key").primaryKey(),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
+  placeId: text("place_id"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
 }).enableRLS();
 
 // Bookings table
@@ -287,10 +302,17 @@ export type ServiceEmbedding = typeof serviceEmbeddings.$inferSelect;
 export const insertServiceSchema = createInsertSchema(services, {
   ageGroups: z.array(z.string()).nullable().optional(),
   employeeId: z.number().int().positive().nullable().optional(),
+  latitude: z.number().finite().min(-90).max(90).nullable().optional(),
+  longitude: z.number().finite().min(-180).max(180).nullable().optional(),
 }).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  locationSource: true,
+  locationKey: true,
+  locationPlaceId: true,
+  locationExpiresAt: true,
+  locationAddressSource: true,
 });
 
 export const insertBookingSchema = createInsertSchema(bookings).omit({

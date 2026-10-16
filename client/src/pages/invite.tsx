@@ -90,7 +90,7 @@ export default function Invite() {
       {!token && isAuthenticated && !pending.isLoading && !invitations.length && <p>No pending invitations for this email address.</p>}
       {!isAuthenticated && !token && !exchanging && <Link href="/login?returnTo=%2Finvite" className="text-primary underline">Sign in to see your invitations</Link>}
       {!isAuthenticated && !exchanging && !isLoading && <InvitationRecovery returnTo={returnTo} />}
-      <Link href="/" className="block text-sm text-neutral-500">Back to WellnessFind</Link>
+      <Link href="/" className="block text-sm text-neutral-500">Back to FitsMyTime</Link>
     </CardContent>
   </Card></main>;
 }

@@ -4,6 +4,6 @@ const providerDestinations = new Set([
 ]);
 
 export function isAllowedAuthReturnTo(value: unknown): value is string {
-  return typeof value === "string" && (value === "/account" || value === "/my-bookings" || value === "/administration" || providerDestinations.has(value)
+  return typeof value === "string" && (value === "/search" || value === "/account" || value === "/my-bookings" || value === "/administration" || providerDestinations.has(value)
     || /^\/my-services\/services\/\d+\/edit$/.test(value) || /^\/invite(?:\?|$)/.test(value));
 }

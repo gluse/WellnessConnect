@@ -1,4 +1,13 @@
 {
+  "guestSearch": {
+    "browse": "Browse services",
+    "landingNote": "Browse without an account. Sign in when you are ready to book.",
+    "signInToBook": "Sign in to book",
+    "checkingAccount": "Checking your account…",
+    "bookingNote": "You can search and view services without an account. Sign in or create an account to make a booking.",
+    "signInOrCreate": "Sign in or create an account",
+    "continueBrowsing": "Continue browsing"
+  },
   "catalog": {
     "view": "See all services from {{name}}",
     "title": "Services by {{name}}",

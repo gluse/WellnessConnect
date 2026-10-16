@@ -27,6 +27,7 @@ function Router() {
       <Route path="/my-bookings" component={MyBookings} />
       <Route path="/my-services/*?" component={MyServices} />
       <Route path="/dashboard"><Redirect to="/my-services" /></Route>
+      <Route path="/search" component={Home} />
       <Route path="/" component={isLoading || !isAuthenticated ? Landing : Home} />
       <Route component={NotFound} />
     </Switch>

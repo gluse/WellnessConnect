@@ -1,4 +1,5 @@
 import type { ServiceWithProvider } from "@shared/schema";
+import { currentLocation } from "@shared/locations";
 
 export type ServiceSort = "default" | "distance-asc" | "distance-desc" |
   "price-asc" | "price-desc" | "rating-asc" | "rating-desc";
@@ -15,6 +16,7 @@ export function sortServices(
   location: { lat: number; lng: number } | null,
 ): ServiceWithProvider[] {
   const results = services.map(service => {
+    service = currentLocation(service);
     if (!location || typeof service.latitude !== "number" || typeof service.longitude !== "number" ||
       !Number.isFinite(service.latitude) || !Number.isFinite(service.longitude)) return service;
     const radians = Math.PI / 180;

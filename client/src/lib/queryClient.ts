@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { startLocationExpiry } from "./location-expiry";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -58,3 +59,7 @@ export const queryClient = new QueryClient({
     },
   },
 });
+if (typeof window !== "undefined") {
+  const stopExpiry = startLocationExpiry(queryClient);
+  if (import.meta.hot) import.meta.hot.dispose(stopExpiry);
+}

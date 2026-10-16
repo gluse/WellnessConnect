@@ -12,16 +12,16 @@ Login and images now use Supabase Auth and Storage. See
    the direct connection if your network supports it. Do not use the transaction
    pooler for this migration. Do not use a publishable or service-role API key.
 3. Copy `.env.example` to `.env`. Set `DATABASE_URL` to the Supabase connection
-   and `SOURCE_DATABASE_URL` to the existing Replit database connection from its
-   Secrets. Include the database passwords; URL-encode special characters.
+   and `SOURCE_DATABASE_URL` to the source PostgreSQL connection string from your
+   existing host. Include the database passwords; URL-encode special characters.
 4. Use TLS with certificate verification (`sslmode=verify-full`). If the
    connection requires a private CA, download the project's database CA from
    Supabase and add `sslrootcert=URL_ENCODED_ABSOLUTE_CERTIFICATE_PATH` to the URL.
    Do not disable certificate verification to get past a certificate error.
 5. Install PostgreSQL client tools and put `pg_dump`, `pg_restore`, and `psql`
    on PATH. Use client versions compatible with both servers; `pg_dump` must not
-   be older than the source server. The tools can also run on the Replit host if
-   it has access to both databases.
+   be older than the source server. Run the tools on a machine with access to
+   both databases.
 
 The local `.env` file and `database-backups/` are ignored by Git. Database
 passwords and backups belong on the backend only.
@@ -67,8 +67,8 @@ to silence the empty-target check. Keep the backup, which includes sensitive
 user and session information, in private storage.
 
 After verification, set **the deployed backend's** `DATABASE_URL` to the same
-Supabase connection and restart it. Local `.env` changes do not update Replit
-Secrets or another hosting service's environment. Verify login/session storage,
+Supabase connection and restart it. Local `.env` changes do not update the
+deployed host's environment. Verify login/session storage,
 service search, provider ownership, creating a booking, and availability editing.
 Only then resume writes on the new backend. Retain the source for rollback;
 after new writes begin, rollback requires reconciling those records first.
@@ -81,7 +81,7 @@ Application tables have RLS enabled without browser-facing policies; all access
 continues through Express, not the Supabase Data API. The `sessions` table contains
 server-only tokens and must never be exposed to browser clients.
 
-If importing historical Replit data in the future, map old user IDs to new Auth
+If importing data from a previous authentication system, map old user IDs to new Auth
 identities and their service/booking references before cutover. The dump utility
 copies records but does not perform identity migration. The current installation
 started with empty tables and needs no such mapping.

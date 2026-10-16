@@ -67,12 +67,15 @@ export async function validateServiceImage(objectPath: string, userId: string, c
   await downloadImage(objectPath);
 }
 
-export async function canReadImage(objectPath: string, userId: string, workspace?: WorkspaceContext) {
+export async function canReadImage(objectPath: string, userId?: string, workspace?: WorkspaceContext) {
   const key = objectKey(objectPath);
   const linked = await db.select({ service: services, company: companies }).from(services)
     .leftJoin(companies, eq(services.companyId, companies.id)).where(eq(services.imageUrl, objectPath));
-  if (!linked.length) return key.split("/")[0] === userId;
-  return linked.some(({ service, company }) => (service.isActive && (!company || company.isActive))
-    || (service.companyId == null && service.providerId === userId)
-    || (workspace?.company?.id === service.companyId && (workspace.permissions.readAll || (workspace.membership?.employeeId != null && service.employeeId === workspace.membership.employeeId))));
+  if (!linked.length) return Boolean(userId && key.split("/")[0] === userId);
+  return linked.some(({ service, company }) => {
+    if (service.isActive && (!company || company.isActive)) return true;
+    if (!userId) return false;
+    return (service.companyId == null && service.providerId === userId)
+      || (workspace?.company != null && workspace.company.id === service.companyId && (workspace.permissions.readAll || (workspace.membership?.employeeId != null && service.employeeId === workspace.membership.employeeId)));
+  });
 }

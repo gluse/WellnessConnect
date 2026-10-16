@@ -8,6 +8,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { createServiceDraft } from "./service-draft";
+import { addressError, validCoordinates } from "@shared/locations";
 import ServiceDetailsFields from "./service-details-fields";
 import ServiceBookingFields from "./service-booking-fields";
 import ServiceLocationFields from "./service-location-fields";
@@ -42,7 +43,8 @@ export default function ServiceEditor({ service, employees, company }: { service
     if (save.isPending) return;
     if (!newService.name.trim() || !newService.price) { setError("Enter a service name and price."); return; }
     if (!Number.isFinite(Number(newService.price)) || Number(newService.price) < 0 || newService.duration < 1 || newService.maxCapacity < 1) { setError("Use a non-negative price and a positive duration and capacity."); return; }
-    if (!newService.address.trim() || newService.latitude == null || newService.longitude == null) { setError("Enter an address and verify it, or provide coordinates manually."); return; }
+    if (!newService.address.trim() || !validCoordinates(newService.latitude, newService.longitude)) { setError("Enter an address and verify it, or provide valid coordinates manually."); return; }
+    if ((!service || newService.address !== service.address) && addressError(newService.address)) { setError(addressError(newService.address)!); return; }
     setError(""); save.mutate(isActive);
   };
   return <div className="max-w-3xl mx-auto space-y-5">

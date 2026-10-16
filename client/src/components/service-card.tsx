@@ -5,6 +5,7 @@ import { Clock, Users, MapPin } from "lucide-react";
 import ServiceRating from "@/components/service-rating";
 import type { ServiceWithProvider } from "@shared/schema";
 import { getProviderName } from "@shared/provider";
+import { currentLocation } from "@shared/locations";
 import { useTranslation } from "react-i18next";
 
 interface ServiceCardProps {
@@ -15,6 +16,7 @@ interface ServiceCardProps {
 }
 
 export default function ServiceCard({ service, onBook, onViewDetails, onViewProvider }: ServiceCardProps) {
+  service = currentLocation(service);
   const { t } = useTranslation();
   const isGroupService = service.serviceType === "group";
   const availableSpots = isGroupService ? ((service.maxCapacity || 1) - (service.availableCapacity || 0)) : 1;

@@ -4,15 +4,16 @@ import { Link, useLocation } from "wouter";
 export default function RoleSwitcher() {
   const [location] = useLocation();
   const inMyServices = location === "/my-services" || location.startsWith("/my-services/");
+  const inSearch = location === "/" || location === "/search";
   return (
     <nav aria-label="Services" className="bg-neutral-100 p-1 rounded-lg flex">
       <Button
         asChild
-        variant={location === "/" ? "default" : "ghost"}
+        variant={inSearch ? "default" : "ghost"}
         size="sm"
         className="flex-1 sm:flex-none px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium"
       >
-        <Link href="/" aria-current={location === "/" ? "page" : undefined}>Find Services</Link>
+        <Link href="/" aria-current={inSearch ? "page" : undefined}>Find Services</Link>
       </Button>
       <Button
         asChild

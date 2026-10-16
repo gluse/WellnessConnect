@@ -164,7 +164,7 @@ assert.equal(queryClient.getQueryData(["/api/auth/user"]), null);
 await act(async () => component.unmount());
 queryClient.clear();
 // All labels introduced by this task exist for every supported language.
-for (const locale of ["en", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"]) {
+for (const locale of ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"]) {
   const data = JSON.parse(await readFile(new URL(`../client/public/locales/${locale}/translation.json`, import.meta.url), "utf8"));
   for (const key of Object.keys(translation.reviews)) assert.ok(data.reviews[key], `${locale}: missing ${key}`);
 }

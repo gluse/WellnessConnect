@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Users, MapPin, Star, Shield, Clock } from "lucide-react";
@@ -17,7 +18,7 @@ export default function Landing() {
           <div className="w-16 h-16 bg-primary rounded-2xl mx-auto mb-4 flex items-center justify-center">
             <Heart className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-neutral-800 mb-2">WellnessFind</h1>
+          <h1 className="text-3xl font-bold text-neutral-800 mb-2">FitsMyTime</h1>
           <p className="text-neutral-600">{t('landing.heroSubtitle')}</p>
         </div>
 
@@ -101,6 +102,9 @@ export default function Landing() {
 
         {/* Call to Action */}
         <div className="px-6 pb-8">
+          <Button asChild variant="outline" className="w-full mb-3 py-6 text-lg rounded-xl" data-testid="button-browse-services">
+            <Link href="/search">{t("guestSearch.browse")}</Link>
+          </Button>
           <Button 
             onClick={handleLogin} 
             className="w-full bg-primary hover:bg-primary/90 text-white py-6 text-lg font-semibold rounded-xl"
@@ -109,7 +113,7 @@ export default function Landing() {
             {t('nav.getStarted')}
           </Button>
           <p className="text-center text-sm text-neutral-500 mt-4">
-            Create an account or sign in to get started
+            {t("guestSearch.landingNote")}
           </p>
         </div>
       </div>

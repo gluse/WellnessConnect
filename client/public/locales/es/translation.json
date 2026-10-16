@@ -1,4 +1,13 @@
 {
+  "guestSearch": {
+    "browse": "Explorar servicios",
+    "landingNote": "Explora sin una cuenta. Inicia sesión cuando quieras reservar.",
+    "signInToBook": "Inicia sesión para reservar",
+    "checkingAccount": "Comprobando tu cuenta…",
+    "bookingNote": "Puedes buscar y ver servicios sin una cuenta. Inicia sesión o crea una cuenta para reservar.",
+    "signInOrCreate": "Iniciar sesión o crear una cuenta",
+    "continueBrowsing": "Seguir explorando"
+  },
   "catalog": {
     "view": "Ver todos los servicios de {{name}}",
     "title": "Servicios de {{name}}",

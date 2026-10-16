@@ -121,7 +121,7 @@ await act(async () => component.update(React.createElement(ServiceRating, { serv
 assert.ok(JSON.stringify(component.toJSON()).includes("4.0"));
 assert.ok(!JSON.stringify(component.toJSON()).includes("127"));
 await act(async () => component.unmount());
-for (const locale of ["en", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"]) {
+for (const locale of ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"]) {
   const data = JSON.parse(await readFile(new URL(`../client/public/locales/${locale}/translation.json`, import.meta.url), "utf8"));
   for (const key of Object.keys(translation.sorting)) assert.ok(data.sorting[key], `${locale}: missing ${key}`);
   assert.ok(data.service.notRated && data.service.ratingOutOfFive);

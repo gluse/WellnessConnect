@@ -83,11 +83,11 @@ export default function Login() {
         <CardHeader className="text-center">
           <Heart className="w-10 h-10 text-primary mx-auto mb-2" />
           <CardTitle>{signup ? "Create your account" : "Welcome back"}</CardTitle>
-          <p className="text-sm text-neutral-500">WellnessFind</p>
+          <p className="text-sm text-neutral-500">FitsMyTime</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={submit} className="space-y-4">
-            {signup && returnTo === "/" && <div>
+            {signup && (returnTo === "/" || returnTo === "/search") && <div>
               <Label htmlFor="signup-type">Account type</Label>
               <select id="signup-type" className="w-full border rounded-md p-2 bg-white" value={accountType} disabled={busy} onChange={event => { setAccountType(event.target.value); setCompanyNameError(""); }}>
                 <option value="personal">Personal account</option><option value="company">Create a company</option>
@@ -122,7 +122,7 @@ export default function Login() {
           </form>
           {/^\/invite(?:\?|$)/.test(returnTo) && <InvitationRecovery returnTo={returnTo} />}
           <Button type="button" variant="ghost" className="w-full" disabled={busy} onClick={() => { setSignup(!signup); setMessage(""); setError(""); setPassword(""); setConfirmPassword(""); setConfirmPasswordError(""); setCompanyNameError(""); }}>{signup ? "Already have an account? Sign in" : "New here? Create an account"}</Button>
-          <Link href="/" className="block text-center text-sm text-neutral-500 hover:text-primary">Back to WellnessFind</Link>
+          <Link href="/" className="block text-center text-sm text-neutral-500 hover:text-primary">Back to FitsMyTime</Link>
         </CardContent>
       </Card>
     </main>

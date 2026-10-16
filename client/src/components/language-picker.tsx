@@ -13,7 +13,7 @@ export function LanguagePicker() {
   const { i18n } = useTranslation();
 
   const currentLanguage = supportedLanguages.find(
-    (lang) => lang.code === i18n.language
+    (lang) => lang.code === (i18n.resolvedLanguage || i18n.language?.split('-')[0])
   ) || supportedLanguages[0];
 
   const handleLanguageChange = (languageCode: string) => {
@@ -39,7 +39,7 @@ export function LanguagePicker() {
           <DropdownMenuItem
             key={language.code}
             onClick={() => handleLanguageChange(language.code)}
-            className={i18n.language === language.code ? 'bg-accent' : ''}
+            className={currentLanguage.code === language.code ? 'bg-accent' : ''}
             data-testid={`menu-item-language-${language.code}`}
           >
             <span className="mr-2">{language.nativeName}</span>

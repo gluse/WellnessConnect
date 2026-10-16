@@ -5,6 +5,7 @@ import Backend from 'i18next-http-backend';
 
 export const supportedLanguages = [
   { code: 'en', name: 'English', nativeName: 'English' },
+  { code: 'lv', name: 'Latvian', nativeName: 'Latviešu' },
   { code: 'es', name: 'Spanish', nativeName: 'Español' },
   { code: 'zh', name: 'Chinese', nativeName: '中文' },
   { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },

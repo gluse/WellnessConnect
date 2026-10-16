@@ -25,6 +25,7 @@ import {
 import { db } from "./db";
 import { eq, and, gte, lte, asc, desc, sql, ne, isNull, inArray } from "drizzle-orm";
 import { publicProvider } from "@shared/provider";
+import { currentLocation } from "@shared/locations";
 import { bookableSlots } from "@shared/scheduling";
 import { reviewSchema, ReviewError, type ReviewInput, type ServiceReviewPage } from "@shared/reviews";
 
@@ -189,7 +190,7 @@ export class DatabaseStorage implements IStorage {
       .insert(services)
       .values(service)
       .returning();
-    return newService;
+    return currentLocation(newService);
   }
 
   async copyService(serviceId: number, providerId: string, companyId?: number): Promise<Service | undefined> {
@@ -197,22 +198,23 @@ export class DatabaseStorage implements IStorage {
       const [source] = await tx.select().from(services)
         .where(and(eq(services.id, serviceId), companyId != null ? eq(services.companyId, companyId) : and(eq(services.providerId, providerId), isNull(services.companyId))));
       if (!source) return undefined;
-      const { id, createdAt, updatedAt, ...listing } = source;
+      const { id, createdAt, updatedAt, ...listing } = currentLocation(source);
       const [copy] = await tx.insert(services).values({
         ...listing,
         name: `${source.name} (copy)`,
         isActive: false,
       }).returning();
-      return copy;
+      return currentLocation(copy);
     });
   }
 
   async getServicesByProvider(providerId: string, companyId?: number): Promise<Service[]> {
-    return await db
+    const rows = await db
       .select()
       .from(services)
       .where(companyId != null ? eq(services.companyId, companyId) : and(eq(services.providerId, providerId), isNull(services.companyId)))
       .orderBy(desc(services.createdAt));
+    return rows.map(row => currentLocation(row));
   }
 
   async getServiceById(id: number): Promise<ServiceWithProvider | undefined> {
@@ -228,7 +230,7 @@ export class DatabaseStorage implements IStorage {
     if (!result) return undefined;
 
     return {
-      ...result.services,
+      ...currentLocation(result.services),
       rating: result.review_stats?.rating ?? null,
       reviewCount: result.review_stats?.reviewCount ?? 0,
       provider: publicProvider(result.users!, result.companies),
@@ -243,7 +245,7 @@ export class DatabaseStorage implements IStorage {
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(services.id, id))
       .returning();
-    return service;
+    return currentLocation(service);
   }
 
   async deleteService(id: number): Promise<void> {
@@ -302,7 +304,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(services.createdAt));
 
     let servicesWithProviders: ServiceWithProvider[] = results.map(result => ({
-      ...result.services,
+      ...currentLocation(result.services),
       rating: result.review_stats?.rating ?? null,
       reviewCount: result.review_stats?.reviewCount ?? 0,
       provider: publicProvider(result.users!, result.companies),
@@ -538,7 +540,7 @@ export class DatabaseStorage implements IStorage {
     return results.map(result => ({
       ...result.bookings,
       review: result.service_reviews,
-      service: result.services!,
+      service: currentLocation(result.services!),
       seeker: { id: seekerId } as User,
       provider: publicProvider(result.users!, result.companies),
       employee: result.employees ? { id: result.employees.id, name: result.employees.showName ? result.employees.name : null } : null,
@@ -556,7 +558,7 @@ export class DatabaseStorage implements IStorage {
 
     return results.map(result => ({
       ...result.bookings,
-      service: result.services!,
+      service: currentLocation(result.services!),
       seeker: result.users!,
       provider: { id: providerId } as User,
     }));
@@ -574,7 +576,7 @@ export class DatabaseStorage implements IStorage {
 
     return {
       ...result.bookings,
-      service: result.services!,
+      service: currentLocation(result.services!),
       seeker: result.users!,
       provider: { id: result.bookings.providerId } as User,
     };

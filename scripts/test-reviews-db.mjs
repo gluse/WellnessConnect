@@ -5,6 +5,7 @@ import { storage } from "../server/storage.ts";
 import { pool } from "../server/db.ts";
 import { ReviewError } from "../shared/reviews.ts";
 import { sortServices } from "../client/src/lib/service-sort.ts";
+import { canReadImage } from "../server/imageStorage.ts";
 
 pool.options.max = 1; // Temporary tables must stay on the same connection, including transactions.
 pool.options.idleTimeoutMillis = 0;
@@ -132,6 +133,20 @@ try {
   assert.deepEqual(await storage.searchServices({ companyId: 9 }), []);
   assert.deepEqual(await storage.searchServices({ companyId: 999 }), []);
   assert.deepEqual(await storage.searchServices({ providerId: 'unknown-provider' }), []);
+  const publicImage = '/objects/review-provider/11111111-1111-4111-8111-111111111111.png';
+  const privateImage = '/objects/review-provider/22222222-2222-4222-8222-222222222222.png';
+  const closedImage = '/objects/review-provider/33333333-3333-4333-8333-333333333333.png';
+  const unattachedImage = '/objects/review-provider/44444444-4444-4444-8444-444444444444.png';
+  await pool.query('UPDATE pg_temp.services SET image_url=$1 WHERE id=1', [publicImage]);
+  await pool.query('UPDATE pg_temp.services SET image_url=$1 WHERE id=3', [privateImage]);
+  await pool.query('UPDATE pg_temp.services SET image_url=$1 WHERE id=2', [closedImage]);
+  assert.equal(await canReadImage(publicImage), true, 'Visitors can read published images');
+  for (const path of [privateImage, closedImage, unattachedImage]) assert.equal(await canReadImage(path), false);
+  assert.equal(await canReadImage(privateImage, 'review-provider'), true);
+  assert.equal(await canReadImage(privateImage, 'other-customer'), false);
+  assert.equal(await canReadImage(unattachedImage, 'review-provider'), true);
+  assert.equal(await canReadImage(closedImage, 'review-provider'), false, 'Private company images need workspace access');
+  assert.equal(await canReadImage(closedImage, 'review-provider', { company: { id: 9 }, permissions: { readAll: true } }), true);
   // Pool.query evicts its connection after SQL errors, which would discard the fixtures.
   // Keep an explicit client while deliberately testing invalid SQL.
   const checks = await pool.connect();

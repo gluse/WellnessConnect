@@ -1,9 +1,13 @@
 import { useState } from "react";
+import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
+import { useAuth } from "@/hooks/useAuth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Clock, MapPin } from "lucide-react";
 import type { ServiceWithProvider } from "@shared/schema";
 import type { BookableSlot } from "@shared/scheduling";
 import { getProviderName } from "@shared/provider";
+import { currentLocation } from "@shared/locations";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +18,34 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+export function BookingSignInActions({ isLoading, onClose }: { isLoading: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
+  return <div className="space-y-4">
+    {isLoading ? <p role="status">{t("guestSearch.checkingAccount")}</p> : <>
+      <p>{t("guestSearch.bookingNote")}</p>
+      <Button asChild><Link href="/login?returnTo=%2Fsearch">{t("guestSearch.signInOrCreate")}</Link></Button>
+    </>}
+    <Button variant="outline" onClick={onClose}>{t("guestSearch.continueBrowsing")}</Button>
+  </div>;
+}
+
 export default function BookingModal({ service, onClose }: { service: ServiceWithProvider; onClose: () => void }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
+  if (isAuthenticated) return <AuthenticatedBooking service={service} onClose={onClose} />;
+  return <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
+    <DialogContent data-testid="dialog-booking-sign-in">
+      <DialogHeader>
+        <DialogTitle>{t("guestSearch.signInToBook")}</DialogTitle>
+        <DialogDescription>{service.name}</DialogDescription>
+      </DialogHeader>
+      <BookingSignInActions isLoading={isLoading} onClose={onClose} />
+    </DialogContent>
+  </Dialog>;
+}
+
+function AuthenticatedBooking({ service, onClose }: { service: ServiceWithProvider; onClose: () => void }) {
+  service = currentLocation(service);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedSlot, setSelectedSlot] = useState<BookableSlot | null>(null);
@@ -37,7 +68,7 @@ export default function BookingModal({ service, onClose }: { service: ServiceWit
       onClose();
     },
     onError: error => {
-      if (isUnauthorizedError(error)) { window.location.assign("/login"); return; }
+      if (isUnauthorizedError(error)) { window.location.assign("/login?returnTo=%2Fsearch"); return; }
       let message = "Unable to book. Please try again.";
       try { message = JSON.parse(error.message.replace(/^\d+:\s*/, "")).message || message; } catch {}
       setError(message);

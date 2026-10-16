@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { loadMapLibraries } from "@/lib/google-maps";
 import type { ServiceWithProvider } from "@shared/schema";
 import { getProviderName } from "@shared/provider";
+import { currentLocation } from "@shared/locations";
 
 interface GoogleMapProps {
   services: ServiceWithProvider[];
@@ -111,6 +112,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
 
     // Add service markers
     services.forEach((service) => {
+      service = currentLocation(service);
       if (service.latitude != null && service.longitude != null && googleMapRef.current) {
         const marker = new google.maps.Marker({
           position: { lat: service.latitude, lng: service.longitude },
