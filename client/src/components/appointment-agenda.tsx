@@ -7,6 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { BookingReviewSummary } from "@/components/booking-review";
 
 export default function AppointmentAgenda({ bookings, employees = [], provider = false, loading = false, updating = false, onStatusChange, onReschedule }: {
   bookings: BookingWithDetails[]; employees?: Employee[]; provider?: boolean; loading?: boolean;
@@ -56,6 +57,7 @@ export default function AppointmentAgenda({ bookings, employees = [], provider =
             </div>
             <div className="flex flex-wrap gap-3 text-sm text-neutral-600"><span className="flex items-center gap-1"><Clock className="w-4 h-4" />{format(new Date(booking.scheduledDate), "HH:mm")}–{format(new Date(new Date(booking.scheduledDate).getTime() + (booking.bookingDuration ?? booking.service.duration) * 60_000), "HH:mm")}</span><span>${booking.totalAmount}</span>{(booking.participantCount ?? 1) > 1 && <span>{booking.participantCount} participants</span>}</div>
             {provider && booking.notes && <p className="text-sm text-neutral-500 whitespace-pre-wrap break-words">{booking.notes}</p>}
+            {!provider && booking.review && <BookingReviewSummary key={booking.review.id} booking={booking} />}
             {provider && (booking.status === "pending" || booking.status === "confirmed") && (onStatusChange || onReschedule) && <div className="flex flex-wrap gap-2">
               {booking.status === "pending" && onStatusChange && <Button size="sm" disabled={updating} onClick={() => onStatusChange(booking.id, "confirmed")}>Approve</Button>}
               {booking.status === "confirmed" && onStatusChange && <Button size="sm" disabled={updating} onClick={() => onStatusChange(booking.id, "completed")}>Mark complete</Button>}

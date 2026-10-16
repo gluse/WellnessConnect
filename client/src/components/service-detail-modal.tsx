@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Star, Clock, Users, MapPin, DollarSign, Calendar, CheckCircle } from "lucide-react";
+import { Clock, Users, MapPin, DollarSign, Calendar, CheckCircle } from "lucide-react";
+import ServiceRating from "@/components/service-rating";
 import type { ServiceWithProvider } from "@shared/schema";
 import { getProviderName } from "@shared/provider";
 
@@ -88,11 +89,7 @@ export default function ServiceDetailModal({ service, open, onClose, onBook }: S
                 {getProviderName(service.provider)}
               </p>
               {service.employee?.name && <p className="text-sm text-neutral-600">With {service.employee.name}</p>}
-              <div className="flex items-center space-x-2">
-                <Star className="w-4 h-4 text-amber-400 fill-current" />
-                <span className="text-sm font-medium">4.8</span>
-                <span className="text-sm text-neutral-500">• 127 reviews</span>
-              </div>
+              <ServiceRating service={service} />
             </div>
           </div>
 

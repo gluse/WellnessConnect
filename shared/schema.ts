@@ -12,8 +12,9 @@ import {
   real,
   primaryKey,
   uniqueIndex,
+  check,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -138,6 +139,20 @@ export const bookings = pgTable("bookings", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [index("bookings_employee_date_idx").on(table.employeeId, table.scheduledDate)]).enableRLS();
+
+// One review per completed booking; the booking supplies its customer and service.
+export const serviceReviews = pgTable("service_reviews", {
+  id: serial("id").primaryKey(),
+  bookingId: integer("booking_id").references(() => bookings.id).notNull().unique(),
+  rating: integer("rating").notNull(),
+  comment: text("comment").notNull().default(""),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, table => [
+  check("service_reviews_rating_check", sql`${table.rating} BETWEEN 1 AND 5`),
+  check("service_reviews_comment_check", sql`length(${table.comment}) <= 2000 AND (${table.rating} >= 3 OR length(btrim(${table.comment})) > 0)`),
+]).enableRLS();
+
+export type ServiceReview = typeof serviceReviews.$inferSelect;
 
 // Service embeddings table for semantic search
 export const serviceEmbeddings = pgTable("service_embeddings", {
@@ -311,9 +326,12 @@ export type ServiceWithProvider = Service & {
   availableCapacity?: number;
   nextAvailability?: string;
   distance?: number; // Distance in kilometers from user's location
+  rating?: number | null; // Average customer rating (1–5), null if unrated.
+  reviewCount?: number;
 };
 
 export type BookingWithDetails = Booking & {
+  review?: ServiceReview | null;
   service: Service;
   seeker: User;
   provider: User;

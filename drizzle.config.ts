@@ -10,7 +10,7 @@ export default defineConfig({
   schema: "./shared/schema.ts",
   dialect: "postgresql",
   schemaFilter: ["public"],
-  tablesFilter: ["sessions", "users", "services", "bookings", "service_embeddings", "availability"],
+  tablesFilter: ["sessions", "users", "services", "bookings", "service_embeddings", "availability", "service_reviews"],
   dbCredentials: {
     url: process.env.DATABASE_URL,
   },

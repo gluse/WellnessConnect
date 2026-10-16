@@ -9,7 +9,7 @@ and private image storage.
 1. Install a supported Node.js version (Node 22 or newer) and run `npm ci`.
 2. Copy `.env.example` to `.env` and fill in the Supabase database/API credentials,
    session secret, Google Maps key, and OpenAI key. Keep `.env` private.
-3. For a fresh database, run `npm run db:push` to create the ten application tables
+3. For a fresh database, run `npm run db:push` to create the application tables
    with row-level security enabled.
 4. Run `npm run storage:setup` to configure the private image bucket.
 5. Configure email and optional Google login using the
@@ -37,6 +37,8 @@ Do not create tables with `db:push` before restoring a database dump.
   Copies reuse the same image and employee assignment and
   do not duplicate bookings, service-specific schedules, or AI embeddings.
 - Request bookings and manage their status.
+- Review completed bookings with 1–5 stars and an optional comment (required below
+  3 stars). Search results show real service averages and review counts.
 - Sign up and sign in using Supabase email/password or configured Google,
   Facebook, Apple, and Microsoft login. See the [social sign-in setup guide](docs/social-sign-in.md).
 - Update your password from Account details after verifying your current password.
@@ -54,16 +56,66 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm start` | Serve the production build |
 | `npm run db:push` | Apply reviewed application schema changes |
 | `npm run db:setup-company` | Add company workspaces, employees, and team permissions; preserve existing records |
+| `npm run db:setup-reviews` | Add the reviews table and constraints to an existing database; preserve existing data |
 | `npm run storage:setup` | Configure the private image bucket |
 | `npm run test:integration` | Live Auth/Storage, company, employee, and booking tests with temporary users |
 | `npm run test:teams` | Live team permissions, invitation sign-in, rescheduling, and ownership tests without sending emails |
 | `npm run test:invite-ui` | Invitation session expiry and stale password-state regression tests |
 | `npm run test:provider-navigation` | Provider routes, service editing, workspace switching, and permission regression tests |
 | `npm run test:customer-bookings` | Customer booking navigation, authentication, filters, loading, errors, and retry tests |
+| `npm run test:search-sorting` | Search sort controls, numeric prices, coordinate distances, missing ratings, stable ordering, and translations |
+| `npm run test:reviews` | Review prompts, validation, retries, session expiry, protected endpoint, and translations without external services |
+| `npm run test:public-reviews` | Clickable ratings, public review details, relative dates, pagination, loading/retry, and endpoint validation |
+| `npm run test:reviews-db` | PostgreSQL review storage and rating aggregation checks using connection-local temporary test tables |
 | `npm run test:administration` | Support access, user directory pagination, response privacy, and administration UI regression tests |
 | `npm run test:social-auth` | Social buttons, provider flags/scopes, PKCE callbacks, redirects, and profile/session regression tests with Auth mocked |
 | `npm run test:password` | Password validation, current-password verification, and session handling regression tests |
 | `npm run test:api-transport` | Real local HTTP, API fallback, password response, and session cookie tests; Supabase is mocked |
+
+## Search result sorting
+
+Use **Sort results** above the search results to order by price, distance, or
+rating in either direction. Distance sorting requires a selected address or
+current location. **Recommended** restores the search's original order; changing
+sort reuses the fetched results. Missing values appear last in both directions.
+
+Rating sorting uses average customer ratings from completed bookings. Services
+without reviews show **Not rated yet** and appear after rated services in either direction.
+
+## Customer reviews
+
+For an existing installation, run `npm run db:setup-reviews` once before starting
+the updated backend. The additive migration enables RLS and keeps browser API
+roles from accessing the new table directly. It can safely be rerun.
+
+When a provider marks an appointment completed, its customer sees a review prompt
+on **My Bookings**, including while viewing upcoming appointments. The page checks
+for updates every 30 seconds while open and when focused. Select 1–5 stars and
+optionally add a comment of up to 2,000 characters. Comments are required for
+1- and 2-star ratings; whitespace alone does not count. **Later** closes the form
+and keeps the draft while the page remains open.
+
+Only the booking's customer can submit its review, once the booking is completed.
+One review is allowed per booking. In **My Bookings > Past & cancelled**, use
+**Edit review** to change your rating or comment, or **Delete review** to remove it
+after confirmation. Only the review's author can change or delete it. Edits keep the
+original review date and the same comment requirements. Deleted reviews can be
+submitted again for the completed booking. Changes refresh public reviews, rating
+averages, counts, and search ordering.
+
+Saved ratings and comments appear in the customer's booking history. Click a service's
+rating on a search card or in its detail view to read customer reviews, newest first,
+20 per page. Each review shows stars, its comment if present, the reviewer's profile
+name (or "Customer" if unnamed), and an approximate date such as "7 days ago" or
+"2 years ago" in the selected language. Review text is displayed as plain text.
+Emails, customer IDs, and booking details are excluded from public responses.
+Inactive services and closed companies do not expose public review lists.
+Both exact and semantic search use the average ratings for sorting.
+
+Run `npm run test:reviews` for mocked regression tests. After the migration,
+`npm run test:reviews-db` checks the real PostgreSQL implementation using temporary
+copies of the relevant tables and a temporary sequence. It does not change customer
+data or the real ID sequences, and closes its connection to discard the fixtures.
 
 ## Application administration
 

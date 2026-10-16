@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Clock, Users, MapPin } from "lucide-react";
+import { Clock, Users, MapPin } from "lucide-react";
+import ServiceRating from "@/components/service-rating";
 import type { ServiceWithProvider } from "@shared/schema";
 import { getProviderName } from "@shared/provider";
 
@@ -60,14 +61,7 @@ export default function ServiceCard({ service, onBook, onViewDetails }: ServiceC
             {service.employee?.name && <p className="text-sm text-neutral-500 mb-2">With {service.employee.name}</p>}
             
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-2">
-                <div className="flex items-center">
-                  <Star className="w-4 h-4 text-amber-400 fill-current" />
-                  <span className="text-sm font-medium ml-1">4.8</span>
-                </div>
-                <span className="text-sm text-neutral-500">•</span>
-                <span className="text-sm text-neutral-500">127 reviews</span>
-              </div>
+              <ServiceRating service={service} />
               <div className="text-right">
                 <p className="text-lg font-semibold text-neutral-800">${service.price}</p>
                 <p className="text-xs text-neutral-500">

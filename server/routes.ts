@@ -11,6 +11,7 @@ import { geocodeAddress, GeocodingError } from "./geocoding";
 import { setupCompanyRoutes } from "./companyRoutes";
 import { setupSchedulingRoutes } from "./schedulingRoutes";
 import { setupAdminRoutes } from "./adminRoutes";
+import { setupReviewRoutes } from "./reviewRoutes";
 import { scope, assertService, assertBooking, ensureCompany, workspaceContext, saveWorkspaceSession, AccessError } from "./companyAccess";
 import { db } from "./db";
 import { companies } from "@shared/schema";
@@ -76,6 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupAdminRoutes(app);
   setupCompanyRoutes(app);
   setupSchedulingRoutes(app);
+  setupReviewRoutes(app);
 
   // Object Storage routes
   app.post('/api/objects/upload', isAuthenticated, async (req: any, res) => {

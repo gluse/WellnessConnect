@@ -7,6 +7,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import AppointmentAgenda from "@/components/appointment-agenda";
 import BottomNavigation from "@/components/bottom-navigation";
 import { Button } from "@/components/ui/button";
+import PendingReviews from "@/components/booking-review";
 
 const signInUrl = "/login?returnTo=%2Fmy-bookings";
 
@@ -19,7 +20,7 @@ export default function MyBookings() {
 
 function CustomerBookings() {
   const queryClient = useQueryClient();
-  const bookings = useQuery<BookingWithDetails[]>({ queryKey: ["/api/bookings/seeker"] });
+  const bookings = useQuery<BookingWithDetails[]>({ queryKey: ["/api/bookings/seeker"], refetchInterval: 30_000, refetchOnWindowFocus: "always" });
   useEffect(() => {
     if (isUnauthorizedError(bookings.error)) queryClient.setQueryData(["/api/auth/user"], null);
   }, [bookings.error, queryClient]);
@@ -36,7 +37,10 @@ function CustomerBookings() {
         <Button variant="outline" disabled={bookings.isFetching} onClick={() => void bookings.refetch()}>
           {bookings.isFetching ? "Retrying…" : "Try again"}
         </Button>
-      </div> : <AppointmentAgenda bookings={bookings.data ?? []} loading={bookings.isLoading} />}
+      </div> : <>
+        <PendingReviews bookings={bookings.data ?? []} />
+        <AppointmentAgenda bookings={bookings.data ?? []} loading={bookings.isLoading} />
+      </>}
     </main>
     <div className="lg:hidden"><BottomNavigation /></div>
   </div>;

@@ -6,6 +6,8 @@ import {
   bookings,
   availability,
   serviceEmbeddings,
+  serviceReviews,
+  type ServiceReview,
   type User,
   type UpsertUser,
   type Employee,
@@ -21,9 +23,17 @@ import {
   type InsertServiceEmbedding,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lte, asc, desc, sql, ne, isNull } from "drizzle-orm";
+import { eq, and, gte, lte, asc, desc, sql, ne, isNull, inArray } from "drizzle-orm";
 import { publicProvider } from "@shared/provider";
 import { bookableSlots } from "@shared/scheduling";
+import { reviewSchema, ReviewError, type ReviewInput, type ServiceReviewPage } from "@shared/reviews";
+
+const reviewStats = db.select({
+  serviceId: bookings.serviceId,
+  rating: sql<number>`avg(${serviceReviews.rating})::float8`.as("rating"),
+  reviewCount: sql<number>`count(*)::int`.as("review_count"),
+}).from(serviceReviews).innerJoin(bookings, eq(serviceReviews.bookingId, bookings.id))
+  .groupBy(bookings.serviceId).as("review_stats");
 
 export class BookingConflictError extends Error {}
 
@@ -77,6 +87,10 @@ export interface IStorage {
 
   // Booking operations
   createBooking(booking: InsertBooking): Promise<Booking>;
+  createReview(bookingId: number, seekerId: string, input: ReviewInput): Promise<ServiceReview>;
+  updateReview(bookingId: number, seekerId: string, input: ReviewInput): Promise<ServiceReview>;
+  deleteReview(bookingId: number, seekerId: string): Promise<void>;
+  getServiceReviews(serviceId: number, page: number): Promise<ServiceReviewPage | undefined>;
   getBookingsBySeeker(seekerId: string): Promise<BookingWithDetails[]>;
   getBookingsByProvider(providerId: string, companyId?: number): Promise<BookingWithDetails[]>;
   getBookingById(id: number): Promise<BookingWithDetails | undefined>;
@@ -206,12 +220,15 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(services.providerId, users.id))
       .leftJoin(employees, eq(services.employeeId, employees.id))
       .leftJoin(companies, eq(services.companyId, companies.id))
+      .leftJoin(reviewStats, eq(services.id, reviewStats.serviceId))
       .where(eq(services.id, id));
 
     if (!result) return undefined;
 
     return {
       ...result.services,
+      rating: result.review_stats?.rating ?? null,
+      reviewCount: result.review_stats?.reviewCount ?? 0,
       provider: publicProvider(result.users!, result.companies),
       companyActive: result.companies?.isActive ?? true,
       employee: result.employees ? { id: result.employees.id, name: result.employees.showName ? result.employees.name : null } : null,
@@ -271,11 +288,14 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(services.providerId, users.id))
       .leftJoin(employees, eq(services.employeeId, employees.id))
       .leftJoin(companies, eq(services.companyId, companies.id))
+      .leftJoin(reviewStats, eq(services.id, reviewStats.serviceId))
       .where(and(...conditions))
       .orderBy(desc(services.createdAt));
 
     let servicesWithProviders: ServiceWithProvider[] = results.map(result => ({
       ...result.services,
+      rating: result.review_stats?.rating ?? null,
+      reviewCount: result.review_stats?.reviewCount ?? 0,
       provider: publicProvider(result.users!, result.companies),
       companyActive: result.companies?.isActive ?? true,
       employee: result.employees ? { id: result.employees.id, name: result.employees.showName ? result.employees.name : null } : null,
@@ -433,6 +453,67 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  async getServiceReviews(serviceId: number, page: number): Promise<ServiceReviewPage | undefined> {
+    const service = await this.getServiceById(serviceId);
+    if (!service?.isActive || !service.companyActive) return undefined;
+    const pageSize = 20;
+    const results = await db.select({
+      id: serviceReviews.id,
+      rating: serviceReviews.rating,
+      comment: serviceReviews.comment,
+      createdAt: serviceReviews.createdAt,
+      firstName: users.firstName,
+      lastName: users.lastName,
+    }).from(serviceReviews)
+      .innerJoin(bookings, eq(serviceReviews.bookingId, bookings.id))
+      .leftJoin(users, eq(bookings.seekerId, users.id))
+      .where(eq(bookings.serviceId, serviceId))
+      .orderBy(desc(serviceReviews.createdAt), desc(serviceReviews.id))
+      .limit(pageSize + 1).offset((page - 1) * pageSize);
+    return {
+      page,
+      hasMore: results.length > pageSize,
+      reviews: results.slice(0, pageSize).map(review => ({
+        id: review.id, rating: review.rating, comment: review.comment,
+        reviewerName: [review.firstName?.trim(), review.lastName?.trim()].filter(Boolean).join(" ") || null,
+        createdAt: review.createdAt.toISOString(),
+      })),
+    };
+  }
+
+  async createReview(bookingId: number, seekerId: string, input: ReviewInput): Promise<ServiceReview> {
+    const values = reviewSchema.parse(input);
+    return db.transaction(async tx => {
+      const [booking] = await tx.select().from(bookings)
+        .where(and(eq(bookings.id, bookingId), eq(bookings.seekerId, seekerId))).for("update");
+      if (!booking) throw new ReviewError(404, "Booking not found.");
+      if (booking.status !== "completed") throw new ReviewError(409, "Only completed bookings can be reviewed.");
+      const [review] = await tx.insert(serviceReviews).values({ bookingId, ...values })
+        .onConflictDoNothing({ target: serviceReviews.bookingId }).returning();
+      if (!review) throw new ReviewError(409, "This booking has already been reviewed.");
+      return review;
+    });
+  }
+
+  async updateReview(bookingId: number, seekerId: string, input: ReviewInput): Promise<ServiceReview> {
+    const values = reviewSchema.parse(input);
+    const [review] = await db.update(serviceReviews).set(values).where(and(
+      eq(serviceReviews.bookingId, bookingId),
+      inArray(serviceReviews.bookingId, db.select({ id: bookings.id }).from(bookings)
+        .where(and(eq(bookings.seekerId, seekerId), eq(bookings.status, "completed")))),
+    )).returning();
+    if (!review) throw new ReviewError(404, "Review not found.");
+    return review;
+  }
+
+  async deleteReview(bookingId: number, seekerId: string): Promise<void> {
+    const [review] = await db.delete(serviceReviews).where(and(
+      eq(serviceReviews.bookingId, bookingId),
+      inArray(serviceReviews.bookingId, db.select({ id: bookings.id }).from(bookings).where(eq(bookings.seekerId, seekerId))),
+    )).returning({ id: serviceReviews.id });
+    if (!review) throw new ReviewError(404, "Review not found.");
+  }
+
   async getBookingsBySeeker(seekerId: string): Promise<BookingWithDetails[]> {
     const results = await db
       .select()
@@ -441,11 +522,13 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(bookings.providerId, users.id))
       .leftJoin(employees, eq(bookings.employeeId, employees.id))
       .leftJoin(companies, eq(bookings.companyId, companies.id))
+      .leftJoin(serviceReviews, eq(serviceReviews.bookingId, bookings.id))
       .where(eq(bookings.seekerId, seekerId))
       .orderBy(desc(bookings.createdAt));
 
     return results.map(result => ({
       ...result.bookings,
+      review: result.service_reviews,
       service: result.services!,
       seeker: { id: seekerId } as User,
       provider: publicProvider(result.users!, result.companies),

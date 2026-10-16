@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import ServiceFilters, { SearchFilters } from "@/components/service-filters";
 import ServiceCard from "@/components/service-card";
+import SearchResultsSort from "@/components/search-results-sort";
+import { serviceRating, sortServices, type ServiceSort } from "@/lib/service-sort";
 import GoogleMap from "@/components/google-map";
 import { loadGeocoder } from "@/lib/google-maps";
 import BookingModal from "@/components/booking-modal";
@@ -138,6 +140,7 @@ export default function Home() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [sort, setSort] = useState<ServiceSort>("default");
   const [selectedService, setSelectedService] = useState<ServiceWithProvider | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -219,7 +222,7 @@ export default function Home() {
   };
 
   // Search services query - uses semantic or exact search based on mode
-  const { data: services = [], isLoading: servicesLoading } = useQuery({
+  const { data: searchResults, isLoading: servicesLoading } = useQuery<ServiceWithProvider[]>({
     queryKey: ["/api/services/search", filters, userLocation, locationName],
     queryFn: async () => {
       const searchQuery = filters.searchQuery?.trim();
@@ -275,6 +278,12 @@ export default function Home() {
     },
   });
 
+  const effectiveSort = sort.startsWith("distance-") && !userLocation ? "default" : sort;
+  const services = useMemo(
+    () => sortServices(searchResults ?? [], effectiveSort, userLocation),
+    [searchResults, effectiveSort, userLocation],
+  );
+
   const handleBookService = (service: ServiceWithProvider) => {
     setSelectedService(service);
     setShowBookingModal(true);
@@ -304,7 +313,7 @@ export default function Home() {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 pb-20 lg:pb-0">
+        <main className="min-w-0 flex-1 pb-20 lg:pb-0">
           {/* Filters - Mobile Only */}
           <div className="lg:hidden">
             <ServiceFilters 
@@ -325,6 +334,7 @@ export default function Home() {
             onLocationClear={() => {
               setLocationName("");
               setUserLocation(null);
+              setSort(current => current.startsWith("distance-") ? "default" : current);
             }}
           />
 
@@ -352,6 +362,15 @@ export default function Home() {
                 {t('views.map')}
               </Button>
             </div>
+          </div>
+
+          <div className="px-4 pb-4 lg:px-0">
+            <SearchResultsSort
+              value={effectiveSort}
+              onChange={setSort}
+              hasLocation={userLocation !== null}
+              hasRatings={services.some(service => serviceRating(service) !== undefined)}
+            />
           </div>
 
           {/* Services List */}
