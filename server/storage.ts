@@ -75,6 +75,8 @@ export interface IStorage {
   updateService(id: number, updates: Partial<InsertService>): Promise<Service>;
   deleteService(id: number): Promise<void>;
   searchServices(filters: {
+    companyId?: number;
+    providerId?: string;
     category?: string;
     ageGroups?: string[];
     serviceType?: string;
@@ -249,6 +251,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchServices(filters: {
+    companyId?: number;
+    providerId?: string;
     category?: string;
     ageGroups?: string[];
     serviceType?: string;
@@ -263,6 +267,11 @@ export class DatabaseStorage implements IStorage {
     availableOnly?: boolean;
   }): Promise<ServiceWithProvider[]> {
     const conditions = [eq(services.isActive, true), sql`(${companies.id} IS NULL OR ${companies.isActive} = true)`];
+
+    if (filters.companyId !== undefined) conditions.push(eq(services.companyId, filters.companyId));
+    if (filters.providerId !== undefined) {
+      conditions.push(eq(services.providerId, filters.providerId), isNull(services.companyId));
+    }
 
     if (filters.category) {
       conditions.push(eq(services.category, filters.category as any));

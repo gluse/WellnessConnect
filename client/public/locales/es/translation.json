@@ -1,4 +1,15 @@
 {
+  "catalog": {
+    "view": "Ver todos los servicios de {{name}}",
+    "title": "Servicios de {{name}}",
+    "description": "Explora todos los servicios publicados de este proveedor.",
+    "loading": "Cargando servicios…",
+    "loadError": "No se pudieron cargar los servicios. Inténtalo de nuevo.",
+    "retry": "Intentar de nuevo",
+    "count": "Servicios publicados: {{count}}",
+    "empty": "Este proveedor no tiene servicios publicados disponibles actualmente.",
+    "back": "Volver a la búsqueda"
+  },
   "reviews": {
     "edit": "Editar reseña",
     "delete": "Eliminar reseña",

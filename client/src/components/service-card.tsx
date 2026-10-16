@@ -5,14 +5,17 @@ import { Clock, Users, MapPin } from "lucide-react";
 import ServiceRating from "@/components/service-rating";
 import type { ServiceWithProvider } from "@shared/schema";
 import { getProviderName } from "@shared/provider";
+import { useTranslation } from "react-i18next";
 
 interface ServiceCardProps {
   service: ServiceWithProvider;
   onBook: () => void;
   onViewDetails: () => void;
+  onViewProvider?: () => void;
 }
 
-export default function ServiceCard({ service, onBook, onViewDetails }: ServiceCardProps) {
+export default function ServiceCard({ service, onBook, onViewDetails, onViewProvider }: ServiceCardProps) {
+  const { t } = useTranslation();
   const isGroupService = service.serviceType === "group";
   const availableSpots = isGroupService ? ((service.maxCapacity || 1) - (service.availableCapacity || 0)) : 1;
 
@@ -28,7 +31,7 @@ export default function ServiceCard({ service, onBook, onViewDetails }: ServiceC
             </span>}
           </div>
           
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between mb-1">
               <h3 
                 className="font-semibold text-neutral-800 hover:text-primary cursor-pointer" 
@@ -42,10 +45,15 @@ export default function ServiceCard({ service, onBook, onViewDetails }: ServiceC
               </Badge>
             </div>
             
-            <div className="flex items-center space-x-2 mb-2">
-              <p className="text-sm text-neutral-600">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              {onViewProvider ? <button type="button" onClick={onViewProvider}
+                data-testid={`button-provider-${service.id}`}
+                aria-label={t("catalog.view", { name: getProviderName(service.provider) })}
+                className="text-sm text-primary text-left underline underline-offset-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 {getProviderName(service.provider)}
-              </p>
+              </button> : <p className="text-sm text-neutral-600">
+                {getProviderName(service.provider)}
+              </p>}
               {service.distance !== undefined && (
                 <>
                   <span className="text-sm text-neutral-500">•</span>

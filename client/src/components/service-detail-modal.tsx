@@ -6,15 +6,18 @@ import { Clock, Users, MapPin, DollarSign, Calendar, CheckCircle } from "lucide-
 import ServiceRating from "@/components/service-rating";
 import type { ServiceWithProvider } from "@shared/schema";
 import { getProviderName } from "@shared/provider";
+import { useTranslation } from "react-i18next";
 
 interface ServiceDetailModalProps {
   service: ServiceWithProvider | null;
   open: boolean;
   onClose: () => void;
   onBook: () => void;
+  onViewProvider?: () => void;
 }
 
-export default function ServiceDetailModal({ service, open, onClose, onBook }: ServiceDetailModalProps) {
+export default function ServiceDetailModal({ service, open, onClose, onBook, onViewProvider }: ServiceDetailModalProps) {
+  const { t } = useTranslation();
   if (!service) return null;
 
   const isGroupService = service.serviceType === "group";
@@ -85,9 +88,13 @@ export default function ServiceDetailModal({ service, open, onClose, onBook }: S
               </span>
             </div>
             <div>
-              <p className="font-semibold text-neutral-800" data-testid="text-provider-name">
+              {onViewProvider ? <button type="button" onClick={onViewProvider}
+                data-testid="button-provider-details" aria-label={t("catalog.view", { name: getProviderName(service.provider) })}
+                className="font-semibold text-primary text-left underline underline-offset-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 {getProviderName(service.provider)}
-              </p>
+              </button> : <p className="font-semibold text-neutral-800" data-testid="text-provider-name">
+                {getProviderName(service.provider)}
+              </p>}
               {service.employee?.name && <p className="text-sm text-neutral-600">With {service.employee.name}</p>}
               <ServiceRating service={service} />
             </div>

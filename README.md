@@ -25,6 +25,8 @@ Do not create tables with `db:push` before restoring a database dump.
 
 - Search services by location, category, audience, date, and keywords.
 - Browse service lists and Google Maps.
+- Click company or provider names in search results to browse all their published
+  services, view details, and book without losing your search filters.
 - View customer appointments on the separate My Bookings page, with upcoming,
   date, status, and booking history filters.
 - Create provider listings and availability schedules.
@@ -64,6 +66,7 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run test:provider-navigation` | Provider routes, service editing, workspace switching, and permission regression tests |
 | `npm run test:customer-bookings` | Customer booking navigation, authentication, filters, loading, errors, and retry tests |
 | `npm run test:search-sorting` | Search sort controls, numeric prices, coordinate distances, missing ratings, stable ordering, and translations |
+| `npm run test:provider-catalog` | Company/provider catalog selection, preserved search filters, service actions, loading/retry, and public endpoint validation |
 | `npm run test:reviews` | Review prompts, validation, retries, session expiry, protected endpoint, and translations without external services |
 | `npm run test:public-reviews` | Clickable ratings, public review details, relative dates, pagination, loading/retry, and endpoint validation |
 | `npm run test:reviews-db` | PostgreSQL review storage and rating aggregation checks using connection-local temporary test tables |
@@ -81,6 +84,18 @@ sort reuses the fetched results. Missing values appear last in both directions.
 
 Rating sorting uses average customer ratings from completed bookings. Services
 without reviews show **Not rated yet** and appear after rated services in either direction.
+
+## Provider services
+
+In search results, click the company or service provider name to open their service
+catalog. The same option is available in service details, including details opened
+from the map. Catalogs show every published offer independently of the main search's
+category, keyword, date, and distance filters. Company catalogs include offers from
+all team members; individual catalogs include only that person's personal offers.
+Inactive offers and services from closed companies remain hidden.
+
+You can view details or book any listed offer. Closing those views returns to the
+catalog, and **Back to search** restores your original search results and filters.
 
 ## Customer reviews
 

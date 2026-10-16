@@ -1,4 +1,15 @@
 {
+  "catalog": {
+    "view": "查看{{name}}的全部服务",
+    "title": "{{name}}提供的服务",
+    "description": "浏览此提供商的所有已发布服务。",
+    "loading": "正在加载服务…",
+    "loadError": "无法加载服务，请重试。",
+    "retry": "重试",
+    "count": "已发布服务：{{count}}",
+    "empty": "此提供商目前没有可用的已发布服务。",
+    "back": "返回搜索"
+  },
   "reviews": {
     "edit": "编辑评价",
     "delete": "删除评价",

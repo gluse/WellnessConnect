@@ -1,4 +1,15 @@
 {
+  "catalog": {
+    "view": "Alle Dienstleistungen von {{name}} ansehen",
+    "title": "Dienstleistungen von {{name}}",
+    "description": "Alle veröffentlichten Dienstleistungen dieses Anbieters ansehen.",
+    "loading": "Dienstleistungen werden geladen…",
+    "loadError": "Dienstleistungen konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "retry": "Erneut versuchen",
+    "count": "Veröffentlichte Dienstleistungen: {{count}}",
+    "empty": "Dieser Anbieter hat derzeit keine verfügbaren veröffentlichten Dienstleistungen.",
+    "back": "Zurück zur Suche"
+  },
   "reviews": {
     "edit": "Bewertung bearbeiten",
     "delete": "Bewertung löschen",

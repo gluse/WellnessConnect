@@ -113,6 +113,25 @@ try {
   await pool.query("INSERT INTO pg_temp.companies(id,name,owner_id,provider_id,is_active) VALUES(9,'Closed company','review-provider','review-provider',false)");
   await pool.query("UPDATE pg_temp.services SET company_id=9 WHERE id=2");
   assert.equal(await storage.getServiceReviews(2, 1), undefined, "Closed company reviews are not publicly searchable");
+  // Catalog scope follows a company identity across staff, and keeps personal listings separate.
+  await pool.query("INSERT INTO pg_temp.users(id,first_name) VALUES('catalog-other-owner','Provider')");
+  await pool.query(`INSERT INTO pg_temp.companies(id,name,owner_id,provider_id,is_active) VALUES
+    (10,'Same Company','other-customer','other-customer',true),
+    (11,'Same Company','catalog-other-owner','catalog-other-owner',true)`);
+  await pool.query(`INSERT INTO pg_temp.services(id,provider_id,company_id,name,category,service_type,price,duration,is_active) VALUES
+    (10,'review-provider',10,'Company offer','education','one_to_one',10,30,true),
+    (11,'other-customer',10,'Team offer','health_wellness','one_to_one',10,30,true),
+    (12,'review-provider',10,'Unpublished offer','education','one_to_one',10,30,false),
+    (13,'review-provider',11,'Other company offer','education','one_to_one',10,30,true)`);
+  const catalog = await storage.searchServices({ companyId: 10 });
+  assert.deepEqual(catalog.map(row => row.id).sort((a, b) => a - b), [10, 11]);
+  assert.ok(catalog.every(row => row.provider.companyName === 'Same Company' && row.provider.firstName === null && row.provider.email === null));
+  assert.deepEqual((await storage.searchServices({ providerId: 'review-provider' })).map(row => row.id), [1]);
+  assert.deepEqual((await storage.searchServices({ providerId: 'other-customer' })).map(row => row.id), []);
+  assert.deepEqual((await storage.searchServices({ companyId: 11 })).map(row => row.id), [13]);
+  assert.deepEqual(await storage.searchServices({ companyId: 9 }), []);
+  assert.deepEqual(await storage.searchServices({ companyId: 999 }), []);
+  assert.deepEqual(await storage.searchServices({ providerId: 'unknown-provider' }), []);
   // Pool.query evicts its connection after SQL errors, which would discard the fixtures.
   // Keep an explicit client while deliberately testing invalid SQL.
   const checks = await pool.connect();

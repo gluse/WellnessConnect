@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import ServiceFilters, { SearchFilters } from "@/components/service-filters";
 import ServiceCard from "@/components/service-card";
+import ProviderServicesDialog from "@/components/provider-services-dialog";
 import SearchResultsSort from "@/components/search-results-sort";
 import { serviceRating, sortServices, type ServiceSort } from "@/lib/service-sort";
 import GoogleMap from "@/components/google-map";
@@ -142,6 +143,7 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [sort, setSort] = useState<ServiceSort>("default");
   const [selectedService, setSelectedService] = useState<ServiceWithProvider | null>(null);
+  const [providerSource, setProviderSource] = useState<ServiceWithProvider | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -393,6 +395,7 @@ export default function Home() {
                     service={service}
                     onBook={() => handleBookService(service)}
                     onViewDetails={() => handleViewDetails(service)}
+                    onViewProvider={() => setProviderSource(service)}
                   />
                 ))
               )}
@@ -436,9 +439,20 @@ export default function Home() {
       )}
 
       {/* Service Detail Modal */}
+      <ProviderServicesDialog
+        source={providerSource}
+        open={providerSource !== null && !showDetailModal && !showBookingModal}
+        onClose={() => setProviderSource(null)}
+        onBook={handleBookService}
+        onViewDetails={handleViewDetails}
+      />
       <ServiceDetailModal
         service={selectedService}
         open={showDetailModal}
+        onViewProvider={() => {
+          if (selectedService) setProviderSource(selectedService);
+          setShowDetailModal(false);
+        }}
         onClose={() => {
           setShowDetailModal(false);
           setSelectedService(null);

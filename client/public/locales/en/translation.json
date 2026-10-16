@@ -1,4 +1,15 @@
 {
+  "catalog": {
+    "view": "See all services from {{name}}",
+    "title": "Services by {{name}}",
+    "description": "Browse all published services from this provider.",
+    "loading": "Loading services…",
+    "loadError": "Unable to load services. Please try again.",
+    "retry": "Try again",
+    "count": "Published services: {{count}}",
+    "empty": "No published services are currently available from this provider.",
+    "back": "Back to search"
+  },
   "reviews": {
     "edit": "Edit review",
     "delete": "Delete review",

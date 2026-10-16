@@ -1,4 +1,15 @@
 {
+  "catalog": {
+    "view": "Voir tous les services de {{name}}",
+    "title": "Services de {{name}}",
+    "description": "Consultez tous les services publiés de ce prestataire.",
+    "loading": "Chargement des services…",
+    "loadError": "Impossible de charger les services. Veuillez réessayer.",
+    "retry": "Réessayer",
+    "count": "Services publiés : {{count}}",
+    "empty": "Ce prestataire ne propose actuellement aucun service publié disponible.",
+    "back": "Retour à la recherche"
+  },
   "reviews": {
     "edit": "Modifier l’avis",
     "delete": "Supprimer l’avis",

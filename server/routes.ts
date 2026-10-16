@@ -12,6 +12,7 @@ import { setupCompanyRoutes } from "./companyRoutes";
 import { setupSchedulingRoutes } from "./schedulingRoutes";
 import { setupAdminRoutes } from "./adminRoutes";
 import { setupReviewRoutes } from "./reviewRoutes";
+import { setupProviderCatalogRoutes } from "./providerCatalogRoutes";
 import { scope, assertService, assertBooking, ensureCompany, workspaceContext, saveWorkspaceSession, AccessError } from "./companyAccess";
 import { db } from "./db";
 import { companies } from "@shared/schema";
@@ -78,6 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupCompanyRoutes(app);
   setupSchedulingRoutes(app);
   setupReviewRoutes(app);
+  setupProviderCatalogRoutes(app);
 
   // Object Storage routes
   app.post('/api/objects/upload', isAuthenticated, async (req: any, res) => {

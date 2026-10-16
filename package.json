@@ -18,6 +18,7 @@
     "test:invite-ui": "node --import tsx scripts/test-invite-ui.mjs",
     "test:maps": "node --import tsx scripts/test-map-lifecycle.mjs",
     "test:search-sorting": "node --import tsx scripts/test-search-sorting.mjs",
+    "test:provider-catalog": "node --import tsx scripts/test-provider-catalog.mjs",
     "test:reviews": "node --import tsx scripts/test-reviews.mjs",
     "test:public-reviews": "node --import tsx scripts/test-public-reviews.mjs",
     "test:reviews-db": "node --import tsx scripts/test-reviews-db.mjs",

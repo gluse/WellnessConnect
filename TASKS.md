@@ -108,4 +108,6 @@ and verification.
 
 ## Security
 Encrypt network traffic. Passwords and other sensitive information
+
+## Terms of Use
 <!-- Add the next task here using TASK-008, or place it in the relevant section. -->
