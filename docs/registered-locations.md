@@ -1,5 +1,30 @@
 # Registered service locations
 
+## Saved account addresses
+
+For an existing installation, stop the old backend and run
+`npm run db:setup-addresses` before starting the updated backend. Use this
+migration **before** `db:push`: it moves address text, coordinates and provenance
+from services into `addresses`, links services through `address_id`, and then
+removes the old columns. Identical locations in the same workspace share one
+record. Conflicting coordinates or provenance remain separate. The migration is
+transactional, can be rerun, makes no Google requests and retains original expiry
+times. Services without any location remain unassigned until an address is chosen.
+
+Manage one or more addresses in **Account details → Saved addresses**. The list
+belongs to the currently selected personal or company workspace; company managers
+share company addresses. Choose the workspace in My Services before managing its
+addresses. Add an address and verify it once, or enter independent manual coordinates.
+The service editor only selects a saved address. Its management link opens Account
+in another tab to preserve the service draft; returning refreshes the list.
+
+Editing a saved address updates all linked services, including locations displayed
+in booking history. Removing an address is blocked while any service references it.
+Company conversion moves personal addresses along with services. Address IDs from
+other workspaces are rejected by the API. Saving, editing or copying a service
+does not geocode or query the geocoding cache. Expired Google coordinates stay
+unavailable until the provider explicitly verifies the saved address again.
+
 Run `npm run db:setup-locations` before starting the updated backend, including
 after `db:push` on a fresh installation. It adds location provenance, a private
 coordinate cache and the PostgreSQL hourly cleanup job
@@ -27,7 +52,7 @@ Database integrations. See [Supabase Cron](https://supabase.com/docs/guides/cron
    require a more specific address or independently supplied manual coordinates.
    Interpolated results are approximate street positions, not guaranteed entrances.
    See [Google's response fields](https://developers.google.com/maps/documentation/geocoding/requests-geocoding#Results).
-5. The service retains the provider's original address. Google formatted addresses,
+5. The saved address retains the provider's original address. Google formatted addresses,
    address components and raw responses are not newly persisted. The backend
    checks the cache against the submitted address and coordinates before saving
    Google provenance; clients cannot choose a new expiry or invent a Place ID.
@@ -56,7 +81,7 @@ Place IDs may remain after coordinate deletion, as described in
 Expired Google coordinates are omitted from new API responses and server distance
 filtering immediately. The browser clears expired query data and editor drafts
 every minute without making network requests. The hourly database job physically clears the cache and
-all service copies without needing the web process. Provider-entered addresses
+saved addresses used by all service copies without needing the web process. Provider-entered addresses
 and independently supplied manual coordinates remain. Coordinate expiry does
 not call Google automatically: providers explicitly verify again to restore
 their map location. Other search modes and booking history remain available.
@@ -101,3 +126,9 @@ concurrency, reuse/expiry, trusted save metadata and editor races.
 job using connection-local temporary copies of application tables and sequences;
 it never calls Google or changes customer data. Its cleanup test substitutes only
 temporary table names into the migration's cleanup body.
+
+`npm run test:addresses` checks account address creation, address selection,
+workspace permissions and service saves without geocoding. `npm run test:addresses-db`
+checks migration/backfill, shared address edits, copy behavior, deletion protection
+and coordinate cleanup using isolated temporary tables and sequences. It can run
+before the address migration without changing application data.

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import AccountPasswordForm from "@/components/account-password-form";
+import AccountAddresses from "@/components/account-addresses";
 
 function AccountDetailsForm({ user }: { user: User }) {
   const queryClient = useQueryClient();
@@ -95,8 +96,9 @@ export default function Account() {
   return <div className="min-h-screen bg-neutral-50">
     <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <Button variant="ghost" asChild className="-ml-3"><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />Back to dashboard</Link></Button>
-      <div><h1 className="text-2xl font-semibold">Account details</h1><p className="mt-2 text-neutral-600">Manage your personal information and password.</p></div>
+      <div><h1 className="text-2xl font-semibold">Account details</h1><p className="mt-2 text-neutral-600">Manage your personal information, saved addresses and password.</p></div>
       <AccountDetailsForm key={user.id} user={user} />
+      <AccountAddresses key={`addresses-${user.id}`} />
       <AccountPasswordForm key={`password-${user.id}`} />
     </main>
   </div>;

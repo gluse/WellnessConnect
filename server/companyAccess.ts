@@ -1,7 +1,7 @@
 import type { Request } from "express";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./db";
-import { companies, companyMemberships, employees, services, bookings, availability, users, type WorkspaceContext, type Service, type Booking } from "@shared/schema";
+import { companies, companyMemberships, employees, services, addresses, bookings, availability, users, type WorkspaceContext, type Service, type Booking } from "@shared/schema";
 
 declare module "express-session" { interface SessionData { activeCompanyId?: number | null; } }
 declare global { namespace Express { interface Request { workspace?: WorkspaceContext; } } }
@@ -57,7 +57,7 @@ export async function ensureCompany(providerId: string, name: string) {
     if (!company) {
       [company] = await tx.insert(companies).values({ name, ownerId: providerId, providerId }).returning();
       await tx.insert(companyMemberships).values({ companyId: company.id, userId: providerId, role: "owner" });
-      for (const table of [employees, services, bookings, availability]) {
+      for (const table of [employees, services, addresses, bookings, availability]) {
         await tx.update(table).set({ companyId: company.id }).where(and(eq(table.providerId, providerId), isNull(table.companyId)));
       }
     }

@@ -129,12 +129,38 @@ export const categories = pgTable("categories", {
 }, table => [uniqueIndex("categories_name_idx").on(sql`lower(${table.name})`)]).enableRLS();
 export type Category = typeof categories.$inferSelect;
 
+// Locations are saved once per personal or company workspace.
+export const addresses = pgTable("addresses", {
+  id: serial("id").primaryKey(),
+  providerId: varchar("provider_id").references(() => users.id).notNull(),
+  companyId: integer("company_id").references(() => companies.id),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
+  address: text("address"),
+  locationSource: varchar("location_source", { enum: ["legacy", "manual", "google"] }).notNull().default("legacy"),
+  locationKey: varchar("location_key"),
+  locationPlaceId: text("location_place_id"),
+  locationExpiresAt: timestamp("location_expires_at", { withTimezone: true }),
+  locationAddressSource: varchar("location_address_source", { enum: ["user", "google"] }).notNull().default("user"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, table => [index("addresses_workspace_idx").on(table.providerId, table.companyId),
+  index("addresses_google_expiry_idx").on(table.locationExpiresAt).where(sql`${table.locationSource} = 'google'`)]).enableRLS();
+export type Address = typeof addresses.$inferSelect;
+export type AddressLocation = Pick<Address, "address" | "latitude" | "longitude" | "locationSource" | "locationKey" | "locationPlaceId" | "locationExpiresAt" | "locationAddressSource">;
+export const addressInputSchema = createInsertSchema(addresses, {
+  address: z.string().trim().min(5).max(500),
+  latitude: z.number().finite().min(-90).max(90),
+  longitude: z.number().finite().min(-180).max(180),
+}).pick({ address: true, latitude: true, longitude: true });
+
 // Services table
 export const services = pgTable("services", {
   id: serial("id").primaryKey(),
   providerId: varchar("provider_id").references(() => users.id).notNull(),
   companyId: integer("company_id").references(() => companies.id),
   employeeId: integer("employee_id").references(() => employees.id),
+  addressId: integer("address_id").references(() => addresses.id),
   name: varchar("name").notNull(),
   description: text("description"),
   category: varchar("category").notNull().references(() => categories.key),
@@ -147,20 +173,12 @@ export const services = pgTable("services", {
   targetGender: varchar("target_gender", { enum: ["females", "males", "both"] }).default("both"),
   instantBooking: boolean("instant_booking").default(false),
   advancePaymentPercent: integer("advance_payment_percent").default(50),
-  latitude: doublePrecision("latitude"),
-  longitude: doublePrecision("longitude"),
-  address: text("address"),
-  locationSource: varchar("location_source", { enum: ["legacy", "manual", "google"] }).notNull().default("legacy"),
-  locationKey: varchar("location_key"),
-  locationPlaceId: text("location_place_id"),
-  locationExpiresAt: timestamp("location_expires_at", { withTimezone: true }),
-  locationAddressSource: varchar("location_address_source", { enum: ["user", "google"] }).notNull().default("user"),
   imageUrl: text("image_url"),
   externalUrl: text("external_url"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-}, table => [index("services_google_expiry_idx").on(table.locationExpiresAt).where(sql`${table.locationSource} = 'google'`), index("services_category_idx").on(table.category), check("services_cleanup_time_check", sql`${table.cleanupTime} BETWEEN 0 AND 1440`)]).enableRLS();
+}, table => [index("services_address_idx").on(table.addressId), index("services_category_idx").on(table.category), check("services_cleanup_time_check", sql`${table.cleanupTime} BETWEEN 0 AND 1440`)]).enableRLS();
 
 // Only accepted Google coordinates, never Google's formatted address or response.
 // Place IDs may survive coordinate expiry; the key hashes the user's address.
@@ -260,18 +278,25 @@ export const availability = pgTable("availability", {
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
+  addresses: many(addresses),
   services: many(services),
   bookings: many(bookings),
   availabilities: many(availability),
 }));
 
 export const servicesRelations = relations(services, ({ one, many }) => ({
+  savedAddress: one(addresses, { fields: [services.addressId], references: [addresses.id] }),
   provider: one(users, {
     fields: [services.providerId],
     references: [users.id],
   }),
   bookings: many(bookings),
   availability: many(availability),
+}));
+
+export const addressesRelations = relations(addresses, ({ one, many }) => ({
+  provider: one(users, { fields: [addresses.providerId], references: [users.id] }),
+  services: many(services),
 }));
 
 export const bookingsRelations = relations(bookings, ({ one }) => ({
@@ -326,7 +351,7 @@ export const employeeSchema = z.object({
 });
 
 export type InsertService = typeof services.$inferInsert;
-export type Service = typeof services.$inferSelect;
+export type Service = typeof services.$inferSelect & AddressLocation;
 
 export type InsertBooking = typeof bookings.$inferInsert;
 export type Booking = typeof bookings.$inferSelect;
@@ -343,17 +368,11 @@ export const insertServiceSchema = createInsertSchema(services, {
   category: z.string().trim().min(1, "Choose a category.").max(64),
   ageGroups: z.array(z.string()).nullable().optional(),
   employeeId: z.number().int().positive().nullable().optional(),
-  latitude: z.number().finite().min(-90).max(90).nullable().optional(),
-  longitude: z.number().finite().min(-180).max(180).nullable().optional(),
+  addressId: z.number().int().positive(),
 }).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-  locationSource: true,
-  locationKey: true,
-  locationPlaceId: true,
-  locationExpiresAt: true,
-  locationAddressSource: true,
 });
 
 export const insertBookingSchema = createInsertSchema(bookings).omit({

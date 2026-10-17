@@ -28,6 +28,8 @@ Do not create tables with `db:push` before restoring a database dump.
 - Browse services without an account from **Browse services** or `/search`; sign
   in only when booking or using account features.
 - Browse service lists and Google Maps.
+- Hover service pins for compact previews with a short description and View details.
+  Clicking a pin still opens service details directly, including on touch devices.
 - Click company or provider names in search results to browse all their published
   services, view details, and book without losing your search filters.
 - View customer appointments on the separate My Bookings page, with upcoming,
@@ -36,6 +38,9 @@ Do not create tables with `db:push` before restoring a database dump.
 - Reserve preparation and cleanup time after services when checking booking availability.
 - Reuse eligible registered locations instead of repeatedly geocoding addresses;
   see [location registration and retention](docs/registered-locations.md).
+- Save multiple addresses under Account details and select them when creating
+  services. Existing installations must run `npm run db:setup-addresses` before
+  starting the updated backend or running `db:push`.
 - Manage appointments, services, availability, and settings on separate My Services
   pages, with a shared workspace selector and responsive section navigation.
 - Offer services as an individual or a company, with employees managed by one
@@ -77,6 +82,9 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run test:storefronts` | Storefront UI, guest booking return, Pro access, admin controls, API security, and translations |
 | `npm run test:storefronts-db` | PostgreSQL storefront migration, subscription lifecycle, catalogs, and branding access using temporary tables |
 | `npm run db:setup-locations` | Add registered locations, coordinate cache and independent hourly expiry cleanup |
+| `npm run db:setup-addresses` | Move existing service locations into saved workspace addresses and link services |
+| `npm run test:addresses` | Account address creation, selection, permissions and service saves without geocoding |
+| `npm run test:addresses-db` | Address migration, shared locations, deletion protection and cleanup using temporary tables |
 | `npm run test:geocoding` | Mocked geocoding quality, reuse/expiry, concurrency and address editor checks |
 | `npm run test:geocoding-db` | PostgreSQL location cache, reuse boundaries and cleanup using temporary tables |
 | `npm run storage:setup` | Configure the private image bucket |

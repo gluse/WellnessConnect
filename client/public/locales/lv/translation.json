@@ -296,5 +296,15 @@
     "proDisabled": "Nav aktīvs",
     "companyProEnabled": "Uzņēmuma Pro ir aktīvs",
     "companyProDisabled": "Uzņēmuma Pro nav aktīvs"
+  },
+  "mapPreview": {
+    "noDescription": "Atveriet pakalpojumu, lai uzzinātu vairāk.",
+    "viewDetails": "Skatīt informāciju",
+    "close": "Aizvērt priekšskatījumu",
+    "yourLocation": "Jūsu atrašanās vieta",
+    "loading": "Ielādē karti…",
+    "unavailable": "Karte nav pieejama. Mēģiniet vēlāk.",
+    "loadError": "Neizdevās ielādēt karti. Pārbaudiet savienojumu un mēģiniet vēlreiz.",
+    "reload": "Pārlādēt lapu"
   }
 }

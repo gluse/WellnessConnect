@@ -296,5 +296,15 @@
     "proDisabled": "No activado",
     "companyProEnabled": "Pro de empresa activado",
     "companyProDisabled": "Pro de empresa no activado"
+  },
+  "mapPreview": {
+    "noDescription": "Abre este servicio para ver más información.",
+    "viewDetails": "Ver detalles",
+    "close": "Cerrar vista previa",
+    "yourLocation": "Tu ubicación",
+    "loading": "Cargando mapa…",
+    "unavailable": "El mapa no está disponible. Inténtalo más tarde.",
+    "loadError": "No se pudo cargar el mapa. Comprueba tu conexión e inténtalo de nuevo.",
+    "reload": "Recargar página"
   }
 }

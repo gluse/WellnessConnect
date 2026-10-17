@@ -1,6 +1,7 @@
 // Uses connection-local temporary copies of application tables. No customer data is changed.
 import assert from "node:assert/strict";
 import "dotenv/config";
+import { setupAddressFixtures } from "./fixtures/addresses.mjs";
 import { setupStorefrontFixtures } from "./fixtures/storefronts.mjs";
 import { storage } from "../server/storage.ts";
 import { pool } from "../server/db.ts";
@@ -23,6 +24,7 @@ try {
   }
   // Avoid using the real reviews sequence through a copied default.
   await setupStorefrontFixtures(pool.query.bind(pool));
+  await setupAddressFixtures(pool.query.bind(pool));
   await pool.query("CREATE TEMP SEQUENCE review_fixture_ids; ALTER TABLE pg_temp.service_reviews ALTER COLUMN id SET DEFAULT nextval('pg_temp.review_fixture_ids')");
   await pool.query("INSERT INTO pg_temp.users(id,first_name) VALUES ('review-customer','Customer'),('review-provider','Provider'),('other-customer','Other')");
   await pool.query(`INSERT INTO pg_temp.services(id,provider_id,name,category,service_type,price,duration) VALUES

@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "./db";
-import { geocodingCache, services, type InsertService, type Service } from "@shared/schema";
+import { geocodingCache, addresses, type AddressLocation } from "@shared/schema";
 import { addressError, normalizeAddress, validCoordinates } from "@shared/locations";
 import { GeocodingError, geocodeRegisteredAddress } from "./geocoding";
 
@@ -20,9 +20,9 @@ export interface LocationStore {
 function databaseStore(connection: typeof db): LocationStore {
   const store: LocationStore = {
     async manual(address, owner) {
-      const rows = await connection.select().from(services).where(and(eq(services.locationSource, "manual"),
-        owner.companyId != null ? eq(services.companyId, owner.companyId)
-          : and(eq(services.providerId, owner.providerId), isNull(services.companyId))));
+      const rows = await connection.select().from(addresses).where(and(eq(addresses.locationSource, "manual"),
+        owner.companyId != null ? eq(addresses.companyId, owner.companyId)
+          : and(eq(addresses.providerId, owner.providerId), isNull(addresses.companyId))));
       return rows.find(row => row.address && normalizeAddress(row.address) === normalizeAddress(address)
         && validCoordinates(row.latitude, row.longitude));
     },
@@ -75,7 +75,7 @@ export async function registerLocation(input: unknown, owner: Owner, store = loc
 
 // The client may identify a verification but cannot set its lifetime or Place ID.
 // Saving/copying an unchanged Google location never starts a new cache period.
-export async function resolveServiceLocation(input: Partial<InsertService>, body: Record<string, unknown>, existing?: Service, store = locationStore): Promise<Partial<InsertService>> {
+export async function resolveServiceLocation(input: Partial<AddressLocation>, body: Record<string, unknown>, existing?: AddressLocation, store = locationStore): Promise<Partial<AddressLocation>> {
   if (body.locationSource !== undefined && !["manual", "google", "legacy"].includes(String(body.locationSource))) {
     throw new GeocodingError(400, "INVALID_LOCATION", "Choose a valid coordinate source.");
   }

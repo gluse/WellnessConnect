@@ -296,5 +296,15 @@
     "proDisabled": "Not enabled",
     "companyProEnabled": "Company Pro enabled",
     "companyProDisabled": "Company Pro not enabled"
+  },
+  "mapPreview": {
+    "noDescription": "View this service for more details.",
+    "viewDetails": "View details",
+    "close": "Close preview",
+    "yourLocation": "Your location",
+    "loading": "Loading map…",
+    "unavailable": "The map is unavailable. Please try again later.",
+    "loadError": "The map could not load. Check your connection and try again.",
+    "reload": "Reload page"
   }
 }

@@ -3,6 +3,7 @@ import {
   employees,
   companies,
   services,
+  addresses,
   bookings,
   availability,
   serviceEmbeddings,
@@ -26,7 +27,7 @@ import { db } from "./db";
 import { eq, and, gte, lte, asc, desc, sql, ne, isNull, inArray } from "drizzle-orm";
 import { publicProvider } from "@shared/provider";
 import { storefrontStore } from "./storefronts";
-import { currentLocation } from "@shared/locations";
+import { serviceLocation } from "./addresses";
 import { bookableSlots } from "@shared/scheduling";
 import { reviewSchema, ReviewError, type ReviewInput, type ServiceReviewPage } from "@shared/reviews";
 
@@ -191,37 +192,40 @@ export class DatabaseStorage implements IStorage {
       .insert(services)
       .values(service)
       .returning();
-    return currentLocation(newService);
+    return serviceLocation(newService, newService.addressId == null ? null : (await db.select().from(addresses).where(eq(addresses.id, newService.addressId)))[0]);
   }
 
   async copyService(serviceId: number, providerId: string, companyId?: number): Promise<Service | undefined> {
-    return db.transaction(async (tx) => {
+    const copy = await db.transaction(async (tx) => {
       const [source] = await tx.select().from(services)
         .where(and(eq(services.id, serviceId), companyId != null ? eq(services.companyId, companyId) : and(eq(services.providerId, providerId), isNull(services.companyId))));
       if (!source) return undefined;
-      const { id, createdAt, updatedAt, ...listing } = currentLocation(source);
+      const { id, createdAt, updatedAt, ...listing } = source;
       const [copy] = await tx.insert(services).values({
         ...listing,
         name: `${source.name} (copy)`,
         isActive: false,
       }).returning();
-      return currentLocation(copy);
+      return copy;
     });
+    return copy ? serviceLocation(copy, copy.addressId == null ? null : (await db.select().from(addresses).where(eq(addresses.id, copy.addressId)))[0]) : undefined;
   }
 
   async getServicesByProvider(providerId: string, companyId?: number): Promise<Service[]> {
     const rows = await db
       .select()
       .from(services)
+      .leftJoin(addresses, eq(services.addressId, addresses.id))
       .where(companyId != null ? eq(services.companyId, companyId) : and(eq(services.providerId, providerId), isNull(services.companyId)))
       .orderBy(desc(services.createdAt));
-    return rows.map(row => currentLocation(row));
+    return rows.map(row => serviceLocation(row.services, row.addresses));
   }
 
   async getServiceById(id: number): Promise<ServiceWithProvider | undefined> {
     const [result] = await db
       .select()
       .from(services)
+      .leftJoin(addresses, eq(services.addressId, addresses.id))
       .leftJoin(users, eq(services.providerId, users.id))
       .leftJoin(employees, eq(services.employeeId, employees.id))
       .leftJoin(companies, eq(services.companyId, companies.id))
@@ -233,7 +237,7 @@ export class DatabaseStorage implements IStorage {
     const slugs = await storefrontStore.slugs([result.services]);
 
     return {
-      ...currentLocation(result.services),
+      ...serviceLocation(result.services, result.addresses),
       storefrontSlug: slugs.get(result.services.companyId != null ? `company:${result.services.companyId}` : `user:${result.services.providerId}`) ?? null,
       rating: result.review_stats?.rating ?? null,
       reviewCount: result.review_stats?.reviewCount ?? 0,
@@ -249,7 +253,7 @@ export class DatabaseStorage implements IStorage {
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(services.id, id))
       .returning();
-    return currentLocation(service);
+    return serviceLocation(service, service.addressId == null ? null : (await db.select().from(addresses).where(eq(addresses.id, service.addressId)))[0]);
   }
 
   async deleteService(id: number): Promise<void> {
@@ -300,6 +304,7 @@ export class DatabaseStorage implements IStorage {
     const results = await db
       .select()
       .from(services)
+      .leftJoin(addresses, eq(services.addressId, addresses.id))
       .leftJoin(users, eq(services.providerId, users.id))
       .leftJoin(employees, eq(services.employeeId, employees.id))
       .leftJoin(companies, eq(services.companyId, companies.id))
@@ -309,7 +314,7 @@ export class DatabaseStorage implements IStorage {
 
     const slugs = await storefrontStore.slugs(results.map(result => result.services));
     let servicesWithProviders: ServiceWithProvider[] = results.map(result => ({
-      ...currentLocation(result.services),
+      ...serviceLocation(result.services, result.addresses),
       storefrontSlug: slugs.get(result.services.companyId != null ? `company:${result.services.companyId}` : `user:${result.services.providerId}`) ?? null,
       rating: result.review_stats?.rating ?? null,
       reviewCount: result.review_stats?.reviewCount ?? 0,
@@ -536,6 +541,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(bookings)
       .leftJoin(services, eq(bookings.serviceId, services.id))
+      .leftJoin(addresses, eq(services.addressId, addresses.id))
       .leftJoin(users, eq(bookings.providerId, users.id))
       .leftJoin(employees, eq(bookings.employeeId, employees.id))
       .leftJoin(companies, eq(bookings.companyId, companies.id))
@@ -546,7 +552,7 @@ export class DatabaseStorage implements IStorage {
     return results.map(result => ({
       ...result.bookings,
       review: result.service_reviews,
-      service: currentLocation(result.services!),
+      service: serviceLocation(result.services!, result.addresses),
       seeker: { id: seekerId } as User,
       provider: publicProvider(result.users!, result.companies),
       employee: result.employees ? { id: result.employees.id, name: result.employees.showName ? result.employees.name : null } : null,
@@ -558,13 +564,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(bookings)
       .leftJoin(services, eq(bookings.serviceId, services.id))
+      .leftJoin(addresses, eq(services.addressId, addresses.id))
       .leftJoin(users, eq(bookings.seekerId, users.id))
       .where(companyId != null ? eq(bookings.companyId, companyId) : and(eq(bookings.providerId, providerId), isNull(bookings.companyId)))
       .orderBy(desc(bookings.createdAt));
 
     return results.map(result => ({
       ...result.bookings,
-      service: currentLocation(result.services!),
+      service: serviceLocation(result.services!, result.addresses),
       seeker: result.users!,
       provider: { id: providerId } as User,
     }));
@@ -575,6 +582,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(bookings)
       .leftJoin(services, eq(bookings.serviceId, services.id))
+      .leftJoin(addresses, eq(services.addressId, addresses.id))
       .leftJoin(users, eq(bookings.seekerId, users.id))
       .where(eq(bookings.id, id));
 
@@ -582,7 +590,7 @@ export class DatabaseStorage implements IStorage {
 
     return {
       ...result.bookings,
-      service: currentLocation(result.services!),
+      service: serviceLocation(result.services!, result.addresses),
       seeker: result.users!,
       provider: { id: result.bookings.providerId } as User,
     };

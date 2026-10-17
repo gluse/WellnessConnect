@@ -75,15 +75,15 @@ try {
   await fails(() => geocodeRegisteredAddress(address, google([{ ...good, geometry: { ...good.geometry, location: { lat: 999, lng: 0 } } }])), 503);
 
   globalThis.React = React;
-  const { default: LocationFields } = await import("../client/src/components/provider/service-location-fields.tsx");
-  const { createServiceDraft } = await import("../client/src/components/provider/service-draft.ts");
+  const { default: LocationFields } = await import("../client/src/components/address-location-fields.tsx");
+  const { createLocationDraft } = await import("../client/src/components/address-location-fields.tsx");
   const { act, create } = renderer;
   let state, component, requests = 0, release, signal;
   globalThis.fetch = async (_url, options) => {
     requests++; signal = options.signal;
     return new Promise(resolve => { release = () => resolve(new Response(JSON.stringify({ ...saved, locationExpiresAt: new Date(Date.now() + 100000), reused: true }))); });
   };
-  function Harness() { const [draft, setDraft] = React.useState(createServiceDraft()); state = draft; return React.createElement(LocationFields, { newService: draft, setNewService: setDraft }); }
+  function Harness() { const [draft, setDraft] = React.useState(createLocationDraft()); state = draft; return React.createElement(LocationFields, { newService: draft, setNewService: setDraft }); }
   const field = id => component.root.findAllByType("input").find(node => node.props.id === id);
   const verify = () => component.root.findAllByType("button").find(node => node.props["data-testid"] === "button-verify-address");
   const change = async (id, value) => act(async () => field(id).props.onChange({ target: { value } }));

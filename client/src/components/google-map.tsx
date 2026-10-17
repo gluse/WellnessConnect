@@ -1,9 +1,10 @@
 /// <reference types="@types/google.maps" />
 import { useEffect, useRef, useState } from "react";
 import { loadMapLibraries } from "@/lib/google-maps";
+import { createMapPreview } from "@/lib/map-preview";
 import type { ServiceWithProvider } from "@shared/schema";
-import { getProviderName } from "@shared/provider";
 import { currentLocation } from "@shared/locations";
+import { useTranslation } from "react-i18next";
 
 interface GoogleMapProps {
   services: ServiceWithProvider[];
@@ -11,13 +12,8 @@ interface GoogleMapProps {
   onServiceSelect?: (service: ServiceWithProvider) => void;
 }
 
-function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
 export default function GoogleMap({ services, userLocation, onServiceSelect }: GoogleMapProps) {
+  const { t } = useTranslation();
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
@@ -26,6 +22,8 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
   const [mapReady, setMapReady] = useState(false);
   const latestLocation = useRef(userLocation);
   latestLocation.current = userLocation;
+  const latestSelect = useRef(onServiceSelect);
+  latestSelect.current = onServiceSelect;
 
   // Initialize map
   useEffect(() => {
@@ -35,7 +33,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
     const authFailure = () => {
       if (!cancelled) {
         console.error("Google Maps authentication failed. Check Maps JavaScript API access and the browser key's allowed website origins.");
-        setError("The map is unavailable. Please try again later.");
+        setError("mapPreview.unavailable");
         setIsLoading(false);
       }
       previousAuthFailure?.();
@@ -58,7 +56,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
     }).catch(err => {
       if (cancelled) return;
       console.error('Failed to load Google Maps:', err);
-      setError("The map could not load. Check your connection and try again.");
+      setError("mapPreview.loadError");
       setIsLoading(false);
     });
 
@@ -72,11 +70,35 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
 
   // Add markers
   useEffect(() => {
-    if (!googleMapRef.current || !mapReady) return;
+    if (!googleMapRef.current || !mapReady || error) return;
+    const map = googleMapRef.current;
 
     // Clear existing markers
-    markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
+
+    // Reuse one preview; hovering must not pan the map or steal browser focus.
+    const preview = new google.maps.InfoWindow({ disableAutoPan: true, maxWidth: 300, headerDisabled: true });
+    let userInfoWindow: google.maps.InfoWindow | undefined;
+    let openTimer: number | undefined;
+    let closeTimer: number | undefined;
+    let activeMarker: google.maps.Marker | null = null;
+    let hoveredMarker: google.maps.Marker | null = null;
+    let activeCard: HTMLElement | null = null;
+    const clearTimers = () => { window.clearTimeout(openTimer); window.clearTimeout(closeTimer); openTimer = closeTimer = undefined; };
+    const closePreview = () => {
+      clearTimers(); preview.close(); preview.setContent(""); activeMarker = hoveredMarker = null; activeCard = null;
+    };
+    const dismiss = () => { closePreview(); userInfoWindow?.close(); };
+    const scheduleClose = () => {
+      window.clearTimeout(closeTimer);
+      closeTimer = window.setTimeout(() => {
+        closeTimer = undefined;
+        if (!activeCard?.contains(document.activeElement)) closePreview();
+      }, 250);
+    };
+    const onEscape = (event: KeyboardEvent) => { if (event.key === "Escape") dismiss(); };
+    document.addEventListener("keydown", onEscape);
+    const dismissListeners = ["click", "dragstart", "zoom_changed"].map(event => map.addListener(event, dismiss));
 
     const bounds = new google.maps.LatLngBounds();
     let hasMarkers = false;
@@ -94,15 +116,17 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
           strokeColor: '#ffffff',
           strokeWeight: 3,
         },
-        title: 'Your Location',
+        title: t("mapPreview.yourLocation"),
       });
 
-      const userInfoWindow = new google.maps.InfoWindow({
-        content: '<div style="padding: 8px;"><b>Your Location</b></div>',
-      });
+      const locationLabel = document.createElement("p");
+      locationLabel.className = "p-2 font-semibold";
+      locationLabel.textContent = t("mapPreview.yourLocation");
+      userInfoWindow = new google.maps.InfoWindow({ content: locationLabel });
 
       userMarker.addListener('click', () => {
-        userInfoWindow.open(googleMapRef.current, userMarker);
+        dismiss();
+        userInfoWindow?.open({ map, anchor: userMarker, shouldFocus: false });
       });
 
       markersRef.current.push(userMarker);
@@ -125,29 +149,36 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
           title: service.name,
         });
 
-        const providerName = service.provider
-          ? getProviderName(service.provider)
-          : 'Unknown Provider';
+        const selectService = () => { closePreview(); latestSelect.current?.(service); };
+        const showPreview = () => {
+          clearTimers();
+          userInfoWindow?.close();
+          const card = createMapPreview({ name: service.name, description: service.description,
+            fallback: t("mapPreview.noDescription"), detailsLabel: t("mapPreview.viewDetails"), closeLabel: t("mapPreview.close"),
+            onDetails: latestSelect.current ? selectService : undefined, onClose: closePreview });
+          card.addEventListener("mouseenter", () => { if (activeCard === card) clearTimers(); });
+          card.addEventListener("mouseleave", () => { if (activeCard === card) scheduleClose(); });
+          card.addEventListener("focusin", () => { if (activeCard === card) clearTimers(); });
+          card.addEventListener("focusout", event => { if (activeCard === card && !card.contains(event.relatedTarget as Node | null)) scheduleClose(); });
+          preview.setContent(card);
+          preview.setOptions({ ariaLabel: service.name });
+          activeCard = card; activeMarker = marker;
+          preview.open({ map, anchor: marker, shouldFocus: false });
+        };
 
-        const infoWindowContent = `
-          <div style="padding: 12px; min-width: 200px;">
-            <h3 style="font-weight: bold; margin: 0 0 8px 0; font-size: 16px;">${escapeHtml(service.name)}</h3>
-            <p style="margin: 0 0 4px 0; color: #666; font-size: 14px;">${escapeHtml(providerName)}</p>
-            ${service.employee?.name ? `<p style="margin: 0 0 4px 0; color: #666; font-size: 14px;">With ${escapeHtml(service.employee.name)}</p>` : ''}
-            <p style="margin: 0 0 4px 0; font-weight: bold; color: #10b981; font-size: 14px;">$${Number(service.price).toFixed(2)}</p>
-            ${service.distance ? `<p style="margin: 0; color: #999; font-size: 12px;">${Number(service.distance).toFixed(1)} km away</p>` : ''}
-          </div>
-        `;
-
-        const infoWindow = new google.maps.InfoWindow({
-          content: infoWindowContent,
+        marker.addListener("mouseover", () => {
+          clearTimers(); hoveredMarker = marker;
+          if (activeMarker !== marker) openTimer = window.setTimeout(showPreview, 150);
+        });
+        marker.addListener("mouseout", () => {
+          if (hoveredMarker !== marker) return;
+          hoveredMarker = null;
+          window.clearTimeout(openTimer); openTimer = undefined;
+          scheduleClose();
         });
 
         marker.addListener('click', () => {
-          infoWindow.open(googleMapRef.current, marker);
-          if (onServiceSelect) {
-            onServiceSelect(service);
-          }
+          if (latestSelect.current) selectService(); else showPreview();
         });
 
         markersRef.current.push(marker);
@@ -165,12 +196,19 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
           googleMapRef.current.setZoom(15);
         }
       });
+      dismissListeners.push(listener);
     }
 
     return () => {
-      markersRef.current.forEach(marker => marker.setMap(null));
+      dismiss();
+      document.removeEventListener("keydown", onEscape);
+      dismissListeners.forEach(listener => listener.remove());
+      markersRef.current.forEach(marker => { google.maps.event.clearInstanceListeners(marker); marker.setMap(null); });
+      markersRef.current = [];
+      google.maps.event.clearInstanceListeners(preview);
+      if (userInfoWindow) google.maps.event.clearInstanceListeners(userInfoWindow);
     };
-  }, [services, userLocation, onServiceSelect, mapReady]);
+  }, [services, userLocation, mapReady, error, t]);
 
   return (
     <div className="relative w-full h-full rounded-xl overflow-hidden" style={{ minHeight: "400px" }}>
@@ -178,8 +216,8 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
       {(isLoading || error) && <div className="absolute inset-0 bg-neutral-100 flex items-center justify-center">
         <div className="text-center p-6" role={error ? "alert" : "status"}>
           {isLoading && !error && <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />}
-          <p className="text-neutral-600">{error || "Loading map…"}</p>
-          {error && <button type="button" className="mt-3 text-primary underline" onClick={() => window.location.reload()}>Reload page</button>}
+          <p className="text-neutral-600">{t(error || "mapPreview.loading")}</p>
+          {error && <button type="button" className="mt-3 text-primary underline" onClick={() => window.location.reload()}>{t("mapPreview.reload")}</button>}
         </div>
       </div>}
     </div>

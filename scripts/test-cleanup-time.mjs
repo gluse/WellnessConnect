@@ -12,7 +12,7 @@ import { insertServiceSchema } from "../shared/schema.ts";
 import { createServiceDraft } from "../client/src/components/provider/service-draft.ts";
 
 const date = "2099-06-04", at = time => new Date(`${date}T${time}:00Z`);
-const service = { id: 1, providerId: "provider", companyId: null, employeeId: null, name: "Massage", price: "30", category: "education", serviceType: "one_to_one", duration: 30, cleanupTime: 15, isActive: true, companyActive: true, address: "Riga, Latvia", latitude: 56.95, longitude: 24.1, locationSource: "manual" };
+const service = { id: 1, providerId: "provider", companyId: null, employeeId: null, name: "Massage", price: "30", category: "education", serviceType: "one_to_one", duration: 30, cleanupTime: 15, isActive: true, companyActive: true, addressId: 7, address: "Riga, Latvia", latitude: 56.95, longitude: 24.1, locationSource: "manual" };
 const schedule = { serviceId: null, scheduleType: "specific", specificDate: at("00:00"), startTime: "09:00", endTime: "12:00", timezone: "UTC", breaks: [], isActive: true };
 const busy = { id: 1, scheduledDate: at("09:00"), bookingDuration: 30, bookingCleanupTime: 15, status: "confirmed" };
 const slots = (overrides = {}) => bookableSlots({ service, schedules: [schedule], bookings: [], date, timezone: "UTC", now: new Date("2099-01-01"), ...overrides });
@@ -61,6 +61,7 @@ for (const locale of ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de"
 await i18next.use(initReactI18next).init({ lng: "en", resources });
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
 const { default: ServiceEditor } = await import("../client/src/components/provider/service-editor.tsx");
+queryClient.setQueryData(["/api/addresses"], [{ id: 7, address: service.address }]);
 queryClient.setQueryData(["/api/categories"], [{ key: "education", name: "Education", icon: "", searchKeywords: "" }]);
 let writes = [], failSave = false;
 globalThis.fetch = async (url, options = {}) => {

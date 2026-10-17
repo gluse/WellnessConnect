@@ -98,6 +98,21 @@ moving tasks between these files.
   current green circle markers with recognizable map location icons.
   **Status:** Completed
 
+- [x] **TASK-002 — Show a service preview card on hover.** Show a compact card
+  with the service name and a simplified description when hovering over a
+  service marker, similar to Booking.com's map previews.
+  **Status:** Completed.
+  - Hover a service pin for a compact name and plain-text description excerpt.
+  - Keep one preview open at a time, without panning the map or taking focus.
+  - Move into the preview to read it or select View details; clicking a pin
+    continues to open service details directly for touch and keyboard users.
+  - Dismiss on Escape, the close button, map click/drag/zoom, filtering, or unmount.
+  - Translate preview labels and map messages across all 11 supported languages.
+  - Verified hover timing, safe text rendering, selection callbacks, translations,
+    location retention, and timer/listener cleanup with `npm run test:maps`, guest
+    search regressions, `npm run check`, and `npm run build`.
+  - Manual desktop/touch layout was not verified during implementation; no browser session was available.
+
 ## Ratings
 - [x] **TASK-007 — When service is completed.** Ask customer to review service quality based on 5 star principle. Allow option to add comment. If user rates less than 3 stars, make comment mandatory.
   **Status:** Completed.

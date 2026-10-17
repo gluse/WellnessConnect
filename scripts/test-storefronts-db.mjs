@@ -7,6 +7,7 @@ import { storage } from "../server/storage.ts";
 import { canReadImage } from "../server/imageStorage.ts";
 import { workspaceContext } from "../server/companyAccess.ts";
 import { loadDirectorySubscriptions } from "../server/admin-directory.ts";
+import { setupAddressFixtures } from "./fixtures/addresses.mjs";
 import { setupStorefrontFixtures } from "./fixtures/storefronts.mjs";
 
 pool.options.max = 1;
@@ -19,6 +20,7 @@ try {
     await pool.query(`CREATE TEMP TABLE ${table} (LIKE public.${table} INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)`);
   }
   await setupStorefrontFixtures(pool.query.bind(pool));
+  await setupAddressFixtures(pool.query.bind(pool));
   await setupStorefrontFixtures(pool.query.bind(pool));
   for (const table of ["provider_subscriptions", "storefronts"]) {
     const row = (await pool.query(`SELECT relrowsecurity AS rls,

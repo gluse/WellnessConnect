@@ -25,7 +25,7 @@ const permissions = { manageServices: true, manageSchedules: true, manageBooking
 const personal = { company: null, membership: null, workspaces: [{ id: 2, name: "Company workspace", role: "admin" }], permissions };
 const company = { ...personal, company: { id: 2, name: "Company workspace", isActive: true }, membership: { role: "admin" }, permissions: { ...permissions, manageTeam: true } };
 const viewer = { ...company, membership: { role: "viewer", employeeId: 3 }, permissions: { manageServices: false, manageSchedules: false, manageBookings: false, manageTeam: false, isOwner: false, readAll: false } };
-const service = (id, name, isActive) => ({ id, name, isActive, description: "Existing description", category: "health_wellness", serviceType: "one_to_one", price: "25.00", duration: 45, maxCapacity: 1, ageGroups: ["adults"], targetGender: "both", instantBooking: false, advancePaymentPercent: 30, address: "Riga", latitude: 56.95, longitude: 24.1, imageUrl: "/private/image", externalUrl: "https://example.com/service", employeeId: null });
+const service = (id, name, isActive) => ({ id, name, isActive, description: "Existing description", category: "health_wellness", serviceType: "one_to_one", price: "25.00", duration: 45, maxCapacity: 1, ageGroups: ["adults"], targetGender: "both", instantBooking: false, advancePaymentPercent: 30, addressId: 7, address: "Riga", latitude: 56.95, longitude: 24.1, imageUrl: "/private/image", externalUrl: "https://example.com/service", employeeId: null });
 const personalServices = [service(1, "Personal published offer", true), service(4, "Personal inactive offer", false)];
 const companyServices = [service(2, "Company offer", true)];
 let context = personal, requests = [], component, location, failSave = false, holdSave = false, resolveSave, failWorkspace = false;
@@ -35,6 +35,7 @@ globalThis.fetch = async (url, options = {}) => {
   requests.push({ url, method: options.method ?? "GET", body: options.body ? JSON.parse(options.body) : undefined });
   const body = options.body ? JSON.parse(options.body) : undefined;
   const records = context.company ? companyServices : personalServices;
+  if (url === "/api/addresses") return respond([{ id: 7, address: "Brīvības iela 10, Rīga, Latvia" }]);
   if (url === "/api/auth/user") return respond(user);
   if (url === "/api/company/context" && options.method === "POST") {
     if (failWorkspace) return respond({ message: "Try again" }, 500);
@@ -110,7 +111,8 @@ assert.equal(saved.isActive, false);
 assert.equal(saved.advancePaymentPercent, 30);
 assert.equal(saved.imageUrl, "/private/image");
 await visit("/my-services/services/new");
-for (const [id, value] of [["serviceName", "New offer"], ["price", "40"], ["address", "Brīvības iela 10, Rīga, Latvia"], ["latitude", "56.95"], ["longitude", "24.1"]]) await act(async () => input(id).props.onChange({ target: { value } }));
+for (const [id, value] of [["serviceName", "New offer"], ["price", "40"]]) await act(async () => input(id).props.onChange({ target: { value } }));
+await act(async () => component.root.findByProps({ id: "service-address" }).props.onChange({ target: { value: "7" } }));
 await click("button-save-inactive-service");
 assert.ok(component.root.findAllByProps({ role: "alert" }).some(node => node.children.includes("Choose a category.")));
 assert.ok(!requests.some(request => request.url === "/api/services" && request.method === "POST"));

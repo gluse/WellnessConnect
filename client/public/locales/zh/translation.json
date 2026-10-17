@@ -296,5 +296,15 @@
     "proDisabled": "未启用",
     "companyProEnabled": "公司Pro已启用",
     "companyProDisabled": "公司Pro未启用"
+  },
+  "mapPreview": {
+    "noDescription": "打开此服务以查看详细信息。",
+    "viewDetails": "查看详情",
+    "close": "关闭预览",
+    "yourLocation": "您的位置",
+    "loading": "正在加载地图…",
+    "unavailable": "地图暂时不可用，请稍后重试。",
+    "loadError": "无法加载地图，请检查网络连接后重试。",
+    "reload": "重新加载页面"
   }
 }

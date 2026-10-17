@@ -23,7 +23,7 @@ export default function MyServices() {
   return <ProviderLayout />;
 }
 
-const workspaceQueries = (key: unknown) => /^\/api\/(provider|company\/team|services\/provider|bookings\/provider|availability\/provider)/.test(String(key));
+const workspaceQueries = (key: unknown) => /^\/api\/(addresses|provider|company\/team|services\/provider|bookings\/provider|availability\/provider)/.test(String(key));
 
 function ProviderLayout() {
   const workspace = useProviderWorkspace();

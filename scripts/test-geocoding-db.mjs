@@ -2,8 +2,10 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import "dotenv/config";
+import { setupAddressFixtures } from "./fixtures/addresses.mjs";
 import { setupStorefrontFixtures } from "./fixtures/storefronts.mjs";
 import { pool } from "../server/db.ts";
+import { addressStore } from "../server/addresses.ts";
 import { storage } from "../server/storage.ts";
 import { locationStore, registerLocation, resolveServiceLocation, addressKey } from "../server/registeredLocations.ts";
 
@@ -22,17 +24,20 @@ try {
     await pool.query(`CREATE TEMP TABLE ${table} (LIKE public.${table} INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)`);
   }
   await setupStorefrontFixtures(pool.query.bind(pool));
+  await setupAddressFixtures(pool.query.bind(pool));
+  await pool.query("CREATE TEMP SEQUENCE address_fixture_ids START 100; ALTER TABLE pg_temp.addresses ALTER COLUMN id SET DEFAULT nextval('pg_temp.address_fixture_ids')");
   await pool.query("CREATE TEMP SEQUENCE service_fixture_ids START 100; ALTER TABLE pg_temp.services ALTER COLUMN id SET DEFAULT nextval('pg_temp.service_fixture_ids')");
   await pool.query("INSERT INTO pg_temp.users(id) VALUES ('location-owner'),('other-owner')");
   await pool.query("INSERT INTO pg_temp.companies(id,name,owner_id,provider_id) VALUES(1,'Fixture company','location-owner','location-owner')");
   const address = "Brīvības iela 10, Rīga, Latvia";
   const owner = { providerId: "location-owner" };
   const base = { providerId: owner.providerId, name: "Fixture service", category: "education", serviceType: "one_to_one", price: "10", duration: 30, address, latitude: 56.95, longitude: 24.1 };
-  const manual = await storage.createService({ ...base, locationSource: "manual" });
+  const manualAddress = await addressStore.save({ ...base, locationSource: "manual", locationKey: null, locationPlaceId: null, locationExpiresAt: null, locationAddressSource: "user" }, owner);
+  const manual = await storage.createService({ ...base, addressId: manualAddress.id });
   assert.equal((await registerLocation(address, owner, locationStore, () => { throw new Error("Manual result should be reused"); })).locationSource, "manual");
   assert.equal(await locationStore.manual(address, { providerId: "other-owner" }), undefined, "Do not reuse another provider's manual data");
   assert.equal(await locationStore.manual(address, { ...owner, companyId: 1 }), undefined, "Company and personal locations remain separate");
-  await storage.updateService(manual.id, { locationSource: "legacy" });
+  await pool.query("UPDATE pg_temp.addresses SET location_source='legacy' WHERE id=$1", [manualAddress.id]);
   assert.equal(await locationStore.manual(address, owner), undefined, "Unverified legacy records must not seed reuse");
   let calls = 0;
   const lookup = async () => { calls++; return { latitude: 56.951234, longitude: 24.123456, placeId: "fixture-place" }; };
@@ -49,11 +54,12 @@ try {
   assert.ok(Math.abs(persisted.latitude - input.latitude) <= 0.00001, "Latitude round-trip precision must be supported");
   assert.ok(Math.abs(persisted.longitude - input.longitude) <= 0.00001, "Longitude round-trip precision must be supported");
   const metadata = await resolveServiceLocation(input, verified);
-  const google = await storage.createService({ ...input, ...metadata });
+  const googleAddress = await addressStore.save({ ...input, ...metadata }, owner);
+  const google = await storage.createService({ ...input, addressId: googleAddress.id });
   const copy = await storage.copyService(google.id, owner.providerId);
   assert.equal(copy.locationExpiresAt.getTime(), google.locationExpiresAt.getTime());
   assert.equal(copy.locationSource, "google");
-  await pool.query("UPDATE pg_temp.services SET location_expires_at = now() - interval '1 second' WHERE location_source = 'google'");
+  await pool.query("UPDATE pg_temp.addresses SET location_expires_at = now() - interval '1 second' WHERE location_source = 'google'");
   await pool.query("UPDATE pg_temp.geocoding_cache SET expires_at = now() - interval '1 second'");
   assert.equal((await storage.getServiceById(google.id)).latitude, null);
   assert.equal((await storage.getServicesByProvider(owner.providerId)).find(row => row.id === google.id).latitude, null);
@@ -61,15 +67,15 @@ try {
   assert.ok(!(await storage.searchServices({ latitude: 56.95, longitude: 24.1, radius: 100 })).some(row => row.id === google.id), "Expired locations cannot participate in distance filtering");
   const expiredCopy = await storage.copyService(google.id, owner.providerId);
   assert.equal(expiredCopy.latitude, null); assert.equal(expiredCopy.longitude, null);
-  await pool.query("UPDATE pg_temp.services SET location_address_source = 'google' WHERE id = $1", [copy.id]);
+  await pool.query("UPDATE pg_temp.addresses SET location_address_source = 'google' WHERE id = $1", [googleAddress.id]);
   assert.equal((await storage.getServiceById(copy.id)).address, null);
   // Execute the exact migration cleanup body against temp tables, never public data.
-  const migration = await readFile(new URL("../migrations/0004_registered_locations.sql", import.meta.url), "utf8");
+  const migration = await readFile(new URL("../migrations/0008_account_addresses.sql", import.meta.url), "utf8");
   const body = migration.match(/LANGUAGE sql SET search_path = pg_catalog AS \$\$([\s\S]*?)\$\$/)[1].replaceAll("public.", "pg_temp.");
   await pool.query(body);
-  const purged = (await pool.query("SELECT latitude,longitude,address FROM pg_temp.services WHERE id = $1", [google.id])).rows[0];
-  assert.equal(purged.latitude, null); assert.equal(purged.longitude, null); assert.equal(purged.address, address, "User-entered address survives coordinate expiry");
-  assert.equal((await pool.query("SELECT address FROM pg_temp.services WHERE id = $1", [copy.id])).rows[0].address, null, "Legacy Google-formatted addresses are not retained after expiry");
+  const purged = (await pool.query("SELECT latitude,longitude,address FROM pg_temp.addresses WHERE id = $1", [googleAddress.id])).rows[0];
+  assert.equal(purged.latitude, null); assert.equal(purged.longitude, null); assert.equal(purged.address, null, "All services share the address provenance and cleanup");
+  assert.equal((await pool.query("SELECT address FROM pg_temp.addresses WHERE id = $1", [googleAddress.id])).rows[0].address, null, "Legacy Google-formatted addresses are not retained after expiry");
   const retained = (await pool.query("SELECT latitude,longitude,place_id FROM pg_temp.geocoding_cache WHERE address_key = $1", [addressKey(address)])).rows[0];
   assert.deepEqual(retained, { latitude: null, longitude: null, place_id: "fixture-place" });
   await registerLocation(address, owner, locationStore, lookup); assert.equal(calls, 2, "Refresh only on an explicit verification after expiry");

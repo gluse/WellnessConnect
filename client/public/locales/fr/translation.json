@@ -296,5 +296,15 @@
     "proDisabled": "Non activé",
     "companyProEnabled": "Pro entreprise activé",
     "companyProDisabled": "Pro entreprise non activé"
+  },
+  "mapPreview": {
+    "noDescription": "Ouvrez ce service pour en savoir plus.",
+    "viewDetails": "Voir les détails",
+    "close": "Fermer l’aperçu",
+    "yourLocation": "Votre position",
+    "loading": "Chargement de la carte…",
+    "unavailable": "La carte est indisponible. Veuillez réessayer plus tard.",
+    "loadError": "Impossible de charger la carte. Vérifiez votre connexion et réessayez.",
+    "reload": "Recharger la page"
   }
 }

@@ -296,5 +296,15 @@
     "proDisabled": "غير مفعّل",
     "companyProEnabled": "Pro الشركة مفعّل",
     "companyProDisabled": "Pro الشركة غير مفعّل"
+  },
+  "mapPreview": {
+    "noDescription": "افتح هذه الخدمة للاطلاع على مزيد من التفاصيل.",
+    "viewDetails": "عرض التفاصيل",
+    "close": "إغلاق المعاينة",
+    "yourLocation": "موقعك",
+    "loading": "جارٍ تحميل الخريطة…",
+    "unavailable": "الخريطة غير متاحة. حاول لاحقًا.",
+    "loadError": "تعذر تحميل الخريطة. تحقق من اتصالك وحاول مجددًا.",
+    "reload": "إعادة تحميل الصفحة"
   }
 }

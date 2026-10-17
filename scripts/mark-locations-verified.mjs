@@ -16,12 +16,12 @@ let connection;
 try {
   connection = await pool.connect();
   await connection.query("BEGIN");
-  const { rows } = await connection.query("SELECT id,address,latitude,longitude FROM public.services WHERE location_source = 'legacy' AND latitude IS NOT NULL AND longitude IS NOT NULL FOR UPDATE");
+  const { rows } = await connection.query("SELECT id,address,latitude,longitude FROM public.addresses WHERE location_source = 'legacy' AND latitude IS NOT NULL AND longitude IS NOT NULL FOR UPDATE");
   const grouped = new Map();
   for (const row of rows) {
     if (!row.address || !validCoordinates(row.latitude, row.longitude)) continue;
     const key = createHash("sha256").update(normalizeAddress(row.address)).digest("hex");
-    await connection.query("UPDATE public.services SET location_source = 'google', location_key = $2, location_expires_at = $3, location_address_source = 'google' WHERE id = $1", [row.id, key, expiresAt]);
+    await connection.query("UPDATE public.addresses SET location_source = 'google', location_key = $2, location_expires_at = $3, location_address_source = 'google' WHERE id = $1", [row.id, key, expiresAt]);
     const group = grouped.get(key) || [];
     group.push(row); grouped.set(key, group);
   }

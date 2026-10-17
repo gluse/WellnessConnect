@@ -33,6 +33,8 @@ See the [README](../README.md) for local setup, commands, and deployment, and th
 - **Company Invitations**: Email-bound invitations with expiry and revocation
 - **Employees**: Optional public names and links to team-member logins
 - **Services**: Categorized offerings with pricing and availability
+- **Addresses**: Saved personal/company workspace locations, selected by services
+  through `address_id`; shared coordinates and verification metadata are stored once
 - **Provider Subscriptions**: Individual or company Pro access with a UTC expiry and last administrator update
 - **Storefronts**: Branded public provider pages gated by active Pro and publication status
 - **Categories**: Shared database catalog with stable keys referenced by services
@@ -93,7 +95,9 @@ See the [README](../README.md) for local setup, commands, and deployment, and th
 - **Distance Calculation**: Haversine formula for accurate distance measurements
 - **Map View**: Interactive Google Maps displaying service locations
 - **Location Input**: Editable text field for typing addresses or using current location
-- **Security**: HTML escaping for all user-generated content in map popups
+- **Service Previews**: One hover card with a short description, delayed dismissal,
+  and a details action; marker clicks retain direct service selection on touch/keyboard
+- **Security**: Preview content uses DOM text nodes, keeping user text out of HTML
 - **API Key Management**: Secure backend endpoint for Google Maps API key delivery
 - **API Requirements**: Google Maps API key must have Geocoding API enabled and proper restrictions configured
 

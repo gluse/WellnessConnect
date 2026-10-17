@@ -8,12 +8,6 @@ and verification.
 Completed tasks are archived in [TASKS_COMPLETED.md](TASKS_COMPLETED.md).
 Keep tasks awaiting testing or external setup here, and preserve task IDs when archiving.
 
-## Map view
-
-- [ ] **TASK-002 — Show a service preview card on hover.** Show a compact card
-  with the service name and a simplified description when hovering over a
-  service marker, similar to Booking.com's map previews.
-
 ## Authentication
 
 - [ ] **TASK-003 — Support social sign-in.** Add or complete authentication

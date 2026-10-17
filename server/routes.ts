@@ -2,7 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage, BookingConflictError } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertServiceSchema, insertBookingSchema, insertAvailabilitySchema, providerProfileSchema, employeeSchema, accountDetailsSchema } from "@shared/schema";
+import { insertServiceSchema, insertBookingSchema, insertAvailabilitySchema, providerProfileSchema, employeeSchema, accountDetailsSchema, addressInputSchema, type AddressLocation } from "@shared/schema";
+import { addressStore } from "./addresses";
 import { supabaseAdmin } from "./supabase";
 import { z } from "zod";
 import { createImageUpload, validateOwnedImage, validateServiceImage, canReadImage, downloadImage, ImageStorageError } from "./imageStorage";
@@ -74,7 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
   // Coordinate retention is managed explicitly, not by intermediary HTTP caches.
-  app.use(["/api/services", "/api/bookings", "/api/geocode"], (_req, res, next) => {
+  app.use(["/api/services", "/api/bookings", "/api/geocode", "/api/addresses"], (_req, res, next) => {
     res.set("Cache-Control", "no-store");
     next();
   });
@@ -181,6 +182,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) { apiFailure(error, res, "Address lookup is temporarily unavailable."); }
   });
 
+  app.get('/api/addresses', isAuthenticated, async (req, res) => {
+    try {
+      res.json(await addressStore.list(scope(req, "manageServices")));
+    } catch (error) { apiFailure(error, res, "Unable to load saved addresses."); }
+  });
+  const saveAddress: import("express").RequestHandler = async (req, res) => {
+    try {
+      const owner = scope(req, "manageServices");
+      const id = req.params.id ? z.coerce.number().int().positive().parse(req.params.id) : undefined;
+      const existing = id == null ? undefined : await addressStore.get(id, owner);
+      const input = addressInputSchema.parse(req.body);
+      const metadata = await resolveServiceLocation(input, req.body, existing);
+      res.status(id == null ? 201 : 200).json(await addressStore.save({ ...input, ...metadata } as AddressLocation, owner, id));
+    } catch (error) { apiFailure(error, res, "Unable to save address."); }
+  };
+  app.post('/api/addresses', isAuthenticated, saveAddress);
+  app.patch('/api/addresses/:id', isAuthenticated, saveAddress);
+  app.delete('/api/addresses/:id', isAuthenticated, async (req, res) => {
+    try {
+      const owner = scope(req, "manageServices");
+      await addressStore.remove(z.coerce.number().int().positive().parse(req.params.id), owner);
+      res.sendStatus(204);
+    } catch (error) {
+      if (((error as any)?.cause ?? error)?.code === "23503") return void res.status(409).json({ message: "This address is used by services. Choose another address for those services before removing it." });
+      apiFailure(error, res, "Unable to remove address.");
+    }
+  });
+
   // User routes
   app.patch('/api/users/role', isAuthenticated, async (req: any, res) => {
     try {
@@ -280,6 +309,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  async function validateAddressAssignment(addressId: number, req: import("express").Request) {
+    const address = await addressStore.get(addressId, scope(req, "manageServices"));
+    if (!address.address?.trim()) throw new AccessError(400, "Update this saved address before using it for a service.");
+  }
+
   app.post('/api/services', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -290,7 +324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         companyId: current.companyId ?? null,
       });
       if (!(await categoryStore.list()).some(category => category.key === serviceData.category)) throw new CategoryError(400, "Choose an existing category.");
-      Object.assign(serviceData, await resolveServiceLocation(serviceData, req.body));
+      await validateAddressAssignment(serviceData.addressId, req);
       if (serviceData.imageUrl) await validateServiceImage(serviceData.imageUrl, userId, current.companyId);
       await validateEmployeeAssignment(serviceData.employeeId, req);
       
@@ -588,7 +622,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const updates = insertServiceSchema.omit({ providerId: true, companyId: true }).partial().parse(req.body);
       if (updates.category !== undefined && !(await categoryStore.list()).some(category => category.key === updates.category)) throw new CategoryError(400, "Choose an existing category.");
-      Object.assign(updates, await resolveServiceLocation(updates, req.body, service));
+      if (updates.addressId !== undefined) await validateAddressAssignment(updates.addressId, req);
       if (updates.imageUrl) await validateServiceImage(updates.imageUrl, userId, current.companyId);
       await validateEmployeeAssignment(updates.employeeId, req);
       if (updates.employeeId !== undefined && updates.employeeId !== service!.employeeId) {
