@@ -14,6 +14,7 @@ import MyServices from "@/pages/my-services";
 import MyBookings from "@/pages/my-bookings";
 import Administration from "@/pages/administration";
 import AppHeader from "@/components/app-header";
+import StorefrontPage from "@/pages/storefront";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/my-services/*?" component={MyServices} />
       <Route path="/dashboard"><Redirect to="/my-services" /></Route>
       <Route path="/search" component={Home} />
+      <Route path="/providers/:slug" component={StorefrontPage} />
       <Route path="/" component={isLoading || !isAuthenticated ? Landing : Home} />
       <Route component={NotFound} />
     </Switch>

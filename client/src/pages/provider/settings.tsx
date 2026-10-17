@@ -4,8 +4,11 @@ import { useProviderEmployees, useProviderWorkspace } from "@/hooks/use-provider
 import ProviderProfile from "@/components/provider-profile";
 import CompanyTeam from "@/components/company-team";
 import { Button } from "@/components/ui/button";
+import StorefrontEditor from "@/components/provider/storefront-editor";
+import { useTranslation } from "react-i18next";
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: context } = useProviderWorkspace();
   const employees = useProviderEmployees();
@@ -17,8 +20,10 @@ export default function SettingsPage() {
     <nav aria-label="Settings sections" className="flex flex-wrap gap-2">
       {context.permissions.manageServices && <Button asChild variant={location === "/my-services/settings" ? "default" : "outline"}><Link href="/my-services/settings" aria-current={location === "/my-services/settings" ? "page" : undefined}>Profile & employees</Link></Button>}
       {canViewTeam && <Button asChild variant={location === "/my-services/settings/team" ? "default" : "outline"}><Link href="/my-services/settings/team" aria-current={location === "/my-services/settings/team" ? "page" : undefined}>Team & access</Link></Button>}
+      {context.permissions.manageServices && <Button asChild variant={location === "/my-services/settings/storefront" ? "default" : "outline"}><Link href="/my-services/settings/storefront" aria-current={location === "/my-services/settings/storefront" ? "page" : undefined}>{t("storefront.title")}</Link></Button>}
     </nav>
     <Switch>
+      <Route path="/my-services/settings/storefront">{context.permissions.manageServices ? <StorefrontEditor context={context} /> : <p role="alert">{t("storefront.denied")}</p>}</Route>
       <Route path="/my-services/settings/team">{canViewTeam ? employees.isLoading ? <p role="status">Loading employees…</p> : employees.isError ? <p role="alert">Unable to load employees.</p> : <CompanyTeam context={context} employees={employees.data ?? []} /> : <p role="alert">Team settings are available to company managers.</p>}</Route>
       <Route path="/my-services/settings">{context.permissions.manageServices ? <ProviderProfile user={{ ...user, providerType: context.company ? "company" : "individual", companyName: context.company?.name ?? null }} /> : canViewTeam ? <p>Open Team & access to manage your company.</p> : <p role="alert">Your access level does not allow changing settings.</p>}</Route>
       <Route><p role="alert">Settings page not found.</p></Route>

@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface ImageUploaderProps {
   onComplete: (objectPath: string) => void;
@@ -10,6 +11,7 @@ interface ImageUploaderProps {
 }
 
 export function ImageUploader({ onComplete, buttonClassName, children }: ImageUploaderProps) {
+  const { t } = useTranslation();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const { toast } = useToast();
@@ -17,7 +19,7 @@ export function ImageUploader({ onComplete, buttonClassName, children }: ImageUp
     const file = event.target.files?.[0];
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size < 1 || file.size > 10 * 1024 * 1024) {
-      toast({ title: "Choose an image", description: "Use a JPEG, PNG, WebP, or GIF up to 10 MB.", variant: "destructive" });
+      toast({ title: t("storefront.imageChoose"), description: t("storefront.imageHelp"), variant: "destructive" });
       event.target.value = ""; return;
     }
     setBusy(true);
@@ -34,15 +36,15 @@ export function ImageUploader({ onComplete, buttonClassName, children }: ImageUp
       const confirmed = await apiRequest("PUT", "/api/service-images", { objectPath });
       const image = await confirmed.json();
       onComplete(image.objectPath);
-      toast({ title: "Image uploaded", description: "Your image is ready to use." });
+      toast({ title: t("storefront.imageUploaded"), description: t("storefront.imageReady") });
     } catch {
-      toast({ title: "Upload failed", description: "Unable to upload this image. Please try again.", variant: "destructive" });
+      toast({ title: t("storefront.imageUploadError"), variant: "destructive" });
     } finally {
       setBusy(false); if (input.current) input.current.value = "";
     }
   }
   return <>
-    <input ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={upload} aria-label="Choose a service image" />
-    <Button type="button" className={buttonClassName} disabled={busy} onClick={() => input.current?.click()} data-testid="button-upload-image">{busy ? "Uploading…" : children}</Button>
+    <input ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={upload} aria-label={t("storefront.imageChoose")} />
+    <Button type="button" className={buttonClassName} disabled={busy} onClick={() => input.current?.click()} data-testid="button-upload-image">{busy ? t("storefront.imageUploading") : children}</Button>
   </>;
 }

@@ -1,9 +1,17 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
 import React from "react";
 import renderer from "react-test-renderer";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Router, Route, Switch } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
+
+const translation = JSON.parse(await readFile(new URL("../client/public/locales/en/translation.json", import.meta.url), "utf8"));
+await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation } } });
+const activePro = { enabled: true, proUntil: new Date(Date.now() + 86400_000).toISOString() };
+const inactivePro = { enabled: false, proUntil: null };
 
 globalThis.React = React;
 globalThis.window = { location: { pathname: "/administration", search: "", hash: "" }, addEventListener() {}, removeEventListener() {} };
@@ -13,7 +21,7 @@ const { default: Administration } = await import("../client/src/pages/administra
 const { isAllowedAuthReturnTo } = await import("../shared/navigation.ts");
 const { act, create } = renderer;
 const user = { id: "support-user", email: "support@example.com" };
-const entry = { id: "registered-user", name: "Registered Customer", email: "customer@example.com", emailVerified: false, accountStatus: "active", companies: [{ id: 7, name: "Acme Wellness", role: "admin", isActive: true }], createdAt: "2026-10-01T10:00:00Z", lastSignInAt: null };
+const entry = { id: "registered-user", name: "Registered Customer", email: "customer@example.com", emailVerified: false, accountStatus: "active", proSubscription: activePro, companies: [{ id: 7, name: "Acme Wellness", role: "admin", isActive: true, proSubscription: activePro }], createdAt: "2026-10-01T10:00:00Z", lastSignInAt: null };
 let component, location, allowed = true, requests = [], userStatus = 200, accessStatus = 200, empty = false, hold = false, release;
 globalThis.fetch = async url => {
   requests.push(url);
@@ -72,6 +80,21 @@ assert.ok(component.root.findAllByType("td").some(node => node.children.includes
 assert.ok(component.root.findAllByType("p").some(node => node.children.includes("Acme Wellness")));
 assert.ok(component.root.findAllByType("th").some(node => node.children.includes("Account status")));
 assert.ok(component.root.findAllByType("th").some(node => node.children.includes("Email verification")));
+assert.ok(component.root.findAllByType("th").some(node => node.children.includes(translation.storefront.personalPro)));
+const statusText = id => component.root.findByProps({ "data-testid": id }).findAll(node => typeof node.type === "string")
+  .map(node => node.children.filter(child => typeof child === "string").join("")).join(" ");
+assert.ok(statusText(`personal-pro-${entry.id}`).includes(translation.storefront.proEnabled));
+assert.ok(statusText(`company-pro-${entry.id}-7`).includes(translation.storefront.companyProEnabled));
+assert.ok(statusText(`personal-pro-${entry.id}`).includes(translation.storefront.validUntil.split("{{date}}")[0]));
+entry.proSubscription = { enabled: false, proUntil: "2000-01-01T00:00:00.000Z" };
+await click("Refresh");
+assert.ok(statusText(`personal-pro-${entry.id}`).includes(translation.storefront.proDisabled));
+assert.ok(statusText(`company-pro-${entry.id}-7`).includes(translation.storefront.companyProEnabled), "Company Pro does not imply personal Pro");
+entry.companies[0].proSubscription = inactivePro;
+await click("Refresh");
+assert.ok(statusText(`company-pro-${entry.id}-7`).includes(translation.storefront.companyProDisabled));
+entry.proSubscription = activePro; entry.companies[0].proSubscription = activePro;
+await click("Refresh");
 await click("Next"); await flush();
 const beforeDraft = requests.length;
 for (const [id, value] of [["admin-user-search", " customer@ "], ["admin-company-search", "Acme"], ["admin-email-status", "pending"], ["admin-account-status", "active"], ["admin-registered-from", "2026-10-01"], ["admin-registered-to", "2026-10-15"], ["admin-sort-by", "name"], ["admin-sort-direction", "asc"]]) await edit(id, value);
@@ -144,11 +167,16 @@ const companyLinks = companyAffiliations([
 ]);
 assert.equal(companyLinks.get(entry.id).length, 2, "Owners and memberships must not duplicate a company");
 assert.equal(companyLinks.get("other-support-user")[0].role, "owner", "Include owners even without a membership");
-let companyRequests = 0, companyUnavailable = false;
+let companyRequests = 0, companyUnavailable = false, subscriptionRequests = 0, subscriptionUnavailable = false, requestedSubscriptionTargets;
 setupAdminRoutes({ get(path, ...handlers) { routes.push({ path, handlers }); } }, async () => {
   companyRequests++;
   if (companyUnavailable) throw new Error("Database unavailable");
   return companyLinks;
+}, async (userIds, companyIds) => {
+  subscriptionRequests++; requestedSubscriptionTargets = { userIds, companyIds };
+  if (subscriptionUnavailable) throw new Error("Private subscription connection details");
+  const rows = new Map([[`user:${entry.id}`, activePro], ["company:7", activePro]]);
+  return new Map(Array.from(rows).filter(([key]) => key.startsWith("user:") ? userIds.includes(key.slice(5)) : companyIds.includes(Number(key.slice(8)))));
 });
 const directory = routes.find(route => route.path === "/api/admin/users");
 assert.equal(directory.handlers[0], isAuthenticated);
@@ -162,7 +190,7 @@ rawUsers[0] = { ...rawUsers[0], id: entry.id, email: entry.email, created_at: en
 rawUsers[1] = { ...rawUsers[1], user_metadata: { full_name: "Alpha Verified" }, email_confirmed_at: entry.createdAt, banned_until: new Date(Date.now() + 86400_000).toISOString() };
 rawUsers[2] = { ...rawUsers[2], user_metadata: { name: "beta Verified" }, email_confirmed_at: entry.createdAt, banned_until: "2000-01-01T00:00:00Z" };
 rawUsers[3] = { ...rawUsers[3], deleted_at: entry.createdAt };
-rawUsers[1000] = { ...rawUsers[1000], id: "outside-user", email: "outside@example.com", user_metadata: { full_name: "Outside First Batch", requested_company_name: "Untrusted Organization" }, created_at: "2026-10-01T21:30:00Z" };
+rawUsers[1000] = { ...rawUsers[1000], id: "outside-user", email: "outside@example.com", user_metadata: { full_name: "Outside First Batch", requested_company_name: "Untrusted Organization", plan: "pro", proUntil: activePro.proUntil }, created_at: "2026-10-01T21:30:00Z" };
 globalThis.fetch = async (input, options = {}) => {
   const url = new URL(input);
   assert.equal(url.origin, process.env.SUPABASE_URL);
@@ -199,12 +227,16 @@ try {
   for (const query of [{ page: "0" }, { page: "-1" }, { page: "1.5" }, { page: "oops" }, { page: "100001" }, { page: ["1", "2"] }, { page: "1", perPage: "100000" }, { pageSize: "10000" }, { search: "x".repeat(201) }, { company: ["Acme", "Other"] }, { emailStatus: "anything" }, { accountStatus: "anything" }, { registeredFrom: "2026-02-30" }, { registeredFrom: "2026-10-02", registeredTo: "2026-10-01" }, { timezone: "Invalid/Zone" }, { sortBy: "password" }, { sortDirection: "anything" }]) assert.equal((await request("/api/admin/users", { query })).code, 400);
   assert.equal(sdkRequests.length, 0, "Invalid pagination must not call privileged APIs");
   assert.equal(companyRequests, 0);
+  assert.equal(subscriptionRequests, 0, "Denied or invalid requests must not read subscriptions");
   const first = await request("/api/admin/users");
   assert.equal(first.code, 200);
   assert.equal(first.headers["Cache-Control"], "no-store");
   assert.deepEqual(sdkRequests.slice(-2), [{ page: "1", size: "1000" }, { page: "2", size: "1000" }]);
   assert.equal(first.body.users.length, 50);
-  assert.deepEqual(first.body.users.find(item => item.id === entry.id), { ...entry, name: "New Registrant", companies: companyLinks.get(entry.id) });
+  assert.deepEqual(first.body.users.find(item => item.id === entry.id), { ...entry, name: "New Registrant", companies: companyLinks.get(entry.id).map(company => ({ ...company, proSubscription: company.id === 7 ? activePro : inactivePro })) });
+  assert.equal(subscriptionRequests, 1, "Batch subscription reads for the visible directory page");
+  assert.deepEqual(requestedSubscriptionTargets.userIds, first.body.users.map(user => user.id));
+  assert.deepEqual(requestedSubscriptionTargets.companyIds.sort(), [7,8]);
   assert.equal(first.body.hasNextPage, true);
   assert.equal(first.body.total, 1001);
   assert.equal(first.body.totalPages, 21);
@@ -216,6 +248,8 @@ try {
   const outside = await lookup({ search: "OUTSIDE@EXAMPLE.COM" });
   assert.deepEqual(outside.users.map(item => item.id), ["outside-user"], "Search must find users past the first Auth batch");
   assert.equal(outside.total, 1);
+  assert.deepEqual(outside.users[0].proSubscription, inactivePro, "Editable metadata and a company subscription never grant personal Pro");
+  assert.deepEqual(outside.users[0].companies[0].proSubscription, activePro);
   const organizations = await lookup({ company: "ACME" });
   assert.equal(organizations.total, 2);
   assert.equal(organizations.users.find(item => item.id === "outside-user").companies[0].role, "viewer");
@@ -250,6 +284,11 @@ try {
   failSecondBatch = false; companyUnavailable = true;
   assert.equal((await request("/api/admin/users")).code, 503, "Do not silently omit organization data on database failure");
   companyUnavailable = false;
+  subscriptionUnavailable = true;
+  const subscriptionFailure = await request("/api/admin/users");
+  assert.equal(subscriptionFailure.code, 503, "A subscription lookup failure must not mislabel users as Free");
+  assert.ok(!JSON.stringify(subscriptionFailure.body).includes("Private"));
+  subscriptionUnavailable = false;
   listUnavailable = true;
   const failure = await request("/api/admin/users");
   assert.equal(failure.code, 503);

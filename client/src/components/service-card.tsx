@@ -8,6 +8,7 @@ import { getProviderName } from "@shared/provider";
 import { currentLocation } from "@shared/locations";
 import { useCategories } from "@/hooks/use-categories";
 import { useTranslation } from "react-i18next";
+import { Link } from "wouter";
 
 interface ServiceCardProps {
   service: ServiceWithProvider;
@@ -49,7 +50,7 @@ export default function ServiceCard({ service, onBook, onViewDetails, onViewProv
             </div>
             
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              {onViewProvider ? <button type="button" onClick={onViewProvider}
+              {service.storefrontSlug ? <Link href={`/providers/${service.storefrontSlug}`} className="text-sm text-primary underline underline-offset-2" data-testid={`link-provider-${service.id}`}>{getProviderName(service.provider)}</Link> : onViewProvider ? <button type="button" onClick={onViewProvider}
                 data-testid={`button-provider-${service.id}`}
                 aria-label={t("catalog.view", { name: getProviderName(service.provider) })}
                 className="text-sm text-primary text-left underline underline-offset-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">

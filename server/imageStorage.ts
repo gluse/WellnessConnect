@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { and, eq } from "drizzle-orm";
-import { services, companies, type WorkspaceContext } from "@shared/schema";
+import { and, eq, or } from "drizzle-orm";
+import { services, companies, storefronts, providerSubscriptions, type WorkspaceContext } from "@shared/schema";
+import { publishedStorefrontConditions } from "./storefronts";
 import { db } from "./db";
 import { storageBucket, supabaseAdmin } from "./supabase";
 
@@ -71,11 +72,18 @@ export async function canReadImage(objectPath: string, userId?: string, workspac
   const key = objectKey(objectPath);
   const linked = await db.select({ service: services, company: companies }).from(services)
     .leftJoin(companies, eq(services.companyId, companies.id)).where(eq(services.imageUrl, objectPath));
-  if (!linked.length) return Boolean(userId && key.split("/")[0] === userId);
-  return linked.some(({ service, company }) => {
+  if (linked.some(({ service, company }) => {
     if (service.isActive && (!company || company.isActive)) return true;
     if (!userId) return false;
     return (service.companyId == null && service.providerId === userId)
       || (workspace?.company != null && workspace.company.id === service.companyId && (workspace.permissions.readAll || (workspace.membership?.employeeId != null && service.employeeId === workspace.membership.employeeId)));
-  });
+  })) return true;
+  const branded = await db.select({ userId: providerSubscriptions.userId, companyId: providerSubscriptions.companyId }).from(storefronts)
+    .innerJoin(providerSubscriptions, eq(storefronts.subscriptionId, providerSubscriptions.id))
+    .leftJoin(companies, eq(providerSubscriptions.companyId, companies.id))
+    .where(and(or(eq(storefronts.logoUrl, objectPath), eq(storefronts.coverUrl, objectPath)),
+      or(publishedStorefrontConditions(), userId ? eq(providerSubscriptions.userId, userId) : undefined,
+        workspace?.company && workspace.permissions.manageServices ? eq(providerSubscriptions.companyId, workspace.company.id) : undefined)));
+  if (branded.length) return true;
+  return !linked.length && Boolean(userId && key.split("/")[0] === userId);
 }

@@ -9,6 +9,7 @@ import { getProviderName } from "@shared/provider";
 import { currentLocation } from "@shared/locations";
 import { useTranslation } from "react-i18next";
 import { useCategories } from "@/hooks/use-categories";
+import { Link } from "wouter";
 
 interface ServiceDetailModalProps {
   service: ServiceWithProvider | null;
@@ -81,7 +82,7 @@ export default function ServiceDetailModal({ service, open, onClose, onBook, onV
               </span>
             </div>
             <div>
-              {onViewProvider ? <button type="button" onClick={onViewProvider}
+              {service.storefrontSlug ? <Link href={`/providers/${service.storefrontSlug}`} className="font-semibold text-primary underline underline-offset-2" onClick={onClose}>{getProviderName(service.provider)}</Link> : onViewProvider ? <button type="button" onClick={onViewProvider}
                 data-testid="button-provider-details" aria-label={t("catalog.view", { name: getProviderName(service.provider) })}
                 className="font-semibold text-primary text-left underline underline-offset-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 {getProviderName(service.provider)}

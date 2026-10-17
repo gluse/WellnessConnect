@@ -4,6 +4,56 @@ Archive of completed FitsMyTime tasks. Active tasks, including those awaiting
 testing or external setup, remain in [TASKS.md](TASKS.md). Preserve task IDs when
 moving tasks between these files.
 
+## Authentication
+
+- [x] **TASK-004 — Allow service searches without signing in.** Let visitors
+  search for services and browse results without authentication.
+  **Status:** Completed.
+  - Browse services from the landing page/header or open `/search` without signing in.
+  - Keep search filters, sorting, maps, details, reviews, and provider catalogs available.
+  - Prompt for sign-in when booking; return to search after sign-in.
+  - Serve published service images to visitors while protecting private images and writes.
+  - Verified with `npm run test:guest-search`, existing search/auth/navigation/map
+    regression tests, `npm run check`, and `npm run build`.
+
+## Provider storefronts
+
+- [x] **TASK-012 — Add Pro provider storefronts.** Give individual providers and
+  companies a separate public page for their services, similar to a store page.
+  **Status:** Completed.
+  - Creating, editing, previewing, and publishing requires active workspace Pro access.
+  - Visitors can browse and book; Pro is required for the provider, not the customer.
+  - One company subscription covers its storefront and authorized managers.
+  - Supports branding uploads, permanent shareable URLs, draft/publish controls,
+    service search/filter/sort, and return to the selected service after sign-in.
+  - Expiry/revocation hides the page while preserving content and existing bookings.
+  - Administration manages Pro grants and expiry through searchable provider/company
+    dropdowns. Payment checkout, pricing, and automatic recurring billing are not implemented.
+  - See [setup, behavior, and manual testing](docs/pro-storefronts.md).
+  - Database migration applied. Automated storefront, PostgreSQL, authentication,
+    booking, catalog, navigation, administration, category, scheduling, review,
+    and location regression checks passed, along with TypeScript and production build.
+  - Manual desktop/mobile layout, real branding uploads, and a full booking flow
+    were not verified during implementation; no browser session was available.
+
+## App Administration
+
+- [x] **TASK-010 — Create app administration page.** Create an Administration
+  page for application support staff with a list of all registered app users.
+  **Status:** Completed.
+  - Page results with 25, 50, or 100 users per page and show the matching count.
+  - Search/filter by name/email and an inclusive registration date range in the
+    timezone shown on the page.
+  - Display email verification status (verified / pending verification) and account
+    status (active / blocked) as separate columns, with independent filters for each.
+  - Sort by name or date registered, ascending or descending, before pagination.
+  - Show all company / organization affiliations, roles, and closed-company status.
+  - Search by company / organization name across the full user directory.
+  - Show personal Pro subscription status and expiry, with separate company Pro
+    badges on each affiliation. Expired or revoked Pro is not enabled.
+  - Verified with administration and storefront UI/API regressions, PostgreSQL
+    Pro status/expiry/revocation checks, `npm run check`, and `npm run build`.
+
 ## Scheduling
 
 - [x] **TASK-006 — Add preparation and cleanup time.** Allow providers to add

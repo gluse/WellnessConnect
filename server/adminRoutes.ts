@@ -3,7 +3,7 @@ import { z } from "zod";
 import { isAuthenticated } from "./auth";
 import { isAppAdmin, requireAppAdmin } from "./appAdmin";
 import { adminUserFiltersSchema } from "@shared/admin";
-import { registeredUserDirectory, loadCompanyAffiliations } from "./admin-directory";
+import { registeredUserDirectory, loadCompanyAffiliations, loadDirectorySubscriptions } from "./admin-directory";
 
 const querySchema = adminUserFiltersSchema.extend({
   page: z.coerce.number().int().min(1).max(100_000).default(1),
@@ -11,7 +11,7 @@ const querySchema = adminUserFiltersSchema.extend({
 }).strict().refine(value => !value.registeredFrom || !value.registeredTo || value.registeredFrom <= value.registeredTo,
   "The registration end date must be on or after the start date.");
 
-export function setupAdminRoutes(app: Express, loadCompanies = loadCompanyAffiliations) {
+export function setupAdminRoutes(app: Express, loadCompanies = loadCompanyAffiliations, loadSubscriptions = loadDirectorySubscriptions) {
   app.get("/api/admin/access", isAuthenticated, (req, res) => {
     res.set("Cache-Control", "no-store");
     res.json({ isAdmin: isAppAdmin(req.user!.claims.sub) });
@@ -23,7 +23,7 @@ export function setupAdminRoutes(app: Express, loadCompanies = loadCompanyAffili
     if (!parsed.success) return res.status(400).json({ message: "Choose valid directory filters, dates, and paging options." });
     try {
       const { page, pageSize, ...filters } = parsed.data;
-      res.json(await registeredUserDirectory(filters, page, pageSize, loadCompanies));
+      res.json(await registeredUserDirectory(filters, page, pageSize, loadCompanies, loadSubscriptions));
     } catch {
       res.status(503).json({ message: "Unable to load registered users. Please try again." });
     }

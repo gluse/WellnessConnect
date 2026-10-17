@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Redirect } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { defaultAdminUserFilters, type AdminUsersPage } from "@shared/admin";
+import { defaultAdminUserFilters, type AdminUsersPage, type AdminProSubscription } from "@shared/admin";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppAdmin } from "@/hooks/use-app-admin";
 import { apiRequest } from "@/lib/queryClient";
@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import AdminUserFiltersForm from "@/components/admin-user-filters";
 import AdminCategories from "@/components/admin-categories";
+import AdminSubscriptions from "@/components/admin-subscriptions";
+import { useTranslation } from "react-i18next";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from "@/components/ui/table";
 
 const signInUrl = "/login?returnTo=%2Fadministration";
@@ -21,6 +23,17 @@ function dateLabel(value: string | null): string {
   return Number.isNaN(date.getTime()) ? "Unknown" : date.toLocaleString();
 }
 
+function ProSubscriptionStatus({ subscription, company = false }: { subscription: AdminProSubscription; company?: boolean }) {
+  const { t } = useTranslation();
+  const enabled = subscription.enabled;
+  return <div className="space-y-1">
+    <Badge variant="outline" className={enabled ? "bg-primary/10 text-primary border-primary/20" : "text-neutral-500"}>
+      {t(company ? enabled ? "storefront.companyProEnabled" : "storefront.companyProDisabled" : enabled ? "storefront.proEnabled" : "storefront.proDisabled")}
+    </Badge>
+    {enabled && <p className="text-xs text-neutral-500">{t("storefront.validUntil", { date: dateLabel(subscription.proUntil) })}</p>}
+  </div>;
+}
+
 export default function Administration() {
   const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) return <main className="p-8" role="status">Loading administration…</main>;
@@ -29,9 +42,10 @@ export default function Administration() {
 }
 
 function AdministrationContent() {
+  const { t } = useTranslation();
   const access = useAppAdmin();
   const queryClient = useQueryClient();
-  const [section, setSection] = useState<"users" | "categories">("users");
+  const [section, setSection] = useState<"users" | "categories" | "subscriptions">("users");
   const [categoryAccessError, setCategoryAccessError] = useState<Error | null>(null);
   const [options, setOptions] = useState(() => ({ page: 1, pageSize: 50,
     filters: { ...defaultAdminUserFilters, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
@@ -60,9 +74,10 @@ function AdministrationContent() {
   return <div className="min-h-[calc(100dvh-4rem)] bg-neutral-50">
     <main className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
       <div><h1 className="text-2xl font-semibold">Administration</h1><p className="mt-2 text-neutral-600">Application support</p></div>
-      {access.data?.isAdmin && !denied && <nav aria-label="Administration sections" className="flex gap-2">
+      {access.data?.isAdmin && !denied && <nav aria-label="Administration sections" className="flex flex-wrap gap-2">
         <Button variant={section === "users" ? "default" : "outline"} aria-pressed={section === "users"} onClick={() => setSection("users")}>App users</Button>
         <Button variant={section === "categories" ? "default" : "outline"} aria-pressed={section === "categories"} onClick={() => setSection("categories")}>Categories</Button>
+        <Button variant={section === "subscriptions" ? "default" : "outline"} aria-pressed={section === "subscriptions"} onClick={() => setSection("subscriptions")}>{t("storefront.subscriptions")}</Button>
       </nav>}
       {access.isPending ? <p role="status">Checking support access…</p> : denied ? <div role="alert" className="space-y-3">
         <p>Application support access is required to view this page.</p>
@@ -70,7 +85,7 @@ function AdministrationContent() {
       </div> : access.isError ? <div role="alert" className="space-y-3">
         <p>Unable to check support access. Please try again.</p>
         <Button disabled={access.isFetching} onClick={() => void access.refetch()}>Try again</Button>
-      </div> : section === "categories" ? <AdminCategories onAccessError={setCategoryAccessError} /> : <section aria-labelledby="app-users-heading" className="border rounded-xl bg-white p-4 sm:p-6 space-y-4">
+      </div> : section === "categories" ? <AdminCategories onAccessError={setCategoryAccessError} /> : section === "subscriptions" ? <AdminSubscriptions onAccessError={setCategoryAccessError} /> : <section aria-labelledby="app-users-heading" className="border rounded-xl bg-white p-4 sm:p-6 space-y-4">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div><h2 id="app-users-heading" className="text-lg font-semibold">App users</h2><p className="text-sm text-neutral-600">All registered accounts, including users who have not signed in.</p></div>
           <Button variant="outline" disabled={users.isFetching} onClick={() => void users.refetch()}>Refresh</Button>
@@ -81,14 +96,16 @@ function AdministrationContent() {
           : <>
             {users.data.users.length === 0 ? <p className="py-6 text-neutral-600">{hasFilters ? "No users match these filters." : "No registered users yet."}</p> : <Table className="min-w-[1100px]">
               <TableCaption>Registered users · Times shown in {Intl.DateTimeFormat().resolvedOptions().timeZone}</TableCaption>
-              <TableHeader><TableRow><TableHead scope="col">Name / User ID</TableHead><TableHead scope="col">Email</TableHead><TableHead scope="col">Email verification</TableHead><TableHead scope="col">Account status</TableHead><TableHead scope="col">Company / organization</TableHead><TableHead scope="col">Registered</TableHead><TableHead scope="col">Last sign-in</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead scope="col">Name / User ID</TableHead><TableHead scope="col">Email</TableHead><TableHead scope="col">Email verification</TableHead><TableHead scope="col">Account status</TableHead><TableHead scope="col">{t("storefront.personalPro")}</TableHead><TableHead scope="col">Company / organization</TableHead><TableHead scope="col">Registered</TableHead><TableHead scope="col">Last sign-in</TableHead></TableRow></TableHeader>
               <TableBody>{users.data.users.map(user => <TableRow key={user.id}>
                 <TableCell><p className="font-medium break-words">{user.name || "Name not provided"}</p><p className="mt-1 text-xs text-neutral-500 break-all">{user.id}</p></TableCell>
                 <TableCell className="break-all">{user.email || "Not provided"}</TableCell>
                 <TableCell><Badge variant="outline">{!user.email ? "No email" : user.emailVerified ? "Verified" : "Pending verification"}</Badge></TableCell>
                 <TableCell><Badge variant="outline" className={user.accountStatus === "blocked" ? "bg-red-50 text-red-800 border-red-200" : "bg-green-50 text-green-800 border-green-200"}>{user.accountStatus === "blocked" ? "Blocked" : "Active"}</Badge></TableCell>
+                <TableCell data-testid={`personal-pro-${user.id}`}><ProSubscriptionStatus subscription={user.proSubscription} /></TableCell>
                 <TableCell>{user.companies.length === 0 ? <span className="text-neutral-500">No organization</span> : <ul className="space-y-2">{user.companies.map(company => <li key={company.id}>
-                  <p className="font-medium break-words">{company.name}</p><p className="text-xs text-neutral-500">{{ owner: "Owner", admin: "Administrator", provider: "Service provider", viewer: "Read-only" }[company.role]}{!company.isActive && " · Closed"}</p>
+                  <p className="font-medium break-words">{company.name} <span className="text-neutral-500 font-normal">#{company.id}</span></p><p className="text-xs text-neutral-500">{{ owner: "Owner", admin: "Administrator", provider: "Service provider", viewer: "Read-only" }[company.role]}{!company.isActive && " · Closed"}</p>
+                  <div className="mt-1" data-testid={`company-pro-${user.id}-${company.id}`}><ProSubscriptionStatus subscription={company.proSubscription} company /></div>
                 </li>)}</ul>}</TableCell>
                 <TableCell className="whitespace-nowrap">{dateLabel(user.createdAt)}</TableCell>
                 <TableCell className="whitespace-nowrap">{dateLabel(user.lastSignInAt)}</TableCell>

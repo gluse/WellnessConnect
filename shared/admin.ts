@@ -6,12 +6,18 @@ export interface AppAdminAccess {
   isAdmin: boolean;
 }
 
+export interface AdminProSubscription {
+  enabled: boolean;
+  proUntil: string | null;
+}
+
 export interface AdminUser {
   id: string;
   name: string | null;
   email: string | null;
   emailVerified: boolean;
   accountStatus: "active" | "blocked";
+  proSubscription: AdminProSubscription;
   companies: AdminCompany[];
   createdAt: string;
   lastSignInAt: string | null;
@@ -41,9 +47,13 @@ export const adminUserFiltersSchema = z.object({
 export type AdminUserFilters = z.infer<typeof adminUserFiltersSchema>;
 export const defaultAdminUserFilters: AdminUserFilters = adminUserFiltersSchema.parse({});
 
-export interface AdminCompany {
+export interface AdminCompanyAffiliation {
   id: number;
   name: string;
   role: CompanyRole;
   isActive: boolean;
+}
+
+export interface AdminCompany extends AdminCompanyAffiliation {
+  proSubscription: AdminProSubscription;
 }

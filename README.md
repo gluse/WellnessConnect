@@ -53,6 +53,10 @@ Do not create tables with `db:push` before restoring a database dump.
 - Browse all registered accounts from Administration with application support access.
 - Manage the database-backed category catalog from Administration → Categories;
   see [category management and setup](docs/categories.md).
+- Publish a branded Pro storefront from My Services → Settings → Storefront.
+  Manage workspace Pro access in Administration → Pro subscriptions; see
+  [Pro storefront setup and behavior](docs/pro-storefronts.md). Pro access is
+  administered manually; payment collection and recurring billing are not implemented.
 - Upload private service images, with access controlled by Express.
 - Find related services using OpenAI embeddings.
 
@@ -69,6 +73,9 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run db:setup-reviews` | Add the reviews table and constraints to an existing database; preserve existing data |
 | `npm run db:setup-cleanup-time` | Add preparation/cleanup settings and booking snapshots; preserve existing reservations |
 | `npm run db:setup-categories` | Seed the category catalog and link existing services without changing their keys |
+| `npm run db:setup-storefronts` | Add Pro workspace subscriptions and public storefronts; existing workspaces stay Free |
+| `npm run test:storefronts` | Storefront UI, guest booking return, Pro access, admin controls, API security, and translations |
+| `npm run test:storefronts-db` | PostgreSQL storefront migration, subscription lifecycle, catalogs, and branding access using temporary tables |
 | `npm run db:setup-locations` | Add registered locations, coordinate cache and independent hourly expiry cleanup |
 | `npm run test:geocoding` | Mocked geocoding quality, reuse/expiry, concurrency and address editor checks |
 | `npm run test:geocoding-db` | PostgreSQL location cache, reuse boundaries and cleanup using temporary tables |

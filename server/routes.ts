@@ -17,6 +17,7 @@ import { categoryStore } from "./categories";
 import { CategoryError } from "@shared/categories";
 import { setupReviewRoutes } from "./reviewRoutes";
 import { setupProviderCatalogRoutes } from "./providerCatalogRoutes";
+import { setupStorefrontRoutes } from "./storefrontRoutes";
 import { scope, assertService, assertBooking, ensureCompany, workspaceContext, saveWorkspaceSession, AccessError } from "./companyAccess";
 import { db } from "./db";
 import { companies } from "@shared/schema";
@@ -83,6 +84,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupSchedulingRoutes(app);
   setupReviewRoutes(app);
   setupProviderCatalogRoutes(app);
+  setupStorefrontRoutes(app);
 
   // Object Storage routes
   app.post('/api/objects/upload', isAuthenticated, async (req: any, res) => {
@@ -109,7 +111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!await canReadImage(req.path, userId, workspace)) return res.sendStatus(403);
       }
       const image = await downloadImage(req.path);
-      res.set({ "Content-Type": image.contentType, "Cache-Control": "private, max-age=300", "X-Content-Type-Options": "nosniff" });
+      res.set({ "Content-Type": image.contentType, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" });
       res.send(image.bytes);
     } catch (error) {
       console.error("Error checking object access:", error);

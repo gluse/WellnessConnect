@@ -25,6 +25,7 @@ import {
 import { db } from "./db";
 import { eq, and, gte, lte, asc, desc, sql, ne, isNull, inArray } from "drizzle-orm";
 import { publicProvider } from "@shared/provider";
+import { storefrontStore } from "./storefronts";
 import { currentLocation } from "@shared/locations";
 import { bookableSlots } from "@shared/scheduling";
 import { reviewSchema, ReviewError, type ReviewInput, type ServiceReviewPage } from "@shared/reviews";
@@ -229,8 +230,11 @@ export class DatabaseStorage implements IStorage {
 
     if (!result) return undefined;
 
+    const slugs = await storefrontStore.slugs([result.services]);
+
     return {
       ...currentLocation(result.services),
+      storefrontSlug: slugs.get(result.services.companyId != null ? `company:${result.services.companyId}` : `user:${result.services.providerId}`) ?? null,
       rating: result.review_stats?.rating ?? null,
       reviewCount: result.review_stats?.reviewCount ?? 0,
       provider: publicProvider(result.users!, result.companies),
@@ -303,8 +307,10 @@ export class DatabaseStorage implements IStorage {
       .where(and(...conditions))
       .orderBy(desc(services.createdAt));
 
+    const slugs = await storefrontStore.slugs(results.map(result => result.services));
     let servicesWithProviders: ServiceWithProvider[] = results.map(result => ({
       ...currentLocation(result.services),
+      storefrontSlug: slugs.get(result.services.companyId != null ? `company:${result.services.companyId}` : `user:${result.services.providerId}`) ?? null,
       rating: result.review_stats?.rating ?? null,
       reviewCount: result.review_stats?.reviewCount ?? 0,
       provider: publicProvider(result.users!, result.companies),

@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import "dotenv/config";
+import { setupStorefrontFixtures } from "./fixtures/storefronts.mjs";
 import { pool } from "../server/db.ts";
 import { storage } from "../server/storage.ts";
 import { locationStore, registerLocation, resolveServiceLocation, addressKey } from "../server/registeredLocations.ts";
@@ -20,6 +21,7 @@ try {
   for (const table of ["users", "companies", "employees", "services", "bookings", "service_reviews", "geocoding_cache"]) {
     await pool.query(`CREATE TEMP TABLE ${table} (LIKE public.${table} INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)`);
   }
+  await setupStorefrontFixtures(pool.query.bind(pool));
   await pool.query("CREATE TEMP SEQUENCE service_fixture_ids START 100; ALTER TABLE pg_temp.services ALTER COLUMN id SET DEFAULT nextval('pg_temp.service_fixture_ids')");
   await pool.query("INSERT INTO pg_temp.users(id) VALUES ('location-owner'),('other-owner')");
   await pool.query("INSERT INTO pg_temp.companies(id,name,owner_id,provider_id) VALUES(1,'Fixture company','location-owner','location-owner')");

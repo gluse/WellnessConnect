@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import "dotenv/config";
+import { setupStorefrontFixtures } from "./fixtures/storefronts.mjs";
 import { pool } from "../server/db.ts";
 import { storage, BookingConflictError } from "../server/storage.ts";
 
@@ -20,6 +21,7 @@ try {
     await pool.query(`CREATE TEMP TABLE ${table} (LIKE public.${table} INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)`);
   }
   // Exercise upgrading the old schema as well as rerunning the migration.
+  await setupStorefrontFixtures(pool.query.bind(pool));
   await pool.query("ALTER TABLE pg_temp.services DROP COLUMN IF EXISTS cleanup_time; ALTER TABLE pg_temp.bookings DROP COLUMN IF EXISTS booking_cleanup_time");
   await pool.query("INSERT INTO pg_temp.users(id) VALUES('provider'),('customer')");
   await pool.query("INSERT INTO pg_temp.services(id,provider_id,name,category,service_type,price,duration) VALUES(1,'provider','Fixture','education','one_to_one',30,30)");

@@ -18,33 +18,33 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-export function BookingSignInActions({ isLoading, onClose }: { isLoading: boolean; onClose: () => void }) {
+export function BookingSignInActions({ isLoading, onClose, returnTo = "/search" }: { isLoading: boolean; onClose: () => void; returnTo?: string }) {
   const { t } = useTranslation();
   return <div className="space-y-4">
     {isLoading ? <p role="status">{t("guestSearch.checkingAccount")}</p> : <>
       <p>{t("guestSearch.bookingNote")}</p>
-      <Button asChild><Link href="/login?returnTo=%2Fsearch">{t("guestSearch.signInOrCreate")}</Link></Button>
+      <Button asChild><Link href={`/login?returnTo=${encodeURIComponent(returnTo)}`}>{t("guestSearch.signInOrCreate")}</Link></Button>
     </>}
     <Button variant="outline" onClick={onClose}>{t("guestSearch.continueBrowsing")}</Button>
   </div>;
 }
 
-export default function BookingModal({ service, onClose }: { service: ServiceWithProvider; onClose: () => void }) {
+export default function BookingModal({ service, onClose, returnTo = "/search" }: { service: ServiceWithProvider; onClose: () => void; returnTo?: string }) {
   const { isAuthenticated, isLoading } = useAuth();
   const { t } = useTranslation();
-  if (isAuthenticated) return <AuthenticatedBooking service={service} onClose={onClose} />;
+  if (isAuthenticated) return <AuthenticatedBooking service={service} onClose={onClose} returnTo={returnTo} />;
   return <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
     <DialogContent data-testid="dialog-booking-sign-in">
       <DialogHeader>
         <DialogTitle>{t("guestSearch.signInToBook")}</DialogTitle>
         <DialogDescription>{service.name}</DialogDescription>
       </DialogHeader>
-      <BookingSignInActions isLoading={isLoading} onClose={onClose} />
+      <BookingSignInActions isLoading={isLoading} onClose={onClose} returnTo={returnTo} />
     </DialogContent>
   </Dialog>;
 }
 
-function AuthenticatedBooking({ service, onClose }: { service: ServiceWithProvider; onClose: () => void }) {
+function AuthenticatedBooking({ service, onClose, returnTo }: { service: ServiceWithProvider; onClose: () => void; returnTo: string }) {
   service = currentLocation(service);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -68,7 +68,7 @@ function AuthenticatedBooking({ service, onClose }: { service: ServiceWithProvid
       onClose();
     },
     onError: error => {
-      if (isUnauthorizedError(error)) { window.location.assign("/login?returnTo=%2Fsearch"); return; }
+      if (isUnauthorizedError(error)) { window.location.assign(`/login?returnTo=${encodeURIComponent(returnTo)}`); return; }
       let message = "Unable to book. Please try again.";
       try { message = JSON.parse(error.message.replace(/^\d+:\s*/, "")).message || message; } catch {}
       setError(message);

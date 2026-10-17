@@ -33,6 +33,8 @@ See the [README](../README.md) for local setup, commands, and deployment, and th
 - **Company Invitations**: Email-bound invitations with expiry and revocation
 - **Employees**: Optional public names and links to team-member logins
 - **Services**: Categorized offerings with pricing and availability
+- **Provider Subscriptions**: Individual or company Pro access with a UTC expiry and last administrator update
+- **Storefronts**: Branded public provider pages gated by active Pro and publication status
 - **Categories**: Shared database catalog with stable keys referenced by services
 - **Bookings**: Transaction records with payment tracking
 - **Availability**: Time-slot management for service providers
@@ -54,6 +56,14 @@ See the [README](../README.md) for local setup, commands, and deployment, and th
 - **Availability**: Real-time capacity tracking and scheduling
 - **Media**: Private Supabase Storage with signed uploads and Express image access checks
 - **External Links**: Optional external URLs for additional information
+
+### Pro Storefronts
+- **Public route**: `/providers/:slug`, with branding, service filters, and existing booking flows
+- **Provider editing**: My Services → Settings → Storefront, restricted to Pro workspace managers
+- **Entitlement**: Server checks Pro expiry on reads and writes; company subscriptions survive ownership transfers
+- **Administration**: Application support manages Pro access and expiry; checkout and automated billing are not implemented
+- **Storage**: Private branding uploads become public only while their storefront is published with active Pro
+- **Setup and verification**: See [Pro storefronts](pro-storefronts.md)
 
 ### Booking System
 - **Instant Booking**: Automated confirmation for participating providers

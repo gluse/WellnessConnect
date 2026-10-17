@@ -58,6 +58,35 @@ export const companies = pgTable("companies", {
   createdAt: timestamp("created_at").defaultNow(),
 }).enableRLS();
 
+// A subscription belongs to a workspace, so company ownership can transfer.
+export const providerSubscriptions = pgTable("provider_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id).unique(),
+  companyId: integer("company_id").references(() => companies.id).unique(),
+  plan: varchar("plan", { enum: ["free", "pro"] }).notNull().default("free"),
+  proUntil: timestamp("pro_until", { withTimezone: true }),
+  updatedBy: varchar("updated_by").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  check("subscription_workspace_check", sql`(${table.userId} IS NOT NULL) <> (${table.companyId} IS NOT NULL)`),
+  check("subscription_plan_check", sql`${table.plan} IN ('free', 'pro') AND (${table.plan} <> 'pro' OR ${table.proUntil} IS NOT NULL)`),
+]).enableRLS();
+
+export const storefronts = pgTable("storefronts", {
+  id: serial("id").primaryKey(),
+  subscriptionId: integer("subscription_id").notNull().references(() => providerSubscriptions.id).unique(),
+  slug: varchar("slug", { length: 64 }).notNull().unique(),
+  name: varchar("name", { length: 150 }).notNull(),
+  description: text("description").notNull().default(""),
+  logoUrl: text("logo_url"),
+  coverUrl: text("cover_url"),
+  isPublished: boolean("is_published").notNull().default(false),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}).enableRLS();
+
+export type ProviderSubscription = typeof providerSubscriptions.$inferSelect;
+export type Storefront = typeof storefronts.$inferSelect;
+
 // Employees may be linked to a login through a company membership.
 export const employees = pgTable("employees", {
   id: serial("id").primaryKey(),
@@ -354,6 +383,7 @@ export const insertAvailabilitySchema = createInsertSchema(availability, {
 
 // Extended service type for API responses
 export type ServiceWithProvider = Service & {
+  storefrontSlug?: string | null;
   provider: User;
   companyActive?: boolean;
   employee: { id: number; name: string | null } | null;

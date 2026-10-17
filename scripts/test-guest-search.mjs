@@ -136,7 +136,11 @@ storage.searchServices = async () => [record];
 storage.getServiceById = async () => record;
 storage.getServiceReviews = async () => ({ reviews: [], page: 1, hasMore: false });
 let imageRows = [], downloads = 0;
-db.select = () => ({ from: () => ({ leftJoin: () => ({ where: async () => imageRows }) }) });
+db.select = () => {
+  let branded = false;
+  const chain = { from: () => chain, leftJoin: () => chain, innerJoin: () => { branded = true; return chain; }, where: async () => branded ? [] : imageRows };
+  return chain;
+};
 supabaseAdmin.storage.from = () => ({ download: async () => { downloads++; return { data: new Blob([new Uint8Array([137,80,78,71,13,10,26,10])]), error: null }; } });
 async function request(method, path, extra = {}) {
   const route = routes.find(route => route.method === method && route.path === path);
