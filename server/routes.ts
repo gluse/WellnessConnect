@@ -7,7 +7,9 @@ import { addressStore } from "./addresses";
 import { supabaseAdmin } from "./supabase";
 import { z } from "zod";
 import { createImageUpload, validateOwnedImage, validateServiceImage, canReadImage, downloadImage, ImageStorageError } from "./imageStorage";
-import { generateEmbedding, cosineSimilarity } from "./embeddings";
+import { generateEmbedding } from "./embeddings";
+import { setupPublicSearchRoutes } from "./publicSearch";
+import { setupPaymentRoutes } from "./payments";
 import { GeocodingError } from "./geocoding";
 import { registerLocation, resolveServiceLocation } from "./registeredLocations";
 import { setupCompanyRoutes } from "./companyRoutes";
@@ -86,6 +88,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupReviewRoutes(app);
   setupProviderCatalogRoutes(app);
   setupStorefrontRoutes(app);
+  setupPublicSearchRoutes(app, {
+    searchServices: filters => storage.searchServices(filters),
+    getPublicServiceEmbeddings: filters => storage.getPublicServiceEmbeddings(filters),
+    generateEmbedding,
+  });
+  setupPaymentRoutes(app, isAuthenticated);
 
   // Object Storage routes
   app.post('/api/objects/upload', isAuthenticated, async (req: any, res) => {
@@ -363,151 +371,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/services/search', async (req, res) => {
-    try {
-      const { 
-        category, ageGroups, serviceType, latitude, longitude, radius, 
-        date, dateEnd, time, timeEnd, searchQuery, availableOnly 
-      } = req.query;
-      
-      const filters: any = {};
-      if (category) filters.category = category;
-      if (serviceType) filters.serviceType = serviceType;
-      if (ageGroups) filters.ageGroups = Array.isArray(ageGroups) ? ageGroups : [ageGroups];
-      if (latitude) filters.latitude = parseFloat(latitude as string);
-      if (longitude) filters.longitude = parseFloat(longitude as string);
-      if (radius) filters.radius = parseFloat(radius as string);
-      if (date) filters.date = date as string;
-      if (dateEnd) filters.dateEnd = dateEnd as string;
-      if (time) filters.time = time as string;
-      if (timeEnd) filters.timeEnd = timeEnd as string;
-      if (searchQuery) filters.searchQuery = searchQuery as string;
-      if (availableOnly === "true") filters.availableOnly = true;
-
-      const services = await storage.searchServices(filters);
-      res.json(services);
-    } catch (error) {
-      console.error("Error searching services:", error);
-      apiFailure(error, res, "Failed to search services");
-    }
-  });
-
-  // Semantic search endpoint (cross-language AI-powered search)
-  app.get('/api/services/semantic-search', async (req, res) => {
-    try {
-      const { query, category, latitude, longitude, radius } = req.query;
-      
-      if (!query || typeof query !== 'string') {
-        return res.status(400).json({ message: "Search query is required" });
-      }
-
-      // First, try exact text search - prioritize exact name/description matches
-      const textMatchServices = await storage.searchServices({ 
-        searchQuery: query,
-        category: category as string,
-      });
-      
-      // If we found exact text matches, return those (prioritizes exact name matches)
-      if (textMatchServices.length > 0) {
-        // Apply location filter if specified
-        let filteredServices = textMatchServices;
-        if (latitude && longitude && radius) {
-          const lat = parseFloat(latitude as string);
-          const lng = parseFloat(longitude as string);
-          const rad = parseFloat(radius as string);
-          
-          filteredServices = textMatchServices.filter(s => {
-            if (s.latitude === null || s.longitude === null) return false;
-            const R = 6371;
-            const dLat = (s.latitude - lat) * Math.PI / 180;
-            const dLon = (s.longitude - lng) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat * Math.PI/180) * Math.cos(s.latitude * Math.PI/180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            const distance = R * c;
-            return distance <= rad;
-          });
-        }
-        return res.json(filteredServices);
-      }
-
-      // No exact text matches - try semantic search for cross-language matching
-      const allEmbeddings = await storage.getAllServiceEmbeddings();
-      
-      if (allEmbeddings.length === 0) {
-        // No embeddings exist, return empty (text search already found nothing)
-        return res.json([]);
-      }
-
-      // Generate embedding for the search query
-      const queryEmbedding = await generateEmbedding(query);
-      
-      // Calculate similarity scores for all services
-      const scoredServices: { serviceId: number; score: number }[] = [];
-      for (const embedding of allEmbeddings) {
-        const score = cosineSimilarity(queryEmbedding, embedding.embedding);
-        scoredServices.push({ serviceId: embedding.serviceId, score });
-      }
-      
-      // Debug: log top 5 scores for visibility
-      const topScores = [...scoredServices].sort((a, b) => b.score - a.score).slice(0, 5);
-      console.log(`Semantic search for "${query}" - top scores:`, topScores.map(s => `${s.serviceId}:${s.score.toFixed(3)}`).join(', '));
-      
-      // Sort by similarity score (highest first) and filter by threshold
-      // Use lower threshold (0.30) to catch more semantic matches
-      const SIMILARITY_THRESHOLD = 0.30;
-      const relevantServiceIds = scoredServices
-        .filter(s => s.score >= SIMILARITY_THRESHOLD)
-        .sort((a, b) => b.score - a.score)
-        .map(s => s.serviceId);
-      
-      if (relevantServiceIds.length === 0) {
-        // No semantic matches either
-        return res.json([]);
-      }
-      
-      // Fetch the matched services
-      const servicesPromises = relevantServiceIds.map(id => storage.getServiceById(id));
-      const servicesResults = await Promise.all(servicesPromises);
-      let services = servicesResults.filter((s): s is NonNullable<typeof s> => s !== undefined && s.isActive === true && s.companyActive === true);
-      
-      // Apply category filter if specified
-      if (category) {
-        services = services.filter(s => s.category === category);
-      }
-      
-      // Apply location filter if specified
-      if (latitude && longitude && radius) {
-        const lat = parseFloat(latitude as string);
-        const lng = parseFloat(longitude as string);
-        const rad = parseFloat(radius as string);
-        
-        services = services.filter(s => {
-          if (s.latitude === null || s.longitude === null) return false;
-          const R = 6371;
-          const dLat = (s.latitude - lat) * Math.PI / 180;
-          const dLon = (s.longitude - lng) * Math.PI / 180;
-          const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                    Math.cos(lat * Math.PI/180) * Math.cos(s.latitude * Math.PI/180) *
-                    Math.sin(dLon/2) * Math.sin(dLon/2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-          const distance = R * c;
-          return distance <= rad;
-        });
-      }
-      
-      res.json(services);
-    } catch (error) {
-      console.error("Error in semantic search:", error);
-      // Fallback to regular search on error
-      const services = await storage.searchServices({ 
-        searchQuery: req.query.query as string,
-        category: req.query.category as string,
-      });
-      res.json(services);
-    }
-  });
 
   // Generate/update embedding for a service
   app.post('/api/services/:id/embedding', isAuthenticated, async (req: any, res) => {
@@ -855,29 +718,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mock payment route (for demo purposes)
-  app.post('/api/payments/process', isAuthenticated, async (req: any, res) => {
-    try {
-      const { bookingId, amount, paymentMethod } = req.body;
-      const booking = await storage.getBookingById(bookingId);
-      if (!booking || booking.seekerId !== req.user.claims.sub) throw new AccessError(403, "This payment is not for your reservation.");
-      
-      // Mock payment processing
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update booking payment status
-      await storage.updateBookingPayment(bookingId, 'advance_paid');
-      
-      res.json({ 
-        success: true, 
-        transactionId: `txn_${Date.now()}`,
-        message: "Payment processed successfully"
-      });
-    } catch (error) {
-      console.error("Error processing payment:", error);
-      apiFailure(error, res, "Failed to process payment");
-    }
-  });
 
   const httpServer = createServer(app);
   return httpServer;

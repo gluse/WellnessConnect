@@ -1,0 +1,40 @@
+# Standalone development file: do not merge with compose.yaml.
+name: fitsmytime-dev
+
+services:
+  app:
+    build:
+      context: .
+      target: development
+    init: true
+    environment:
+      NODE_ENV: development
+      PORT: "5000"
+      APP_URL: ${APP_URL:-http://localhost:5000}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL}
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET to at least 32 random characters}
+      SUPABASE_URL: ${SUPABASE_URL:?Set SUPABASE_URL}
+      SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:?Set SUPABASE_PUBLISHABLE_KEY}
+      SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY:?Set SUPABASE_SECRET_KEY}
+      SUPABASE_STORAGE_BUCKET: ${SUPABASE_STORAGE_BUCKET:-service-images}
+      SUPABASE_GOOGLE_ENABLED: ${SUPABASE_GOOGLE_ENABLED:-false}
+      SUPABASE_FACEBOOK_ENABLED: ${SUPABASE_FACEBOOK_ENABLED:-false}
+      SUPABASE_APPLE_ENABLED: ${SUPABASE_APPLE_ENABLED:-false}
+      SUPABASE_MICROSOFT_ENABLED: ${SUPABASE_MICROSOFT_ENABLED:-false}
+      APP_ADMIN_USER_IDS: ${APP_ADMIN_USER_IDS:-}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+      GOOGLE_GEOCODING_API_KEY: ${GOOGLE_GEOCODING_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?Set OPENAI_API_KEY}
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "127.0.0.1:${DEV_PORT:-5000}:5000"
+    volumes:
+      - ./client:/app/client:ro
+      - ./server:/app/server:ro
+      - ./shared:/app/shared:ro
+      - ./attached_assets:/app/attached_assets:ro
+      - ./vite.config.ts:/app/vite.config.ts:ro
+      - ./tailwind.config.ts:/app/tailwind.config.ts:ro
+      - ./postcss.config.js:/app/postcss.config.js:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+    stop_grace_period: 30s

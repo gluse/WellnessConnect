@@ -306,5 +306,21 @@
     "unavailable": "The map is unavailable. Please try again later.",
     "loadError": "The map could not load. Check your connection and try again.",
     "reload": "Reload page"
+  },
+  "publicSearch": {
+    "queryLabel": "Search services",
+    "queryTooLong": "Use 200 characters or fewer.",
+    "startDateRequired": "Select a start date first.",
+    "invalidDates": "Enter valid dates.",
+    "dateRange": "Choose a date range of up to 31 days, ending on or after the start date.",
+    "invalidTimes": "Choose valid start and end times, with the end after the start.",
+    "invalidFilters": "Please check your search filters.",
+    "rateLimited": "Too many searches. Please wait a minute before trying again.",
+    "loadError": "Unable to load services. Please try again.",
+    "retry": "Try again",
+    "loading": "Loading services…",
+    "empty": "No services match your search.",
+    "tooBroad": "Too many matching services. Narrow your search using more filters.",
+    "truncated": "Some matching services are not shown. Narrow your search to see more relevant results."
   }
 }

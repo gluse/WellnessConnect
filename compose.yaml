@@ -1,0 +1,84 @@
+name: fitsmytime
+
+services:
+  app:
+    image: ${APP_IMAGE:-fitsmytime:local}
+    build:
+      context: .
+      target: runtime
+    init: true
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "5000"
+      APP_URL: https://${APP_DOMAIN:?Set APP_DOMAIN to your public hostname}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL}
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET to at least 32 random characters}
+      SUPABASE_URL: ${SUPABASE_URL:?Set SUPABASE_URL}
+      SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:?Set SUPABASE_PUBLISHABLE_KEY}
+      SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY:?Set SUPABASE_SECRET_KEY}
+      SUPABASE_STORAGE_BUCKET: ${SUPABASE_STORAGE_BUCKET:-service-images}
+      SUPABASE_GOOGLE_ENABLED: ${SUPABASE_GOOGLE_ENABLED:-false}
+      SUPABASE_FACEBOOK_ENABLED: ${SUPABASE_FACEBOOK_ENABLED:-false}
+      SUPABASE_APPLE_ENABLED: ${SUPABASE_APPLE_ENABLED:-false}
+      SUPABASE_MICROSOFT_ENABLED: ${SUPABASE_MICROSOFT_ENABLED:-false}
+      APP_ADMIN_USER_IDS: ${APP_ADMIN_USER_IDS:-}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+      GOOGLE_GEOCODING_API_KEY: ${GOOGLE_GEOCODING_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?Set OPENAI_API_KEY}
+    expose:
+      - "5000"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 30s
+    networks:
+      - backend
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN to your public hostname}
+      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL for certificate notices}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      app:
+        condition: service_started
+    networks:
+      - backend
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  # Outbound access is required for Supabase, Maps, OpenAI, and ACME.
+  backend:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:

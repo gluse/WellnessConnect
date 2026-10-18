@@ -306,5 +306,21 @@
     "unavailable": "O mapa está indisponível. Tente novamente mais tarde.",
     "loadError": "Não foi possível carregar o mapa. Verifique sua conexão e tente novamente.",
     "reload": "Recarregar página"
+  },
+  "publicSearch": {
+    "queryLabel": "Pesquisar serviços",
+    "queryTooLong": "Use no máximo 200 caracteres.",
+    "startDateRequired": "Selecione primeiro uma data de início.",
+    "invalidDates": "Insira datas válidas.",
+    "dateRange": "Escolha um período de até 31 dias, terminando na data de início ou depois dela.",
+    "invalidTimes": "Escolha horários válidos; o horário final deve ser posterior ao inicial.",
+    "invalidFilters": "Verifique os filtros de pesquisa.",
+    "rateLimited": "Muitas pesquisas. Aguarde um minuto antes de tentar novamente.",
+    "loadError": "Não foi possível carregar os serviços. Tente novamente.",
+    "retry": "Tentar novamente",
+    "loading": "A carregar serviços…",
+    "empty": "Nenhum serviço corresponde à sua pesquisa.",
+    "tooBroad": "Há demasiados serviços correspondentes. Restrinja a pesquisa com mais filtros.",
+    "truncated": "Alguns serviços correspondentes não são apresentados. Restrinja a pesquisa para ver resultados mais relevantes."
   }
 }

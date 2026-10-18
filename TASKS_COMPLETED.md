@@ -4,6 +4,18 @@ Archive of completed FitsMyTime tasks. Active tasks, including those awaiting
 testing or external setup, remain in [TASKS.md](TASKS.md). Preserve task IDs when
 moving tasks between these files.
 
+## Backend security
+
+- [x] **TASK-020 — Address high-priority backend review findings.** Disable
+  unverified payment-state changes; validate and bound public search; control
+  paid semantic requests; handle rejected fallback queries safely.
+  **Status:** Implemented and verified locally on 18 October 2026; not deployed.
+  - Front End Developer delivered debounced search and localized validation/error
+    handling. DB Analyst reviewed query changes; no database changes were needed.
+  - Offline backend/storage/UI regressions, guest search, sorting, provider
+    catalogs, storefronts, TypeScript, and production build passed.
+  - See [implementation, verification, delegation, and remaining limits](docs/high-priority-backend-hardening.md).
+
 ## Authentication
 
 - [x] **TASK-004 — Allow service searches without signing in.** Let visitors

@@ -50,7 +50,8 @@ const { default: ProviderServicesDialog } = await import("../client/src/componen
 const { default: ServiceDetailModal } = await import("../client/src/components/service-detail-modal.tsx");
 const { default: BookingModal, BookingSignInActions } = await import("../client/src/components/booking-modal.tsx");
 const { act, create } = renderer;
-const flush = async () => act(async () => { await new Promise(resolve => setTimeout(resolve, 50)); });
+const flush = async (milliseconds = 50) => act(async () => { await new Promise(resolve => setTimeout(resolve, milliseconds)); });
+const flushSearch = async () => { await flush(450); await flush(); };
 async function mount(path, user = null, pendingAuth = false) {
   if (component) await act(async () => component.unmount());
   queryClient.clear(); requests = []; holdAuth = pendingAuth;
@@ -74,10 +75,10 @@ await act(async () => {
   const filters = component.root.findAllByType(ServiceFilters)[0];
   filters.props.onFiltersChange({ ...filters.props.filters, category: "health_wellness", searchQuery: "massage" });
 });
-await flush();
+await flushSearch();
 assert.ok(requests.some(url => url.includes("category=health_wellness") && url.includes("searchQuery=massage")));
 await act(async () => component.root.findAllByType(ServiceFilters)[0].props.onFiltersChange({ ...component.root.findAllByType(ServiceFilters)[0].props.filters, searchMode: "semantic" }));
-await flush();
+await flushSearch();
 assert.ok(requests.some(url => url.startsWith("/api/services/semantic-search?")));
 await act(async () => component.root.findByType(ServiceCard).props.onViewDetails());
 assert.equal(component.root.findByType(ServiceDetailModal).props.open, true);
@@ -128,6 +129,7 @@ const { storage } = await import("../server/storage.ts");
 const { db, pool } = await import("../server/db.ts");
 const { supabaseAdmin } = await import("../server/supabase.ts");
 const { isAuthenticated } = await import("../server/auth.ts");
+pool.connect = pool.query = async () => { throw new Error("Unexpected database access in the offline guest-search test"); };
 const routes = [], app = () => {};
 app.set = app.use = () => app;
 for (const method of ["get", "post", "put", "patch", "delete"]) app[method] = (path, ...handlers) => { routes.push({ method, path, handlers }); return app; };
@@ -146,14 +148,24 @@ async function request(method, path, extra = {}) {
   const route = routes.find(route => route.method === method && route.path === path);
   assert.ok(route, path);
   let code = 200, data, headers = {};
-  const req = { session: {}, query: {}, params: { id: "1" }, body: {}, ...extra };
-  const res = { status(value) { code = value; return this; }, json(value) { data = value; return this; }, set(value) { if (typeof value === "object") Object.assign(headers, value); return this; }, send(value) { data = value; return this; }, sendStatus(value) { code = value; return this; } };
-  for (const handler of route.handlers) { let next = false; await handler(req, res, () => { next = true; }); if (!next) break; }
+  const req = { session: {}, query: {}, params: { id: "1" }, body: {}, ip: "127.0.0.1", headers: {}, socket: { remoteAddress: "127.0.0.1" }, app: { get: () => 1 }, ...extra };
+  const res = { status(value) { code = value; return this; }, json(value) { data = value; return this; }, set(value, text) { if (typeof value === "object") Object.assign(headers, value); else headers[value] = text; return this; }, setHeader(name, value) { headers[name] = value; return this; }, send(value) { data = value; return this; }, sendStatus(value) { code = value; return this; } };
+  for (const handler of route.handlers) {
+    let next = false, failure;
+    await handler(req, res, error => { next = true; failure = error; });
+    if (failure) throw failure;
+    if (!next) break;
+  }
   return { code, data, headers };
 }
 try {
   for (const [path, query] of [["/api/services/search", {}], ["/api/services/semantic-search", { query: "massage" }], ["/api/services/catalog", { companyId: "7" }], ["/api/services/:id", {}], ["/api/services/:id/reviews", {}]]) {
-    assert.equal((await request("get", path, { query })).code, 200, `${path} must work without a session`);
+    const result = await request("get", path, { query });
+    assert.equal(result.code, 200, `${path} must work without a session`);
+    if (path === "/api/services/search" || path === "/api/services/semantic-search") {
+      assert.equal(result.headers["Cache-Control"], "no-store");
+      assert.ok(result.headers["RateLimit-Policy"], "Public search must traverse the actual rate-limit middleware");
+    }
   }
   const booking = routes.find(route => route.method === "post" && route.path === "/api/bookings");
   assert.equal(booking.handlers[0], isAuthenticated);

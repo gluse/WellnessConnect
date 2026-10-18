@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/use-categories";
+import { SEARCH_QUERY_LIMIT } from "@/lib/public-search";
 
 export interface SearchFilters {
   category: string;
@@ -183,6 +184,8 @@ export default function ServiceFilters({
                 placeholder="Search by name or description..." 
                 className="pl-10"
                 value={filters.searchQuery || ""}
+                maxLength={SEARCH_QUERY_LIMIT}
+                aria-label={t("publicSearch.queryLabel")}
                 onChange={(e) => onFiltersChange({ ...filters, searchQuery: e.target.value })}
                 data-testid="input-search-query"
               />

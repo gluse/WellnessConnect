@@ -24,12 +24,46 @@ import {
   type InsertServiceEmbedding,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lte, asc, desc, sql, ne, isNull, inArray } from "drizzle-orm";
+import { eq, and, or, gte, lte, asc, desc, sql, ne, isNull, inArray } from "drizzle-orm";
 import { publicProvider } from "@shared/provider";
 import { storefrontStore } from "./storefronts";
 import { serviceLocation } from "./addresses";
 import { bookableSlots } from "@shared/scheduling";
 import { reviewSchema, ReviewError, type ReviewInput, type ServiceReviewPage } from "@shared/reviews";
+import { assertSearchSize, MAX_SEARCH_CANDIDATES, MAX_SEARCH_SCHEDULES, searchFiltersSchema, type SearchFilters } from "./searchInput";
+
+function searchDistance(filters: SearchFilters) {
+  if (filters.latitude === undefined || filters.longitude === undefined) return undefined;
+  const radians = sql`pi() / 180`;
+  const a = sql`least(1.0, greatest(0.0,
+    power(sin((${addresses.latitude} - ${filters.latitude}) * ${radians} / 2), 2)
+    + cos(${filters.latitude} * ${radians}) * cos(${addresses.latitude} * ${radians})
+    * power(sin((${addresses.longitude} - ${filters.longitude}) * ${radians} / 2), 2)))`;
+  return sql<number>`CASE WHEN ${addresses.latitude} IS NOT NULL AND ${addresses.longitude} IS NOT NULL
+    AND (${addresses.locationSource} IS DISTINCT FROM 'google' OR ${addresses.locationExpiresAt} > now())
+    THEN round((6371 * 2 * atan2(sqrt(${a}), sqrt(1 - ${a})))::numeric, 1)::float8 END`;
+}
+
+function publicSearchConditions(filters: SearchFilters) {
+  const conditions = [eq(services.isActive, true), sql`(${companies.id} IS NULL OR ${companies.isActive} = true)`];
+  if (filters.companyId !== undefined) conditions.push(eq(services.companyId, filters.companyId));
+  if (filters.providerId !== undefined) conditions.push(eq(services.providerId, filters.providerId), isNull(services.companyId));
+  if (filters.serviceIds) conditions.push(inArray(services.id, filters.serviceIds));
+  if (filters.category) conditions.push(eq(services.category, filters.category));
+  if (filters.serviceType) conditions.push(eq(services.serviceType, filters.serviceType));
+  if (filters.ageGroups?.length) conditions.push(sql`${services.ageGroups} ?| ARRAY[${sql.join(filters.ageGroups.map(group => sql`${group}`), sql`, `)}]::text[]`);
+  if (filters.searchQuery?.trim()) {
+    const term = `%${filters.searchQuery.trim().toLowerCase()}%`;
+    conditions.push(sql`(LOWER(${services.name}) LIKE ${term} OR LOWER(${services.description}) LIKE ${term}
+      OR LOWER(${companies.name}) LIKE ${term} OR (${employees.showName} = true AND LOWER(${employees.name}) LIKE ${term}))`);
+  }
+  const distance = searchDistance(filters);
+  if (distance && filters.radius !== undefined) conditions.push(sql`${distance} <= ${filters.radius}`);
+  return conditions;
+}
+
+const workspaceKey = (item: { companyId: number | null; providerId: string }) =>
+  item.companyId != null ? `company:${item.companyId}` : `user:${item.providerId}`;
 
 const reviewStats = db.select({
   serviceId: bookings.serviceId,
@@ -77,18 +111,8 @@ export interface IStorage {
   getServiceById(id: number): Promise<ServiceWithProvider | undefined>;
   updateService(id: number, updates: Partial<InsertService>): Promise<Service>;
   deleteService(id: number): Promise<void>;
-  searchServices(filters: {
-    companyId?: number;
-    providerId?: string;
-    category?: string;
-    ageGroups?: string[];
-    serviceType?: string;
-    latitude?: number;
-    longitude?: number;
-    radius?: number;
-    date?: string;
-    searchQuery?: string;
-  }): Promise<ServiceWithProvider[]>;
+  searchServices(filters: SearchFilters): Promise<ServiceWithProvider[]>;
+  getPublicServiceEmbeddings(filters: SearchFilters): Promise<{ serviceId: number; embedding: number[] }[]>;
 
   // Booking operations
   createBooking(booking: InsertBooking): Promise<Booking>;
@@ -260,48 +284,16 @@ export class DatabaseStorage implements IStorage {
     await db.delete(services).where(eq(services.id, id));
   }
 
-  async searchServices(filters: {
-    companyId?: number;
-    providerId?: string;
-    category?: string;
-    ageGroups?: string[];
-    serviceType?: string;
-    latitude?: number;
-    longitude?: number;
-    radius?: number;
-    date?: string;
-    dateEnd?: string;
-    time?: string;
-    timeEnd?: string;
-    searchQuery?: string;
-    availableOnly?: boolean;
-  }): Promise<ServiceWithProvider[]> {
-    const conditions = [eq(services.isActive, true), sql`(${companies.id} IS NULL OR ${companies.isActive} = true)`];
+  async searchServices(filters: SearchFilters): Promise<ServiceWithProvider[]> {
+    filters = searchFiltersSchema.parse(filters);
+    if (filters.serviceIds?.length === 0) return [];
+    const conditions = publicSearchConditions(filters);
+    const distance = searchDistance(filters);
+    // Scope-only catalogs have separate callers/contracts. Keep their existing
+    // behavior until pagination is designed rather than silently cutting them off.
+    const bounded = filters.companyId === undefined && filters.providerId === undefined;
 
-    if (filters.companyId !== undefined) conditions.push(eq(services.companyId, filters.companyId));
-    if (filters.providerId !== undefined) {
-      conditions.push(eq(services.providerId, filters.providerId), isNull(services.companyId));
-    }
-
-    if (filters.category) {
-      conditions.push(eq(services.category, filters.category as any));
-    }
-
-    if (filters.serviceType) {
-      conditions.push(eq(services.serviceType, filters.serviceType as any));
-    }
-
-    // Search by name or description (case-insensitive)
-    if (filters.searchQuery && filters.searchQuery.trim()) {
-      const searchTerm = `%${filters.searchQuery.trim().toLowerCase()}%`;
-      conditions.push(
-        sql`(LOWER(${services.name}) LIKE ${searchTerm} OR LOWER(${services.description}) LIKE ${searchTerm}
-          OR LOWER(${companies.name}) LIKE ${searchTerm}
-          OR (${employees.showName} = true AND LOWER(${employees.name}) LIKE ${searchTerm}))`
-      );
-    }
-
-    const results = await db
+    const query = db
       .select()
       .from(services)
       .leftJoin(addresses, eq(services.addressId, addresses.id))
@@ -310,7 +302,10 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(companies, eq(services.companyId, companies.id))
       .leftJoin(reviewStats, eq(services.id, reviewStats.serviceId))
       .where(and(...conditions))
-      .orderBy(desc(services.createdAt));
+      .orderBy(...(distance ? [asc(distance)] : []), desc(services.createdAt), desc(services.id));
+    const results = bounded ? await query.limit(MAX_SEARCH_CANDIDATES + 1) : await query;
+
+    if (bounded) assertSearchSize(results.length);
 
     const slugs = await storefrontStore.slugs(results.map(result => result.services));
     let servicesWithProviders: ServiceWithProvider[] = results.map(result => ({
@@ -371,21 +366,33 @@ export class DatabaseStorage implements IStorage {
       const startDate = new Date(filters.date);
       const endDate = filters.dateEnd ? new Date(filters.dateEnd) : startDate;
       
-      // Get all availability schedules
-      const allAvailability = await db.select().from(availability);
+      if (!servicesWithProviders.length) return [];
+      const companyIds = Array.from(new Set(servicesWithProviders.flatMap(service => service.companyId == null ? [] : [service.companyId])));
+      const personalIds = Array.from(new Set(servicesWithProviders.filter(service => service.companyId == null).map(service => service.providerId)));
+      // Only materialize relevant public workspaces, service assignments, and days.
+      const allAvailability = await db.select().from(availability).where(and(
+        eq(availability.isActive, true),
+        or(companyIds.length ? inArray(availability.companyId, companyIds) : undefined,
+          personalIds.length ? and(isNull(availability.companyId), inArray(availability.providerId, personalIds)) : undefined),
+        or(isNull(availability.serviceId), inArray(availability.serviceId, servicesWithProviders.map(service => service.id))),
+        or(eq(availability.scheduleType, "recurring"), and(eq(availability.scheduleType, "specific"),
+          sql`${availability.specificDate} >= ${filters.date}::date`,
+          sql`${availability.specificDate} < ${filters.dateEnd ?? filters.date}::date + interval '1 day'`)),
+      )).orderBy(asc(availability.id)).limit(MAX_SEARCH_SCHEDULES + 1);
+      assertSearchSize(allAvailability.length, MAX_SEARCH_SCHEDULES);
       
       // Track general and service-specific working hours separately for company offers.
       const providerAvailability = new Map<string, boolean>();
       
       // Check each date in the range
-      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
         const currentDate = new Date(d);
-        const dayOfWeek = currentDate.getDay();
+        const dayOfWeek = currentDate.getUTCDay();
         const dateStr = currentDate.toISOString().split('T')[0];
         
         for (const schedule of allAvailability) {
           if (!schedule.isActive) continue;
-          const scheduleKey = `${schedule.providerId}:${schedule.serviceId ?? "all"}`;
+          const scheduleKey = `${workspaceKey(schedule)}:${schedule.serviceId ?? "all"}`;
           
           // Check if schedule applies to this date
           const scheduleApplies = 
@@ -440,8 +447,8 @@ export class DatabaseStorage implements IStorage {
       }
       
       servicesWithProviders = servicesWithProviders.filter(
-        service => providerAvailability.get(`${service.providerId}:all`) === true
-          || providerAvailability.get(`${service.providerId}:${service.id}`) === true
+        service => providerAvailability.get(`${workspaceKey(service)}:all`) === true
+          || providerAvailability.get(`${workspaceKey(service)}:${service.id}`) === true
       );
     }
 
@@ -794,6 +801,19 @@ export class DatabaseStorage implements IStorage {
 
   async getAllServiceEmbeddings(): Promise<ServiceEmbedding[]> {
     return await db.select().from(serviceEmbeddings);
+  }
+
+  async getPublicServiceEmbeddings(filters: SearchFilters): Promise<{ serviceId: number; embedding: number[] }[]> {
+    filters = searchFiltersSchema.parse(filters);
+    const candidates = await db.select({ serviceId: serviceEmbeddings.serviceId, embedding: serviceEmbeddings.embedding })
+      .from(serviceEmbeddings).innerJoin(services, eq(serviceEmbeddings.serviceId, services.id))
+      .leftJoin(addresses, eq(services.addressId, addresses.id))
+      .leftJoin(employees, eq(services.employeeId, employees.id))
+      .leftJoin(companies, eq(services.companyId, companies.id))
+      .where(and(...publicSearchConditions(filters)))
+      .orderBy(desc(services.createdAt), desc(services.id)).limit(MAX_SEARCH_CANDIDATES + 1);
+    assertSearchSize(candidates.length);
+    return candidates;
   }
 
   async deleteServiceEmbedding(serviceId: number): Promise<void> {

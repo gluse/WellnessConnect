@@ -1,0 +1,106 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import vm from "node:vm";
+import ts from "typescript";
+import * as drizzle from "drizzle-orm";
+import { PgDialect } from "drizzle-orm/pg-core";
+import * as schema from "../shared/schema.ts";
+import * as provider from "../shared/provider.ts";
+import * as scheduling from "../shared/scheduling.ts";
+import * as reviews from "../shared/reviews.ts";
+import * as searchInput from "../server/searchInput.ts";
+
+// Execute the actual storage module against an injected query adapter. The
+// import whitelist deliberately prevents loading server/db or any live client.
+const fixtures = new Map(), executed = [];
+const dialect = new PgDialect();
+let slugsLoaded = 0;
+const db = { select() {
+  let table, predicate, limit, ordering;
+  const query = {
+    from(value) { table = drizzle.getTableName(value); return query; },
+    leftJoin() { return query; }, innerJoin() { return query; }, groupBy() { return query; },
+    where(value) { predicate = value; return query; },
+    orderBy(...values) { ordering = values; return query; },
+    limit(value) { limit = value; return query; },
+    as() { return { serviceId: drizzle.sql`review_stats.service_id`, rating: drizzle.sql`review_stats.rating`, reviewCount: drizzle.sql`review_stats.review_count` }; },
+    then(resolve, reject) {
+      executed.push({ table, limit, where: predicate && dialect.sqlToQuery(predicate), ordering });
+      const rows = fixtures.get(table) ?? [];
+      return Promise.resolve(limit === undefined ? rows : rows.slice(0, limit)).then(resolve, reject);
+    },
+  };
+  return query;
+} };
+const dependencies = {
+  "@shared/schema": schema, "./db": { db }, "drizzle-orm": drizzle,
+  "@shared/provider": provider,
+  "./storefronts": { storefrontStore: { async slugs() { slugsLoaded++; return new Map(); } } },
+  "./addresses": { serviceLocation: (service, address) => ({ ...service, latitude: address?.latitude ?? null, longitude: address?.longitude ?? null }) },
+  "@shared/scheduling": scheduling, "@shared/reviews": reviews, "./searchInput": searchInput,
+};
+const source = await readFile(new URL("../server/storage.ts", import.meta.url), "utf8");
+const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+const module = { exports: {} };
+vm.runInNewContext(`(function(require,module,exports){${compiled}\n})`, { Date, Map, Set, console }, { filename: "server/storage.ts" })(
+  name => { assert.ok(Object.hasOwn(dependencies, name), `Blocked live import: ${name}`); return dependencies[name]; }, module, module.exports,
+);
+const storage = new module.exports.DatabaseStorage();
+const result = (id, companyId = null) => ({
+  services: { id, providerId: "fixture-provider", companyId, employeeId: null, name: "Fixture", isActive: true, ageGroups: ["adults"], createdAt: new Date("2026-01-01") },
+  users: { id: "fixture-provider", providerType: "individual", firstName: "Fixture" },
+  addresses: { latitude: 0, longitude: 0 }, companies: companyId == null ? null : { id: companyId, name: "Fixture company", isActive: true },
+  employees: null, review_stats: null,
+});
+const tooBroad = error => error instanceof searchInput.SearchError && error.status === 422 && error.code === "SEARCH_TOO_BROAD";
+
+await assert.rejects(() => storage.searchServices({ availableOnly: true, date: "2026-01-01", dateEnd: "9999-12-31" }));
+assert.equal(executed.length, 0, "Invalid range must fail before any query");
+fixtures.set("services", Array.from({ length: 501 }, (_, id) => result(id + 1)));
+await assert.rejects(() => storage.searchServices({}), tooBroad);
+assert.equal(executed.at(-1).limit, 501);
+assert.equal(slugsLoaded, 0, "Overflow must stop before hydration/enrichment");
+const scoped = await storage.searchServices({ providerId: "fixture-provider" });
+assert.equal(scoped.length, 501, "Scoped catalog compatibility is retained until separate pagination work");
+assert.equal(executed.at(-1).limit, undefined);
+const scopeQuery = executed.at(-1).where;
+assert.ok(scopeQuery.params.includes("fixture-provider"));
+assert.match(scopeQuery.sql, /"services"\."company_id" is null/);
+
+fixtures.set("services", [result(1)]);
+await storage.searchServices({ category: "health_wellness", ageGroups: ["adults"], searchQuery: "needle", latitude: 0, longitude: 0, radius: 50 });
+const narrowed = executed.at(-1);
+assert.equal(narrowed.limit, 501);
+assert.ok(narrowed.where.params.includes("adults"));
+assert.ok(narrowed.where.params.includes("health_wellness"));
+assert.ok(narrowed.where.params.includes("%needle%"));
+assert.ok(narrowed.where.params.includes(50));
+assert.match(narrowed.where.sql, /\?\| ARRAY\[/);
+assert.match(narrowed.where.sql, /"addresses"\."location_expires_at" > now\(\)/);
+assert.match(narrowed.where.sql, /"services"\."is_active"/);
+assert.match(narrowed.where.sql, /"companies"\."is_active"/);
+const priorQueries = executed.length;
+assert.deepEqual(Array.from(await storage.searchServices({ serviceIds: [] })), []);
+assert.equal(executed.length, priorQueries);
+
+fixtures.set("service_embeddings", Array.from({ length: 501 }, (_, index) => ({ serviceId: index + 1, embedding: [1, 0] })));
+await assert.rejects(() => storage.getPublicServiceEmbeddings({ category: "education" }), tooBroad);
+assert.equal(executed.at(-1).limit, 501);
+assert.ok(executed.at(-1).where.params.includes("education"));
+
+fixtures.set("services", [result(1, 7)]);
+fixtures.set("availability", Array.from({ length: 5001 }, (_, id) => ({ id })));
+await assert.rejects(() => storage.searchServices({ date: "2099-06-04", availableOnly: true }), tooBroad);
+const schedules = executed.at(-1);
+assert.equal(schedules.table, "availability"); assert.equal(schedules.limit, 5001);
+assert.ok(schedules.where.params.includes(7));
+assert.match(schedules.where.sql, /"availability"\."company_id" in/);
+assert.match(schedules.where.sql, /"availability"\."service_id" is null/);
+
+// A general company schedule must not make the original owner's separate
+// personal service available, even when an adapter returns both relevant rows.
+fixtures.set("services", [result(1, 7), result(2)]);
+fixtures.set("availability", [{ id: 1, providerId: "fixture-provider", companyId: 7, serviceId: null,
+  isActive: true, scheduleType: "specific", specificDate: new Date("2099-06-04"), startTime: "09:00", endTime: "10:00", breaks: [] }]);
+assert.deepEqual(Array.from(await storage.searchServices({ date: "2099-06-04", availableOnly: true }), row => row.id), [1]);
+console.log("Passed: actual storage query/result bounds, scoped catalog compatibility, SQL-bound filters/expiry, date rejection, bounded schedules, and company/personal availability isolation. No DB client loaded or SQL executed.");

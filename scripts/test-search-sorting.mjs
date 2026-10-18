@@ -70,7 +70,8 @@ globalThis.fetch = async url => {
   assert.ok(url.startsWith("/api/services/search?") || url.startsWith("/api/services/semantic-search?"), `Unexpected request: ${url}`);
   return new Response(JSON.stringify(responseRows));
 };
-const flush = async () => act(async () => { await new Promise(resolve => setTimeout(resolve, 40)); });
+const flush = async (milliseconds = 40) => act(async () => { await new Promise(resolve => setTimeout(resolve, milliseconds)); });
+const flushSearch = async () => { await flush(450); await flush(); };
 const dropdown = () => component.root.findByProps({ id: "service-sort" });
 const renderedIds = () => component.root.findAllByType(ServiceCard).map(node => node.props.service.id);
 const changeSort = async value => { await act(async () => dropdown().props.onChange({ target: { value } })); await flush(); };
@@ -101,7 +102,7 @@ await act(async () => {
   filters.props.onFiltersChange({ ...filters.props.filters, searchQuery: "fixture", searchMode: "semantic" });
   filters.props.onUseCurrentLocation();
 });
-await flush();
+await flushSearch();
 await changeSort("distance-asc");
 assert.ok(requests.some(url => url.startsWith("/api/services/semantic-search?")));
 assert.deepEqual(renderedIds(), [6, 5, 7]);
@@ -112,7 +113,7 @@ await act(async () => {
   const filters = component.root.findAllByType(ServiceFilters)[0];
   filters.props.onFiltersChange({ ...filters.props.filters, searchQuery: "no matches" });
 });
-await flush();
+await flushSearch();
 assert.deepEqual(renderedIds(), []);
 assert.equal(dropdown().props.value, "distance-asc", "Filter changes preserve the chosen sorting");
 await act(async () => component.unmount());

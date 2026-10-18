@@ -39,7 +39,7 @@ globalThis.fetch = async url => {
   const respond = () => new Response(JSON.stringify(fail ? { message: "Unavailable" } : responseRows), { status: fail ? 500 : 200 });
   return hold ? new Promise(resolve => { release = () => resolve(respond()); }) : respond();
 };
-const flush = async () => act(async () => { await new Promise(resolve => setTimeout(resolve, 40)); });
+const flush = async (milliseconds = 40) => act(async () => { await new Promise(resolve => setTimeout(resolve, milliseconds)); });
 const wrap = child => React.createElement(QueryClientProvider, { client: queryClient }, React.createElement(Router, { hook: memoryLocation({ path: "/" }).hook }, child));
 async function mountList(anchor = source) {
   if (component) await act(async () => component.unmount());
@@ -73,7 +73,7 @@ await act(async () => { component = create(wrap(React.createElement(Home))); });
 await flush();
 const filters = component.root.findAllByType(ServiceFilters)[0];
 await act(async () => filters.props.onFiltersChange({ ...filters.props.filters, searchQuery: "massage", category: "health_wellness" }));
-await flush();
+await flush(450); await flush();
 await act(async () => component.root.findByProps({ "data-testid": "button-provider-1" }).props.onClick());
 let catalog = component.root.findByType(ProviderServicesDialog);
 assert.equal(catalog.props.source.companyId, 7);
@@ -106,6 +106,7 @@ process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";
 const { setupProviderCatalogRoutes } = await import("../server/providerCatalogRoutes.ts");
 const { storage } = await import("../server/storage.ts");
 const { pool } = await import("../server/db.ts");
+pool.connect = pool.query = async () => { throw new Error("Unexpected database access in the offline provider-catalog test"); };
 let route, calls = [], unavailable = false;
 setupProviderCatalogRoutes({ get(path, ...handlers) { route = { path, handlers }; } });
 assert.equal(route.path, "/api/services/catalog");

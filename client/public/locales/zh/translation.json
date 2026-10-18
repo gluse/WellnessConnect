@@ -306,5 +306,21 @@
     "unavailable": "地图暂时不可用，请稍后重试。",
     "loadError": "无法加载地图，请检查网络连接后重试。",
     "reload": "重新加载页面"
+  },
+  "publicSearch": {
+    "queryLabel": "搜索服务",
+    "queryTooLong": "请使用不超过200个字符。",
+    "startDateRequired": "请先选择开始日期。",
+    "invalidDates": "请输入有效日期。",
+    "dateRange": "请选择不超过31天的日期范围，结束日期不得早于开始日期。",
+    "invalidTimes": "请选择有效时间，结束时间必须晚于开始时间。",
+    "invalidFilters": "请检查搜索筛选条件。",
+    "rateLimited": "搜索次数过多。请等待一分钟后重试。",
+    "loadError": "无法加载服务。请重试。",
+    "retry": "重试",
+    "loading": "正在加载服务…",
+    "empty": "没有符合搜索条件的服务。",
+    "tooBroad": "匹配的服务过多。请添加筛选条件以缩小搜索范围。",
+    "truncated": "部分匹配服务未显示。请缩小搜索范围以查看更相关的结果。"
   }
 }

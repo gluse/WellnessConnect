@@ -306,5 +306,21 @@
     "unavailable": "La carte est indisponible. Veuillez réessayer plus tard.",
     "loadError": "Impossible de charger la carte. Vérifiez votre connexion et réessayez.",
     "reload": "Recharger la page"
+  },
+  "publicSearch": {
+    "queryLabel": "Rechercher des services",
+    "queryTooLong": "Utilisez 200 caractères au maximum.",
+    "startDateRequired": "Sélectionnez d’abord une date de début.",
+    "invalidDates": "Saisissez des dates valides.",
+    "dateRange": "Choisissez une période de 31 jours maximum, se terminant à la date de début ou après.",
+    "invalidTimes": "Choisissez des heures valides ; l’heure de fin doit suivre l’heure de début.",
+    "invalidFilters": "Vérifiez les filtres de recherche.",
+    "rateLimited": "Trop de recherches. Patientez une minute avant de réessayer.",
+    "loadError": "Impossible de charger les services. Veuillez réessayer.",
+    "retry": "Réessayer",
+    "loading": "Chargement des services…",
+    "empty": "Aucun service ne correspond à votre recherche.",
+    "tooBroad": "Trop de services correspondent. Affinez la recherche avec davantage de filtres.",
+    "truncated": "Certains services correspondants ne sont pas affichés. Affinez la recherche pour voir des résultats plus pertinents."
   }
 }

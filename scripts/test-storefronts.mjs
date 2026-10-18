@@ -219,6 +219,7 @@ process.env.NODE_ENV = "test";
 const { setupStorefrontRoutes } = await import("../server/storefrontRoutes.ts");
 const { ImageStorageError } = await import("../server/imageStorage.ts");
 const { pool } = await import("../server/db.ts");
+pool.connect = pool.query = async () => { throw new Error("Unexpected database access in the offline storefront test"); };
 const routes = [], middleware = [];
 let activeUser = "support-user", pro = true, calls = [], forcedError, imageDenied = false;
 const store = {

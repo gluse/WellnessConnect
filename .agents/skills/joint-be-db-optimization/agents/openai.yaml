@@ -1,0 +1,4 @@
+interface:
+  display_name: "joint be-db-optimization"
+  short_description: "Coordinate approved database and backend optimization"
+  default_prompt: "Use $joint-be-db-optimization to review the existing database and backend together, present the best options for each change, and implement only my selected option within its approved scope."

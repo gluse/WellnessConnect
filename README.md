@@ -4,6 +4,10 @@ A service marketplace for local health, wellness, education, and entertainment.
 The app uses React, Express, Drizzle, and Supabase for PostgreSQL, authentication,
 and private image storage.
 
+Project agents follow [AGENTS.md](AGENTS.md). Database operations are owned by
+the [DB Analyst/Developer](DB-ANALYST-DEVELOPER.md); database changes require
+options and the user's choice first, including setup commands below.
+
 ## Local setup
 
 1. Install a supported Node.js version (Node 22 or newer) and run `npm ci`.

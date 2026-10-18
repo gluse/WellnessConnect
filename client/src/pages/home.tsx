@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +17,7 @@ import { MapPin, List, Map, Target, X } from "lucide-react";
 import { format } from "date-fns";
 import type { ServiceWithProvider } from "@shared/schema";
 import { useCategories } from "@/hooks/use-categories";
+import { fetchPublicSearch, searchErrorKey, searchValidationKey } from "@/lib/public-search";
 
 interface ActiveFiltersBarProps {
   filters: SearchFilters;
@@ -221,67 +222,27 @@ export default function Home() {
     }
   };
 
-  // Search services query - uses semantic or exact search based on mode
-  const { data: searchResults, isLoading: servicesLoading } = useQuery<ServiceWithProvider[]>({
-    queryKey: ["/api/services/search", filters, userLocation, locationName],
-    queryFn: async () => {
-      const searchQuery = filters.searchQuery?.trim();
-      
-      // Use semantic search if mode is set to semantic and there's a query
-      if (searchQuery && filters.searchMode === "semantic") {
-        const semanticParams = new URLSearchParams();
-        semanticParams.append("query", searchQuery);
-        if (filters.category) semanticParams.append("category", filters.category);
-        if (filters.serviceType) semanticParams.append("serviceType", filters.serviceType);
-        if (userLocation) {
-          semanticParams.append("latitude", userLocation.lat.toString());
-          semanticParams.append("longitude", userLocation.lng.toString());
-          semanticParams.append("radius", filters.distance.toString());
-        }
-        if (filters.ageGroups.length > 0) {
-          filters.ageGroups.forEach(age => semanticParams.append("ageGroups", age));
-        }
-        if (filters.date) semanticParams.append("date", filters.date);
-        if (filters.dateEnd) semanticParams.append("dateEnd", filters.dateEnd);
-        if (filters.time) semanticParams.append("time", filters.time);
-        if (filters.timeEnd) semanticParams.append("timeEnd", filters.timeEnd);
-        if (filters.availableOnly) semanticParams.append("availableOnly", "true");
-        
-        const response = await fetch(`/api/services/semantic-search?${semanticParams}`);
-        if (response.ok) {
-          return response.json();
-        }
-      }
-      
-      // Regular exact search
-      const params = new URLSearchParams();
-      if (filters.category) params.append("category", filters.category);
-      if (filters.serviceType) params.append("serviceType", filters.serviceType);
-      if (filters.ageGroups.length > 0) {
-        filters.ageGroups.forEach(age => params.append("ageGroups", age));
-      }
-      if (filters.date) params.append("date", filters.date);
-      if (filters.dateEnd) params.append("dateEnd", filters.dateEnd);
-      if (filters.time) params.append("time", filters.time);
-      if (filters.timeEnd) params.append("timeEnd", filters.timeEnd);
-      if (filters.availableOnly) params.append("availableOnly", "true");
-      if (searchQuery) params.append("searchQuery", searchQuery);
-      if (userLocation) {
-        params.append("latitude", userLocation.lat.toString());
-        params.append("longitude", userLocation.lng.toString());
-        params.append("radius", filters.distance.toString());
-      }
-      
-      const response = await fetch(`/api/services/search?${params}`);
-      if (!response.ok) throw new Error("Failed to fetch services");
-      return response.json();
-    },
+  // Keep typing responsive without making a paid search request for every keystroke.
+  const [debouncedFilters, setDebouncedFilters] = useState(filters);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedFilters(filters), 400);
+    return () => clearTimeout(timer);
+  }, [filters]);
+  const validationKey = searchValidationKey(filters);
+  const filtersPending = filters !== debouncedFilters;
+  const search = useQuery({
+    queryKey: ["/api/services/search", debouncedFilters, userLocation],
+    queryFn: ({ signal }) => fetchPublicSearch(debouncedFilters, userLocation, signal),
+    enabled: !searchValidationKey(debouncedFilters),
+    retry: false,
   });
-
+  const servicesLoading = !validationKey && (filtersPending || search.isLoading);
+  const errorKey = validationKey || (!filtersPending && search.isError ? searchErrorKey(search.error) : undefined);
   const effectiveSort = sort.startsWith("distance-") && !userLocation ? "default" : sort;
+  const visibleResults = validationKey || filtersPending || search.isError ? undefined : search.data;
   const services = useMemo(
-    () => sortServices(searchResults ?? [], effectiveSort, userLocation),
-    [searchResults, effectiveSort, userLocation],
+    () => sortServices(visibleResults?.services ?? [], effectiveSort, userLocation),
+    [visibleResults, effectiveSort, userLocation],
   );
 
   const handleBookService = (service: ServiceWithProvider) => {
@@ -373,18 +334,27 @@ export default function Home() {
             />
           </div>
 
+          {errorKey && (
+            <div role="alert" className="mx-4 mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-900 lg:mx-0">
+              <p>{t(errorKey)}</p>
+              {!validationKey && <Button className="mt-3" variant="outline" onClick={() => void search.refetch()} disabled={search.isFetching}>{t("publicSearch.retry")}</Button>}
+            </div>
+          )}
+          {visibleResults?.truncated && (
+            <p role="status" className="px-4 pb-4 text-sm text-neutral-700 lg:px-0">{t("publicSearch.truncated")}</p>
+          )}
           {/* Services List */}
-          {viewMode === "list" && (
+          {viewMode === "list" && !errorKey && (
             <div className="space-y-4 px-4 lg:px-0 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
               {servicesLoading ? (
                 <div className="text-center py-8 lg:col-span-2">
                   <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                  <p className="text-neutral-600">Loading services...</p>
+                  <p role="status" className="text-neutral-600">{t("publicSearch.loading")}</p>
                 </div>
               ) : services.length === 0 ? (
                 <div className="text-center py-8 lg:col-span-2">
                   <MapPin className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-                  <p className="text-neutral-600">No services found matching your criteria</p>
+                  <p role="status" className="text-neutral-600">{t("publicSearch.empty")}</p>
                 </div>
               ) : (
                 services.map((service: ServiceWithProvider) => (
@@ -401,7 +371,7 @@ export default function Home() {
           )}
 
           {/* Map View */}
-          {viewMode === "map" && (
+          {viewMode === "map" && !errorKey && (
             <div className="h-96 px-4 lg:px-0 lg:h-[600px]">
               {services.length > 0 || userLocation ? (
                 <GoogleMap 

@@ -1,0 +1,16 @@
+{
+    email {$ACME_EMAIL}
+    admin off
+}
+
+{$APP_DOMAIN} {
+    encode zstd gzip
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+    # Health probes are available inside the app's network only.
+    respond /health/* 404
+    reverse_proxy app:5000
+}

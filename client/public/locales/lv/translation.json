@@ -306,5 +306,21 @@
     "unavailable": "Karte nav pieejama. Mēģiniet vēlāk.",
     "loadError": "Neizdevās ielādēt karti. Pārbaudiet savienojumu un mēģiniet vēlreiz.",
     "reload": "Pārlādēt lapu"
+  },
+  "publicSearch": {
+    "queryLabel": "Meklēt pakalpojumus",
+    "queryTooLong": "Izmantojiet ne vairāk kā 200 rakstzīmes.",
+    "startDateRequired": "Vispirms atlasiet sākuma datumu.",
+    "invalidDates": "Ievadiet derīgus datumus.",
+    "dateRange": "Izvēlieties līdz 31 dienas periodu, kura beigas nav pirms sākuma.",
+    "invalidTimes": "Izvēlieties derīgu sākuma un beigu laiku; beigām jābūt pēc sākuma.",
+    "invalidFilters": "Pārbaudiet meklēšanas filtrus.",
+    "rateLimited": "Pārāk daudz meklējumu. Pirms mēģināt vēlreiz, uzgaidiet minūti.",
+    "loadError": "Neizdevās ielādēt pakalpojumus. Mēģiniet vēlreiz.",
+    "retry": "Mēģināt vēlreiz",
+    "loading": "Ielādē pakalpojumus…",
+    "empty": "Nav pakalpojumu, kas atbilst meklējumam.",
+    "tooBroad": "Pārāk daudz atbilstošu pakalpojumu. Precizējiet meklēšanu ar papildu filtriem.",
+    "truncated": "Daži atbilstošie pakalpojumi netiek rādīti. Precizējiet meklēšanu, lai iegūtu atbilstošākus rezultātus."
   }
 }

@@ -306,5 +306,21 @@
     "unavailable": "Die Karte ist nicht verfügbar. Bitte versuchen Sie es später erneut.",
     "loadError": "Die Karte konnte nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
     "reload": "Seite neu laden"
+  },
+  "publicSearch": {
+    "queryLabel": "Dienste suchen",
+    "queryTooLong": "Verwende höchstens 200 Zeichen.",
+    "startDateRequired": "Wähle zuerst ein Startdatum.",
+    "invalidDates": "Gib gültige Daten ein.",
+    "dateRange": "Wähle einen Zeitraum von bis zu 31 Tagen, dessen Ende nicht vor dem Beginn liegt.",
+    "invalidTimes": "Wähle gültige Uhrzeiten; das Ende muss nach dem Beginn liegen.",
+    "invalidFilters": "Prüfe die Suchfilter.",
+    "rateLimited": "Zu viele Suchanfragen. Warte eine Minute, bevor du es erneut versuchst.",
+    "loadError": "Die Dienste konnten nicht geladen werden. Versuche es erneut.",
+    "retry": "Erneut versuchen",
+    "loading": "Dienste werden geladen…",
+    "empty": "Keine Dienste entsprechen deiner Suche.",
+    "tooBroad": "Zu viele passende Dienste. Grenze die Suche mit weiteren Filtern ein.",
+    "truncated": "Einige passende Dienste werden nicht angezeigt. Grenze die Suche ein, um relevantere Ergebnisse zu sehen."
   }
 }
