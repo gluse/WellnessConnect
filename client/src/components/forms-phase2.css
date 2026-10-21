@@ -1,0 +1,24 @@
+/* Local form conventions; other application surfaces keep their existing styles. */
+.phase2-form :is(input, textarea, select, [role="combobox"]) {
+  min-height: 44px;
+  border-color: #737373;
+}
+.phase2-form button:not([name="day"]):not([class*="rdp-day"]):not([class*="rdp-nav"]) {
+  min-height: 44px;
+  height: auto;
+  white-space: normal;
+  padding-block: 0.625rem;
+}
+.phase2-form a { color: #4338ca; }
+.dark .phase2-form a { color: #a5b4fc; }
+.phase2-form a.bg-primary { color: var(--primary-foreground); }
+.phase2-form .bg-muted .text-muted-foreground { color: #57534e; }
+.dark .phase2-form .bg-muted .text-muted-foreground { color: #d4d4d8; }
+.phase2-form > button:last-child { min-width: 44px; }
+.phase2-form button:enabled:hover { background-color: var(--muted); color: var(--foreground); }
+.phase2-form button.bg-primary:enabled:hover { background-color: var(--primary); color: var(--primary-foreground); }
+.phase2-form button[aria-pressed="true"],
+.phase2-form button[aria-selected="true"] { background-color: var(--primary); color: var(--primary-foreground); }
+@media (prefers-reduced-motion: reduce) {
+  .phase2-form * { transition: none; animation: none; }
+}

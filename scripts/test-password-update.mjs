@@ -4,6 +4,11 @@ import renderer from "react-test-renderer";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
+import { readFile } from "node:fs/promises";
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
+
+await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation: JSON.parse(await readFile(new URL("../client/public/locales/en/translation.json", import.meta.url), "utf8")) } } });
 
 globalThis.React = React;
 globalThis.window = { location: { pathname: "/account", search: "", hash: "", assign: url => destinations.push(url) }, addEventListener() {}, removeEventListener() {} };
@@ -97,6 +102,10 @@ assert.equal(destinations.at(-1), "/login?returnTo=%2Faccount&passwordUpdated=1"
 await act(async () => component.unmount());
 queryClient.clear();
 delete globalThis.window; delete globalThis.document;
+if (process.argv.includes("--frontend-only")) {
+  console.log("Passed: mocked password validation, response rejection, retry, pending guard, secret-field clearing and session redirects; backend section not loaded.");
+  process.exit(0);
+}
 
 // Exercise the real Supabase client against mocked HTTP responses. No external writes.
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";

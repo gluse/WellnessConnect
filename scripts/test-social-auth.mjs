@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
 import assert from "node:assert/strict";
 import React from "react";
 import renderer from "react-test-renderer";
@@ -5,10 +8,13 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 
+const translation = JSON.parse(await readFile(new URL("../client/public/locales/en/translation.json", import.meta.url), "utf8"));
+await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation } } });
+globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
 globalThis.React = React;
 const destinations = [];
 globalThis.window = { location: { pathname: "/login", search: "?returnTo=%2Fmy-bookings", hash: "", assign: url => destinations.push(url) }, addEventListener() {}, removeEventListener() {} };
-globalThis.document = { visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
+globalThis.document = { getElementById() { return null; }, visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
 const { default: Login } = await import("../client/src/pages/login.tsx");
 const { socialProviders, socialProviderLabels } = await import("../shared/social-auth.ts");
@@ -153,6 +159,8 @@ delete globalThis.window; delete globalThis.document;
 
 // Real PKCE generation/exchange through the installed SDK. Auth HTTP and the
 // application profile store are mocked; external accounts are never changed.
+if (process.argv.includes("--frontend-only")) { console.log("Passed: isolated social-auth frontend contracts; backend checks not requested."); process.exit(0); }
+
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";
 process.env.SUPABASE_URL = "http://127.0.0.1:1";
 process.env.SUPABASE_PUBLISHABLE_KEY = "fixture-key";

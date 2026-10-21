@@ -12,6 +12,7 @@ import ServicesPage from "@/pages/provider/services";
 import ServiceEditPage from "@/pages/provider/service-edit";
 import AvailabilityPage from "@/pages/provider/availability";
 import SettingsPage from "@/pages/provider/settings";
+import { requestServiceEditorExit } from "@/components/provider/service-navigation-guard";
 
 export default function MyServices() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -49,7 +50,7 @@ function ProviderLayout() {
   const context = workspace.data;
   return <div className="min-h-[calc(100dvh-4rem)] bg-neutral-50">
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-5">
-      <WorkspaceSwitcher context={context} busy={mutationCount > 0} onChange={companyId => change.mutate(companyId)} />
+      <WorkspaceSwitcher context={context} busy={mutationCount > 0} onChange={companyId => requestServiceEditorExit(() => change.mutateAsync(companyId))} />
       <div className="md:flex md:gap-5 lg:gap-6">
         <ProviderNavigation context={context} busy={mutationCount > 0} editing={editing} />
         <main key={context.company?.id ?? "personal"} className={`flex-1 min-w-0 ${editing ? "pb-6" : "pb-24 md:pb-6"}`}>

@@ -34,6 +34,7 @@ for (const input of [{ target, plan: "pro", proUntil: null }, { target, plan: "p
 for (const input of [{ kind: "other" }, { kind: "company", page: 0 }, { kind: "user", page: "1x" }, { kind: "company", search: "x".repeat(201) }, { kind: "user", search: ["name"] }, { kind: "company", userId: "owner" }]) assert.equal(subscriptionOptionsSchema.safeParse(input).success, false);
 
 globalThis.React = React;
+globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
 globalThis.window = { location: { origin: "http://localhost", pathname: "/providers/riga-studio", search: "", hash: "" }, history: { replaceState() {} },
   setTimeout, clearTimeout, addEventListener() {}, removeEventListener() {}, HTMLSelectElement: { prototype: { value: "" } }, HTMLInputElement: { prototype: { checked: false } } };
 globalThis.document = { title: "FitsMyTime", visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
@@ -209,6 +210,8 @@ assert.ok(text().includes("Application support access is required"));
 assert.equal(component.root.findAllByProps({ role: "combobox" }).length, 0, "Revoked support access hides the picker"); choicesStatus = 200;
 await act(async () => component.unmount()); queryClient.clear();
 delete globalThis.window; delete globalThis.document;
+
+if (process.argv.includes("--frontend-only")) { console.log("Passed: isolated storefronts frontend regressions; backend checks not requested."); process.exit(0); }
 
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";
 process.env.SUPABASE_URL = "http://127.0.0.1:1";

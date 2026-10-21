@@ -97,11 +97,15 @@ await act(async () => component.root.findByType(ServiceDetailModal).props.onView
 assert.equal(component.root.findByType(ProviderServicesDialog).props.source.companyId, 7, "Provider names in details open the same company catalog");
 await act(async () => component.unmount()); queryClient.clear();
 
-for (const locale of ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"]) {
+for (const locale of ["en", "lv", "ru"]) {
   const data = JSON.parse(await readFile(new URL(`../client/public/locales/${locale}/translation.json`, import.meta.url), "utf8"));
   for (const key of Object.keys(translation.catalog)) assert.ok(data.catalog[key], `${locale}: missing ${key}`);
 }
 delete globalThis.window; delete globalThis.document;
+if (process.argv.includes("--frontend-only")) {
+  console.log("Passed: isolated provider catalog loading, identity, booking/details callbacks, search draft retention, errors/retry and en/lv/ru resources; backend section not loaded.");
+  process.exit(0);
+}
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";
 const { setupProviderCatalogRoutes } = await import("../server/providerCatalogRoutes.ts");
 const { storage } = await import("../server/storage.ts");

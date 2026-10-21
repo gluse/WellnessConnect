@@ -15,6 +15,8 @@ import { ensureCompany } from "./companyAccess";
 import { db } from "./db";
 import { companyInvitations } from "@shared/schema";
 import { and, eq, gt, isNull } from "drizzle-orm";
+import { auditEnabled, recordAudit, recordDenial, denyWithAudit, auditGap, requireAuditAvailability } from "./audit/http";
+import { AuditCaptureUnavailable } from "./audit/capture";
 
 interface AuthSession {
   userId: string;
@@ -55,7 +57,8 @@ function pkceClient(req: Request) {
   });
 }
 
-async function establishSession(req: Request, tokens: Session, socialCompanyName?: string, provisionCompany = ensureCompany) {
+async function establishSession(req: Request, tokens: Session, socialCompanyName?: string, provisionCompany = ensureCompany,
+  authEvent?: "auth.login.v1" | "auth.oauth_callback.v1") {
   const { data, error } = await createAuthClient().auth.getUser(tokens.access_token);
   if (error || !data.user) throw new Error("Unable to verify login");
   const user: SupabaseUser = data.user;
@@ -69,22 +72,35 @@ async function establishSession(req: Request, tokens: Session, socialCompanyName
     profileImageUrl: existing?.profileImageUrl || (typeof user.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null),
     ...(!existing && newCompanyName ? { providerType: "company", companyName: newCompanyName, currentRole: "provider" } as const : {}),
   });
+  if (auditEnabled()) {
+    if (profile.currentRole !== "provider" && profile.currentRole !== "seeker") { auditGap(); throw new AuditCaptureUnavailable(); }
+    req.auditPersonalRole = profile.currentRole;
+    if (authEvent) await recordAudit(req, { eventName: authEvent, outcome: "succeeded", changes: [] }, user.id);
+  }
   // Signup metadata can request a NEW workspace; it never supplies membership roles.
   const companyName = profile.providerType === "company" && profile.companyName ? profile.companyName : socialCompanyName;
-  if (companyName) await provisionCompany(user.id, companyName);
+  if (companyName) {
+    await provisionCompany(user.id, companyName);
+    if (auditEnabled()) {
+      const current = await storage.getUser(user.id);
+      if (!current || (current.currentRole !== "seeker" && current.currentRole !== "provider")) { auditGap(); throw new AuditCaptureUnavailable(); }
+      req.auditPersonalRole = current.currentRole;
+    }
+  }
   await regenerate(req);
   req.session.auth = {
     userId: user.id, accessToken: tokens.access_token,
     refreshToken: tokens.refresh_token, expiresAt: tokens.expires_at ?? 0,
   };
   await save(req);
+  await recordAudit(req, { eventName: "auth.session_established.v1", outcome: "succeeded", changes: [] }, user.id);
   return user;
 }
 
 export const requireSameOrigin: RequestHandler = (req, res, next) => {
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
   if (req.get("Sec-Fetch-Site") === "cross-site" || (req.get("Origin") && req.get("Origin") !== appUrl)) {
-    return res.status(403).json({ message: "Request origin is not allowed" });
+    return denyWithAudit(req, "WRONG_ORIGIN", () => res.status(403).json({ message: "Request origin is not allowed" }));
   }
   next();
 };
@@ -102,7 +118,8 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
     resave: false, saveUninitialized: false,
     cookie: { httpOnly: true, secure: appUrl.startsWith("https://"), sameSite: "lax", maxAge: 7 * 24 * 60 * 60 * 1000 },
   }));
-  const authLimit = rateLimit({ windowMs: 10 * 60 * 1000, limit: 30, standardHeaders: "draft-7", legacyHeaders: false, message: { message: "Too many login attempts. Please try again later." } });
+  const authLimit = rateLimit({ windowMs: 10 * 60 * 1000, limit: 30, standardHeaders: "draft-7", legacyHeaders: false,
+    handler: (req, res) => denyWithAudit(req, "RATE_LIMITED", () => res.status(429).json({ message: "Too many login attempts. Please try again later." })) });
   app.get("/api/login", (_req, res) => res.redirect("/login"));
   app.get("/api/auth/providers", (_req, res) => {
     res.set("Cache-Control", "no-store");
@@ -112,13 +129,23 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
 
   app.post("/api/auth/login", authLimit, async (req, res, next) => {
     const parsed = credentials.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: "Enter a valid email and a password with at least 8 characters." });
+    if (!parsed.success) {
+      try { await recordAudit(req, { eventName: "auth.login.v1", outcome: "rejected", reasonCode: "INVALID_INPUT", changes: [] }); }
+      catch (error) { return next(error); }
+      return res.status(400).json({ message: "Enter a valid email and a password with at least 8 characters." });
+    }
     try {
+      await requireAuditAvailability();
       const { data, error } = await createAuthClient().auth.signInWithPassword(parsed.data);
-      if (error || !data.session) return res.status(401).json({ message: "Invalid email or password, or email not confirmed." });
-      await establishSession(req, data.session);
+      if (error || !data.session) {
+        // Access remains denied even if its independent capture is unavailable.
+        try { await recordAudit(req, { eventName: "auth.login.v1", outcome: error?.status && error.status >= 500 ? "failed" : "denied",
+          reasonCode: error?.status && error.status >= 500 ? "PROVIDER_UNAVAILABLE" : error?.status === 429 ? "RATE_LIMITED" : "INVALID_CREDENTIALS", changes: [] }); } catch { /* gap already signaled */ }
+        return res.status(401).json({ message: "Invalid email or password, or email not confirmed." });
+      }
+      await establishSession(req, data.session, undefined, ensureCompany, "auth.login.v1");
       res.json({ success: true });
-    } catch (error) { next(error); }
+    } catch (error) { next(error instanceof AuditCaptureUnavailable || !auditEnabled() ? error : new AuditCaptureUnavailable()); }
   });
 
   app.post("/api/auth/signup", authLimit, async (req, res, next) => {
@@ -145,6 +172,7 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
 
   // Explicit routes avoid intercepting other /api/auth/* endpoints.
   const startSocialSignIn = async (req: Request, provider: typeof socialProviders[number], returnTo: string, companyName?: string) => {
+    await requireAuditAvailability();
     req.session.authReturnTo = returnTo;
     req.session.oauthStorage = {};
     delete req.session.invitationRecoveryEmail;
@@ -156,6 +184,7 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
     } });
     if (error || !data.url) throw new Error("Unable to start social sign-in");
     await save(req);
+    await recordAudit(req, { eventName: "auth.oauth_started.v1", outcome: "succeeded", changes: [] });
     return data.url;
   };
   const clearSocialAttempt = (req: Request) => {
@@ -166,11 +195,18 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
   for (const provider of socialProviders) {
     app.get(`/api/auth/${provider}`, authLimit, async (req, res) => {
       const returnTo = isAllowedAuthReturnTo(req.query.returnTo) ? req.query.returnTo.slice(0, 512) : "/";
-      if (!enabledAuthProviders()[provider]) return res.redirect(loginFailureUrl("social_disabled", returnTo));
+      if (!enabledAuthProviders()[provider]) {
+        try { await recordAudit(req, { eventName: "auth.oauth_started.v1", outcome: "rejected", reasonCode: "PROVIDER_DISABLED", changes: [] }); }
+        catch { return res.status(503).json({ message: "Sign-in is temporarily unavailable." }); }
+        return res.redirect(loginFailureUrl("social_disabled", returnTo));
+      }
       try {
         res.redirect(await startSocialSignIn(req, provider, returnTo));
-      } catch {
+      } catch (error) {
         clearSocialAttempt(req);
+        if (error instanceof AuditCaptureUnavailable) return res.status(503).json({ message: "Sign-in is temporarily unavailable." });
+        try { await recordAudit(req, { eventName: "auth.oauth_started.v1", outcome: "failed", reasonCode: "LOCAL_FAILURE", changes: [] }); }
+        catch { return res.status(503).json({ message: "Sign-in is temporarily unavailable." }); }
         res.redirect(loginFailureUrl("login_failed", returnTo));
       }
     });
@@ -178,8 +214,15 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
     // the OAuth URL and callback query cannot supply a company or membership ID.
     app.post(`/api/auth/${provider}`, authLimit, async (req, res) => {
       const parsed = socialCompanySchema.safeParse(req.body);
-      if (!parsed.success) return res.status(400).json({ message: "Enter a company name of 1 to 150 characters." });
-      if (!enabledAuthProviders()[provider]) return res.status(503).json({ message: "This sign-in option is currently unavailable. Choose another option." });
+      if (!parsed.success) {
+        try { await recordAudit(req, { eventName: "auth.oauth_started.v1", outcome: "rejected", reasonCode: "INVALID_INPUT", changes: [] }); }
+        catch { return res.status(503).json({ message: "Sign-in is temporarily unavailable." }); }
+        return res.status(400).json({ message: "Enter a company name of 1 to 150 characters." });
+      }
+      if (!enabledAuthProviders()[provider]) {
+        try { await recordAudit(req, { eventName: "auth.oauth_started.v1", outcome: "rejected", reasonCode: "PROVIDER_DISABLED", changes: [] }); } catch { /* response already fails closed */ }
+        return res.status(503).json({ message: "This sign-in option is currently unavailable. Choose another option." });
+      }
       const returnTo = isAllowedAuthReturnTo(parsed.data.returnTo) ? parsed.data.returnTo : "/";
       try {
         res.json({ url: await startSocialSignIn(req, provider, returnTo, parsed.data.companyName) });
@@ -209,9 +252,12 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
   });
   app.get("/api/callback", authLimit, async (req, res) => {
     const returnTo = isAllowedAuthReturnTo(req.session.authReturnTo) ? req.session.authReturnTo : "/";
-    const fail = (error: string) => {
+    const fail = async (error: string) => {
       clearSocialAttempt(req);
       delete req.session.invitationRecoveryEmail;
+      try { await recordAudit(req, { eventName: "auth.oauth_callback.v1", outcome: "rejected",
+        reasonCode: error === "social_cancelled" ? "OAUTH_CANCELLED" : "SESSION_EXPIRED", changes: [] }); }
+      catch { return res.status(503).json({ message: "Sign-in completion is temporarily unavailable." }); }
       return res.redirect(loginFailureUrl(error, returnTo));
     };
     if (req.query.error) return fail(req.query.error === "access_denied" ? "social_cancelled" : "login_failed");
@@ -222,17 +268,23 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
     const companyIntent = req.session.socialCompanySignup === undefined ? undefined : socialCompanyIntentSchema.safeParse(req.session.socialCompanySignup);
     if (companyIntent && (!companyIntent.success || companyIntent.data.expiresAt <= Date.now())) return fail("social_session_expired");
     try {
+      await requireAuditAvailability();
       const { data, error } = await pkceClient(req).auth.exchangeCodeForSession(req.query.code);
       if (error || !data.session) return fail("social_session_expired");
       const recoveryEmail = req.session.invitationRecoveryEmail;
-      const user = await establishSession(req, data.session, companyIntent?.success ? companyIntent.data.companyName : undefined, provisionSocialCompany);
+      const user = await establishSession(req, data.session, companyIntent?.success ? companyIntent.data.companyName : undefined, provisionSocialCompany, "auth.oauth_callback.v1");
       if (recoveryEmail && user.email_confirmed_at && user.email?.toLowerCase() === recoveryEmail) {
         const pending = await db.select({ id: companyInvitations.id }).from(companyInvitations).where(and(eq(companyInvitations.email, recoveryEmail), isNull(companyInvitations.acceptedAt), isNull(companyInvitations.revokedAt), gt(companyInvitations.expiresAt, new Date()))).limit(1);
         req.session.canSetInvitationPassword = pending.length > 0;
         await save(req);
       }
       res.redirect(returnTo);
-    } catch { fail("login_failed"); }
+    } catch (error) {
+      // A provider/session success may already be committed. Never replace it
+      // with a fabricated rejected callback when later capture/provisioning fails.
+      if (error instanceof AuditCaptureUnavailable) return res.status(503).json({ message: "Sign-in completion is temporarily unavailable." });
+      return res.redirect(loginFailureUrl("login_failed", returnTo));
+    }
   });
   app.post("/api/auth/invite-session", authLimit, async (req, res) => {
     const parsed = z.object({ refreshToken: z.string().min(1).max(4096) }).safeParse(req.body);
@@ -266,18 +318,32 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
   app.get("/api/auth/invite-status", isAuthenticated, (req, res) => res.json({ needsPassword: Boolean(req.session.canSetInvitationPassword) }));
   app.post("/api/logout", async (req, res, next) => {
     try {
-      if (req.session.auth) await supabaseAdmin.auth.admin.signOut(req.session.auth.accessToken, "local");
+      let verifiedUser: string | undefined;
+      if (auditEnabled() && req.session.auth) {
+        const checked = await createAuthClient().auth.getUser(req.session.auth.accessToken);
+        if (!checked.error && checked.data.user?.id === req.session.auth.userId) {
+          verifiedUser = checked.data.user.id;
+          try {
+            const profile = await storage.getUser(verifiedUser);
+            if (profile && (profile.currentRole === "provider" || profile.currentRole === "seeker")) req.auditPersonalRole = profile.currentRole;
+            else { auditGap(); verifiedUser = undefined; } // Logout still destroys the local session; never invent a role.
+          } catch { auditGap(); verifiedUser = undefined; }
+        }
+      }
+      const revoked = req.session.auth ? await supabaseAdmin.auth.admin.signOut(req.session.auth.accessToken, "local") : undefined;
       await destroy(req);
       res.clearCookie("wellness.sid", { httpOnly: true, secure: appUrl.startsWith("https://"), sameSite: "lax", path: "/" });
+      if (verifiedUser) await recordAudit(req, { eventName: "auth.logout.v1", outcome: revoked?.error ? "failed" : "succeeded",
+        ...(revoked?.error ? { reasonCode: "PROVIDER_UNAVAILABLE" as const } : {}), changes: [] }, verifiedUser);
       res.json({ success: true });
-    } catch (error) { next(error); }
+    } catch (error) { next(auditEnabled() ? new AuditCaptureUnavailable() : error); }
   });
 }
 
 const refreshing = new Map<string, Promise<AuthSession>>();
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   let auth = req.session.auth;
-  if (!auth) return res.status(401).json({ message: "Unauthorized" });
+  if (!auth) return denyWithAudit(req, "UNAUTHENTICATED", () => res.status(401).json({ message: "Unauthorized" }));
   try {
     if (auth.expiresAt <= Date.now() / 1000 + 60) {
       let pending = refreshing.get(req.sessionID);
@@ -299,12 +365,21 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     if (error || !data.user || data.user.id !== auth.userId) {
       if (error && error.status && error.status >= 500) return res.status(503).json({ message: "Authentication is temporarily unavailable" });
       await destroy(req);
+      await recordDenial(req, "SESSION_EXPIRED");
       return res.status(401).json({ message: "Unauthorized" });
     }
     req.user = { claims: { sub: data.user.id }, email: data.user.email, emailVerified: Boolean(data.user.email_confirmed_at) };
+    if (auditEnabled()) {
+      try {
+        const profile = await storage.getUser(data.user.id);
+        if (!profile || (profile.currentRole !== "seeker" && profile.currentRole !== "provider")) throw new AuditCaptureUnavailable();
+        req.auditPersonalRole = profile.currentRole;
+      } catch { auditGap(); return res.status(503).json({ message: "Authentication is temporarily unavailable" }); }
+    }
     next();
   } catch {
     await destroy(req).catch(() => {});
+    await recordDenial(req, "SESSION_EXPIRED");
     res.status(401).json({ message: "Unauthorized" });
   }
 };

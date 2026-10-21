@@ -1,15 +1,17 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Home, Calendar, User } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function BottomNavigation() {
+  const { t } = useTranslation();
   const [location] = useLocation();
   const isActive = (href: string) => location === href || (href === "/" && location === "/search");
 
   const tabs = [
-    { href: "/", label: "Home", icon: Home },
-    { href: "/my-bookings", label: "My Bookings", icon: Calendar },
-    { href: "/account", label: "Profile", icon: User },
+    { href: "/", label: t("nav.home"), icon: Home },
+    { href: "/my-bookings", label: t("nav.bookings"), icon: Calendar },
+    { href: "/account", label: t("nav.profile"), icon: User },
   ];
 
   return (

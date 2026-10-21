@@ -1,0 +1,360 @@
+{
+  "date": "2026-10-20",
+  "browser": "Chrome 155 headless, isolated synthetic fixture",
+  "checks": [
+    "configured native language options/names, visible label, provider loading/error/retry/disabled options, email fallback and required email validation",
+    "all existing callback error codes and password-updated receipt localized without reflecting error_description",
+    "company social validation/payload/failure retention; exact password confirmation; rejected signup retention; synchronous duplicate guard; unchanged credential payload and safe email-confirmation success with cleared secrets",
+    "mode switching clears secrets and retains email; credential-denial, rate-limit and safe generic errors focus inline feedback",
+    "allowed booking return remains personal signup; unapproved external return falls back to root after mocked login (static fixture navigation only)",
+    "invitation recovery existing endpoint/return path, failed-value retention, pending duplicate guard and non-enumerating localized receipt",
+    "77 locale/viewport cases: all 11 languages, Arabic document direction, native language choice, retained form values and one-column phone/two-column wider names",
+    "light/dark text/control contrast, 320px 200% text reflow, native language keyboard operation and reduced-motion preference"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320
+    },
+    {
+      "language": "en",
+      "width": 390
+    },
+    {
+      "language": "en",
+      "width": 639
+    },
+    {
+      "language": "en",
+      "width": 640
+    },
+    {
+      "language": "en",
+      "width": 641
+    },
+    {
+      "language": "en",
+      "width": 768
+    },
+    {
+      "language": "en",
+      "width": 1280
+    },
+    {
+      "language": "lv",
+      "width": 320
+    },
+    {
+      "language": "lv",
+      "width": 390
+    },
+    {
+      "language": "lv",
+      "width": 639
+    },
+    {
+      "language": "lv",
+      "width": 640
+    },
+    {
+      "language": "lv",
+      "width": 641
+    },
+    {
+      "language": "lv",
+      "width": 768
+    },
+    {
+      "language": "lv",
+      "width": 1280
+    },
+    {
+      "language": "es",
+      "width": 320
+    },
+    {
+      "language": "es",
+      "width": 390
+    },
+    {
+      "language": "es",
+      "width": 639
+    },
+    {
+      "language": "es",
+      "width": 640
+    },
+    {
+      "language": "es",
+      "width": 641
+    },
+    {
+      "language": "es",
+      "width": 768
+    },
+    {
+      "language": "es",
+      "width": 1280
+    },
+    {
+      "language": "zh",
+      "width": 320
+    },
+    {
+      "language": "zh",
+      "width": 390
+    },
+    {
+      "language": "zh",
+      "width": 639
+    },
+    {
+      "language": "zh",
+      "width": 640
+    },
+    {
+      "language": "zh",
+      "width": 641
+    },
+    {
+      "language": "zh",
+      "width": 768
+    },
+    {
+      "language": "zh",
+      "width": 1280
+    },
+    {
+      "language": "hi",
+      "width": 320
+    },
+    {
+      "language": "hi",
+      "width": 390
+    },
+    {
+      "language": "hi",
+      "width": 639
+    },
+    {
+      "language": "hi",
+      "width": 640
+    },
+    {
+      "language": "hi",
+      "width": 641
+    },
+    {
+      "language": "hi",
+      "width": 768
+    },
+    {
+      "language": "hi",
+      "width": 1280
+    },
+    {
+      "language": "ar",
+      "width": 320
+    },
+    {
+      "language": "ar",
+      "width": 390
+    },
+    {
+      "language": "ar",
+      "width": 639
+    },
+    {
+      "language": "ar",
+      "width": 640
+    },
+    {
+      "language": "ar",
+      "width": 641
+    },
+    {
+      "language": "ar",
+      "width": 768
+    },
+    {
+      "language": "ar",
+      "width": 1280
+    },
+    {
+      "language": "pt",
+      "width": 320
+    },
+    {
+      "language": "pt",
+      "width": 390
+    },
+    {
+      "language": "pt",
+      "width": 639
+    },
+    {
+      "language": "pt",
+      "width": 640
+    },
+    {
+      "language": "pt",
+      "width": 641
+    },
+    {
+      "language": "pt",
+      "width": 768
+    },
+    {
+      "language": "pt",
+      "width": 1280
+    },
+    {
+      "language": "ru",
+      "width": 320
+    },
+    {
+      "language": "ru",
+      "width": 390
+    },
+    {
+      "language": "ru",
+      "width": 639
+    },
+    {
+      "language": "ru",
+      "width": 640
+    },
+    {
+      "language": "ru",
+      "width": 641
+    },
+    {
+      "language": "ru",
+      "width": 768
+    },
+    {
+      "language": "ru",
+      "width": 1280
+    },
+    {
+      "language": "ja",
+      "width": 320
+    },
+    {
+      "language": "ja",
+      "width": 390
+    },
+    {
+      "language": "ja",
+      "width": 639
+    },
+    {
+      "language": "ja",
+      "width": 640
+    },
+    {
+      "language": "ja",
+      "width": 641
+    },
+    {
+      "language": "ja",
+      "width": 768
+    },
+    {
+      "language": "ja",
+      "width": 1280
+    },
+    {
+      "language": "de",
+      "width": 320
+    },
+    {
+      "language": "de",
+      "width": 390
+    },
+    {
+      "language": "de",
+      "width": 639
+    },
+    {
+      "language": "de",
+      "width": 640
+    },
+    {
+      "language": "de",
+      "width": 641
+    },
+    {
+      "language": "de",
+      "width": 768
+    },
+    {
+      "language": "de",
+      "width": 1280
+    },
+    {
+      "language": "fr",
+      "width": 320
+    },
+    {
+      "language": "fr",
+      "width": 390
+    },
+    {
+      "language": "fr",
+      "width": 639
+    },
+    {
+      "language": "fr",
+      "width": 640
+    },
+    {
+      "language": "fr",
+      "width": 641
+    },
+    {
+      "language": "fr",
+      "width": 768
+    },
+    {
+      "language": "fr",
+      "width": 1280
+    }
+  ],
+  "messageCount": 48,
+  "contrast": [
+    {
+      "view": "signup-light",
+      "failures": [],
+      "minText": 4.797580078171407,
+      "minControlBorder": 4.741667181590045
+    },
+    {
+      "view": "signup-dark",
+      "failures": [],
+      "minText": 5.506681400777804,
+      "minControlBorder": 4.1958570466569505
+    },
+    {
+      "view": "login-recovery-light",
+      "failures": [],
+      "minText": 4.797580078171407,
+      "minControlBorder": 4.741667181590045
+    },
+    {
+      "view": "login-recovery-dark",
+      "failures": [],
+      "minText": 5.506681400777804,
+      "minControlBorder": 4.1958570466569505
+    }
+  ],
+  "screenshots": [
+    "docs/forms-auth-signup-desktop.png",
+    "docs/forms-auth-signup-arabic-dark.png",
+    "docs/forms-auth-login-phone.png"
+  ],
+  "unexpectedNetwork": [],
+  "blockedNetwork": [],
+  "runtimeErrors": [],
+  "limits": "No connected auth, app server, database, email, OAuth provider, session persistence or deployment. Other browsers, physical devices/keyboards, screen readers, native-language quality and actual 400% browser zoom remain unverified."
+}

@@ -39,6 +39,10 @@ session. Load it when the user assigns the General Manager role.
   manager's documentation authority does not grant database access or execution.
   All agents follow the [project frontend, backend, and database authority rules](AGENTS.md).
 - Audit planning is in [docs/audit-plan.md](docs/audit-plan.md).
+- Product discovery, adoption/retention priorities, and monetization proposals
+  belong to the [Product Manager](PRODUCT-MANAGER.md). Coordinate delivery using
+  [the product opportunities](docs/product-opportunities.md); proposals do not
+  approve implementation, outreach, spending, or deployment.
 - Treat documentation as reported design until implementation and validation
   evidence establish actual behavior. Record gaps rather than assuming completion.
 

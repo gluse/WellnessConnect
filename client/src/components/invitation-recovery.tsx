@@ -1,33 +1,30 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { apiRequest } from "@/lib/queryClient";
+import { useFormLocale } from "@/components/forms-locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function InvitationRecovery({ returnTo }: { returnTo: string }) {
-  const [email, setEmail] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const { t } = useFormLocale();
+  const [email, setEmail] = useState(""), [busy, setBusy] = useState(false), [message, setMessage] = useState(false), [error, setError] = useState("");
+  const locked = useRef(false), errorRef = useRef<HTMLParagraphElement>(null);
   async function submit(event: FormEvent) {
-    event.preventDefault();
-    setBusy(true); setMessage(""); setError("");
+    event.preventDefault(); if (locked.current) return; locked.current = true;
+    setBusy(true); setMessage(false); setError("");
     try {
       const response = await apiRequest("POST", "/api/auth/invite-recovery", { email, returnTo });
-      setMessage((await response.json()).message);
-    } catch (error) {
-      const raw = error instanceof Error ? error.message : "";
-      try { setError(JSON.parse(raw.slice(raw.indexOf(":") + 1)).message); }
-      catch { setError("Unable to send a sign-in email. Please try again."); }
-    } finally { setBusy(false); }
+      await response.json(); setMessage(true);
+    } catch (failure) {
+      setError(failure instanceof Error && failure.message.startsWith("429:") ? "rateLimited" : "recoveryFailed"); requestAnimationFrame(() => errorRef.current?.focus());
+    } finally { locked.current = false; setBusy(false); }
   }
-  return <form onSubmit={submit} className="border rounded-lg p-4 space-y-3">
-    <p className="font-medium">No password yet, or invitation sign-in expired?</p>
-    <p className="text-sm text-neutral-600">Request a fresh email link to finish your invitation.</p>
-    <Label htmlFor="invitation-recovery-email">Invited email address</Label>
-    <Input id="invitation-recovery-email" type="email" required maxLength={254} autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} />
-    <Button type="submit" variant="outline" disabled={busy}>{busy ? "Sending…" : "Send fresh sign-in email"}</Button>
-    {message && <p role="status" className="text-sm text-green-700">{message}</p>}
-    {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+  return <form onSubmit={submit} aria-labelledby="auth-recovery-heading" className="auth-form border rounded-lg p-4 space-y-4">
+    <h2 id="auth-recovery-heading" className="text-lg font-semibold">{t("authForm.recoveryTitle")}</h2>
+    <p className="text-sm text-muted-foreground">{t("authForm.recoveryHelp")}</p>
+    <div><Label htmlFor="invitation-recovery-email">{t("authForm.invitedEmail")}</Label><Input id="invitation-recovery-email" type="email" required maxLength={254} autoComplete="email" disabled={busy} value={email} onChange={event => setEmail(event.target.value)} /></div>
+    <Button type="submit" variant="outline" disabled={busy}>{t(busy ? "authForm.sending" : "authForm.recoverySend")}</Button>
+    {message && <p role="status" className="text-sm">{t("authForm.recoverySent")}</p>}
+    {error && <p ref={errorRef} tabIndex={-1} role="alert" className="text-sm text-destructive">{t(`authForm.${error}`)}</p>}
   </form>;
 }

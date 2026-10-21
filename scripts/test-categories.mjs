@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import assert from "node:assert/strict";
 import React from "react";
 import renderer from "react-test-renderer";
@@ -8,9 +9,11 @@ import { categoryFixtures } from "./fixtures/categories.mjs";
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
 
-await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation: {} } } });
+const translation = JSON.parse(await readFile(new URL("../client/public/locales/en/translation.json", import.meta.url), "utf8"));
+await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation } } });
 
 globalThis.React = React;
+globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
 globalThis.window = { location: { pathname: "/administration", search: "", hash: "" }, HTMLSelectElement: { prototype: { value: "" } }, HTMLInputElement: { prototype: { checked: false } }, setTimeout, clearTimeout, addEventListener() {}, removeEventListener() {} };
 globalThis.document = { visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
@@ -73,7 +76,7 @@ assert.equal(requests.length, before, "Invalid keys must not submit");
 await click("Delete", 3); await click("Keep category");
 assert.equal(records.length, 4, "Deletion requires confirmation");
 await click("Delete", 3); writeStatus = 409; await click("Confirm deletion");
-assert.ok(text().includes("Category operation refused.")); assert.equal(records.length, 4);
+assert.ok(text().includes(translation.operationsForm.categoryConflict)); assert.equal(records.length, 4);
 writeStatus = 200; await click("Confirm deletion"); assert.equal(records.length, 3);
 failList = true; await click("Refresh categories");
 assert.ok(text().includes("Unable to load categories"));
@@ -98,6 +101,8 @@ writeStatus = 200; await mount(); await click("Categories"); await click("Edit")
 assert.equal(location.history.at(-1), "/login?returnTo=%2Fadministration");
 await act(async () => component.unmount()); queryClient.clear();
 delete globalThis.window; delete globalThis.document;
+
+if (process.argv.includes("--frontend-only")) { console.log("Passed: isolated categories frontend regressions; backend checks not requested."); process.exit(0); }
 
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";
 process.env.SUPABASE_URL = "http://127.0.0.1:1";

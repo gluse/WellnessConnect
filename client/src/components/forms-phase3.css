@@ -1,0 +1,26 @@
+/* Scoped to the approved operational forms. */
+.phase3-form { overflow-wrap: anywhere; }
+.phase3-form :is(input:not([type="checkbox"]), textarea, select) { min-height: 44px; height: auto; border-color: #737373; }
+.phase3-form select { width: 100%; min-width: 0; border: 1px solid #737373; border-radius: .375rem; background: var(--background); color: var(--foreground); padding: .625rem .75rem; }
+.phase3-form button { min-width: 44px; min-height: 44px; height: auto; white-space: normal; padding-block: .625rem; }
+.phase3-form input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; }
+.phase3-form input[type="time"] { direction: ltr; }
+.phase3-form :is(label, p, h2, h3, h4) { text-align: start; }
+.phase3-form .bg-muted .text-muted-foreground, .phase3-form.bg-muted .text-muted-foreground { color: #57534e; }
+.dark .phase3-form .bg-muted .text-muted-foreground, .dark .phase3-form.bg-muted .text-muted-foreground { color: #d4d4d8; }
+.phase3-form .text-destructive { color: #b91c1c; }
+.dark .phase3-form .text-destructive { color: #fca5a5; }
+.phase3-form button:enabled:hover { background: var(--muted); color: var(--foreground); }
+.phase3-form button.bg-primary:enabled:hover { background: var(--primary); color: var(--primary-foreground); }
+@media (prefers-reduced-motion: reduce) { .phase3-form * { transition: none; animation: none; } }
+.phase3-form a { color: #4338ca; text-decoration: underline; }
+.dark .phase3-form a { color: #a5b4fc; }
+.phase3-form a.bg-primary { color: var(--primary-foreground); }
+.phase3-form [role="option"].bg-accent .text-muted-foreground { color: inherit; }
+.phase3-form [role="option"].bg-accent { background: var(--primary); color: var(--primary-foreground); }
+
+@media (max-width: 639px) {
+  .phase3-form { padding: 16px; }
+  .phase3-form .availability-day-list { padding-inline: 12px; }
+  .phase3-form :is(input[type="time"], input[type="date"]) { padding-inline: 8px; }
+}

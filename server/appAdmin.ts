@@ -1,4 +1,5 @@
 import type { RequestHandler } from "express";
+import { denyWithAudit } from "./audit/http";
 
 // Only server configuration grants application support access. Company roles and
 // editable user metadata never grant access to the registered-user directory.
@@ -7,7 +8,7 @@ export function isAppAdmin(userId: string | undefined): boolean {
 }
 
 export const requireAppAdmin: RequestHandler = (req, res, next) => {
-  if (!req.user?.claims.sub) return res.status(401).json({ message: "Unauthorized" });
-  if (!isAppAdmin(req.user.claims.sub)) return res.status(403).json({ message: "Application support access is required." });
+  if (!req.user?.claims.sub) return denyWithAudit(req, "UNAUTHENTICATED", () => res.status(401).json({ message: "Unauthorized" }));
+  if (!isAppAdmin(req.user.claims.sub)) return denyWithAudit(req, "FORBIDDEN", () => res.status(403).json({ message: "Application support access is required." }));
   next();
 };

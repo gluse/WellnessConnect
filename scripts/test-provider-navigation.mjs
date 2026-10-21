@@ -5,20 +5,29 @@ import renderer from "react-test-renderer";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Router, Route, Switch } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
+import { readFile } from "node:fs/promises";
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
+
+const translation = JSON.parse(await readFile(new URL("../client/public/locales/en/translation.json", import.meta.url), "utf8"));
+await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation } } });
 
 globalThis.React = React;
 globalThis.window = {
   location: { pathname: "/my-services", search: "", hash: "", assign() {} },
   HTMLSelectElement: { prototype: { value: "" } }, HTMLInputElement: { prototype: { checked: false } },
   setTimeout, clearTimeout, addEventListener() {}, removeEventListener() {}, confirm: () => true,
+  history: { state: null, replaceState() {} },
 };
-globalThis.document = { visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
+globalThis.document = { documentElement: {}, activeElement: null, visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
+globalThis.HTMLElement = class {};
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
 const { isAllowedAuthReturnTo } = await import("../shared/navigation.ts");
 const { default: MyServices } = await import("../client/src/pages/my-services.tsx");
 const { default: RoleSwitcher } = await import("../client/src/components/role-switcher.tsx");
 const { default: Login } = await import("../client/src/pages/login.tsx");
 const { Select } = await import("../client/src/components/ui/select.tsx");
+const { AlertDialog, AlertDialogContent, AlertDialogFooter, AlertDialogAction } = await import("../client/src/components/ui/alert-dialog.tsx");
 const { act, create } = renderer;
 const user = { id: "fixture", firstName: "Test", email: "fixture@example.com", providerType: "company", currentRole: "provider" };
 const permissions = { manageServices: true, manageSchedules: true, manageBookings: true, manageTeam: false, isOwner: false, readAll: true };
@@ -62,6 +71,15 @@ const input = id => component.root.findAllByType("input").find(node => node.prop
 const click = async id => { await act(async () => component.root.findAllByType("button").find(node => node.props["data-testid"] === id).props.onClick()); await flush(); };
 const visit = async path => { await act(async () => location.navigate(path)); await flush(); };
 const headings = () => component.root.findAllByType("h1").flatMap(node => node.children).filter(value => typeof value === "string");
+// The renderer has no DOM portal. Chrome verifies the real modal and focus.
+const confirmExit = async () => {
+  const dialog = component.root.findAllByType(AlertDialog).find(node => node.props.open);
+  assert.ok(dialog, "Dirty workspace changes require explicit confirmation");
+  const content = React.Children.toArray(dialog.props.children).find(node => node.type === AlertDialogContent);
+  const footer = React.Children.toArray(content.props.children).find(node => node.type === AlertDialogFooter);
+  const action = React.Children.toArray(footer.props.children).find(node => node.type === AlertDialogAction);
+  await act(async () => action.props.onClick());
+};
 async function mount(path, workspace = personal, signedIn = true) {
   if (component) await act(async () => component.unmount());
   queryClient.clear(); context = workspace; requests = [];
@@ -94,7 +112,7 @@ await act(async () => input("serviceName").props.onChange({ target: { value: "Up
 failSave = true;
 await click("button-save-inactive-service");
 assert.equal(input("serviceName").props.value, "Updated copy", "Failed saves preserve the draft");
-assert.ok(component.root.findAllByProps({ role: "alert" }).some(node => node.children.includes("Try again")));
+assert.ok(component.root.findAllByType("h2").some(node => node.children.includes(translation.serviceForm.saveError)));
 failSave = false;
 holdSave = true;
 await click("button-save-inactive-service");
@@ -114,7 +132,7 @@ await visit("/my-services/services/new");
 for (const [id, value] of [["serviceName", "New offer"], ["price", "40"]]) await act(async () => input(id).props.onChange({ target: { value } }));
 await act(async () => component.root.findByProps({ id: "service-address" }).props.onChange({ target: { value: "7" } }));
 await click("button-save-inactive-service");
-assert.ok(component.root.findAllByProps({ role: "alert" }).some(node => node.children.includes("Choose a category.")));
+assert.ok(component.root.findAllByType("a").some(node => node.children.includes(translation.serviceForm.categoryRequired)));
 assert.ok(!requests.some(request => request.url === "/api/services" && request.method === "POST"));
 await act(async () => component.root.findAllByType(Select).find(node => node.props.value === "").props.onValueChange("education"));
 await act(async () => component.root.findByType("form").props.onSubmit({ preventDefault() {} }));
@@ -126,10 +144,13 @@ assert.equal(input("serviceName").props.value, "Personal published offer");
 failWorkspace = true;
 await act(async () => input("serviceName").props.onChange({ target: { value: "Unsaved draft" } }));
 await act(async () => component.root.findAllByType("select").find(node => node.props.id === "workspace").props.onChange({ target: { value: "2" } }));
+assert.ok(!requests.some(request => request.url === "/api/company/context" && request.method === "POST"), "No workspace request before discard confirmation");
+await confirmExit();
 await flush();
 assert.equal(input("serviceName").props.value, "Unsaved draft", "A failed workspace switch preserves the editor draft");
 failWorkspace = false;
 await act(async () => component.root.findAllByType("select").find(node => node.props.id === "workspace").props.onChange({ target: { value: "2" } }));
+await confirmExit();
 await flush();
 assert.equal(location.history.at(-1), "/my-services/services");
 assert.equal(component.root.findAllByType("h2").some(node => node.children.includes("Company offer")), true);

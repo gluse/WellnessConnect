@@ -1,0 +1,23 @@
+/* Contrast and control sizing are scoped to the service form pilot. */
+.service-editor :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select, [role="combobox"]),
+.service-editor label:has(input) {
+  border-color: #737373;
+}
+.service-editor label:has(input:checked) {
+  border-color: var(--primary);
+}
+.service-editor [role="switch"][data-state="unchecked"] {
+  background-color: #737373;
+}
+.service-editor a {
+  color: #4338ca;
+}
+.dark .service-editor a {
+  color: #a5b4fc;
+}
+@media (prefers-reduced-motion: reduce) {
+  .service-editor * {
+    transition: none;
+    animation: none;
+  }
+}

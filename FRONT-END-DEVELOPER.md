@@ -96,6 +96,9 @@ security issues; do not claim maximum security or compliance from this document.
 
 ## Tests and delivery
 
+- Follow the user's current [test language scope](AGENTS.md#test-language-scope):
+  English, Latvian and Russian only. Other eight languages, including Arabic RTL
+  verification, are deferred for later and are not current acceptance blockers.
 - Select meaningful unit/component and browser checks for the affected behavior,
   including loading/empty/error states, rejected writes, permissions, input
   validation, locale changes, RTL, and device/accessibility cases as applicable.

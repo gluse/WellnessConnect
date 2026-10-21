@@ -9,18 +9,22 @@ import { currentLocation } from "@shared/locations";
 import { useCategories } from "@/hooks/use-categories";
 import { useTranslation } from "react-i18next";
 import { Link } from "wouter";
+import SearchServiceCard from "@/components/search-service-card";
 
 interface ServiceCardProps {
   service: ServiceWithProvider;
   onBook: () => void;
   onViewDetails: () => void;
   onViewProvider?: () => void;
+  searchLayout?: boolean;
+  hasLocation?: boolean;
 }
 
-export default function ServiceCard({ service, onBook, onViewDetails, onViewProvider }: ServiceCardProps) {
+export default function ServiceCard({ service, onBook, onViewDetails, onViewProvider, searchLayout, hasLocation = false }: ServiceCardProps) {
   service = currentLocation(service);
   const { t } = useTranslation();
   const categories = useCategories();
+  if (searchLayout) return <SearchServiceCard service={service} onViewDetails={onViewDetails} onViewProvider={onViewProvider} hasLocation={hasLocation} />;
   const isGroupService = service.serviceType === "group";
   const availableSpots = isGroupService ? ((service.maxCapacity || 1) - (service.availableCapacity || 0)) : 1;
 

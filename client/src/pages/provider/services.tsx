@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "wouter";
 import { Plus, Sparkles } from "lucide-react";
 import { useProviderEmployees, useProviderServices, useProviderWorkspace } from "@/hooks/use-provider-workspace";
@@ -7,6 +8,13 @@ import ServicesList from "@/components/provider/services-list";
 import { Button } from "@/components/ui/button";
 
 export default function ServicesPage() {
+  const { t } = useTranslation();
+  const [saved] = useState(() => Boolean(window.history.state?.serviceSaved));
+  useEffect(() => {
+    if (!saved) return;
+    const state = { ...window.history.state }; delete state.serviceSaved;
+    window.history.replaceState(state, "");
+  }, [saved]);
   const services = useProviderServices();
   const employees = useProviderEmployees();
   const { data: context } = useProviderWorkspace();
@@ -15,6 +23,7 @@ export default function ServicesPage() {
   const editable = context?.permissions.manageServices ?? false;
   const filtered = (services.data ?? []).filter(service => status === "all" || (status === "published" ? service.isActive : !service.isActive));
   return <div className="space-y-6">
+    {saved && <p role="status" className="border rounded-xl p-4 bg-card text-card-foreground">{t("serviceForm.saved")}</p>}
     <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-2xl font-semibold">Services</h1><p className="text-neutral-600 mt-1">Manage your published and inactive offers.</p></div>
       {editable && <Button asChild><Link href="/my-services/services/new"><Plus className="w-4 h-4 mr-2" />Add Service</Link></Button>}
     </div>

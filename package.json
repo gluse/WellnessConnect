@@ -4,6 +4,10 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
+    "audit:worker": "node --env-file=.env.audit-worker.local --import tsx server/audit/run-worker.ts",
+    "test:audit-events": "node --import tsx scripts/test-audit-events.mjs",
+    "test:audit-worker": "node --import tsx scripts/test-audit-worker.mjs",
+    "test:audit-auth": "node --import tsx scripts/test-audit-auth.mjs",
     "db:setup-storefronts": "node scripts/setup-storefronts.mjs",
     "test:storefronts": "node --import tsx scripts/test-storefronts.mjs",
     "test:storefronts-db": "node --import tsx scripts/test-storefronts-db.mjs",

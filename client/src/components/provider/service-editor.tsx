@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import type { Employee, Service } from "@shared/schema";
@@ -8,62 +8,169 @@ import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { createServiceDraft } from "./service-draft";
 import ServiceDetailsFields from "./service-details-fields";
-import ServiceBookingFields from "./service-booking-fields";
+import ServiceBookingFields, { ServiceAudienceFields, ServiceInstantBookingField } from "./service-booking-fields";
 import ServiceLocationFields from "./service-location-fields";
 import ServiceMediaFields from "./service-media-fields";
+import { serviceControlIds, validateServiceDraft, type ServiceErrors } from "./service-field-feedback";
+import { registerServiceExitBlocker, requestServiceEditorExit } from "./service-navigation-guard";
 
+const actionClass = "min-h-11 h-auto whitespace-normal py-3 text-center";
+const dialogClass = "service-editor max-w-[calc(100%-2rem)] sm:max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl motion-reduce:animate-none";
+const activeFocus = () => document.activeElement && "focus" in document.activeElement ? document.activeElement as HTMLElement : null;
+function FormSection({ number, title, children }: { number: number; title: string; children: ReactNode }) {
+  return <section aria-labelledby={`service-section-${number}`} className="bg-card text-card-foreground border rounded-xl p-4 sm:p-6 space-y-5 min-w-0">
+    <div className="flex items-center gap-3"><span aria-hidden="true" className="flex items-center justify-center shrink-0 rounded-lg border text-primary font-semibold w-8 h-8">{number}</span>
+      <h2 id={`service-section-${number}`} className="text-lg font-semibold">{title}</h2></div>
+    {children}
+  </section>;
+}
 export default function ServiceEditor({ service, employees, company }: { service?: Service; employees: Employee[]; company: boolean }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [newService, setNewService] = useState(() => createServiceDraft(service));
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<ServiceErrors>({});
+  const [exit, setExit] = useState<{ proceed: () => unknown } | null>(null);
+  const [hideConfirmation, setHideConfirmation] = useState(false);
+  const [savingAs, setSavingAs] = useState<boolean | null>(null);
+  const summary = useRef<HTMLDivElement>(null);
+  const lastExitTrigger = useRef<HTMLElement | null>(null);
+  const lastHideTrigger = useRef<HTMLElement | null>(null);
+  const bypassExit = useRef(false);
+  const allowUnload = useRef(false);
+  const submitting = useRef(false);
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const dirty = JSON.stringify(newService) !== JSON.stringify(createServiceDraft(service));
+  const errors = Object.fromEntries(Object.entries(fieldErrors).map(([field, key]) => [field, t(key!)])) as ServiceErrors;
+  // Isolate provider text without parsing interpolated user content as markup.
+  const hideMessageParts = t("serviceForm.hideHelp", { name: "\uFFFC" }).split("\uFFFC");
   useEffect(() => {
-    const beforeUnload = (event: BeforeUnloadEvent) => { if (dirty) { event.preventDefault(); event.returnValue = ""; } };
+    document.documentElement.lang = i18n.resolvedLanguage || i18n.language;
+    document.documentElement.dir = i18n.dir();
+  }, [i18n, i18n.language, i18n.resolvedLanguage]);
+  useEffect(() => {
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      if (!allowUnload.current && !bypassExit.current && (dirty || submitting.current)) { event.preventDefault(); event.returnValue = ""; }
+    };
     window.addEventListener("beforeunload", beforeUnload);
     return () => window.removeEventListener("beforeunload", beforeUnload);
+  }, [dirty]);
+  useLayoutEffect(() => {
+    if (!dirty && !submitting.current) return;
+    return registerServiceExitBlocker(proceed => {
+      if (bypassExit.current) { proceed(); return; }
+      if (submitting.current) return;
+      lastExitTrigger.current = activeFocus();
+      setExit(previous => previous ?? { proceed });
+    });
+  }, [dirty, savingAs]);
+  useEffect(() => {
+    // Catch ordinary anchors as well as router links before they can leave.
+    const click = (event: MouseEvent) => {
+      if (bypassExit.current || (!dirty && !submitting.current) || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const anchor = event.target instanceof Element ? event.target.closest("a[href]") : null;
+      if (!(anchor instanceof HTMLAnchorElement) || anchor.target === "_blank" || anchor.hasAttribute("download")) return;
+      const url = new URL(anchor.href, window.location.href);
+      if (url.origin === window.location.origin && url.pathname === window.location.pathname && url.search === window.location.search) return;
+      event.preventDefault(); event.stopImmediatePropagation();
+      requestServiceEditorExit(() => { allowUnload.current = true; anchor.click(); });
+    };
+    document.addEventListener("click", click, true);
+    return () => document.removeEventListener("click", click, true);
   }, [dirty]);
   const save = useMutation({
     mutationFn: async (isActive: boolean) => (await apiRequest(service ? "PATCH" : "POST", service ? `/api/services/${service.id}` : "/api/services", { ...newService, isActive })).json(),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ predicate: query => String(query.queryKey[0]).startsWith("/api/services/") });
-      toast({ title: service ? "Service Updated" : "Service Created" });
-      navigate("/my-services/services");
+      toast({ title: t("serviceForm.saved") });
+      bypassExit.current = true;
+      navigate("/my-services/services", { state: { serviceSaved: true } });
     },
     onError: error => {
-      if (isUnauthorizedError(error)) { window.location.assign("/login?returnTo=" + encodeURIComponent(service ? `/my-services/services/${service.id}/edit` : "/my-services/services/new")); return; }
-      try { setError(JSON.parse(error.message.replace(/^\d+:\s*/, "")).message || "Unable to save service."); }
-      catch { setError("Unable to save service. Please try again."); }
+      if (isUnauthorizedError(error)) {
+        // Authentication loss clears the in-memory editor; never recover across accounts.
+        bypassExit.current = true;
+        window.location.assign("/login?returnTo=" + encodeURIComponent(service ? `/my-services/services/${service.id}/edit` : "/my-services/services/new")); return;
+      }
+      setError(/^403:/.test(error.message) ? "serviceForm.denied" : "serviceForm.saveError");
+      queueMicrotask(() => summary.current?.focus());
     },
+    onSettled: () => { submitting.current = false; setSavingAs(null); },
   });
-  const submit = (isActive: boolean) => {
-    if (save.isPending) return;
-    if (!newService.name.trim() || !newService.price) { setError("Enter a service name and price."); return; }
-    if (!newService.category) { setError("Choose a category."); return; }
-    if (!Number.isInteger(newService.cleanupTime) || newService.cleanupTime < 0 || newService.cleanupTime > 1440) { setError(t("serviceCleanup.invalid")); return; }
-    if (!Number.isFinite(Number(newService.price)) || Number(newService.price) < 0 || newService.duration < 1 || newService.maxCapacity < 1) { setError("Use a non-negative price and a positive duration and capacity."); return; }
-    if (!newService.addressId) { setError("Choose a saved address for this service."); return; }
-    setError(""); save.mutate(isActive);
+  const submit = (isActive: boolean, confirmed = false) => {
+    if (submitting.current || save.isPending) return;
+    const nextErrors = validateServiceDraft(newService);
+    setFieldErrors(nextErrors); setError("");
+    if (Object.keys(nextErrors).length) { queueMicrotask(() => summary.current?.focus()); return; }
+    if (!isActive && service?.isActive && !confirmed) { lastHideTrigger.current = activeFocus(); setHideConfirmation(true); return; }
+    submitting.current = true; setSavingAs(isActive); save.mutate(isActive);
   };
-  return <div className="max-w-3xl mx-auto space-y-5">
-    <Button variant="ghost" asChild className="-ml-3"><Link href="/my-services/services" onClick={event => { if (save.isPending || (dirty && !window.confirm("Discard unsaved service changes?"))) event.preventDefault(); }}><ArrowLeft className="w-4 h-4 mr-2" />Back to services</Link></Button>
-    <div><h1 className="text-2xl font-semibold">{service ? "Edit Service" : "Add New Service"}</h1><p className="mt-1 text-neutral-600">{service ? "Update your offer and choose whether to publish it." : "Add the details customers need to book your service."}</p></div>
-    <form onSubmit={event => { event.preventDefault(); submit(true); }} className="space-y-6">
+  const goBack = () => requestServiceEditorExit(() => { bypassExit.current = true; navigate("/my-services/services"); });
+  return <div className="service-editor max-w-3xl mx-auto space-y-5 bg-background text-foreground" dir={i18n.dir()}>
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <Button type="button" variant="ghost" className={actionClass} disabled={save.isPending} onClick={goBack}>
+        <ArrowLeft className="w-4 h-4 rtl:rotate-180" aria-hidden="true" />{t("serviceForm.back")}
+      </Button>
+      {dirty && <p role="status" className="text-sm text-muted-foreground">{t("serviceForm.unsaved")}</p>}
+    </div>
+    <div><h1 className="text-2xl font-semibold">{t(service ? "provider.editService" : "provider.addService")}</h1>
+      <p className="mt-2 text-muted-foreground">{t("serviceForm.intro")}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{t("serviceForm.required")}</p>
+    </div>
+    <form noValidate onSubmit={event => { event.preventDefault(); submit(true); }} className="space-y-6" aria-busy={save.isPending}>
+      {(error || Object.keys(errors).length > 0) && <div ref={summary} tabIndex={-1} role="alert" className="rounded-xl border border-red-700 dark:border-red-300 p-4 space-y-2 focus:outline focus:outline-2 focus:outline-offset-2">
+        <h2 className="font-semibold">{t(error || "serviceForm.checkFields")}</h2>
+        {Object.keys(errors).length > 0 && <ul className="list-disc ps-5">{Object.entries(errors).map(([field, message]) => <li key={field}>
+          <a href={`#${serviceControlIds[field as keyof typeof serviceControlIds]}`} className="underline py-2 inline-block"
+            onClick={event => { event.preventDefault(); document.getElementById(serviceControlIds[field as keyof typeof serviceControlIds]!)?.focus(); }}>{message}</a>
+        </li>)}</ul>}
+      </div>}
       <fieldset disabled={save.isPending} className="space-y-6 min-w-0">
-        <div className="bg-white border rounded-xl p-4 sm:p-6 space-y-4"><h2 className="font-semibold">Service details</h2><ServiceDetailsFields newService={newService} setNewService={setNewService} employees={employees} company={company} /></div>
-        <div className="bg-white border rounded-xl p-4 sm:p-6 space-y-4"><h2 className="font-semibold">Booking and pricing</h2><ServiceBookingFields newService={newService} setNewService={setNewService} /></div>
-        <div className="bg-white border rounded-xl p-4 sm:p-6 space-y-4"><h2 className="font-semibold">Location</h2><ServiceLocationFields newService={newService} setNewService={setNewService} /></div>
-        <div className="bg-white border rounded-xl p-4 sm:p-6 space-y-4"><h2 className="font-semibold">Image and links</h2><ServiceMediaFields newService={newService} setNewService={setNewService} /></div>
+        <FormSection number={1} title={t("serviceForm.details")}><ServiceDetailsFields newService={newService} setNewService={setNewService} employees={employees} company={company} errors={errors} /></FormSection>
+        <FormSection number={2} title={t("serviceForm.sessionPrice")}><ServiceBookingFields newService={newService} setNewService={setNewService} errors={errors} /></FormSection>
+        <FormSection number={3} title={t("serviceForm.audience")}><ServiceAudienceFields newService={newService} setNewService={setNewService} /></FormSection>
+        <FormSection number={4} title={t("serviceForm.bookingLocation")}>
+          <ServiceInstantBookingField newService={newService} setNewService={setNewService} />
+          <ServiceLocationFields newService={newService} setNewService={setNewService} errors={errors} />
+        </FormSection>
+        <FormSection number={5} title={t("serviceForm.media")}><ServiceMediaFields newService={newService} setNewService={setNewService} errors={errors} /></FormSection>
       </fieldset>
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-      <div className="sticky bottom-0 z-20 bg-white border rounded-xl p-4 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-3">
-        <p className="text-xs text-neutral-500">Published services appear in search. Inactive services stay hidden.</p>
-        <div className="grid grid-cols-2 gap-2"><Button type="button" variant="outline" disabled={save.isPending} onClick={() => submit(false)} data-testid="button-save-inactive-service">Save Inactive</Button><Button type="submit" disabled={save.isPending} data-testid="button-save-service">{save.isPending ? "Saving…" : "Save and Publish"}</Button></div>
+      <div className="bg-card text-card-foreground border rounded-xl p-4 sm:p-6 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-4">
+        <p className="text-sm text-muted-foreground">{t("serviceForm.visibility")}</p>
+        {service?.isActive && <p className="text-sm font-medium">{t("serviceForm.hideWarning")}</p>}
+        <p role="status" aria-live="polite" className="text-sm">{save.isPending ? t(savingAs ? "serviceForm.publishing" : "serviceForm.savingInactive") : ""}</p>
+        <div className="grid sm:grid-cols-3 gap-3">
+          <Button type="button" variant="outline" className={actionClass} disabled={save.isPending} onClick={goBack}>{t("common.cancel")}</Button>
+          <Button type="button" variant="outline" className={actionClass} disabled={save.isPending} onClick={() => submit(false)} data-testid="button-save-inactive-service">{t("serviceForm.saveInactive")}</Button>
+          <Button type="submit" className={actionClass} disabled={save.isPending} data-testid="button-save-service">{t("serviceForm.publish")}</Button>
+        </div>
       </div>
     </form>
+    <AlertDialog open={Boolean(exit)} onOpenChange={open => { if (!open) setExit(null); }}>
+      <AlertDialogContent dir={i18n.dir()} className={dialogClass} onCloseAutoFocus={event => { event.preventDefault(); lastExitTrigger.current?.focus(); }}>
+        <AlertDialogHeader className="text-start sm:text-start"><AlertDialogTitle>{t("serviceForm.discardTitle")}</AlertDialogTitle><AlertDialogDescription>{t("serviceForm.discardHelp")}</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogFooter className="gap-2 sm:space-x-0"><AlertDialogCancel className={actionClass}>{t("serviceForm.keepEditing")}</AlertDialogCancel>
+          <AlertDialogAction className={actionClass} onClick={() => {
+            const proceed = exit?.proceed; setExit(null); bypassExit.current = true;
+            try {
+              const result = proceed?.();
+              if (result && typeof (result as PromiseLike<unknown>).then === "function") {
+                void Promise.resolve(result).catch(() => {}).finally(() => { bypassExit.current = false; });
+              } else bypassExit.current = false;
+            } catch { bypassExit.current = false; }
+          }}>{t("serviceForm.discard")}</AlertDialogAction></AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    <AlertDialog open={hideConfirmation} onOpenChange={setHideConfirmation}>
+      <AlertDialogContent dir={i18n.dir()} className={dialogClass} onCloseAutoFocus={event => { event.preventDefault(); lastHideTrigger.current?.focus(); }}>
+        <AlertDialogHeader className="text-start sm:text-start"><AlertDialogTitle>{t("serviceForm.hideTitle")}</AlertDialogTitle><AlertDialogDescription>{hideMessageParts.map((part, index) => <Fragment key={index}>{index > 0 && <bdi>{newService.name}</bdi>}{part}</Fragment>)}</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogFooter className="gap-2 sm:space-x-0"><AlertDialogCancel className={actionClass}>{t("serviceForm.keepEditing")}</AlertDialogCancel>
+          <AlertDialogAction className={actionClass} onClick={() => submit(false, true)}>{t("serviceForm.saveInactive")}</AlertDialogAction></AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </div>;
 }

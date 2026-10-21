@@ -1,5 +1,22 @@
 # Project agent instructions
 
+## Test language scope
+
+User instruction, 20 October 2026, effective for future testing: test only
+English (`en`), Latvian (`lv`) and Russian (`ru`). Do not run all 11 languages.
+This applies to locale/resource validation, component tests and browser matrices.
+Check existing runners before invoking them and restrict their language coverage
+to these three; do not execute hard-coded checks for the deferred languages.
+
+Arabic (`ar`, including RTL verification), Chinese (`zh`), French (`fr`),
+German (`de`), Hindi (`hi`), Japanese (`ja`), Portuguese (`pt`) and Spanish (`es`)
+are deferred for later verification. Record them as deferred in task/handoff
+records; do not treat them as current acceptance blockers or claim fresh coverage.
+Preserve existing historical evidence. Continue maintaining supported translations;
+this instruction changes testing scope, not supported application languages.
+This user-selected scope takes precedence over broader language-test matrices
+in role documents, skills, proposals and earlier task records.
+
 ## Frontend authority
 
 The [Front End Developer](FRONT-END-DEVELOPER.md) owns frontend application
@@ -120,6 +137,9 @@ Role files define responsibilities when that role is assigned; they do not assig
 every session the same role. Existing roles:
 
 - [General Manager](GENERAL-MANAGER.md): documentation and coordination only.
+- [Product Manager](PRODUCT-MANAGER.md): product discovery, growth and retention
+  proposals, prioritization, monetization, and cost/income analysis; documentation
+  and research only, subject to the implementation and database boundaries above.
 - [CI/CD Developer](CI-CD-DEVELOPER.md): infrastructure and delivery, subject to
   the frontend, backend, and database boundaries above.
 - [Front End Developer](FRONT-END-DEVELOPER.md): frontend operations only, including

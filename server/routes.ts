@@ -25,13 +25,15 @@ import { scope, assertService, assertBooking, ensureCompany, workspaceContext, s
 import { db } from "./db";
 import { companies } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import { requestAuditContext } from "./audit/http";
+import { AuditCaptureUnavailable } from "./audit/capture";
 
 function apiFailure(error: unknown, res: import("express").Response, fallback: string) {
   const pgError = (error as any)?.cause ?? error;
   if ((pgError as any)?.code === "23503" && (pgError as any)?.constraint === "services_category_categories_key_fk") {
     return res.status(400).json({ message: "Choose an existing category." });
   }
-  const known = error instanceof AccessError || error instanceof ImageStorageError || error instanceof GeocodingError || error instanceof CategoryError;
+  const known = error instanceof AccessError || error instanceof ImageStorageError || error instanceof GeocodingError || error instanceof CategoryError || error instanceof AuditCaptureUnavailable;
   res.status(known ? error.status : error instanceof z.ZodError ? 400 : error instanceof BookingConflictError ? 409 : 500)
     .json({ message: known || error instanceof BookingConflictError ? error.message : error instanceof z.ZodError ? error.issues[0].message : fallback });
 }
@@ -228,10 +230,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid role" });
       }
 
-      const user = await storage.updateUserRole(userId, role);
+      const user = await storage.updateUserRole(userId, role, requestAuditContext(req, "account"));
       res.json(user);
     } catch (error) {
-      console.error("Error updating user role:", error);
+      console.error("Error updating user role:", error instanceof AuditCaptureUnavailable ? "AUDIT_CAPTURE_UNAVAILABLE" : "ROLE_UPDATE_FAILED");
       apiFailure(error, res, "Failed to update user role");
     }
   });

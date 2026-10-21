@@ -28,6 +28,9 @@ import { eq, and, or, gte, lte, asc, desc, sql, ne, isNull, inArray } from "driz
 import { publicProvider } from "@shared/provider";
 import { storefrontStore } from "./storefronts";
 import { serviceLocation } from "./addresses";
+import { assertAuditContext, createAuditContext, type AuditContext } from "./audit/context";
+import { createAuditEvent } from "./audit/events";
+import { enqueueDrizzleAudit, AuditCaptureUnavailable } from "./audit/capture";
 import { bookableSlots } from "@shared/scheduling";
 import { reviewSchema, ReviewError, type ReviewInput, type ServiceReviewPage } from "@shared/reviews";
 import { assertSearchSize, MAX_SEARCH_CANDIDATES, MAX_SEARCH_SCHEDULES, searchFiltersSchema, type SearchFilters } from "./searchInput";
@@ -98,7 +101,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserNames(id: string, names: { firstName: string; lastName: string }): Promise<User>;
-  updateUserRole(id: string, role: "seeker" | "provider"): Promise<User>;
+  updateUserRole(id: string, role: "seeker" | "provider", audit?: AuditContext): Promise<User>;
   updateProviderProfile(id: string, profile: { providerType: "individual" | "company"; companyName: string | null }): Promise<User>;
   getEmployees(providerId: string, companyId?: number): Promise<Employee[]>;
   saveEmployee(providerId: string, employee: { name: string; showName: boolean }, id?: number, companyId?: number): Promise<Employee | undefined>;
@@ -177,7 +180,21 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUserRole(id: string, role: "seeker" | "provider"): Promise<User> {
+  async updateUserRole(id: string, role: "seeker" | "provider", audit?: AuditContext): Promise<User> {
+    if (audit) return db.transaction(async tx => {
+      assertAuditContext(audit);
+      const [previous] = await tx.select().from(users).where(eq(users.id, id)).for("update");
+      if (!previous || audit.actor.kind !== "user" || audit.actor.userId !== id) throw new Error("Account unavailable");
+      if (previous.currentRole !== "seeker" && previous.currentRole !== "provider") throw new AuditCaptureUnavailable();
+      const [user] = await tx.update(users).set({ currentRole: role, updatedAt: new Date() }).where(eq(users.id, id)).returning();
+      const before = previous.currentRole;
+      const actionContext = createAuditContext({ ...audit, actor: { ...audit.actor, effectiveRole: before } });
+      const event = createAuditEvent(actionContext, { eventName: "account.active_role_changed.v1", outcome: "succeeded",
+        ...(before === role ? { reasonCode: "NO_CHANGE" as const } : {}),
+        changes: before === role ? [] : [{ field: "currentRole", before, after: role }] });
+      await enqueueDrizzleAudit(tx, event);
+      return user;
+    });
     const [user] = await db
       .update(users)
       .set({ currentRole: role, updatedAt: new Date() })

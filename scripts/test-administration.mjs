@@ -14,6 +14,7 @@ const activePro = { enabled: true, proUntil: new Date(Date.now() + 86400_000).to
 const inactivePro = { enabled: false, proUntil: null };
 
 globalThis.React = React;
+globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
 globalThis.window = { location: { pathname: "/administration", search: "", hash: "" }, addEventListener() {}, removeEventListener() {} };
 globalThis.document = { visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
@@ -145,6 +146,8 @@ delete globalThis.window; delete globalThis.document;
 
 // Exercise the registered backend middleware and real Supabase SDK, with Auth
 // HTTP mocked. No live accounts, database records, or privileges are changed.
+if (process.argv.includes("--frontend-only")) { console.log("Passed: isolated administration frontend regressions; backend checks not requested."); process.exit(0); }
+
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";
 process.env.SUPABASE_URL = "http://127.0.0.1:1";
 process.env.SUPABASE_PUBLISHABLE_KEY = "fixture-key";

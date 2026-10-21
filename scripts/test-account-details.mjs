@@ -4,6 +4,11 @@ import renderer from "react-test-renderer";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { readFile } from "node:fs/promises";
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
+
+await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation: JSON.parse(await readFile(new URL("../client/public/locales/en/translation.json", import.meta.url), "utf8")) } } });
 
 globalThis.React = React;
 globalThis.window = {
@@ -48,8 +53,8 @@ const submit = async () => {
 };
 assert.equal(input("account-name").props.value, "Old");
 assert.equal(input("account-surname").props.value, "Name");
-assert.ok(component.root.findAllByType("dd").some(node => node.children.includes("fixture@example.com")));
-assert.ok(component.root.findAllByType("dd").some(node => node.children.includes("Example company")));
+assert.ok(component.root.findAllByType("dd").some(node => node.findAllByType("bdi").some(child => child.children.includes("fixture@example.com"))));
+assert.ok(component.root.findAllByType("dd").some(node => node.findAllByType("bdi").some(child => child.children.includes("Example company"))));
 assert.equal(component.root.findAllByProps({ role: "dialog" }).length, 0);
 await edit("account-name", "  Āna  ");
 await edit("account-surname", "  O’Neil-Smith  ");
@@ -79,6 +84,10 @@ await act(async () => component.unmount());
 queryClient.clear();
 delete globalThis.window;
 delete globalThis.document;
+if (process.argv.includes("--frontend-only")) {
+  console.log("Passed: mocked account profile validation, normalized names, failed-save retention, independent saves and expired-session redirect; backend section not loaded.");
+  process.exit(0);
+}
 
 // Register real server routes with local dependencies stubbed. No external calls.
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";

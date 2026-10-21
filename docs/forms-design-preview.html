@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>FitsMyTime · Form design preview</title>
+  <style>
+    :root { --ink:#182238; --muted:#5c687b; --line:#e1e5ed; --primary:#504ded; --wash:#f4f5fa; --green:#16634f; --soft:#eeedff; font-family:Inter, "Segoe UI", Arial, sans-serif; color:var(--ink); background:#f1f3f8; }
+    * { box-sizing:border-box; }
+    body { margin:0; }
+    button, input, select, textarea { font:inherit; }
+    button, a, input, select, textarea, summary { -webkit-tap-highlight-color:transparent; }
+    button { cursor:pointer; }
+    button, a { touch-action:manipulation; }
+    :focus-visible { outline:3px solid #504ded; outline-offset:4px; }
+    [hidden] { display:none !important; }
+    h1,h2,h3,p { margin:0; }
+    a { color:var(--primary); text-underline-offset:4px; }
+    .skip { position:absolute; inset-block-start:-80px; inset-inline-start:16px; z-index:10; background:white; padding:14px; }
+    .skip:focus { inset-block-start:12px; }
+    .studio-bar { background:#172139; color:#fff; padding:18px 4vw; display:flex; justify-content:space-between; align-items:center; gap:16px; }
+    .brand { display:flex; gap:11px; align-items:center; font-size:19px; font-weight:750; letter-spacing:-.6px; }
+    .brand-mark { width:30px; height:30px; border-radius:9px; background:var(--primary); display:grid; place-items:center; color:white; flex-shrink:0; }
+    .brand-mark svg { width:20px; height:20px; }
+    .studio-label { font-size:12px; letter-spacing:1.4px; color:#d7dcef; text-transform:uppercase; }
+    .studio-tag { border:1px solid #526079; color:#e7eafa; border-radius:30px; padding:7px 12px; font-size:12px; }
+    .presentation { max-width:1440px; margin:auto; padding:42px 4vw 34px; }
+    .intro { display:flex; align-items:end; justify-content:space-between; gap:24px; margin-block-end:26px; }
+    .eyebrow { color:var(--primary); font-size:11px; font-weight:750; letter-spacing:1.6px; text-transform:uppercase; margin-block-end:11px; }
+    h1 { font-size:clamp(28px,3vw,42px); line-height:1.14; letter-spacing:-1.4px; font-weight:650; }
+    .intro p { color:var(--muted); font-size:15px; margin-block-start:12px; line-height:1.7; max-width:620px; }
+    .concept-label { font-size:12px; color:var(--muted); text-align:end; white-space:nowrap; line-height:1.8; }
+    .concept-label strong { color:var(--ink); display:block; font-size:13px; }
+    .controls { display:flex; justify-content:space-between; gap:16px; align-items:center; margin-block-end:20px; flex-wrap:wrap; }
+    .screen-nav { display:flex; gap:5px; flex-wrap:wrap; }
+    .screen-nav button { border:1px solid transparent; color:var(--muted); background:transparent; min-height:44px; padding:10px 17px; border-radius:9px; font-size:14px; font-weight:600; }
+    .screen-nav button[aria-pressed="true"] { color:var(--primary); background:white; border-color:#dcdcf0; box-shadow:0 2px 4px #18223805; }
+    .screen-nav small { font-size:11px; margin-inline-end:7px; opacity:.75; }
+    .device-toggle { display:flex; border:1px solid #d8dde8; padding:3px; border-radius:9px; background:#e9ecf3; }
+    .device-toggle button { border:0; background:transparent; color:#526075; border-radius:6px; min-height:38px; padding:8px 13px; font-size:12px; font-weight:650; }
+    .device-toggle button[aria-pressed="true"] { background:white; color:var(--ink); box-shadow:0 1px 4px #18223812; }
+    .prototype { container:prototype / inline-size; max-width:1280px; margin-inline:auto; background:#f7f8fc; border:1px solid #d9dfea; border-radius:15px; box-shadow:0 16px 50px -30px #1d284d50; overflow:clip; }
+    .prototype.phone { max-width:390px; }
+    .app-bar { min-height:76px; padding:16px 30px; background:white; border-block-end:1px solid var(--line); display:flex; align-items:center; gap:30px; }
+    .app-brand { font-size:19px; }
+    .workspace { color:var(--muted); border-inline-start:1px solid var(--line); padding-inline-start:26px; font-size:12px; }
+    .app-links { display:flex; gap:24px; margin-inline-start:auto; color:var(--muted); font-size:13px; }
+    .app-links .current { color:var(--primary); font-weight:650; }
+    .avatar { width:34px; height:34px; border-radius:50%; background:#e9e9fc; color:#4542b5; font-weight:650; display:grid; place-items:center; font-size:12px; }
+    .screen { padding:30px; }
+    .crumb { font-size:12px; color:var(--muted); margin-block-end:20px; display:flex; align-items:center; gap:9px; }
+    .crumb span[aria-hidden] { color:#8992a5; }
+    .page-heading { display:flex; justify-content:space-between; align-items:start; gap:15px; margin-block-end:25px; }
+    h2 { font-size:27px; font-weight:650; letter-spacing:-.7px; line-height:1.25; }
+    .subtitle { color:var(--muted); font-size:13px; line-height:1.7; margin-block-start:8px; }
+    .badge { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:30px; background:#fff5de; color:#815417; font-size:11px; font-weight:650; white-space:nowrap; }
+    .badge::before { content:""; width:5px; height:5px; border-radius:50%; background:currentColor; }
+    .badge.green { color:var(--green); background:#e8f5ee; }
+    .editor-grid { display:grid; grid-template-columns:minmax(0,1fr) 264px; gap:24px; align-items:start; }
+    .form-stack { display:grid; gap:18px; min-width:0; }
+    .card { border:1px solid var(--line); border-radius:12px; background:#fff; padding:25px; min-width:0; }
+    .section-title { display:flex; gap:12px; align-items:start; margin-block-end:22px; }
+    .section-num { background:#f0efff; color:#5751be; width:28px; height:28px; flex-shrink:0; display:grid; place-items:center; border-radius:8px; font-size:12px; font-weight:700; }
+    h3 { font-size:16px; line-height:1.6; font-weight:650; letter-spacing:-.2px; }
+    .section-title p { color:var(--muted); font-size:12px; line-height:1.6; margin-block-start:3px; }
+    .field { display:grid; align-content:start; gap:8px; margin-block-end:19px; min-width:0; }
+    .field:last-child { margin-block-end:0; }
+    label, legend { font-size:12px; font-weight:650; line-height:1.6; }
+    .optional { color:var(--muted); font-weight:400; }
+    input:not([type="checkbox"]):not([type="radio"]), select, textarea { width:100%; min-width:0; border:1px solid #a9b2c3; border-radius:7px; padding:12px; color:var(--ink); background:#fff; min-height:46px; font-size:14px; line-height:1.4; }
+    textarea { min-height:100px; resize:vertical; }
+    input[readonly] { background:#f6f7fb !important; color:#5c687b !important; }
+    .help { font-size:11px; color:var(--muted); line-height:1.65; }
+    .pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+    fieldset { border:0; padding:0; margin:0 0 20px; min-width:0; }
+    legend { padding:0; margin-block-end:9px; }
+    .choices { display:flex; gap:9px; flex-wrap:wrap; }
+    .choice { border:1px solid #a9b2c3; border-radius:8px; padding:11px 13px; min-height:44px; display:flex; align-items:center; gap:9px; font-weight:500; flex:1; }
+    .choice:has(input:checked) { border-color:var(--primary); background:#f4f3ff; color:#3c35a6; }
+    input[type="checkbox"],input[type="radio"] { accent-color:var(--primary); width:16px; height:16px; margin:0; flex-shrink:0; }
+    .toggle-row { display:flex; justify-content:space-between; align-items:center; gap:16px; padding-block-end:19px; margin-block-end:20px; border-block-end:1px solid var(--line); }
+    .toggle-row p { margin-block-start:4px; }
+    .toggle { appearance:none; width:42px !important; height:24px !important; background:#a9b2c3; border:1px solid #7a879d; border-radius:20px; position:relative; cursor:pointer; }
+    .toggle:checked { background:var(--primary); border-color:var(--primary); }
+    .toggle::after { content:""; position:absolute; width:18px; height:18px; border-radius:50%; background:white; inset-block-start:2px; inset-inline-start:2px; }
+    .toggle:checked::after { inset-inline-start:20px; }
+    .note { display:flex; align-items:start; gap:10px; padding:13px; border-radius:8px; background:#f2f2ff; color:#48458c; font-size:11px; line-height:1.7; }
+    .note strong { display:block; }
+    .note-icon { border:1px solid currentColor; border-radius:50%; width:15px; height:15px; display:grid; place-items:center; flex-shrink:0; font-size:10px; line-height:1; margin-block-start:2px; }
+    .rail { display:grid; gap:18px; }
+    .rail .card { padding:20px; }
+    .overline { color:var(--muted); font-size:10px; font-weight:750; letter-spacing:1.4px; text-transform:uppercase; margin-block-end:16px; }
+    .service-art { height:140px; background:#e6e6f6; border-radius:9px; display:grid; place-items:center; position:relative; overflow:hidden; margin-block-end:16px; }
+    .service-art::before, .service-art::after { content:""; position:absolute; border-radius:50%; border:1px solid #b5b6d7; width:175px; height:175px; inset-block-start:37px; inset-inline-start:-45px; }
+    .service-art::after { width:240px; height:240px; inset-inline-start:auto; inset-inline-end:-66px; inset-block-start:-135px; }
+    .service-art svg { width:65px; height:65px; color:#6c6b98; }
+    .category { font-size:10px; color:#6157ab; text-transform:uppercase; letter-spacing:1.3px; font-weight:700; margin-block-end:6px; }
+    .preview-title { font-size:18px; line-height:1.4; font-weight:650; letter-spacing:-.4px; }
+    .provider { font-size:11px; color:var(--muted); margin-block-start:8px; }
+    .price-row { display:flex; justify-content:space-between; align-items:center; gap:10px; border-block-start:1px solid var(--line); padding-block-start:16px; margin-block-start:19px; }
+    .price { font-size:23px; font-weight:650; letter-spacing:-.7px; }
+    .price small { font-size:11px; letter-spacing:0; color:var(--muted); font-weight:500; }
+    .time-pill { font-size:11px; color:var(--muted); background:#f4f5f9; padding:6px 8px; border-radius:5px; }
+    .rail-list { list-style:none; padding:0; margin:0; display:grid; gap:14px; font-size:12px; color:var(--muted); }
+    .rail-list li { display:flex; gap:9px; line-height:1.6; }
+    .check { color:var(--green); font-weight:700; }
+    .design-aside { padding:3px 8px; color:var(--muted); font-size:11px; line-height:1.8; }
+    .design-aside strong { color:#4f4ba4; font-size:11px; display:block; margin-block-end:5px; }
+    .actions { background:white; border:1px solid var(--line); border-radius:12px; padding:19px 22px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .actions .help { flex:1 1 160px; }
+    .button { min-height:44px; border:1px solid #a9b2c3; background:white; color:var(--ink); border-radius:7px; padding:11px 16px; font-size:12px; font-weight:650; text-align:center; line-height:1.5; }
+    .button.primary { color:white; background:var(--primary); border-color:var(--primary); }
+    .button.quiet { border-color:transparent; color:var(--muted); }
+    .button.full { width:100%; }
+    .button:hover { filter:brightness(.96); }
+    details { margin-block-start:17px; }
+    summary { font-size:12px; color:var(--primary); font-weight:650; cursor:pointer; min-height:44px; display:flex; align-items:center; gap:9px; }
+    summary::before { content:"+"; }
+    details[open] > summary::before { content:"−"; }
+    .steps { display:flex; gap:16px; align-items:center; font-size:12px; margin-block-end:26px; color:var(--muted); }
+    .step { display:flex; align-items:center; gap:8px; }
+    .step b { width:25px; height:25px; display:grid; place-items:center; background:#eeedfa; color:var(--primary); border-radius:50%; font-size:11px; }
+    .step.active { color:var(--primary); font-weight:650; }
+    .step.active b { background:var(--primary); color:white; }
+    .step-line { height:1px; width:40px; background:#cdd3e0; }
+    .appointment { background:#f6f6ff; border:1px solid #deddf6; border-radius:9px; padding:20px; margin-block-end:22px; }
+    .appointment strong { font-size:16px; font-weight:650; display:block; margin-block-end:8px; }
+    .appointment p { font-size:13px; line-height:1.8; }
+    .appointment .help { font-size:11px; }
+    .text-button { border:0; background:transparent; color:var(--primary); padding:11px 0; min-height:44px; font-size:12px; font-weight:650; text-decoration:underline; text-underline-offset:3px; }
+    .totals { display:grid; gap:12px; font-size:13px; margin-block:22px; }
+    .total-line { display:flex; justify-content:space-between; gap:16px; }
+    .total-line.final { padding-block-start:16px; border-block-start:1px solid var(--line); font-size:17px; font-weight:650; }
+    .account-layout { display:grid; grid-template-columns:190px minmax(0,1fr); gap:25px; max-width:940px; }
+    .section-nav { display:grid; gap:5px; align-content:start; }
+    .section-nav a { color:var(--muted); text-decoration:none; border-radius:7px; padding:13px; font-size:12px; min-height:44px; }
+    .section-nav a:first-child { background:#eae9fd; color:var(--primary); font-weight:650; }
+    .small-actions { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-block-start:23px; }
+    .address-card { background:#f8fafb; border:1px solid var(--line); padding:16px; border-radius:8px; margin-block-end:20px; display:flex; align-items:start; justify-content:space-between; gap:14px; }
+    .address-card strong { display:block; font-size:13px; margin-block-end:7px; }
+    .address-card p { color:var(--muted); font-size:12px; line-height:1.8; }
+    .error-example { margin-block-start:18px; border-inline-start:3px solid #b33244; padding:12px 14px; background:#fff4f5; font-size:12px; line-height:1.7; color:#973042; }
+    .error-example strong { display:block; }
+    .preview-footer { border-block-start:1px solid var(--line); padding:14px 30px; font-size:10px; color:var(--muted); background:white; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; line-height:1.7; }
+    .annotations { display:grid; grid-template-columns:repeat(3,1fr); gap:26px; margin-block-start:27px; }
+    .annotation { display:flex; gap:11px; font-size:12px; line-height:1.8; color:var(--muted); }
+    .annotation > span { color:var(--primary); font-size:11px; padding-block-start:2px; font-weight:750; }
+    .annotation strong { color:var(--ink); display:block; font-size:12px; }
+    .status { min-height:24px; text-align:center; color:#494497; font-size:12px; margin-block-start:18px; line-height:1.8; }
+    .document-link { text-align:center; margin-block-start:8px; color:var(--muted); font-size:11px; line-height:1.8; }
+    @container prototype (max-width:850px) {
+      .app-links, .workspace { display:none; }
+      .avatar { margin-inline-start:auto; }
+      .editor-grid { grid-template-columns:minmax(0,1fr); }
+      .rail { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .design-aside { display:none; }
+      .account-layout { grid-template-columns:minmax(0,1fr); }
+      .section-nav { display:flex; flex-wrap:wrap; }
+    }
+    @container prototype (max-width:540px) {
+      .app-bar { padding:18px; min-height:70px; gap:12px; }
+      .screen { padding:22px 16px; }
+      .page-heading { flex-direction:column; gap:12px; }
+      h2 { font-size:25px; }
+      .card { padding:20px 17px; }
+      .pair { grid-template-columns:minmax(0,1fr); gap:0; }
+      .pair .field { margin-block-end:19px; }
+      .rail { grid-template-columns:minmax(0,1fr); }
+      .rail > .card:not(:first-child) { display:none; }
+      .actions { padding:18px; }
+      .actions .help { flex-basis:100%; margin-block-end:4px; }
+      .actions .button { width:100%; }
+      .choices .choice { flex:1 1 100%; }
+      .preview-footer { padding:14px 18px; }
+      .steps { gap:9px; font-size:11px; }
+      .step-line { width:15px; }
+      .address-card { flex-direction:column; }
+      .small-actions .button { width:100%; }
+      input:not([type="checkbox"]):not([type="radio"]),select,textarea { font-size:16px; }
+    }
+    @media(max-width:650px) {
+      .presentation { padding:28px 12px; }
+      .intro { align-items:start; }
+      .concept-label, .studio-label { display:none; }
+      .intro p { font-size:13px; }
+      .screen-nav { width:100%; }
+      .screen-nav button { padding:10px; flex:1; font-size:12px; }
+      .screen-nav small { display:none; }
+      .annotations { grid-template-columns:1fr; gap:15px; padding-inline:6px; }
+      .studio-bar { padding:16px; }
+    }
+    @media print {
+      .studio-bar,.controls,.annotations,.status,.document-link { display:none; }
+      .presentation { padding:0; }
+      .prototype { max-width:none !important; box-shadow:none; }
+      .card { break-inside:avoid; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#screen-title">Skip to form preview</a>
+  <header class="studio-bar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 6h14M5 12h10M5 18h5M17 15v6m-3-3h6"/></svg></span>FitsMyTime <span class="studio-label">/ Design studio</span></div>
+    <span class="studio-tag">Visual proposal · 01</span>
+  </header>
+  <main class="presentation">
+    <div class="intro">
+      <div><div class="eyebrow">A calmer way to get things done</div><h1>Forms that feel effortless.</h1><p>Clear sections. Room to breathe. One obvious next step.<br>A visual direction for the everyday moments in FitsMyTime.</p></div>
+      <div class="concept-label"><strong>Direction A · Sectioned forms</strong>Indigo / Soft neutrals / Familiar controls</div>
+    </div>
+    <div class="controls">
+      <nav class="screen-nav" aria-label="Form previews">
+        <button type="button" data-screen="service" aria-pressed="true" aria-controls="service"><small>01</small>Service editor</button>
+        <button type="button" data-screen="booking" aria-pressed="false" aria-controls="booking"><small>02</small>Booking review</button>
+        <button type="button" data-screen="account" aria-pressed="false" aria-controls="account"><small>03</small>Account &amp; address</button>
+      </nav>
+      <div class="device-toggle" role="group" aria-label="Preview width">
+        <button type="button" data-device="desktop" aria-pressed="true">Desktop</button>
+        <button type="button" data-device="phone" aria-pressed="false">Phone</button>
+      </div>
+    </div>
+    <div class="prototype" id="prototype">
+      <div class="app-bar">
+        <div class="brand app-brand"><span class="brand-mark" aria-hidden="true">f.</span>FitsMyTime</div>
+        <div class="workspace">Provider workspace</div>
+        <div class="app-links" aria-hidden="true"><span>Overview</span><span class="current">Services</span><span>Appointments</span></div>
+        <span class="avatar" aria-label="Sample profile: Alex Morgan">AM</span>
+      </div>
+      <section class="screen" id="service" aria-labelledby="screen-title">
+        <div class="crumb">Services <span aria-hidden="true">/</span> Deep tissue massage</div>
+        <div class="page-heading"><div><h2 id="screen-title" tabindex="-1">Edit your service</h2><p class="subtitle">Make it easy for the right people to find you.<br>Fields marked * are required.</p></div><span class="badge">Inactive service</span></div>
+        <div class="editor-grid">
+          <div class="form-stack">
+            <section class="card" aria-labelledby="details-heading">
+              <div class="section-title"><span class="section-num" aria-hidden="true">01</span><div><h3 id="details-heading">Service details</h3><p>Start with what makes your service special.</p></div></div>
+              <div class="field"><label for="service-name">Service name *</label><input id="service-name" value="Deep tissue massage" required></div>
+              <div class="field"><label for="service-category">Category *</label><select id="service-category" required><option>Massage</option><option>Fitness</option><option>Wellness</option></select></div>
+              <div class="field"><label for="service-description">Description <span class="optional">(optional)</span></label><textarea id="service-description" aria-describedby="description-help">A focused, restorative treatment to release muscle tension and help you move more comfortably. Each session is tailored to you.</textarea><p class="help" id="description-help">Tell clients what to expect and how to prepare.</p></div>
+              <div class="field"><label for="service-employee">Employee <span class="optional">(optional · company services)</span></label><select id="service-employee"><option>No specific employee · shared schedule</option><option>Alex Morgan</option></select></div>
+            </section>
+            <section class="card" aria-labelledby="session-heading">
+              <div class="section-title"><span class="section-num" aria-hidden="true">02</span><div><h3 id="session-heading">Session &amp; price</h3><p>A little clarity goes a long way.</p></div></div>
+              <fieldset><legend>Service type</legend><div class="choices"><label class="choice"><input type="radio" name="service-type" value="individual" checked>One-to-one</label><label class="choice"><input type="radio" name="service-type" value="group">Group session</label></div></fieldset>
+              <div class="field" id="capacity-field" hidden><label for="capacity">Maximum participants</label><input type="number" id="capacity" value="10" min="1"></div>
+              <div class="pair"><div class="field"><label for="duration">Duration (minutes)</label><input type="number" id="duration" value="60" min="1"></div><div class="field"><label for="cleanup">Cleanup time (minutes)</label><input type="number" id="cleanup" value="15" min="0" aria-describedby="cleanup-help"><p class="help" id="cleanup-help">Time reserved after each session to reset.</p></div></div>
+              <div class="pair"><div class="field"><label for="price">Price (USD) *</label><input type="number" id="price" value="70.00" min="0" step="0.01" required></div><div class="field"><label for="advance">Advance payment (%)</label><input type="number" id="advance" value="0" min="0" max="100"></div></div>
+            </section>
+            <section class="card" aria-labelledby="audience-heading">
+              <div class="section-title"><span class="section-num" aria-hidden="true">03</span><div><h3 id="audience-heading">Who can book</h3><p>Help clients choose a session that suits them.</p></div></div>
+              <fieldset><legend>Age groups</legend><div class="choices"><label class="choice"><input type="checkbox">Children</label><label class="choice"><input type="checkbox">Teens</label><label class="choice"><input type="checkbox" checked>Adults</label><label class="choice"><input type="checkbox" checked>Seniors</label></div></fieldset>
+              <fieldset><legend>Gender</legend><div class="choices"><label class="choice"><input type="radio" name="gender">Females</label><label class="choice"><input type="radio" name="gender">Males</label><label class="choice"><input type="radio" name="gender" checked>Females and males</label></div></fieldset>
+            </section>
+            <section class="card" aria-labelledby="location-heading">
+              <div class="section-title"><span class="section-num" aria-hidden="true">04</span><div><h3 id="location-heading">Booking &amp; location</h3><p>Set expectations before clients arrive.</p></div></div>
+              <div class="toggle-row"><div><label for="instant">Instant booking</label><p class="help" id="instant-help">Clients can book without waiting for your approval.</p></div><input class="toggle" type="checkbox" id="instant" aria-describedby="instant-help" checked></div>
+              <div class="field"><label for="location">Saved address</label><select id="location"><option>Studio · 24 Garden Street, Riga</option></select><p class="help">Manage saved locations in your account.</p></div>
+              <div class="note"><span class="note-icon" aria-hidden="true">i</span><div><strong>Your schedule stays in your control.</strong>Available times follow your service and general availability settings.</div></div>
+            </section>
+            <section class="card" aria-labelledby="media-heading">
+              <div class="section-title"><span class="section-num" aria-hidden="true">05</span><div><h3 id="media-heading">Image &amp; links</h3><p>Optional details that help tell your story.</p></div></div>
+              <details><summary>Add an image or website link</summary><div class="field"><label for="image-url">Image URL <span class="optional">(optional)</span></label><input id="image-url" type="url" placeholder="https://example.com/image.jpg"></div><div class="field"><label for="website">Website <span class="optional">(optional)</span></label><input id="website" type="url" placeholder="https://example.com"></div><p class="help">Visual fields only; links and images are not loaded.</p></details>
+            </section>
+            <div class="actions"><p class="help">Ready to be discovered?<br>Published services appear in search.</p><button class="button quiet" type="button" data-demo>Cancel</button><button class="button" type="button" data-demo>Save inactive</button><button class="button primary" type="button" data-demo>Save and publish</button></div>
+          </div>
+          <aside class="rail" aria-label="Service summary and design notes">
+            <div class="card"><p class="overline">Sample client preview</p><div class="service-art" aria-hidden="true"><svg viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M36 58V32m0 13c-15 0-23-8-23-21 14 0 23 8 23 21Zm0-9c0-14 9-23 23-23 0 14-9 23-23 23Zm-1-5C25 24 23 15 28 7c11 6 13 15 7 24Z"/><path d="M19 60h34"/></svg></div><p class="category">Massage &amp; recovery</p><div class="preview-title">Deep tissue massage</div><p class="provider">with Alex Morgan · Sample Studio</p><div class="price-row"><div class="price">$70 <small>USD</small></div><span class="time-pill">60 minutes</span></div><p class="help" style="margin-block-start:14px">Illustrative summary · does not update as you edit.</p></div>
+            <div class="card"><p class="overline">Before you publish</p><ul class="rail-list"><li><span class="check">✓</span>Give your service a clear name</li><li><span class="check">✓</span>Check session length and price</li><li><span class="check">✓</span>Choose a saved location</li></ul><p class="help" style="margin-block-start:16px">Illustrative checklist, not live validation.</p></div>
+            <div class="design-aside"><strong>WHY THIS DIRECTION</strong>Related fields stay together. Helpful guidance sits beside the decision. Optional details stay out of the way.</div>
+          </aside>
+        </div>
+      </section>
+      <section class="screen" id="booking" aria-labelledby="booking-title" hidden>
+        <div class="crumb">Appointments <span aria-hidden="true">/</span> Book a session</div>
+        <div class="page-heading"><div><h2 id="booking-title" tabindex="-1">A moment just for you.</h2><p class="subtitle">Review the details before confirming your appointment.</p></div><span class="badge green">Instant booking</span></div>
+        <div class="steps" aria-label="Step 2 of 2"><span class="step"><b aria-hidden="true">✓</b>Choose time</span><span class="step-line" aria-hidden="true"></span><span class="step active" aria-current="step"><b aria-hidden="true">2</b>Review appointment</span></div>
+        <div class="editor-grid"><div class="form-stack"><div class="card">
+          <div class="section-title"><span class="section-num" aria-hidden="true">02</span><div><h3>Your appointment</h3><p>Everything you need, in one place.</p></div></div>
+          <div class="appointment"><strong>Tuesday, 20 October 2026</strong><p>10:00–11:00 <span class="optional">· 60 minutes</span></p><p class="help">Appointment timezone: Europe/Riga</p><button type="button" class="text-button" data-demo>Change time</button></div>
+          <div class="field"><label for="booking-notes">Anything you’d like your provider to know? <span class="optional">(optional)</span></label><textarea id="booking-notes" placeholder="Share a preference or ask a question…" aria-describedby="notes-help"></textarea><p class="help" id="notes-help">For this preview, use fictional information only.</p></div>
+          <div class="totals"><div class="total-line"><span>Deep tissue massage · 1 person</span><span>USD 70.00</span></div><div class="total-line final"><span>Total</span><span>USD 70.00</span></div></div>
+          <div class="note"><span class="note-icon" aria-hidden="true">i</span><div><strong>No payment is collected in this form.</strong>Any payment arrangements are handled separately with your provider.</div></div>
+        </div><div class="actions"><p class="help">Check the time and location<br>before you confirm.</p><button type="button" class="button" data-demo>Back</button><button type="button" class="button primary" data-demo>Confirm booking</button></div></div>
+        <aside class="rail" aria-label="Appointment summary"><div class="card"><p class="overline">Your session</p><div class="service-art" aria-hidden="true"><svg viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="36" cy="36" r="23"/><path d="M36 21v15l11 7M18 11l-7 7m43-7 7 7"/></svg></div><p class="category">Massage &amp; recovery</p><div class="preview-title">Deep tissue massage</div><p class="provider">with Alex Morgan · Sample Studio</p><div class="price-row"><span class="time-pill">One-to-one session</span></div><p class="help" style="margin-block-start:16px"><strong>Studio</strong><br>24 Garden Street<br>Riga, Latvia<br>Fictional address for design review</p></div><div class="design-aside"><strong>A FAMILIAR TWO-STEP FLOW</strong>The chosen time, timezone, provider and total remain visible. Clear language separates booking from payment.</div></aside></div>
+      </section>
+      <section class="screen" id="account" aria-labelledby="account-title" hidden>
+        <div class="crumb">Your workspace <span aria-hidden="true">/</span> Account</div>
+        <div class="page-heading"><div><h2 id="account-title" tabindex="-1">Your account, neatly in order.</h2><p class="subtitle">Keep your details and saved locations up to date.</p></div></div>
+        <div class="account-layout">
+          <nav class="section-nav" aria-label="Account sections"><a href="#personal">Personal information</a><a href="#addresses">Saved addresses</a><a href="#security">Password</a></nav>
+          <div class="form-stack">
+            <section class="card" id="personal" aria-labelledby="personal-heading"><div class="section-title"><span class="section-num" aria-hidden="true">01</span><div><h3 id="personal-heading">Personal information</h3><p>A few details to make your experience your own.</p></div></div><div class="pair"><div class="field"><label for="first-name">First name</label><input id="first-name" value="Alex" autocomplete="given-name"></div><div class="field"><label for="last-name">Last name</label><input id="last-name" value="Morgan" autocomplete="family-name"></div></div><div class="field"><label for="email">Email address <span class="optional">(read-only)</span></label><input id="email" type="email" value="alex@example.com" readonly aria-describedby="email-help"><p class="help" id="email-help">Your sign-in email is shown for reference.</p></div><div class="field"><label for="company">Company <span class="optional">(read-only)</span></label><input id="company" value="Sample Studio" readonly></div><div class="small-actions"><button class="button primary" type="button" data-demo>Save changes</button><p class="help">Personal details save separately.</p></div></section>
+            <section class="card" id="addresses" aria-labelledby="addresses-heading"><div class="section-title"><span class="section-num" aria-hidden="true">02</span><div><h3 id="addresses-heading">Saved addresses</h3><p>A clear path from address to verified location.</p></div></div><div class="address-card"><div><strong>Studio</strong><p>24 Garden Street, Riga<br>Fictional address for design review</p></div><span class="badge green">Location set</span></div><div class="field"><label for="address-name">Address label</label><input id="address-name" value="Studio"></div><div class="field"><label for="street">Street address</label><input id="street" value="24 Garden Street, Riga" aria-describedby="address-warning"></div><div class="note" id="address-warning"><span class="note-icon" aria-hidden="true">i</span><div>Updating this address affects every service linked to it. Verify the new location before saving.</div></div><div class="small-actions"><button class="button" type="button" data-demo>Verify location</button><span class="help">Verification and saving are separate steps.</span></div><details><summary>Use coordinates instead</summary><div class="pair"><div class="field"><label for="latitude">Latitude</label><input id="latitude" type="number" step="any" placeholder="e.g. 56.95"></div><div class="field"><label for="longitude">Longitude</label><input id="longitude" type="number" step="any" placeholder="e.g. 24.11"></div></div><p class="help">Manual coordinates are available when address verification is unavailable. Keep the existing coordinate expiry information in the implemented form.</p></details><div class="error-example"><strong>Example of verification feedback</strong>We couldn’t verify this address. Check the street and city, try again, or enter coordinates manually.</div><div class="small-actions"><button class="button primary" type="button" data-demo>Save address</button><button class="button quiet" type="button" data-demo>Cancel</button></div></section>
+            <section class="card" id="security" aria-labelledby="password-heading"><div class="section-title"><span class="section-num" aria-hidden="true">03</span><div><h3 id="password-heading">Password</h3><p>A separate action for an important change.</p></div></div><p class="help" style="margin-block-end:18px">Visual example only. Do not enter a real password.</p><div class="field"><label for="current-password">Current password</label><input id="current-password" type="password" autocomplete="off" placeholder="Current password"></div><div class="pair"><div class="field"><label for="new-password">New password</label><input id="new-password" type="password" autocomplete="off" placeholder="New password"></div><div class="field"><label for="confirm-password">Confirm new password</label><input id="confirm-password" type="password" autocomplete="off" placeholder="Repeat new password"></div></div><button type="button" class="button primary" data-demo>Update password</button></section>
+          </div>
+        </div>
+      </section>
+      <div class="preview-footer"><span>DESIGN PREVIEW · Synthetic content · English copy</span><span>Nothing is submitted or saved · No connected services</span></div>
+    </div>
+    <div class="annotations"><div class="annotation"><span>01</span><div><strong>Structure over complexity</strong>Short, numbered sections keep related decisions together without adding extra steps.</div></div><div class="annotation"><span>02</span><div><strong>Guidance where it matters</strong>Persistent labels, useful hints and specific feedback make the next action easier to understand.</div></div><div class="annotation"><span>03</span><div><strong>Comfortable at every size</strong>Fields and actions stack on narrow screens. Try the Phone preview to see the same design reflow.</div></div></div>
+    <p class="status" id="preview-status" role="status" aria-live="polite">Choose a form above to explore the proposal.</p>
+    <p class="document-link">Local visual concept · 19 October 2026 · Based on <a href="forms-design-proposal.md">the written design proposal</a>.<br>Production translations, live validation and save behavior are outside this visual mockup.</p>
+    <noscript><p class="subtitle">Enable JavaScript to switch between the three previews. The service editor remains visible without it.</p></noscript>
+  </main>
+  <script>
+    'use strict';
+    const screens = [...document.querySelectorAll('.screen')];
+    const status = document.getElementById('preview-status');
+    const titles = { service: 'screen-title', booking: 'booking-title', account: 'account-title' };
+    document.querySelectorAll('[data-screen]').forEach(button => {
+      button.addEventListener('click', () => {
+        screens.forEach(screen => { screen.hidden = screen.id !== button.dataset.screen; });
+        document.querySelectorAll('[data-screen]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+        document.querySelector('.skip').setAttribute('href', '#' + titles[button.dataset.screen]);
+        document.getElementById(titles[button.dataset.screen]).focus({ preventScroll: true });
+        status.textContent = button.textContent.trim() + ' · Visual preview only. Nothing is submitted or saved.';
+      });
+    });
+    document.querySelectorAll('[data-device]').forEach(button => {
+      button.addEventListener('click', () => {
+        document.getElementById('prototype').classList.toggle('phone', button.dataset.device === 'phone');
+        document.querySelectorAll('[data-device]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+        status.textContent = button.dataset.device === 'phone' ? 'Phone layout · 390px maximum preview width.' : 'Desktop layout · Adapts to the available window width.';
+      });
+    });
+    document.querySelectorAll('[data-demo]').forEach(button => {
+      button.addEventListener('click', () => {
+        status.textContent = 'Visual preview only — “' + button.textContent.trim() + '” does not submit or save anything.';
+        // Put feedback beside the action, including on long phone previews.
+        let feedback = button.parentElement.querySelector('.action-feedback');
+        if (!feedback) { feedback = document.createElement('p'); feedback.className = 'help action-feedback'; feedback.setAttribute('role', 'status'); feedback.style.flexBasis = '100%'; button.parentElement.append(feedback); }
+        feedback.textContent = 'Preview only. Nothing was submitted or saved.';
+      });
+    });
+    document.querySelectorAll('[name="service-type"]').forEach(input => {
+      input.addEventListener('change', () => { document.getElementById('capacity-field').hidden = input.value !== 'group'; });
+    });
+  </script>
+</body>
+</html>

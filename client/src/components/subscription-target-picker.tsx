@@ -52,9 +52,9 @@ export default function SubscriptionTargetPicker({ kind, value, disabled, onChan
       <Input ref={input} id="subscription-target" role="combobox" aria-autocomplete="list" aria-expanded={open}
         aria-controls={open ? "subscription-target-options" : undefined} aria-activedescendant={open && !options.isError && items[active] ? `subscription-option-${active}` : undefined}
         aria-describedby="subscription-target-help" autoComplete="off" placeholder={placeholder} value={search} maxLength={200} disabled={disabled}
-        className="pr-10" onFocus={() => setOpen(true)} onClick={() => setOpen(true)} onKeyDown={keyDown}
+        className="pe-12" onFocus={() => setOpen(true)} onClick={() => setOpen(true)} onKeyDown={keyDown}
         onChange={event => { setSearch(event.target.value); setActive(0); setOpen(true); if (value) onChange(null); }} />
-      <button type="button" disabled={disabled} aria-label={placeholder} className="absolute right-0 top-0 h-10 w-10 flex items-center justify-center rounded-md focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+      <button type="button" disabled={disabled} aria-label={placeholder} className="absolute end-0 top-0 min-h-11 w-11 flex items-center justify-center rounded-md focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
         onMouseDown={event => event.preventDefault()} onClick={() => { if (open) setOpen(false); else { input.current?.focus(); setOpen(true); } }}><ChevronsUpDown className="h-4 w-4" aria-hidden="true" /></button>
     </div>
     {value?.detail && <p className="mt-1 text-sm text-muted-foreground break-all">{value.detail}</p>}
@@ -67,7 +67,7 @@ export default function SubscriptionTargetPicker({ kind, value, disabled, onChan
           id={`subscription-option-${index}`} role="option" aria-selected={value?.target.kind === option.target.kind && value.target.id === option.target.id}
           className={`rounded-sm px-3 py-2 cursor-pointer text-sm break-words ${active === index ? "bg-accent text-accent-foreground" : "hover:bg-accent"}`}
           onMouseDown={event => event.preventDefault()} onMouseEnter={() => setActive(index)} onClick={() => choose(option)}>
-          <span className="block font-medium">{option.name}{option.isActive === false && <span className="ml-2 font-normal text-muted-foreground">{t("storefront.closedCompany")}</span>}</span>
+          <span className="block font-medium">{option.name}{option.isActive === false && <span className="ms-2 font-normal text-muted-foreground">{t("storefront.closedCompany")}</span>}</span>
           {option.detail && <span className="block text-muted-foreground break-all">{option.detail}</span>}
         </li>)}
       </ul>

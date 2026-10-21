@@ -81,27 +81,31 @@ await act(async () => {
 await flush();
 assert.deepEqual(renderedIds(), [1, 2, 3, 4]);
 assert.equal(dropdown().findAllByType("option").find(node => node.props.value === "distance-asc").props.disabled, true);
+const submitQuery = async value => {
+  if (value !== undefined) await act(async () => component.root.findByProps({ id: "service-query" }).props.onChange({ target: { value } }));
+  await act(async () => component.root.findAllByType("form").find(node => node.props.className === "search-query-form").props.onSubmit({ preventDefault() {} }));
+  await flush();
+};
 const requestCount = requests.length;
 for (const [sort, expected] of [["price-asc", [2, 4, 3, 1]], ["price-desc", [1, 3, 2, 4]], ["rating-asc", [3, 1, 2, 4]], ["rating-desc", [2, 1, 3, 4]]]) {
   await changeSort(sort);
   assert.deepEqual(renderedIds(), expected);
 }
 assert.equal(requests.length, requestCount, "Changing sort must reuse fetched results");
-await act(async () => component.root.findAllByType(ServiceFilters)[0].props.onUseCurrentLocation());
+await act(async () => component.root.findAllByType("button").find(node => node.props["aria-label"] === translation.searchPage.useLocation).props.onClick());
 await flush();
-assert.equal(dropdown().findAllByType("option").find(node => node.props.value === "distance-asc").props.disabled, false);
+assert.equal(dropdown().findAllByType("option").find(node => node.props.value === "distance-asc").props.disabled, false, "Current location immediately enables nearest-first without Search");
+assert.equal(dropdown().findAllByType("option").find(node => node.props.value === "distance-desc").props.disabled, false);
 await changeSort("distance-desc");
 assert.deepEqual(renderedIds(), [3, 1, 2, 4]);
-await act(async () => component.root.findAllByType("button").find(node => node.props["aria-label"] === "Remove 📍 Current Location filter").props.onClick());
+await act(async () => component.root.findAllByType("button").find(node => node.props["aria-label"] === "Remove Current location · 50 km filter").props.onClick());
 await flush();
 assert.equal(dropdown().props.value, "default");
 assert.deepEqual(renderedIds(), [1, 2, 3, 4]);
 responseRows = coordinates;
-await act(async () => {
-  const filters = component.root.findAllByType(ServiceFilters)[0];
-  filters.props.onFiltersChange({ ...filters.props.filters, searchQuery: "fixture", searchMode: "semantic" });
-  filters.props.onUseCurrentLocation();
-});
+await act(async () => component.root.findAllByType("input").find(node => node.props.name === "search-mode" && node.props.value === "semantic").props.onChange());
+await act(async () => component.root.findAllByType("button").find(node => node.props["aria-label"] === translation.searchPage.useLocation).props.onClick());
+await submitQuery("fixture");
 await flushSearch();
 await changeSort("distance-asc");
 assert.ok(requests.some(url => url.startsWith("/api/services/semantic-search?")));
@@ -109,10 +113,7 @@ assert.deepEqual(renderedIds(), [6, 5, 7]);
 assert.equal(component.root.findAllByType(ServiceCard)[0].props.service.distance, 0);
 assert.ok(component.root.findByProps({ id: "service-sort-help" }).children.join("").includes(translation.sorting.ratingsUnavailable));
 responseRows = [];
-await act(async () => {
-  const filters = component.root.findAllByType(ServiceFilters)[0];
-  filters.props.onFiltersChange({ ...filters.props.filters, searchQuery: "no matches" });
-});
+await submitQuery("no matches");
 await flushSearch();
 assert.deepEqual(renderedIds(), []);
 assert.equal(dropdown().props.value, "distance-asc", "Filter changes preserve the chosen sorting");
@@ -124,7 +125,7 @@ await act(async () => component.update(React.createElement(ServiceRating, { serv
 assert.ok(JSON.stringify(component.toJSON()).includes("4.0"));
 assert.ok(!JSON.stringify(component.toJSON()).includes("127"));
 await act(async () => component.unmount());
-for (const locale of ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"]) {
+for (const locale of ["en", "lv", "ru"]) {
   const data = JSON.parse(await readFile(new URL(`../client/public/locales/${locale}/translation.json`, import.meta.url), "utf8"));
   for (const key of Object.keys(translation.sorting)) assert.ok(data.sorting[key], `${locale}: missing ${key}`);
   assert.ok(data.service.notRated && data.service.ratingOutOfFive);

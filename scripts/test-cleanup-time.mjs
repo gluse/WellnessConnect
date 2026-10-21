@@ -51,7 +51,7 @@ assert.equal(createServiceDraft(service).cleanupTime, 15);
 
 globalThis.React = React;
 globalThis.window = { setTimeout, clearTimeout, addEventListener() {}, removeEventListener() {}, HTMLSelectElement: { prototype: { value: "" } }, HTMLInputElement: { prototype: { checked: false } } };
-globalThis.document = { visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
+globalThis.document = { documentElement: {}, visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
 const resources = {};
 for (const locale of ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"]) {
   const translation = JSON.parse(await readFile(new URL(`../client/public/locales/${locale}/translation.json`, import.meta.url), "utf8"));
@@ -61,6 +61,7 @@ for (const locale of ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de"
 await i18next.use(initReactI18next).init({ lng: "en", resources });
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
 const { default: ServiceEditor } = await import("../client/src/components/provider/service-editor.tsx");
+const { AlertDialog, AlertDialogContent, AlertDialogFooter, AlertDialogAction } = await import("../client/src/components/ui/alert-dialog.tsx");
 queryClient.setQueryData(["/api/addresses"], [{ id: 7, address: service.address }]);
 queryClient.setQueryData(["/api/categories"], [{ key: "education", name: "Education", icon: "", searchKeywords: "" }]);
 let writes = [], failSave = false;
@@ -77,11 +78,22 @@ assert.equal(field().props["aria-describedby"], "cleanupTime-help");
 await act(async () => i18next.changeLanguage("lv"));
 assert.ok(component.root.findAllByType("label").some(node => node.children.includes(resources.lv.translation.serviceCleanup.label)));
 const change = async value => act(async () => field().props.onChange({ target: { value } }));
-const save = async () => act(async () => { component.root.findAllByType("button").find(node => node.props["data-testid"] === "button-save-inactive-service").props.onClick(); await new Promise(resolve => setTimeout(resolve, 30)); });
+const save = async () => {
+  await act(async () => component.root.findAllByType("button").find(node => node.props["data-testid"] === "button-save-inactive-service").props.onClick());
+  const dialog = component.root.findAllByType(AlertDialog).find(node => node.props.open);
+  if (dialog) {
+    // The renderer has no DOM portal; the real confirmation is tested in Chrome.
+    const content = React.Children.toArray(dialog.props.children).find(node => node.type === AlertDialogContent);
+    const footer = React.Children.toArray(content.props.children).find(node => node.type === AlertDialogFooter);
+    const action = React.Children.toArray(footer.props.children).find(node => node.type === AlertDialogAction);
+    await act(async () => action.props.onClick());
+  }
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+};
 for (const value of ["", "-1", "1.5", "1441"]) {
   await change(value); await save();
   assert.equal(writes.length, 0, "Save Inactive must validate without native form validation");
-  assert.ok(component.root.findByProps({ role: "alert" }).children.includes(resources.lv.translation.serviceCleanup.invalid));
+  assert.ok(component.root.findAllByType("a").some(node => node.children.includes(resources.lv.translation.serviceCleanup.invalid)));
 }
 await change("25"); failSave = true; await save();
 assert.equal(field().props.value, 25, "Failed saves preserve extra time");
@@ -90,6 +102,10 @@ await change("0"); await save(); assert.equal(writes.at(-1).cleanupTime, 0);
 await act(async () => component.unmount()); queryClient.clear();
 
 delete globalThis.window; delete globalThis.document;
+if (process.argv.includes("--frontend-only")) {
+  console.log("Passed: offline scheduling/cleanup validation, all cleanup locales, retained failed-save values and confirmed inactive editor saves; backend section not loaded.");
+  process.exit(0);
+}
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";
 process.env.SUPABASE_URL = "http://127.0.0.1:1";
 process.env.SUPABASE_PUBLISHABLE_KEY = "fixture-key";

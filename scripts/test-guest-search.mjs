@@ -9,6 +9,7 @@ import { memoryLocation } from "wouter/memory-location";
 import { isAllowedAuthReturnTo } from "../shared/navigation.ts";
 
 globalThis.React = React;
+globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
 const record = { id: 1, providerId: "provider", companyId: 7, name: "Public service", category: "health_wellness", price: "20", duration: 30, serviceType: "one_to_one", isActive: true, companyActive: true, employee: null, rating: 4, reviewCount: 1, latitude: 56.95, longitude: 24.1, provider: { providerType: "company", companyName: "Public Company" } };
 let requests = [], holdAuth = false, releaseAuth, component, location;
 globalThis.fetch = async url => {
@@ -30,7 +31,7 @@ globalThis.fetch = async url => {
 const { default: i18n, supportedLanguages } = await import("../client/src/lib/i18n.ts");
 if (!i18n.isInitialized) await new Promise(resolve => i18n.on("initialized", resolve));
 await i18n.changeLanguage("en");
-for (const { code } of supportedLanguages) {
+for (const code of ["en", "lv", "ru"]) {
   const data = JSON.parse(await readFile(`client/public/locales/${code}/translation.json`, "utf8"));
   for (const key of Object.keys(i18n.getResourceBundle("en", "translation").guestSearch)) assert.ok(data.guestSearch[key], `${code}: missing guestSearch.${key}`);
 }
@@ -75,9 +76,13 @@ await act(async () => {
   const filters = component.root.findAllByType(ServiceFilters)[0];
   filters.props.onFiltersChange({ ...filters.props.filters, category: "health_wellness", searchQuery: "massage" });
 });
+await act(async () => component.root.findAllByType(ServiceFilters)[0].props.onApply());
+await act(async () => component.root.findByProps({ id: "service-query" }).props.onChange({ target: { value: "massage" } }));
+await act(async () => component.root.findAllByType("form").find(node => node.props.className === "search-query-form").props.onSubmit({ preventDefault() {} }));
 await flushSearch();
 assert.ok(requests.some(url => url.includes("category=health_wellness") && url.includes("searchQuery=massage")));
-await act(async () => component.root.findAllByType(ServiceFilters)[0].props.onFiltersChange({ ...component.root.findAllByType(ServiceFilters)[0].props.filters, searchMode: "semantic" }));
+await act(async () => component.root.findAllByType("input").find(node => node.props.name === "search-mode" && node.props.value === "semantic").props.onChange());
+await act(async () => component.root.findAllByType("form").find(node => node.props.className === "search-query-form").props.onSubmit({ preventDefault() {} }));
 await flushSearch();
 assert.ok(requests.some(url => url.startsWith("/api/services/semantic-search?")));
 await act(async () => component.root.findByType(ServiceCard).props.onViewDetails());
@@ -118,6 +123,10 @@ assert.equal(isAllowedAuthReturnTo("/search"), true);
 for (const path of ["//evil.example", "https://evil.example/search", "/search?returnTo=//evil.example", "/search-other"]) assert.equal(isAllowedAuthReturnTo(path), false);
 
 delete globalThis.window; delete globalThis.document;
+if (process.argv.includes("--frontend-only")) {
+  console.log("Passed: mocked public-search UI, guest booking prompt, safe sign-in return and authenticated booking; backend section not loaded.");
+  process.exit(0);
+}
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";
 process.env.SUPABASE_URL = "http://127.0.0.1:1";
 process.env.SUPABASE_PUBLISHABLE_KEY = "fixture-key";

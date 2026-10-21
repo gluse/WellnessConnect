@@ -4,6 +4,172 @@ Snapshot: 18 October 2026, Europe/Riga. Scope: the current agent tree, this
 repository, and local Codex session records whose initial working directory is
 `C:\Source\Private\WellnessConnect`. This is not an account-wide inventory.
 
+## Forms implementation assignment — 20 October 2026
+
+User reviewed and approved the forms visual proposal and asked the Front End
+Designer to start implementation. This thread started Front End Developer
+`/root/forms_implementation` for TASK-022, applying the approved sectioned-form
+direction first to the service editor, with booking/account/address and the
+remaining forms tracked as subsequent phases. The agent is a child in this
+conversation; this does not create or control an independent IDE session.
+
+Approval and limits: user approves; the named Front End Developer executes local
+frontend source/locale/test changes and isolated offline/mocked verification.
+The developer owns scoped frontend files and `docs/forms-implementation-handoff.md`;
+the parent owns TASKS.md, this inventory and proposal approval/status notes.
+Minimal frontend test tooling is allowed if required, with shared-manifest edits
+coordinated first. No backend, database/ORM, connected session/application writes,
+live services, infrastructure or deployment. Preserve existing audit work.
+Validation is the frontend role/proposal's interaction, browser, localization/RTL,
+accessibility, security and applicable type/build checks; record limitations and
+leave incomplete checks open. Recovery is revision/reversion of only attributable
+task changes. Full approval record and phased scope: [TASK-022](../TASKS.md).
+
+Live roster at assignment: `/root` and `/root/forms_implementation`. Earlier audit
+and design agents below are historical records; they are not present in this
+thread's current live roster. Assignment/start does not establish implementation
+completion or successful verification.
+
+Progress verified on 20 October 2026 after the user's status request:
+the agent completed Phase 1 and wrote [its handoff](forms-implementation-handoff.md)
+with screenshots and machine-readable browser evidence. Application/fixture type
+checks, build, three affected offline regressions and 13 Chrome behavior groups
+plus 77 locale/width combinations passed. Broader release verification remains
+incomplete: Firefox/WebKit, physical devices, screen readers, actual 400% zoom and
+native-language review. The parent delivered a follow-up assignment through the
+same agent controls to continue the approved Phase 2 booking/account/address
+implementation. The developer also owns new `docs/forms-phase2-handoff.md` and
+scoped Phase 2 frontend/test/locale files under the same approval and limits.
+Phase 2 subsequently completed: [handoff](forms-phase2-handoff.md) records passing
+application/fixture type checks, build, affected regressions and Chrome's 14 groups,
+231 locale/width cases and 105 messages in all 11 locales, plus the Phase 1 browser
+regression. No unexpected requests/runtime exceptions; release limits remain open.
+On the user's next status request the parent delivered the already approved
+Phase 3 availability/company/admin/storefront assignment to the same developer.
+The developer owns scoped Phase 3 source/locales/tests and
+`docs/forms-phase3-handoff.md`/evidence under the existing approval, boundaries,
+validation and recovery. TASK-022 remains open; nothing was deployed.
+
+Phase 3 completed: [handoff](forms-phase3-handoff.md) records passing type/build
+checks, affected frontend regressions, 11 Chrome groups/462 locale-viewport cases,
+137 messages across all 11 locales and Phase 2's 14-group/231-case regression.
+No unexpected requests/runtime exceptions. The original proposal's login/signup
+items were outside the three delivery-phase assignments at that milestone.
+Parent sent a follow-up to the same Front End Developer to complete those items
+under the existing user's frontend approval and limits: localization, narrow-name
+layout, labeled authentication/profile grouping and accessible language choice.
+The developer owns scoped auth frontend/resources/tests and
+`docs/forms-auth-handoff.md`/evidence; parent retains status files. No new auth
+features or contract changes. Broader release checks remain open; no deployment.
+
+Latest update, 20 October 2026: the user directly assigned Front End Developer
+`/root` to finish TASK-022 with reduced repeated testing and existing browser
+tooling. The interrupted auth implementation was already present. Its final
+verification now passes: application/fixture TypeScript, production build,
+mocked social-auth frontend regression and Chrome's 8 groups/77 locale-viewport
+cases, with 48 messages in all 11 locales and zero unexpected requests/runtime
+exceptions. Three screenshots were inspected. No application source changes,
+new test infrastructure, connected services/database writes or deployment in this
+pass. See [final auth handoff](forms-auth-handoff.md) for approval, recovery,
+evidence and limits. Local implementation is complete; TASK-022 remains open for
+broader browser/device/screen-reader/zoom/native-language verification required by
+the existing role/proposal. The deployment hold remains in force.
+
+## Audit assignment update — 19 October 2026
+
+Next-work assignment: user requested progression toward activation. Backend
+`/root/audit_backend` owns local TASK-014 capture/worker/config and initial
+TASK-015 supported security/auth instrumentation, offline regressions and type
+checks. DB Analyst `/root/audit_database` owns the new runtime privilege/rehearsal
+proposal and scoped SQL/test package. Neither edits the other's application/SQL
+files; General Manager owns existing task/coordination docs. New DB bindings and
+fixture writes await user choice of the concrete proposal; no deployment or
+frontend work. Scope, checks, recovery and existing approvals are in TASK-014.
+DB Analyst completed [the runtime proposal](audit-runtime-proposal.md), including
+exact account/table/RLS scope, private credential separation, bounded synthetic
+test provenance and recovery limits. User selected Choice 1 plus the bounded
+synthetic rehearsal on 19 October 2026. DB Analyst now prepares concrete runtime
+migrations/helpers and offline verification for Backend review. New connected
+execution/private configuration/fixtures await final review and execution approval;
+none was applied during proposal preparation.
+
+Execution update: user approved DB Analyst preflight then additive audit
+schemas/NOLOGIN roles and read-only metadata verification on source
+`hbkooiknruimukkhshrk` and destination `ynygqodmtgjrngiudalw` (development/test).
+Executor `/root/audit_database`; `/root/audit_backend` reviews the fixed-manifest
+Node/pg helper read-only. No business DML, fixtures, runtime bindings, cron or
+deployment. Preserve committed state on later failure; scope/validation/recovery
+record is in TASK-014. This supersedes earlier preparation-only scope below.
+
+Execution outcome: DB Analyst confirmed destination/source commits on both
+PG17.11 test projects, 16:09:50/16:09:51 Europe/Riga on 19 October 2026. Read-only
+metadata verification passed (60 destination / 80 source checks). The helper
+reused the existing fingerprint-pinned public Supabase CA for destination only,
+with verified TLS and no config/system-trust changes. No business DML, fixtures,
+runtime bindings, cron or deployment. Capture/worker integration and behavioral
+tests remain pending. Full evidence is in `docs/audit-execution-report.md`.
+
+Decision update, 19 October 2026: the user selected audit storage **Option C**.
+The DB Analyst acknowledged independent PostgreSQL plus transactional outbox;
+the General Manager recorded the choice in the storage proposal, audit plan,
+catalog and TASKS.md. The user subsequently approved **R1 + P1 and recommended
+failure behavior**, confirmed existing application DB is development/testing,
+and later supplied audit endpoint `https://ynygqodmtgjrngiudalw.supabase.co`,
+reference `ynygqodmtgjrngiudalw`. Reuse these choices and target identification.
+The user now reports PostgreSQL connection in `.env` `AUDIT_DATABASE_URL`.
+DB Analyst is preparing local `migrations/audit/*` and
+`docs/audit-migration-package.md`, with private configuration inspection for
+target metadata only. Back End Developer reviews compatibility read-only.
+Readers/operators and hosting validation remain pending. No credentials are
+copied to documentation; no database/service connection or SQL execution is authorized.
+
+Private configuration check by DB Analyst identified distinct source
+`hbkooiknruimukkhshrk` and audit destination `ynygqodmtgjrngiudalw`; the respective
+PostgreSQL and Supabase URL settings agree. Credential values were not reported,
+and no connection, live privileges or PostgreSQL version has been verified.
+`/root/audit_database` owns new `docs/audit-test-setup.md` (setup handoff only).
+`/root/audit_backend` is assigned local BE-14A pure modules in `server/audit/*.ts`
+and isolated `scripts/test-audit-events.mjs`, with no DB/provider imports or
+service execution. Validation/recovery and scoped authority are in TASKS.md.
+No database access, provisioning or deployment is included.
+
+Additional assignment, 19 October 2026: the user requested a new Front End
+Developer session to propose improvements to existing UI forms. Started child
+agent `/root/forms_design` with a separate task context, owning only
+`docs/forms-design-proposal.md`. Scope: repository review and a design proposal,
+including representative before/after layouts, accessibility, responsive forms,
+and localization/RTL. No application changes, live services, database/session
+writes, or deployment. Validation is source review; rendered browser validation
+is not included. Recovery is revision/removal of this new proposal only.
+The available controls create a child agent in this conversation, not a new
+independent IDE session. Audit assignments continue in parallel.
+The agent completed the proposal and source review on 19 October 2026, including
+three before/after flows and wireframes; local links and whitespace checked.
+Its recommendation is consistent sectioned forms with a service-editor pilot.
+The proposal awaits the user's design choice; no rendered/browser verification
+or application implementation was performed.
+
+The user asked the General Manager to assign the audit tasks to the Back End
+Developer and DB Analyst. The current thread's collaboration controls started
+the following agents; this update supersedes the historical "only `/root`"
+statements below for this assignment, without refreshing saved IDE sessions.
+
+| Agent | Assignment and exclusive file | Status |
+| --- | --- | --- |
+| `/root` — General Manager | Coordination, `TASKS.md`, audit-plan links, inventory | Running at assignment |
+| `/root/audit_backend` — Back End Developer | TASK-014 transaction adapters/worker; initial TASK-015 instrumentation | Local implementation, isolated audit tests, four approved mixed regressions and no-emit type check passed; writing handoff and reviewing runtime DB package; no connected execution |
+| `/root/audit_database` — DB Analyst/Developer | Runtime permissions/credentials and synthetic rehearsal proposal/package | Choice 1 selected; implementing local SQL/helpers for review; connected execution pending; installed scaffolding preserved |
+
+Approval source: the user's 19 October request in this conversation. No database
+access, database changes, frontend changes, infrastructure work, or deployment
+is included in this initial preparation. Database implementation awaits the
+user's option selection. Each agent preserves existing workspace edits and
+reports source evidence, decisions, validation limits, and its next action.
+The manager uses the project-local `agent-optimization` skill for this handoff.
+The current runtime exposes that skill plus `backend-practices`,
+`frontend-practices`, `postgresql-practices`, and `joint-be-db-optimization`;
+the catalog and discovery caveats farther below describe the earlier snapshot.
+
 Role registration update, 18 October 2026: the DB Analyst/Developer definition
 and repository-wide database authority rules were added from the user's request.
 This update records documentation, not a newly running agent or a refresh of
@@ -23,6 +189,13 @@ been verified. The initial session and exposed-skill snapshots below are histori
 
 ## Agents and role definitions
 
+Role registration update, 19 October 2026: created the
+[Product Manager](../PRODUCT-MANAGER.md) at the user's request, with adoption,
+retention, prioritization, and cost/income analysis responsibilities. Initial
+recommendations are in [Product opportunities](product-opportunities.md).
+This records a role definition and product-planning work; no separate agent was
+started, and the historical session/live/skill snapshots were not refreshed.
+
 Role/skill update, 18 October 2026: created the
 [Front End Developer](../FRONT-END-DEVELOPER.md) and repository-wide frontend
 authority rules, plus the project-local
@@ -37,6 +210,7 @@ were not refreshed by this documentation update.
 | Agent or role | Evidence | Status and control |
 | --- | --- | --- |
 | General Manager (`/root`) | Current conversation and live collaboration roster | Running at inspection; documentation and management only |
+| Product Manager | [Role definition](../PRODUCT-MANAGER.md); user's 19 October 2026 request | Defined for product research and Markdown planning; initial proposals prepared; no separate agent started or implementation authority granted |
 | CI/CD Developer | [Role definition](../CI-CD-DEVELOPER.md); Docker session title below | Role exists; other session's live state is unknown |
 | DB Analyst/Developer | [Role definition](../DB-ANALYST-DEVELOPER.md); [project-wide authority](../AGENTS.md) | Defined for database operations only; user selection before changes; no separate session started or database access granted |
 | Back End Developer | [Role definition](../BACK-END-DEVELOPER.md); [project-wide authority](../AGENTS.md) | Defined for backend operations only, including unit tests and security; other agents require specific approval; no separate session started or technical permissions granted |

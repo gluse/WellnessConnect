@@ -1,7 +1,65 @@
 # Audit plan
 
+Current implementation state, 19 October 2026: development/test audit destination
+and application outbox scaffolding are applied; both metadata checks passed after
+verified-TLS preflights. Local capture/worker/config code and initial auth/access
+and account-role producers passed isolated tests and TypeScript checking.
+Runtime accounts and connected behavioral rehearsals remain pending; auditing is
+not collecting events yet. See the
+[execution record](audit-execution-report.md).
+
+Next-work update: user authorized progressing with TASK-014 delivery/capture and
+initial TASK-015 security/auth integration. Backend implements and verifies local
+code while DB Analyst has prepared the next
+[restricted-runtime-account and synthetic rehearsal options](audit-runtime-proposal.md).
+The recommended package restricts the application as well as capture/delivery
+accounts and permits at most twelve marked synthetic events on the named test
+projects. The user selected that recommended package on 19 October 2026. DB Analyst
+now implements the concrete SQL/helpers locally for Backend review; connected
+execution remains the final approval step because this question covered preparation.
+New role bindings/fixtures follow the DB choice workflow;
+existing storage/access/retention selections are reused. No activation or live
+coverage is implied by this assignment.
+
 Status: proposed plan for TASK-013 through TASK-019. No audit database, event
 collection, or new credentials are created by this document.
+
+Coordination update, 19 October 2026: the user assigned the Back End Developer
+and DB Analyst through General Manager to begin TASK-013–019. TASK-013 proposals
+are prepared in the [source-based event catalog](audit-event-catalog.md) and
+[database design/options](audit-storage-proposal.md). See
+[TASKS.md](../TASKS.md#audit) for scope, ownership, and the database decision
+gate. These proposals do not establish event capture or authorize deployment.
+
+User decision, 19 October 2026: **Option C selected**, using an independently
+hosted PostgreSQL audit destination and transactional application outbox.
+A separate Supabase project is the intended hosting direction. The user also
+approved **R1 + P1 and recommended failure behavior**. Existing application DB is
+development/testing; the user subsequently identified audit project
+`ynygqodmtgjrngiudalw`. The DB Analyst privately matched configured source
+`hbkooiknruimukkhshrk` and audit destination references without connecting.
+`AUDIT_DATABASE_URL` was used for the approved setup; setup metadata and hosting
+checks passed as recorded below. Runtime privileges, named readers/operators and
+behavioral validation remain pending. See the
+[decision record](audit-storage-proposal.md#user-decision--19-october-2026).
+
+Local preparation update: BE-14A event validation/context/canonical-hash helpers
+and synthetic offline tests passed for the initial 11-event registry. TypeScript
+checks passed. This does not establish producer instrumentation, transaction
+atomicity, database delivery or live audit coverage. See
+[TASK-014](../TASKS.md#audit) and [test setup handoff](audit-test-setup.md).
+
+DB-14 preparation and execution: the [migration package](audit-migration-package.md)
+was applied to the identified source/audit test projects under the approval below.
+Compilation, managed-host setup permissions and metadata checks passed; runtime
+behavior and recovery rehearsals remain unverified. See the
+[execution evidence](audit-execution-report.md) for applied artifacts and limits.
+
+Execution approval update, 19 October 2026: user approved DB Analyst preflight
+and, if it passes, the prepared additive audit schemas/NOLOGIN roles and read-only
+metadata verification on the two identified development/test projects. Fixtures,
+business DML, runtime bindings, cron and deployment remain excluded. See the
+migration package and TASK-014 for execution evidence and limits.
 
 ## Purpose and scope
 

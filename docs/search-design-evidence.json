@@ -1,0 +1,80 @@
+{
+  "date": "2026-10-20",
+  "browser": "Installed headless Chrome",
+  "checks": [
+    "English/Latvian/Russian message parity and 12 language/viewport reflow cases",
+    "category apply/reset, sorting and service details/demo booking dialog",
+    "map selection, phone list/filter drawer, Escape and focus restoration",
+    "empty/loading/error/location-denied/map-failure recovery; no unexpected requests or runtime errors"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320
+    },
+    {
+      "language": "en",
+      "width": 390
+    },
+    {
+      "language": "en",
+      "width": 768
+    },
+    {
+      "language": "en",
+      "width": 1280
+    },
+    {
+      "language": "lv",
+      "width": 320
+    },
+    {
+      "language": "lv",
+      "width": 390
+    },
+    {
+      "language": "lv",
+      "width": 768
+    },
+    {
+      "language": "lv",
+      "width": 1280
+    },
+    {
+      "language": "ru",
+      "width": 320
+    },
+    {
+      "language": "ru",
+      "width": 390
+    },
+    {
+      "language": "ru",
+      "width": 768
+    },
+    {
+      "language": "ru",
+      "width": 1280
+    }
+  ],
+  "screenshots": [
+    "docs/search-design-desktop.png",
+    "docs/search-design-map.png",
+    "docs/search-design-phone.png",
+    "docs/search-design-phone-filters.png",
+    "docs/search-design-error.png"
+  ],
+  "runtimeErrors": [],
+  "unexpectedNetwork": [],
+  "deferredLanguages": [
+    "ar",
+    "de",
+    "es",
+    "fr",
+    "hi",
+    "ja",
+    "pt",
+    "zh"
+  ],
+  "limits": "Standalone synthetic design only; no app, APIs, maps service, geolocation, sessions, booking or database. Physical devices, screen readers and cross-browser checks not performed."
+}

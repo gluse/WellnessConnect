@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import React from "react";
 import renderer from "react-test-renderer";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { readFile } from "node:fs/promises";
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
+
+await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation: JSON.parse(await readFile(new URL("../client/public/locales/en/translation.json", import.meta.url), "utf8")) } } });
 
 globalThis.React = React;
 globalThis.window = { confirm: () => true };
@@ -25,7 +30,7 @@ const flush = () => act(async () => { await new Promise(resolve => setTimeout(re
 let component;
 await act(async () => { component = create(React.createElement(QueryClientProvider, { client }, React.createElement(AccountAddresses))); });
 await flush();
-await act(async () => component.root.findAllByType("button").find(node => node.children.includes("Add address")).props.onClick());
+await act(async () => component.root.findAllByType("button").find(node => node.children.includes("Add address")).props.onClick({ currentTarget: null }));
 for (const [id, value] of [["address", saved.address], ["latitude", "0"], ["longitude", "0"]]) {
   await act(async () => component.root.findAllByType("input").find(node => node.props.id === id).props.onChange({ target: { value } }));
 }
@@ -46,6 +51,10 @@ assert.equal(selected.addressId, 7);
 assert.equal(component.root.findAllByType("input").length, 0, "Services select saved addresses without entering coordinates");
 assert.equal(requests.some(request => request.url === "/api/geocode"), false, "Selecting a saved address never geocodes");
 await act(async () => component.unmount()); client.clear(); delete globalThis.window;
+if (process.argv.includes("--frontend-only")) {
+  console.log("Passed: mocked address editor and saved-address service selection; backend section not loaded.");
+  process.exit(0);
+}
 
 // Real route handlers with local stores and all external requests mocked.
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";

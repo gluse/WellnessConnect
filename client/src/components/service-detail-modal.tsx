@@ -10,6 +10,7 @@ import { currentLocation } from "@shared/locations";
 import { useTranslation } from "react-i18next";
 import { useCategories } from "@/hooks/use-categories";
 import { Link } from "wouter";
+import SearchServiceDetails from "@/components/search-service-details";
 
 interface ServiceDetailModalProps {
   service: ServiceWithProvider | null;
@@ -17,13 +18,15 @@ interface ServiceDetailModalProps {
   onClose: () => void;
   onBook: () => void;
   onViewProvider?: () => void;
+  searchLayout?: boolean;
 }
 
-export default function ServiceDetailModal({ service, open, onClose, onBook, onViewProvider }: ServiceDetailModalProps) {
+export default function ServiceDetailModal({ service, open, onClose, onBook, onViewProvider, searchLayout }: ServiceDetailModalProps) {
   const { t } = useTranslation();
   const categories = useCategories();
   if (!service) return null;
   service = currentLocation(service);
+  if (searchLayout) return <SearchServiceDetails service={service} open={open} onClose={onClose} onBook={onBook} onViewProvider={onViewProvider} />;
 
   const isGroupService = service.serviceType === "group";
   const availableSpots = isGroupService ? ((service.maxCapacity || 1) - (service.availableCapacity || 0)) : 1;
