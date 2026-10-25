@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-25",
+  "checks": [
+    "Missing key preserves catalog, explicit browse clears failed address while preserving query, and query/category filtering works without coordinates/radius/distances",
+    "Unavailable map offers direct return to the matching service list",
+    "GPS works without Google; failed address updates preserve valid location/results; browsing resets invalid disabled radius and retains other applied filters",
+    "Localized browse action works with keyboard in en/lv/ru at phone/tablet/desktop and short viewport sizes"
+  ],
+  "matrix": [
+    {
+      "locale": "en",
+      "width": 320
+    },
+    {
+      "locale": "en",
+      "width": 390
+    },
+    {
+      "locale": "en",
+      "width": 768
+    },
+    {
+      "locale": "en",
+      "width": 1280
+    },
+    {
+      "locale": "lv",
+      "width": 320
+    },
+    {
+      "locale": "lv",
+      "width": 390
+    },
+    {
+      "locale": "lv",
+      "width": 768
+    },
+    {
+      "locale": "lv",
+      "width": 1280
+    },
+    {
+      "locale": "ru",
+      "width": 320
+    },
+    {
+      "locale": "ru",
+      "width": 390
+    },
+    {
+      "locale": "ru",
+      "width": 768
+    },
+    {
+      "locale": "ru",
+      "width": 1280
+    }
+  ],
+  "browser": "Chrome/155.0.8059.85",
+  "services": "Isolated HEAD-compatible static UI; all APIs, Google and GPS mocked; no connected server/DB",
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Inline location flow only; saved-location/modal feature remains outside this commit. No physical device, screen reader, native-language or live Google outage verification"
+}

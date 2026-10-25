@@ -785,5 +785,9 @@
     "resultsCount_few": "Servicios: {{count}}",
     "resultsCount_many": "Servicios: {{count}}",
     "clear": "Borrar filtros"
+  },
+  "searchLocation": {
+    "browseWithout": "Explorar sin ubicación",
+    "browseHelp": "Se muestran servicios de todas las ubicaciones. La distancia y el filtro por radio estarán disponibles al elegir una ubicación."
   }
 }

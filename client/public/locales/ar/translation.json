@@ -785,5 +785,9 @@
     "resultsCount_few": "الخدمات: {{count}}",
     "resultsCount_many": "الخدمات: {{count}}",
     "clear": "مسح التصفية"
+  },
+  "searchLocation": {
+    "browseWithout": "التصفح دون تحديد الموقع",
+    "browseHelp": "تُعرض الخدمات في جميع المواقع. تتوفر المسافة والتصفية حسب النطاق بعد اختيار الموقع."
   }
 }

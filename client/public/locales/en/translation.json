@@ -781,5 +781,9 @@
     "gender_both": "All genders",
     "advancePayment": "Advance payment: {{percent}}% required upfront.",
     "clear": "Clear filters"
+  },
+  "searchLocation": {
+    "browseWithout": "Browse without location",
+    "browseHelp": "Showing services in all locations. Distance and radius filtering are unavailable until you choose a location."
   }
 }

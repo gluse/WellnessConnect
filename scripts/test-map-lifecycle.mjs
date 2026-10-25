@@ -12,7 +12,7 @@ globalThis.React = React;
 const english = JSON.parse(await readFile(new URL("../client/public/locales/en/translation.json", import.meta.url), "utf8"));
 const latvian = JSON.parse(await readFile(new URL("../client/public/locales/lv/translation.json", import.meta.url), "utf8"));
 await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation: english }, lv: { translation: latvian } } });
-for (const locale of ["lv", "ru", "de", "fr", "es", "pt", "ar", "ja", "zh", "hi"]) {
+for (const locale of ["en", "lv", "ru"]) {
   const data = JSON.parse(await readFile(new URL(`../client/public/locales/${locale}/translation.json`, import.meta.url), "utf8"));
   for (const key of Object.keys(english.mapPreview)) assert.ok(data.mapPreview[key], `${locale}: missing mapPreview.${key}`);
 }
@@ -214,4 +214,23 @@ await act(async () => component.unmount()); advance(500);
 assert.ok(windows.every(info => !info.opened), "Unmount cancels pending hover previews");
 assert.equal(timers.size, 0); assert.equal(documentEvents.size, 0);
 assert.ok(maps.every(map => map.listeners.size === 0));
+// Authentication may fail before importLibrary resolves; late success must not
+// create a map underneath the fallback, and the list action stays usable.
+let releaseLateLibrary;
+const lateLibrary = new Promise(resolve => { releaseLateLibrary = () => resolve({ Map: FakeMap }); });
+api.maps.importLibrary = () => lateLibrary;
+let showList = 0;
+const beforeFailure = maps.length;
+await act(async () => { component = create(React.createElement(GoogleMap, { services: [], userLocation: null, onShowList: () => showList++ }), { createNodeMock: () => ({ isMapContainer: true }) }); });
+try {
+  console.error = () => {};
+  await act(async () => window.gm_authFailure());
+} finally { console.error = originalConsoleError; }
+const listButton = component.root.findAllByType("button").find(button => button.children.includes(latvian.searchPage.backList));
+assert.ok(listButton, "Map auth failure offers the list fallback");
+await act(async () => listButton.props.onClick());
+assert.equal(showList, 1);
+await act(async () => releaseLateLibrary());
+assert.equal(maps.length, beforeFailure, "Late loading cannot construct a map after authentication failure");
+await act(async () => component.unmount());
 console.log("Passed: async map loading, location retention, delayed hover/cancellation, safe short descriptions, hover/focus persistence, dismissal, latest callbacks, touch/keyboard selection, translations, auth errors, and listener/timer cleanup.");

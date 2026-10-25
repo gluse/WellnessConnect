@@ -785,5 +785,9 @@
     "resultsCount_few": "Dienste: {{count}}",
     "resultsCount_many": "Dienste: {{count}}",
     "clear": "Filter zurücksetzen"
+  },
+  "searchLocation": {
+    "browseWithout": "Ohne Standort durchsuchen",
+    "browseHelp": "Dienstleistungen an allen Orten werden angezeigt. Entfernungen und Umkreisfilter sind verfügbar, sobald Sie einen Standort auswählen."
   }
 }

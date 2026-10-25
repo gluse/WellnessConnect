@@ -9,7 +9,7 @@ import { queryClient } from "../../client/src/lib/queryClient";
 import type { ServiceWithProvider } from "../../shared/schema";
 
 declare const __FORM_RESOURCES__: Record<string, { translation: object }>;
-const fixture = { ready: false, requests: [] as string[], unexpected: [] as string[], aborted: [] as string[], result: "success", categoriesError: false, geocode: "success", geolocation: "success", locationCoords: { latitude: 0, longitude: 0 }, geolocationQueue: [] as string[], locationRequests: [] as PositionOptions[], resolveLocation: null as (() => void) | null, resolve: null as (() => void) | null, resolveGeocode: null as (() => void) | null };
+const fixture = { ready: false, requests: [] as string[], unexpected: [] as string[], aborted: [] as string[], result: "success", categoriesError: false, mapsConfig: "success", geocodes: 0, geocode: "success", geolocation: "success", locationCoords: { latitude: 0, longitude: 0 }, geolocationQueue: [] as string[], locationRequests: [] as PositionOptions[], resolveLocation: null as (() => void) | null, resolve: null as (() => void) | null, resolveGeocode: null as (() => void) | null };
 Object.assign(window, { phase2Fixture: fixture, searchFixture: fixture });
 const provider = { id: "synthetic-provider", firstName: "Synthetic", lastName: "Provider", providerType: "individual" };
 const rows = [
@@ -20,6 +20,7 @@ const rows = [
 Object.assign(window, { google: { maps: { importLibrary: async (name: string) => {
   if (name === "geocoding") return { Geocoder: class {
     geocode(_request: unknown, callback: (results: unknown[], status: string) => void) {
+      fixture.geocodes++;
       const finish = () => callback([{ formatted_address: "Synthetic city", geometry: { location: { lat: () => 0, lng: () => 0 } } }], fixture.geocode === "error" ? "ZERO_RESULTS" : "OK");
       if (fixture.geocode === "pending") fixture.resolveGeocode = finish; else finish();
     }
@@ -43,7 +44,7 @@ window.fetch = async (input, options = {}) => {
   if (method !== "GET") { fixture.unexpected.push(method + " " + path); throw new Error("Writes are not allowed in this fixture"); }
   if (path === "/api/auth/user") return Response.json(null);
   if (path === "/api/categories") return Response.json([{ key: "health_wellness", name: "Health & wellness", icon: "" }, { key: "fitness", name: "Fitness", icon: "" }], { status: fixture.categoriesError ? 503 : 200 });
-  if (path === "/api/config/maps") return Response.json({ apiKey: "synthetic-key" });
+  if (path === "/api/config/maps") return fixture.mapsConfig === "missing" ? Response.json({}) : fixture.mapsConfig === "error" ? Response.json({}, {status:503}) : Response.json({ apiKey: "synthetic-key" });
   if (/^\/api\/services\/(search|semantic-search)\?/.test(path)) {
     fixture.requests.push(path);
     if (fixture.result === "pending") await new Promise<void>((resolve, reject) => {

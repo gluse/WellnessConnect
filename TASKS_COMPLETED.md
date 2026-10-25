@@ -4,6 +4,21 @@ Archive of completed FitsMyTime tasks. Active tasks, including those awaiting
 testing or external setup, remain in [TASKS.md](TASKS.md). Preserve task IDs when
 moving tasks between these files.
 
+## Search resilience
+
+- [x] **TASK-027 — Keep service browsing available when Google Maps is unavailable.**
+  **Committed scope, 25 October 2026:** Browse services and apply non-location
+  filters when Google lookup or map display fails. Provide a browse-without-location
+  action, disable radius without coordinates, preserve valid results on failed
+  address changes, and bound Maps/geocoding loading. GPS uses browser coordinates.
+  The commit uses the current committed inline location flow; remembered-location
+  and modal work remain separate uncommitted changes.
+  **Authority:** User fallback request, assigned Front End Developer implementation,
+  and user request to commit. Local repository and isolated mocked checks only;
+  no backend/schema/service/database/configuration changes or deployment.
+  See [scope, verification and recovery](docs/google-api-fallback-handoff.md).
+  Language tests cover en/lv/ru; ar/RTL, zh, fr, de, hi, ja, pt and es deferred.
+
 ## Backend security
 
 - [x] **TASK-020 — Address high-priority backend review findings.** Disable

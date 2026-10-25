@@ -785,5 +785,9 @@
     "resultsCount_few": "サービス {{count}}件",
     "resultsCount_many": "サービス {{count}}件",
     "clear": "フィルターを解除"
+  },
+  "searchLocation": {
+    "browseWithout": "場所を指定せずに閲覧",
+    "browseHelp": "すべての場所のサービスを表示しています。場所を選択すると距離と範囲の絞り込みが利用できます。"
   }
 }

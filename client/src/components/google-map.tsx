@@ -9,10 +9,11 @@ import { useTranslation } from "react-i18next";
 interface GoogleMapProps {
   services: ServiceWithProvider[];
   userLocation: { lat: number; lng: number } | null;
+  onShowList?: () => void;
   onServiceSelect?: (service: ServiceWithProvider) => void;
 }
 
-export default function GoogleMap({ services, userLocation, onServiceSelect }: GoogleMapProps) {
+export default function GoogleMap({ services, userLocation, onServiceSelect, onShowList }: GoogleMapProps) {
   const { t } = useTranslation();
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<google.maps.Map | null>(null);
@@ -27,12 +28,13 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
 
   // Initialize map
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false, failed = false;
     const mapsWindow = window as typeof window & { gm_authFailure?: () => void };
     const previousAuthFailure = mapsWindow.gm_authFailure;
     const authFailure = () => {
       if (!cancelled) {
         console.error("Google Maps authentication failed. Check Maps JavaScript API access and the browser key's allowed website origins.");
+        failed = true;
         setError("mapPreview.unavailable");
         setIsLoading(false);
       }
@@ -41,7 +43,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
     mapsWindow.gm_authFailure = authFailure;
 
     loadMapLibraries().then(({ Map }) => {
-      if (cancelled || !mapRef.current) return;
+      if (cancelled || failed || !mapRef.current) return;
 
       googleMapRef.current = new Map(mapRef.current, {
         center: latestLocation.current || { lat: 37.7749, lng: -122.4194 },
@@ -217,7 +219,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect }: G
         <div className="text-center p-6" role={error ? "alert" : "status"}>
           {isLoading && !error && <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />}
           <p className="text-neutral-600">{t(error || "mapPreview.loading")}</p>
-          {error && <button type="button" className="mt-3 text-primary underline" onClick={() => window.location.reload()}>{t("mapPreview.reload")}</button>}
+          {error && (onShowList ? <button type="button" className="mt-3 text-primary underline" onClick={onShowList}>{t("searchPage.backList")}</button> : <button type="button" className="mt-3 text-primary underline" onClick={() => window.location.reload()}>{t("mapPreview.reload")}</button>)}
         </div>
       </div>}
     </div>

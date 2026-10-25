@@ -7,7 +7,7 @@ import ProviderServicesDialog from "@/components/provider-services-dialog";
 import SearchResultsSort from "@/components/search-results-sort";
 import { serviceRating, sortServices, type ServiceSort } from "@/lib/service-sort";
 import GoogleMap from "@/components/google-map";
-import { loadGeocoder } from "@/lib/google-maps";
+import { geocodeAddress } from "@/lib/google-maps";
 import BookingModal from "@/components/booking-modal";
 import ServiceDetailModal from "@/components/service-detail-modal";
 import BottomNavigation from "@/components/bottom-navigation";
@@ -20,7 +20,8 @@ import { fetchPublicSearch, SEARCH_QUERY_LIMIT, searchErrorKey, searchValidation
 
 const defaults: SearchFilters = { category: "", searchQuery: "", searchMode: "exact", serviceType: "", ageGroups: [], distance: 50, date: "", dateEnd: "", time: "", timeEnd: "", availableOnly: false };
 type SearchLocation = { name: string; coords: { lat: number; lng: number }; current?: boolean };
-const validate = (filters: SearchFilters) => !Number.isInteger(filters.distance) || filters.distance < 1 || filters.distance > 500 ? "searchPage.invalidRadius" : searchValidationKey(filters);
+const validRadius = (distance: number) => Number.isInteger(distance) && distance >= 1 && distance <= 500;
+const validate = (filters: SearchFilters, hasLocation: boolean) => hasLocation && !validRadius(filters.distance) ? "searchPage.invalidRadius" : searchValidationKey(filters);
 
 export default function Home() {
   const { t, language } = useFormLocale();
@@ -75,20 +76,16 @@ export default function Home() {
     event.preventDefault();
     if (locked.current) return;
     const next = { ...filters, searchQuery: query.trim(), searchMode: mode };
-    const invalid = validate(next);
+    const invalid = validate(next, !!location);
     if (invalid) { rejectQuery(invalid); return; }
     locked.current = true; setLocationBusy(true); setQueryError(undefined); setLocationReceipt(false);
     try {
       const address = locationDraft.trim();
       let target = address ? resolvedDraft?.name === address ? resolvedDraft : location?.name === address ? location : null : null;
       if (address && !target) {
-        const { Geocoder } = await loadGeocoder();
-        if (!alive.current) return;
-        const result = await new Promise<google.maps.GeocoderResult>((resolve, reject) => {
-          new Geocoder().geocode({ address }, (results, status) => status === "OK" && results?.[0] ? resolve(results[0]) : reject(new Error("Location unavailable")));
-        });
+        const result = await geocodeAddress(address);
         const coords = { lat: result.geometry.location.lat(), lng: result.geometry.location.lng() };
-        if (!Number.isFinite(coords.lat) || !Number.isFinite(coords.lng)) throw new Error("Invalid location");
+        if (!Number.isFinite(coords.lat) || !Number.isFinite(coords.lng) || Math.abs(coords.lat) > 90 || Math.abs(coords.lng) > 180) throw new Error("Invalid location");
         target = { name: result.formatted_address, coords };
       }
       if (!alive.current) return;
@@ -141,14 +138,22 @@ export default function Home() {
   }
   function applyFilters() {
     if (locked.current) return false;
-    const next = { ...draft, searchQuery: filters.searchQuery, searchMode: filters.searchMode };
-    const invalid = validate(next);
+    const next = { ...draft, distance: !location && !validRadius(draft.distance) ? defaults.distance : draft.distance, searchQuery: filters.searchQuery, searchMode: filters.searchMode };
+    const invalid = validate(next, !!location);
     setFilterError(invalid);
     if (invalid) return false;
     setFilters(next); setFiltersOpen(false);
     return true;
   }
   function resetDraft() { setDraft({ ...defaults, searchQuery: filters.searchQuery, searchMode: filters.searchMode }); setFilterError(undefined); }
+  function browseWithoutLocation() {
+    if (locked.current) return;
+    setLocation(null); setResolvedDraft(null); setLocationDraft(""); setQueryError(undefined); setLocationReceipt(false);
+    setViewMode("list"); setSort(current => current.startsWith("distance-") ? "default" : current);
+    setFilterError(undefined);
+    setDraft(current => validRadius(current.distance) ? current : { ...current, distance: defaults.distance });
+    requestAnimationFrame(() => resultsHeading.current?.focus());
+  }
   function clearAll() {
     if (locked.current) return;
     setFilters(defaults); setDraft(defaults); setQuery(""); setMode("exact"); setLocation(null); setResolvedDraft(null); setLocationDraft(""); setSort("default"); setFilterError(undefined); setQueryError(undefined); setLocationReceipt(false);
@@ -171,7 +176,7 @@ export default function Home() {
   }
   if (filters.time || filters.timeEnd) chips.push({ key: "time", label: t("searchPage.timeRange", { start: filters.time || "00:00", end: filters.timeEnd || "23:59" }), action: () => remove({ time: "", timeEnd: "" }) });
   if (filters.availableOnly) chips.push({ key: "available", label: t("searchPage.availableOnly"), action: () => remove({ availableOnly: false }) });
-  const filterProps = { filters: draft, onFiltersChange: (next: SearchFilters) => { setDraft(next); setFilterError(undefined); }, onApply: applyFilters, onReset: resetDraft, error: filterError, pending: locationBusy };
+  const filterProps = { filters: draft, onFiltersChange: (next: SearchFilters) => { setDraft(next); setFilterError(undefined); }, onApply: applyFilters, onReset: resetDraft, error: filterError, pending: locationBusy, hasLocation: !!location };
   const book = (service: ServiceWithProvider) => { setSelectedService(service); setShowBookingModal(true); };
   const details = (service: ServiceWithProvider) => { setSelectedService(service); setShowDetailModal(true); };
 
@@ -181,6 +186,7 @@ export default function Home() {
       <form className="search-query-form" aria-label={t("searchPage.search")} onSubmit={submitQuery}>
         <div className="search-query-bar"><div className="search-query-field"><label htmlFor="service-query">{t("searchPage.what")}</label><div><Search aria-hidden="true" /><input id="service-query" aria-invalid={queryError === "publicSearch.queryTooLong"} aria-describedby={queryError ? "search-query-feedback" : undefined} data-testid="input-search-query" type="search" maxLength={SEARCH_QUERY_LIMIT} value={query} onChange={event => { setQuery(event.target.value); setQueryError(undefined); }} placeholder={t("searchPage.queryPlaceholder")} disabled={locationBusy} /></div></div><div className="search-query-field"><label htmlFor="search-location">{t("searchPage.where")}</label><div><MapPin aria-hidden="true" /><input id="search-location" aria-invalid={queryError?.startsWith("searchPage.location") || false} aria-describedby={queryError ? "search-query-feedback" : undefined} data-testid="input-location" value={resolvedDraft?.current && locationDraft === resolvedDraft.name ? t("searchPage.currentLocation") : locationDraft} onChange={event => { setLocationDraft(event.target.value); setResolvedDraft(null); setLocationReceipt(false); setQueryError(undefined); }} placeholder={t("searchPage.locationPlaceholder")} disabled={locationBusy} /><Button type="button" variant="ghost" className="search-locate-button" aria-describedby={queryError ? "search-query-feedback" : undefined} onClick={useCurrentLocation} disabled={locationBusy} aria-label={t("searchPage.useLocation")}><Target aria-hidden="true" /></Button></div></div><Button type="submit" data-testid="button-search-services" disabled={locationBusy}><Search aria-hidden="true" />{t(locationBusy ? "searchPage.resolvingLocation" : "searchPage.search")}</Button></div>
         <div className="search-query-mode"><fieldset><legend>{t("searchPage.searchMode")}</legend>{["exact", "semantic"].map(value => <label key={value}><input type="radio" name="search-mode" value={value} checked={mode === value} disabled={locationBusy} onChange={() => setMode(value as SearchFilters["searchMode"])} aria-describedby="search-mode-help" />{t(value === "exact" ? "searchPage.keyword" : "searchPage.ai")}</label>)}</fieldset><p id="search-mode-help">{t(mode === "exact" ? "searchPage.keywordHelp" : "searchPage.aiHelp")}</p></div>
+        <div className="search-location-receipt"><Button type="button" variant="outline" data-testid="browse-without-location" onClick={browseWithoutLocation} disabled={locationBusy}>{t("searchLocation.browseWithout")}</Button>{!location && <p role="status">{t("searchLocation.browseHelp")}</p>}</div>
         {queryError && <p ref={queryFeedback} id="search-query-feedback" tabIndex={-1} role="alert" className="search-query-error">{t(queryError)}</p>}
         {locationBusy && <p role="status" className="search-location-receipt">{t("searchPage.resolvingLocation")}</p>}
         {locationReceipt && <p role="status" className="search-location-receipt">{t("searchPage.locationReady")}</p>}
@@ -192,7 +198,7 @@ export default function Home() {
         {loading ? <div className="search-loading" role="status"><p>{t("publicSearch.loading")}</p><div /><div /></div> : errorKey ? <div className="search-state" role="alert"><h3>{t("searchPage.errorTitle")}</h3><p>{t(errorKey)}</p><Button variant="outline" onClick={() => void search.refetch()} disabled={search.isFetching}>{t("publicSearch.retry")}</Button></div> : <>
           {search.data?.truncated && <p className="search-truncated" role="status">{t("publicSearch.truncated")}</p>}
           {viewMode === "list" && (services.length ? <div className="search-cards">{services.map(service => <ServiceCard key={service.id} service={service} searchLayout hasLocation={!!location} onBook={() => book(service)} onViewDetails={() => details(service)} onViewProvider={() => setProviderSource(service)} />)}</div> : <div className="search-state" role="status"><MapPin aria-hidden="true" /><h3>{t("searchPage.emptyTitle")}</h3><p>{t("publicSearch.empty")}</p><Button onClick={clearAll} disabled={locationBusy}>{t("searchPage.clear")}</Button></div>)}
-          {viewMode === "map" && <div><p className="search-map-help">{t("searchPage.mapHelp")} <button type="button" className="search-text-button" onClick={() => setViewMode("list")}>{t("searchPage.backList")}</button></p>{services.length || location ? <div className="search-map"><GoogleMap services={services} userLocation={location?.coords ?? null} onServiceSelect={details} /></div> : <div className="search-state"><h3>{t("searchPage.emptyTitle")}</h3><p>{t("searchPage.anyLocation")}</p><Button variant="outline" onClick={() => setViewMode("list")}>{t("searchPage.backList")}</Button></div>}</div>}
+          {viewMode === "map" && <div><p className="search-map-help">{t("searchPage.mapHelp")} <button type="button" className="search-text-button" onClick={() => setViewMode("list")}>{t("searchPage.backList")}</button></p>{services.length || location ? <div className="search-map"><GoogleMap services={services} userLocation={location?.coords ?? null} onServiceSelect={details} onShowList={() => setViewMode("list")} /></div> : <div className="search-state"><h3>{t("searchPage.emptyTitle")}</h3><p>{t("searchPage.anyLocation")}</p><Button variant="outline" onClick={() => setViewMode("list")}>{t("searchPage.backList")}</Button></div>}</div>}
         </>}
         {showResults && services.length > 0 && <p className="search-footer">{t("searchPage.footer")}</p>}
       </section></div>

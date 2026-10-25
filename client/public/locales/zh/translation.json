@@ -785,5 +785,9 @@
     "resultsCount_few": "{{count}}项服务",
     "resultsCount_many": "{{count}}项服务",
     "clear": "清除筛选"
+  },
+  "searchLocation": {
+    "browseWithout": "不设置位置浏览",
+    "browseHelp": "显示所有地点的服务。选择位置后才能使用距离和半径筛选。"
   }
 }

@@ -782,5 +782,9 @@
     "gender_both": "Visiem dzimumiem",
     "advancePayment": "Priekšapmaksa: {{percent}}% jāapmaksā iepriekš.",
     "clear": "Notīrīt filtrus"
+  },
+  "searchLocation": {
+    "browseWithout": "Pārlūkot bez atrašanās vietas",
+    "browseHelp": "Tiek rādīti pakalpojumi visās vietās. Attālums un rādiusa filtrs būs pieejami pēc atrašanās vietas izvēles."
   }
 }
