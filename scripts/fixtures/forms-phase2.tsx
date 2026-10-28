@@ -6,6 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../../client/src/lib/queryClient";
 import BookingModal from "../../client/src/components/booking-modal";
 import Account from "../../client/src/pages/account";
+import ServiceCard from "../../client/src/components/service-card";
 import type { ServiceWithProvider } from "../../shared/schema";
 
 declare const __FORM_RESOURCES__: Record<string, { translation: object }>;
@@ -43,6 +44,7 @@ const held = (signal?: AbortSignal | null) => new Promise<void>((resolve, reject
 window.fetch = async (input, options = {}) => {
   const path = String(input), method = options.method || "GET";
   const body = options.body ? JSON.parse(String(options.body)) : {};
+  if (path === "/api/categories") return Response.json([{ key: "education", name: "Synthetic category", icon: "", searchKeywords: "" }]);
   if (method !== "GET") fixture.writes.push({ path, body });
   if (path === "/api/auth/user") {
     if (method === "PATCH") {
@@ -118,7 +120,7 @@ function Fixture() {
       <button type="button" onClick={() => setDark(previous => !previous)}>Toggle fixture theme</button>
       <button type="button" onClick={() => fixture.resolve?.()}>Resolve fixture request</button>
     </nav>
-    {params.get("mode") === "booking" ? <main className="p-4"><button type="button" id="open-booking" className="border rounded-lg p-3" onClick={() => setBookingOpen(true)}>Open booking</button>
+    {params.get("mode") === "booking" ? <main className="p-4"><div id="open-booking">{params.get("trigger") === "card" ? <ServiceCard service={service} onBook={() => setBookingOpen(true)} onViewDetails={() => {}} /> : <button type="button" className="border rounded-lg p-3" onClick={event => { event.currentTarget.focus(); setBookingOpen(true); }}>Open booking</button>}</div>
       {bookingOpen && <BookingModal service={service} onClose={() => setBookingOpen(false)} />}
     </main> : <Account />}
   </div>;

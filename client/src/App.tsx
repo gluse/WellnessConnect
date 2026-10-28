@@ -15,6 +15,13 @@ import MyBookings from "@/pages/my-bookings";
 import Administration from "@/pages/administration";
 import AppHeader from "@/components/app-header";
 import StorefrontPage from "@/pages/storefront";
+import { BillingRuntimeProvider } from "@/components/billing-runtime";
+import type { ReactNode } from "react";
+
+function AuthenticatedBillingRuntime({ children }: { children: ReactNode }) {
+  const { user, isLoading, isError } = useAuth();
+  return <BillingRuntimeProvider identityId={!isLoading && !isError && user ? user.id : null}>{children}</BillingRuntimeProvider>;
+}
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -39,11 +46,13 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <AuthenticatedBillingRuntime>
       <TooltipProvider>
         <Toaster />
         <AppHeader />
         <Router />
       </TooltipProvider>
+      </AuthenticatedBillingRuntime>
     </QueryClientProvider>
   );
 }

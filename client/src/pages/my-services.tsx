@@ -2,7 +2,7 @@ import { Link, Redirect, Route, Switch, useLocation } from "wouter";
 import { useIsMutating, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { WorkspaceContext } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
-import { useProviderWorkspace } from "@/hooks/use-provider-workspace";
+import { useProviderWorkspace, WORKSPACE_CHANGE_KEY } from "@/hooks/use-provider-workspace";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import ProviderNavigation from "@/components/provider/provider-navigation";
@@ -34,6 +34,7 @@ function ProviderLayout() {
   const mutationCount = useIsMutating();
   const editing = /\/services\/(?:new|\d+\/edit)$/.test(location);
   const change = useMutation({
+    mutationKey: WORKSPACE_CHANGE_KEY,
     onMutate: () => queryClient.cancelQueries({ predicate: query => workspaceQueries(query.queryKey[0]) }),
     mutationFn: async (companyId: number | null): Promise<WorkspaceContext> => (await apiRequest("POST", "/api/company/context", { companyId })).json(),
     onSuccess: async context => {

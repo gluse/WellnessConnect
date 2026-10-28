@@ -6,12 +6,18 @@ description: Maintain WellnessConnect agent inventories, improve skill instructi
 # Agent optimization
 
 Use this instruction-only routine for WellnessConnect / FitsMyTime management.
-Read `GENERAL-MANAGER.md` at the repository root when acting as General Manager.
+Read `ROLE-GENERAL-MANAGER.md` at the repository root when acting as General Manager.
 That role may edit Markdown only; leave executable hooks and implementation to
 developer sessions. This skill does not grant control of unrelated conversations.
 
 ## Inventory and ownership
 
+- Apply `AGENTS.md` cross-role cooperation: roles contact owners directly, owners
+  accept valid local dependencies and implement without repeated user approval.
+  Check TASKS.md, the task handoff and `docs/agent-coordination.md` for existing
+  choices, executor/target-specific approvals and explicit holds before escalating.
+  Route to the approved executor where reachable; persist undeliverable requests
+  in the queue without claiming delivery or treating saved sessions as live.
 - Refresh `docs/agent-inventory.md` from the available live roster, project role
   documents, local session metadata, and the current exposed skill catalog.
 - For local history, prefer session IDs, titles, workspace paths, source type,

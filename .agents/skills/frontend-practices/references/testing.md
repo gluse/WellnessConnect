@@ -1,7 +1,7 @@
 # Frontend tests and verification
 
 Reviewed: 18 October 2026. Test responsibility/completion rules belong to
-`FRONT-END-DEVELOPER.md`; keep database authorization in `AGENTS.md` intact.
+`ROLE-FRONT-END-DEVELOPER.md`; keep database authorization in `AGENTS.md` intact.
 
 ## Tooling and isolation
 

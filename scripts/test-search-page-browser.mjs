@@ -21,9 +21,13 @@ const config = changes => evaluate(changes => Object.assign(window.searchFixture
 const choose = async (selector, value) => set(await evaluate(selector => document.querySelector(selector).id, selector), value);
 const submit = async () => { await click('[data-testid="button-search-services"]'); await until(() => !document.querySelector('[data-testid="button-search-services"]').disabled && document.querySelector('.search-results').getAttribute('aria-busy') === 'false', "location resolution and search settled"); };
 const apply = async () => { await click('.search-desktop-filters button[type="submit"]'); await until(() => document.querySelector('.search-results').getAttribute('aria-busy') === 'false', "filter settled"); };
-const capture = async name => { const file = `docs/search-implementation-${name}.png`; await screenshot(file); screenshots.push(file); };
+const capture = async name => { const file = `docs/search-modal-regression-${name}.png`; await screenshot(file); screenshots.push(file); };
 try {
-  await viewport(1280); await visit("/search"); await until(() => document.querySelectorAll(".search-service-card").length === 3, "initial services");
+  await viewport(1280); await visit("/search");
+  await until(() => !!document.querySelector('.search-results') && document.querySelector('.search-results').getAttribute('aria-busy') === 'false', 'location choice ready');
+  await until(() => !!document.querySelector('.search-location-dialog[data-state="open"]'), 'initial modal open'); await fixture.key('Escape'); await until(() => !document.querySelector('.search-location-dialog'), 'location modal dismissed');
+  await set('search-location', 'Synthetic city'); await submit();
+  await until(() => document.querySelectorAll(".search-service-card").length === 3, "initial located services");
   const initial = (await requests()).length;
   await choose('.search-desktop-filters [data-testid="search-category"]', 'fitness');
   await set('service-query', 'massage');
@@ -50,7 +54,7 @@ try {
   await set('service-sort','price-asc'); assert.equal(await evaluate(() => document.querySelector('.search-service-title').textContent), 'Restorative yoga');
   checks.push('invalid radius/date range retains prior results, focuses feedback; existing price sort');
 
-  await set('search-location','Synthetic city'); await submit(); assert.ok((await requests()).at(-1).includes('latitude=0')); assert.ok((await requests()).at(-1).includes('radius=50'));
+  await set('search-location','Synthetic city'); await submit(); assert.ok((await requests()).at(-1).includes('latitude=0')); assert.ok((await requests()).at(-1).includes('radius=25'));
   const previous = (await requests()).length;
   await config({ geocode: 'error' }); await set('search-location','Unresolvable address'); await submit();
   assert.equal((await requests()).length,previous); assert.equal(await count(),3);
@@ -108,6 +112,6 @@ try {
   await api('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
   assert.deepEqual(await evaluate(() => window.searchFixture.unexpected),[]); assert.deepEqual(fixture.errors,[]); assert.deepEqual(fixture.network,[]); assert.deepEqual(fixture.blocked,[]);
   checks.push('en/lv/ru responsive matrix, draft-preserving phone dialog/Escape/focus/apply, dark mode, 200% text and reduced motion');
-  await writeFile(new URL('../docs/search-implementation-evidence.json',import.meta.url),JSON.stringify({date:'2026-10-21',checks,matrix,screenshots,unexpectedNetwork:fixture.network,runtimeErrors:fixture.errors,deferredLanguages:['ar','de','es','fr','hi','ja','pt','zh'],limits:'Installed headless Chrome; synthetic API/geocoding/location boundaries. No real maps, connected server/session/database writes or deployment. Physical devices, screen readers, other browser engines and native-language review not performed.'},null,2)+'\n');
+  await writeFile(new URL('../docs/search-modal-regression-evidence.json',import.meta.url),JSON.stringify({date:'2026-10-23',checks,matrix,screenshots,unexpectedNetwork:fixture.network,runtimeErrors:fixture.errors,deferredLanguages:['ar','de','es','fr','hi','ja','pt','zh'],limits:'Installed headless Chrome; synthetic API/geocoding/location boundaries. No real maps, connected server/session/database writes or deployment. Physical devices, screen readers, other browser engines and native-language review not performed.'},null,2)+'\n');
   console.log(`Passed search page: ${checks.length} groups, ${matrix.length} locale/viewport cases; no unexpected requests/runtime exceptions.`);
 } finally { await fixture.close(); }

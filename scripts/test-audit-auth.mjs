@@ -7,7 +7,7 @@ const noEnv = fileURLToPath(new URL("../.audit-unit-no-env", import.meta.url));
 assert.equal(existsSync(noEnv), false);
 process.env.DOTENV_PATH = process.env.DOTENV_CONFIG_PATH = noEnv;
 process.env.DOTENV_DEBUG = "false"; process.env.DOTENV_QUIET = "true";
-Object.assign(process.env, { AUDIT_ENABLED: "false", AUDIT_WORKER_ENABLED: "false", NODE_ENV: "test",
+Object.assign(process.env, { AUDIT_ENABLED: "false", AUDIT_WORKER_ENABLED: "false", AUDIT_AUTH_EVENTS_ENABLED: "false", AUDIT_SERVICE_VIEWS_ENABLED: "false", NODE_ENV: "test",
   DATABASE_URL: "postgresql://fixture:fixture@127.0.0.1:1/fixture", SUPABASE_URL: "http://127.0.0.1:1",
   OPENAI_API_KEY: "synthetic-key",
   SUPABASE_PUBLISHABLE_KEY: "fixture", SUPABASE_SECRET_KEY: "fixture", APP_URL: "http://localhost:5000",
@@ -25,10 +25,10 @@ db.transaction = async () => { throw new Error("Unexpected offline DB transactio
 const userId = "11111111-1111-4111-8111-111111111111";
 const user = { id: userId, email: "canary-email@example.invalid", email_confirmed_at: "2026-01-01T00:00:00Z", aud: "authenticated", user_metadata: {}, app_metadata: {} };
 const secrets = [user.email, "CANARY-access-token", "CANARY-refresh-token", "CanaryPassword123!", "CanaryNewPassword456!"];
-const events = [], gaps = [], originalError = console.error;
+const events = [], observedEvents = [], gaps = [], originalError = console.error;
 let unavailable = false, unavailableBefore = false, provider = "success", failSave = false, passwordWrites = 0;
 console.error = (...values) => { gaps.push(values.join(" ")); };
-setAuditSink(async event => { if (unavailable) throw new Error("CANARY-private-driver-error"); events.push(event); },
+setAuditSink(async event => { if (unavailable) throw new Error("CANARY-private-driver-error"); events.push(event); observedEvents.push(event); },
   async () => { if (unavailableBefore) throw new Error("CANARY-private-driver-error"); });
 storage.getUser = async id => id === userId ? { id, currentRole: "provider", providerType: "individual" } : undefined;
 storage.upsertUser = async data => ({ ...data, currentRole: "provider", providerType: "individual" });
@@ -57,7 +57,7 @@ function request(extra = {}) {
   req.session = session(); return req;
 }
 function response() { return { code: 200, status(value) { this.code = value; return this; }, json(value) { this.body = value; return this; },
-  set() { return this; }, clearCookie() {}, redirect(url) { this.code = 302; this.url = url; return this; } }; }
+  set() { return this; }, sendStatus(value) { this.code = value; return this; }, clearCookie() {}, redirect(url) { this.code = 302; this.url = url; return this; } }; }
 async function invoke(path, req, method = "post") {
   const res = response(); await routes.find(route => route.path === path && route.method === method).handlers.at(-1)(req, res, error => { res.failure = error; }); return res;
 }
@@ -145,6 +145,27 @@ try {
   assert.equal(res.failure?.status, 503); assert.equal(res.failure?.message.includes("CANARY"), false);
   assert.equal(passwordWrites, 2);
 
+  // Transport/local transactions enabled while remote Auth producers are staged.
+  // A known capture outage cannot add a new dependency to existing Auth flows.
+  events.length = 0; unavailable = unavailableBefore = true;
+  let stagedProbes = 0, stagedCaptures = 0;
+  setAuditSink(async event => { stagedCaptures++; if (unavailable) throw Error('CANARY-private-driver-error'); events.push(event); observedEvents.push(event); },
+    async () => { stagedProbes++; throw Error('CANARY-private-driver-error'); }, { authEvents: false });
+  res = await invoke('/api/auth/login', request({body:{email:user.email,password:secrets[3]}}));
+  assert.equal(res.body.success,true);assert.equal(stagedProbes,0);assert.equal(stagedCaptures,0);
+  provider = 'denied';
+  res = await invoke('/api/auth/login', request({body:{email:user.email,password:secrets[3]}}));
+  assert.equal(res.code,401);assert.equal(stagedCaptures,0);provider='success';
+  const stagedPasswordWrites=passwordWrites;
+  req=request({body:{currentPassword:secrets[3],newPassword:secrets[4]},user:{claims:{sub:userId},email:user.email},auditPersonalRole:'provider'});
+  res=response();await updatePassword(req,res);
+  assert.equal(res.body.success,true);assert.equal(passwordWrites,stagedPasswordWrites+1);
+  assert.equal(stagedProbes,0);assert.equal(stagedCaptures,0);
+  res=await invoke('/api/logout',request());assert.equal(res.body.success,true);assert.equal(stagedCaptures,0);
+  res=response();await requireSameOrigin({method:'POST',get:key=>key==='Origin'?'https://wrong.invalid':undefined},res,()=>assert.fail());
+  assert.equal(res.code,403);assert.equal(stagedCaptures,1,'Security denial capture stays enabled while remote Auth is staged');
+  unavailable=unavailableBefore=false;
+
   // Real account route/storage/Drizzle SQL path, synthetic transaction and rows.
   const { registerRoutes } = await import("../server/routes.ts");
   const { PgDialect } = await import("drizzle-orm/pg-core");
@@ -154,6 +175,23 @@ try {
   for (const method of ["get", "post", "patch", "put", "delete"]) app[method] = (path, ...handlers) => { accountRoutes.push({ method, path, handlers }); return app; };
   const server = await registerRoutes(app);
   try {
+    // Actual service-view composition uses SDK verification/current profile,
+    // never an unverified request identity. HTTP/provider/storage remain fake.
+    const originalService = storage.getServiceById;
+    process.env.AUDIT_SERVICE_VIEWS_ENABLED='true';
+    storage.getServiceById = async id => ({ id, isActive: true, companyActive: true });
+    const viewed = accountRoutes.find(route => route.path === '/api/services/:id/view').handlers.at(-1);
+    const viewRequest = () => request({ params: { id: '42' }, query: {}, body: {} });
+    let viewReq = viewRequest(); res = response(); await viewed(viewReq, res);
+    assert.equal(res.code,204);assert.equal(events.at(-1).envelope.eventName,'service.viewed.v1');
+    assert.deepEqual(events.at(-1).envelope.actor,{kind:'user',userId,effectiveRole:'provider'});
+    viewReq=viewRequest();viewReq.session.auth.userId='22222222-2222-4222-8222-222222222222';
+    res=response();await viewed(viewReq,res);assert.equal(res.code,204);
+    assert.deepEqual(events.at(-1).envelope.actor,{kind:'anonymous'},'Mismatching provider/session identity cannot become the audit actor');
+    storage.getUser=async()=>{throw Error('CANARY-private-profile-error');};
+    res=response();await viewed(viewRequest(),res);assert.equal(res.code,204);
+    assert.deepEqual(events.at(-1).envelope.actor,{kind:'anonymous'});
+    storage.getUser=getUser;storage.getServiceById=originalService;events.length=0;process.env.AUDIT_SERVICE_VIEWS_ENABLED='false';
     let currentRole = "seeker", rejectEnqueue = true, order = [], attempts = [];
     db.transaction = async work => {
       order = [];
@@ -194,7 +232,7 @@ try {
     await assert.rejects(storage.updateUserRole(userId, "seeker", wrongActor));
     assert.deepEqual(order, ["lock"]); assert.equal(currentRole, "provider");
   } finally { server.close(); }
-  const serialized = JSON.stringify({ events, gaps });
+  const serialized = JSON.stringify({ events: observedEvents, gaps });
   for (const secret of [...secrets, "CANARY-provider-error", "CANARY-private-driver-error", "CANARY-private-profile-error", "CANARY-oauth-code", "CANARY-db-password-and-query"]) assert.equal(serialized.includes(secret), false);
 } finally { setAuditSink(); console.error = originalError; await pool.end(); }
-console.log("Passed: enabled login/OAuth/session/password/access hooks, provider-success/local-failure distinction, denied capture outages and safe field/correlation behavior. Mocked DB/Auth/session only; no listener, credentials or live services.");
+console.log("Passed: staged remote-Auth compatibility, enabled Auth hook branches, local atomic persona capture/rollback, independent security denial outages and safe field/correlation behavior. Mocked DB/Auth/session only; no listener, credentials or live services.");

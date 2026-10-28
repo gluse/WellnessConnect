@@ -6,7 +6,7 @@ export default function RoleSwitcher() {
   const inMyServices = location === "/my-services" || location.startsWith("/my-services/");
   const inSearch = location === "/" || location === "/search";
   return (
-    <nav aria-label="Services" className="bg-neutral-100 p-1 rounded-lg flex">
+    <nav aria-label="Services" className="bg-white/10 p-1 rounded-lg flex flex-wrap">
       <Button
         asChild
         variant={inSearch ? "default" : "ghost"}

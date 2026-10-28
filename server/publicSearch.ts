@@ -35,10 +35,10 @@ export function setupPublicSearchRoutes(app: Express, dependencies: PublicSearch
   const noStore: RequestHandler = (_req, res, next) => { res.set("Cache-Control", "no-store"); next(); };
   app.get("/api/services/search", noStore, readLimit, processReadLimit, async (req, res) => {
     try {
-      const filters = publicSearchSchema.parse(req.query);
+      const filters = { limit: 50, ...publicSearchSchema.parse(req.query) };
       const services = await dependencies.searchServices(filters);
       assertSearchSize(services.length);
-      res.json(services);
+      res.json(services.slice(0, filters.limit));
     } catch (error) { failure(error, res); }
   });
 
@@ -51,7 +51,7 @@ export function setupPublicSearchRoutes(app: Express, dependencies: PublicSearch
     try {
       const textMatches = await dependencies.searchServices(exactFilters);
       assertSearchSize(textMatches.length);
-      if (textMatches.length) return res.json(textMatches);
+      if (textMatches.length) return res.json(textMatches.slice(0, filters.limit ?? 50));
       const candidates = await dependencies.getPublicServiceEmbeddings(filters);
       assertSearchSize(candidates.length);
       if (!candidates.length) return res.json([]);
@@ -73,8 +73,9 @@ export function setupPublicSearchRoutes(app: Express, dependencies: PublicSearch
       const scored = candidates.map(candidate => ({ serviceId: candidate.serviceId, score: cosineSimilarity(queryEmbedding, candidate.embedding) }))
         .filter(item => Number.isFinite(item.score) && item.score >= 0.30)
         .sort((a, b) => b.score - a.score || a.serviceId - b.serviceId);
-      res.set("X-Search-Truncated", String(scored.length > MAX_SEMANTIC_RESULTS));
-      const ids = scored.slice(0, MAX_SEMANTIC_RESULTS).map(item => item.serviceId);
+      const resultLimit = Math.min(filters.limit ?? 50, MAX_SEMANTIC_RESULTS);
+      res.set("X-Search-Truncated", String(scored.length > resultLimit));
+      const ids = scored.slice(0, resultLimit).map(item => item.serviceId);
       if (!ids.length) return res.json([]);
       const services = await dependencies.searchServices({ ...filters, serviceIds: ids });
       const positions = new Map(ids.map((id, index) => [id, index]));
@@ -86,7 +87,7 @@ export function setupPublicSearchRoutes(app: Express, dependencies: PublicSearch
       try {
         const services = await dependencies.searchServices(exactFilters);
         assertSearchSize(services.length);
-        res.set("X-Search-Fallback", "true").json(services);
+        res.set("X-Search-Fallback", "true").json(services.slice(0, filters.limit ?? 50));
       } catch (fallbackError) { failure(fallbackError, res); }
     }
   });

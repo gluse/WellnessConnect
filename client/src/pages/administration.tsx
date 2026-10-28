@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import AdminUserFiltersForm from "@/components/admin-user-filters";
 import AdminCategories from "@/components/admin-categories";
 import AdminSubscriptions from "@/components/admin-subscriptions";
+import AdminBillingPrice from "@/components/admin-billing-price";
+import { useBillingRuntime } from "@/components/billing-runtime";
 import { useTranslation } from "react-i18next";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from "@/components/ui/table";
 
@@ -43,9 +45,11 @@ export default function Administration() {
 
 function AdministrationContent() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const { adminPricingTransport } = useBillingRuntime();
   const access = useAppAdmin();
   const queryClient = useQueryClient();
-  const [section, setSection] = useState<"users" | "categories" | "subscriptions">("users");
+  const [section, setSection] = useState<"users" | "categories" | "subscriptions" | "billingPrice">("users");
   const [categoryAccessError, setCategoryAccessError] = useState<Error | null>(null);
   const [options, setOptions] = useState(() => ({ page: 1, pageSize: 50,
     filters: { ...defaultAdminUserFilters, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
@@ -78,6 +82,7 @@ function AdministrationContent() {
         <Button variant={section === "users" ? "default" : "outline"} aria-pressed={section === "users"} onClick={() => setSection("users")}>App users</Button>
         <Button variant={section === "categories" ? "default" : "outline"} aria-pressed={section === "categories"} onClick={() => setSection("categories")}>Categories</Button>
         <Button variant={section === "subscriptions" ? "default" : "outline"} aria-pressed={section === "subscriptions"} onClick={() => setSection("subscriptions")}>{t("storefront.subscriptions")}</Button>
+        <Button variant={section === "billingPrice" ? "default" : "outline"} aria-pressed={section === "billingPrice"} onClick={() => setSection("billingPrice")}>{t("monthlyBilling.priceTitle")}</Button>
       </nav>}
       {access.isPending ? <p role="status">Checking support access…</p> : denied ? <div role="alert" className="space-y-3">
         <p>Application support access is required to view this page.</p>
@@ -85,7 +90,7 @@ function AdministrationContent() {
       </div> : access.isError ? <div role="alert" className="space-y-3">
         <p>Unable to check support access. Please try again.</p>
         <Button disabled={access.isFetching} onClick={() => void access.refetch()}>Try again</Button>
-      </div> : section === "categories" ? <AdminCategories onAccessError={setCategoryAccessError} /> : section === "subscriptions" ? <AdminSubscriptions onAccessError={setCategoryAccessError} /> : <section aria-labelledby="app-users-heading" className="border rounded-xl bg-white p-4 sm:p-6 space-y-4">
+      </div> : section === "billingPrice" ? <AdminBillingPrice actorId={user?.id ?? ""} authorized={Boolean(access.data?.isAdmin && !denied)} transport={adminPricingTransport} onAccessError={setCategoryAccessError} /> : section === "categories" ? <AdminCategories onAccessError={setCategoryAccessError} /> : section === "subscriptions" ? <AdminSubscriptions onAccessError={setCategoryAccessError} /> : <section aria-labelledby="app-users-heading" className="border rounded-xl bg-white p-4 sm:p-6 space-y-4">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div><h2 id="app-users-heading" className="text-lg font-semibold">App users</h2><p className="text-sm text-neutral-600">All registered accounts, including users who have not signed in.</p></div>
           <Button variant="outline" disabled={users.isFetching} onClick={() => void users.refetch()}>Refresh</Button>

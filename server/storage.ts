@@ -34,6 +34,7 @@ import { enqueueDrizzleAudit, AuditCaptureUnavailable } from "./audit/capture";
 import { bookableSlots } from "@shared/scheduling";
 import { reviewSchema, ReviewError, type ReviewInput, type ServiceReviewPage } from "@shared/reviews";
 import { assertSearchSize, MAX_SEARCH_CANDIDATES, MAX_SEARCH_SCHEDULES, searchFiltersSchema, type SearchFilters } from "./searchInput";
+import { assertCustomerBookingChange } from "./customerBookings";
 
 function searchDistance(filters: SearchFilters) {
   if (filters.latitude === undefined || filters.longitude === undefined) return undefined;
@@ -44,7 +45,7 @@ function searchDistance(filters: SearchFilters) {
     * power(sin((${addresses.longitude} - ${filters.longitude}) * ${radians} / 2), 2)))`;
   return sql<number>`CASE WHEN ${addresses.latitude} IS NOT NULL AND ${addresses.longitude} IS NOT NULL
     AND (${addresses.locationSource} IS DISTINCT FROM 'google' OR ${addresses.locationExpiresAt} > now())
-    THEN round((6371 * 2 * atan2(sqrt(${a}), sqrt(1 - ${a})))::numeric, 1)::float8 END`;
+    THEN (6371 * 2 * atan2(sqrt(${a}), sqrt(1 - ${a})))::float8 END`;
 }
 
 function publicSearchConditions(filters: SearchFilters) {
@@ -126,8 +127,8 @@ export interface IStorage {
   getBookingsBySeeker(seekerId: string): Promise<BookingWithDetails[]>;
   getBookingsByProvider(providerId: string, companyId?: number): Promise<BookingWithDetails[]>;
   getBookingById(id: number): Promise<BookingWithDetails | undefined>;
-  updateBookingStatus(id: number, status: string): Promise<Booking>;
-  rescheduleBooking(id: number, date: Date): Promise<Booking>;
+  updateBookingStatus(id: number, status: string, seekerId?: string): Promise<Booking>;
+  rescheduleBooking(id: number, date: Date, seekerId?: string): Promise<Booking>;
   updateBookingPayment(id: number, paymentStatus: string): Promise<Booking>;
   getBookingsForServiceOnDate(serviceId: number, date: Date): Promise<Booking[]>;
   getBookingsForProviderOnDate(providerId: string, date: Date): Promise<Booking[]>;
@@ -320,7 +321,9 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(reviewStats, eq(services.id, reviewStats.serviceId))
       .where(and(...conditions))
       .orderBy(...(distance ? [asc(distance)] : []), desc(services.createdAt), desc(services.id));
-    const results = bounded ? await query.limit(MAX_SEARCH_CANDIDATES + 1) : await query;
+    // Availability is evaluated below; don't cap before those matches are known.
+    const queryLimit = filters.limit && !filters.availableOnly ? filters.limit : MAX_SEARCH_CANDIDATES + 1;
+    const results = bounded ? await query.limit(queryLimit) : await query;
 
     if (bounded) assertSearchSize(results.length);
 
@@ -469,7 +472,7 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    return servicesWithProviders;
+    return filters.limit ? servicesWithProviders.slice(0, filters.limit) : servicesWithProviders;
   }
 
   // Booking operations
@@ -620,12 +623,16 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateBookingStatus(id: number, status: string): Promise<Booking> {
+  async updateBookingStatus(id: number, status: string, seekerId?: string): Promise<Booking> {
     return db.transaction(async tx => {
       const [initial] = await tx.select().from(bookings).where(eq(bookings.id, id));
       if (!initial) throw new BookingConflictError("Reservation not found.");
       await tx.execute(sql`SELECT id FROM users WHERE id = ${initial.providerId} FOR UPDATE`);
       const [booking] = await tx.select().from(bookings).where(eq(bookings.id, id)).for("update");
+      if (seekerId !== undefined) {
+        assertCustomerBookingChange(booking, seekerId);
+        if (status !== "cancelled") throw new BookingConflictError("Customers can only cancel their reservations.");
+      }
       if ((booking.status === "cancelled" || booking.status === "completed") && status !== booking.status) throw new BookingConflictError("Closed reservations cannot be changed.");
       const [updated] = await tx.update(bookings).set({ status: status as Booking["status"], updatedAt: new Date() }).where(eq(bookings.id, id)).returning();
       return updated;
@@ -641,12 +648,14 @@ export class DatabaseStorage implements IStorage {
     return booking;
   }
 
-  async rescheduleBooking(id: number, date: Date): Promise<Booking> {
+  async rescheduleBooking(id: number, date: Date, seekerId?: string): Promise<Booking> {
     return db.transaction(async tx => {
       const [initial] = await tx.select().from(bookings).where(eq(bookings.id, id));
       if (!initial) throw new BookingConflictError("Reservation not found.");
       await tx.execute(sql`SELECT id FROM users WHERE id = ${initial.providerId} FOR UPDATE`);
       const [booking] = await tx.select().from(bookings).where(eq(bookings.id, id)).for("update");
+      if (seekerId !== undefined) assertCustomerBookingChange(booking, seekerId);
+      if (!(date.getTime() > Date.now())) throw new BookingConflictError("Choose a future appointment time.");
       if (booking.status !== "pending" && booking.status !== "confirmed") throw new BookingConflictError("Only pending or confirmed reservations can be rescheduled.");
       const [service] = await tx.select().from(services).where(eq(services.id, booking.serviceId));
       const schedules = await tx.select().from(availability).where(and(

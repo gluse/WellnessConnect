@@ -3,12 +3,12 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { browserFixture, measureFormContrast } from "./fixtures/browser-harness.mjs";
 import { serviceAmount } from "../client/src/components/forms-locale.ts";
+import { languages, deferredLanguages, verificationDate, evidencePrefix } from "./fixtures/forms-verification-scope.mjs";
 assert.equal(serviceAmount(0, "en"), "$0.00");
 assert.equal(serviceAmount(1.005, "en"), "$1.00", "Preserve existing toFixed display rounding");
 assert.equal(serviceAmount(2.675, "en"), "$2.67");
-assert.equal(serviceAmount(1234.5, "de"), "$1.234,50", "Localize display without changing the dollar unit");
 const root = path.resolve(import.meta.dirname, "..");
-const languages = ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"];
+const prefix = evidencePrefix("phase2");
 const resources = {};
 for (const language of languages) resources[language] = { translation: JSON.parse(await readFile(path.join(root, "client/public/locales", language, "translation.json"), "utf8")) };
 let messageCount = 0;
@@ -32,7 +32,7 @@ try {
   const value = id => evaluate(id => document.getElementById(id)?.value, id);
   const account = async (language = "en", extra = "") => { await visit("/account?lang=" + language + extra); await until(() => !!document.getElementById("account-name"), "account form"); };
   const booking = async (language = "en", extra = "") => {
-    await visit("/?mode=booking&lang=" + language + extra); await click("#open-booking");
+    await visit("/?mode=booking&lang=" + language + extra); await click("#open-booking button");
     await until(() => !!document.querySelector('[role="dialog"]'), "booking modal"); await settle();
   };
   const choose = async (language = "en") => {
@@ -46,7 +46,7 @@ try {
   const confirm = () => button("Request booking");
   const dialog = () => until(() => !!document.querySelector('[role="alertdialog"][data-state="open"]'), "confirmation");
   const modalClosed = () => until(() => !document.querySelector('[role="alertdialog"]'), "confirmation closed");
-  const capture = async (name, full = true) => { const file = "docs/forms-phase2-" + name + ".png"; await screenshot(file, full); screenshots.push(file); };
+  const capture = async (name, full = true) => { const file = "docs/" + prefix + "-" + name + ".png"; await screenshot(file, full); screenshots.push(file); };
   const reflow = async () => {
     const bounds = await evaluate(() => {
       const modal = document.querySelector('[role="dialog"]') || document.querySelector('[role="alertdialog"]');
@@ -186,12 +186,12 @@ try {
   assert.ok(await evaluate(() => document.getElementById("addresses").textContent.includes("Only workspace managers")));
   checks.push("Address permission gate hides write controls.");
 
-  await booking("en", "&guest=true");
+  await booking("en", "&guest=true&trigger=card");
   assert.ok(await evaluate(() => !!document.querySelector('[data-testid="dialog-booking-sign-in"]')));
   assert.equal((await writes("/api/bookings")).length, 0);
   await button("Continue browsing"); await until(() => !document.querySelector('[role="dialog"]'), "guest close");
-  assert.equal(await evaluate(() => document.activeElement.id), "open-booking");
-  checks.push("Guest booking sign-in gate and intentional close-focus restoration.");
+  await until(() => document.activeElement === document.querySelector("#open-booking button"), "guest close restores trigger focus");
+  checks.push("Actual service-card pointer trigger, guest booking sign-in gate and intentional close-focus restoration.");
 
   for (const state of ["pending", "empty", "error"]) {
     await booking("en", "&availability=" + state);
@@ -252,7 +252,7 @@ try {
   assert.ok(await evaluate(() => !document.querySelector('[role="dialog"]').textContent.includes("Booking confirmed")));
   assert.deepEqual((await writes("/api/bookings")).at(-1).body, { serviceId: 7, scheduledDate: "2030-01-16T10:00:00.000Z", participantCount: 2, notes: "Synthetic note" });
   await button("Close"); await until(() => !document.querySelector('[role="dialog"]'), "booking success close");
-  assert.equal(await evaluate(() => document.activeElement.id), "open-booking");
+  assert.ok(await evaluate(() => document.activeElement === document.querySelector("#open-booking button")));
   checks.push("Booking participant errors, Back retention, safe rejected/denied feedback, slot-conflict recovery, pending duplicate/Escape guards, request-specific confirmation and unchanged payload.");
 
   await booking("en", "&instant=true"); await choose(); await button(resources.en.translation.booking.confirmBooking);
@@ -275,22 +275,22 @@ try {
     await choose(language);
     await set("booking-notes", "Synthetic العربية notes");
     for (const width of [320, 390, 639, 640, 641, 768, 1280]) { await viewport(width); await reflow(); matrix.push("booking:" + language + ":" + width); }
-    assert.equal(await evaluate(() => document.documentElement.dir), language === "ar" ? "rtl" : "ltr");
+    assert.equal(await evaluate(() => document.documentElement.dir), "ltr");
     await set("fixture-language", "en");
     await until(() => document.documentElement.lang === "en", "booking language switch");
     assert.equal(await value("booking-notes"), "Synthetic العربية notes");
   }
-  checks.push("All 11 locales and breakpoint edges: profile/address and booking review reflow; Arabic RTL and live language switching retain edits.");
+  checks.push("en/lv/ru and breakpoint edges: profile/address and booking review reflow; live language switching retains edits.");
 
   await viewport(1280); await account();
   const accountLight = await measureFormContrast(fixture); assert.deepEqual(accountLight.failures, []); contrast.push({ view: "account-light", ...accountLight });
   await capture("account-desktop");
   await viewport(390); await button("Add address"); await set("address", "Synthetic address for review"); await capture("address-phone");
-  await booking("ar"); await choose("ar");
+  await booking("ru"); await choose("ru");
   await evaluate(() => document.documentElement.classList.add("dark"));
-  const bookingDark = await measureFormContrast(fixture); assert.deepEqual(bookingDark.failures, []); contrast.push({ view: "booking-arabic-dark", ...bookingDark });
+  const bookingDark = await measureFormContrast(fixture); assert.deepEqual(bookingDark.failures, []); contrast.push({ view: "booking-russian-dark", ...bookingDark });
   await api("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
-  await capture("booking-arabic-dark", false);
+  await capture("booking-russian-dark", false);
   assert.ok(await evaluate(() => document.querySelector('[role="dialog"]').contains(document.activeElement)));
   for (let index = 0; index < 8; index++) { await key("Tab"); assert.ok(await evaluate(() => document.querySelector('[role="dialog"]').contains(document.activeElement))); }
   await evaluate(() => { document.documentElement.style.fontSize = "32px"; });
@@ -301,7 +301,7 @@ try {
 
   assert.deepEqual(fixture.errors, []); assert.deepEqual(fixture.blocked, []); assert.deepEqual(fixture.network, []);
   assert.deepEqual(await evaluate(() => window.phase2Fixture.unexpected), []);
-  const evidence = { browser: await api("Browser.getVersion"), checks, matrix, messageCount, contrast, screenshots, unexpectedRequests: fixture.network, blockedRequests: fixture.blocked, runtimeErrors: fixture.errors, limitations: ["Firefox/WebKit unavailable.", "No physical devices, real virtual keyboards, screen readers or actual 400% browser zoom verified.", "Translations need native-language review.", "No connected APIs, sessions, database writes, real geocoding or payment collection."] };
-  await writeFile(path.join(root, "docs/forms-phase2-evidence.json"), JSON.stringify(evidence, null, 2) + "\n");
+  const evidence = { date: verificationDate, browser: await api("Browser.getVersion"), languages, deferredLanguages, checks, matrix, messageCount, contrast, screenshots, unexpectedRequests: fixture.network, blockedRequests: fixture.blocked, runtimeErrors: fixture.errors, limitations: ["Physical devices, real virtual keyboards, screen readers and actual 400% browser zoom are outside this runner.", "Translations need native-language review.", "No connected APIs, sessions, database writes, real geocoding or payment collection."] };
+  await writeFile(path.join(root, "docs/" + prefix + "-evidence.json"), JSON.stringify(evidence, null, 2) + "\n");
   console.log("Passed Phase 2: " + checks.length + " interaction groups, " + matrix.length + " locale/width cases, " + messageCount + " translated keys; zero unexpected requests/runtime exceptions.");
 } finally { await fixture.close(); }

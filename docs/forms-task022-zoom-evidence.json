@@ -1,0 +1,1982 @@
+{
+  "date": "2026-10-21",
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "method": "Disposable Chrome profile partition.default_zoom_level.x = log(4)/log(1.2); 1280px browser window; no viewport/device emulation or CSS/pinch zoom",
+  "cases": [
+    {
+      "group": "service",
+      "view": "editor",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 25,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "serviceName",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "description",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-employee",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "duration",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "cleanupTime",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "price",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "advancePayment",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-address",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "externalUrl",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-editor.png"
+    },
+    {
+      "group": "service",
+      "view": "editor",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 25,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "serviceName",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "description",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-employee",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "duration",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "cleanupTime",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "price",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "advancePayment",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-address",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "externalUrl",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "service",
+      "view": "editor",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 25,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "serviceName",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "description",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-employee",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "duration",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "cleanupTime",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "price",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "advancePayment",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-address",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "externalUrl",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "auth",
+      "view": "login",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 11,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "auth-language",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "email",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "invitation-recovery-email",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-login.png"
+    },
+    {
+      "group": "auth",
+      "view": "login",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 11,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "auth-language",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "email",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "invitation-recovery-email",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "auth",
+      "view": "login",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 11,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "auth-language",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "email",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "invitation-recovery-email",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "auth",
+      "view": "signup",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 13,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "auth-language",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "signup-type",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "first-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "last-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "email",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "confirm-password",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-signup.png"
+    },
+    {
+      "group": "auth",
+      "view": "signup",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 13,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "auth-language",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "signup-type",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "first-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "last-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "email",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "confirm-password",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "auth",
+      "view": "signup",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 13,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "auth-language",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "signup-type",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "first-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "last-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "email",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "confirm-password",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase2",
+      "view": "account",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 12,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "account-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-surname",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-current-password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-new-password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-confirm-password",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-account.png"
+    },
+    {
+      "group": "phase2",
+      "view": "account",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 12,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "account-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-surname",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-current-password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-new-password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-confirm-password",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase2",
+      "view": "account",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 12,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "account-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-surname",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-current-password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-new-password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-confirm-password",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase2",
+      "view": "address",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 17,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "account-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-surname",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "address",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "latitude",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "longitude",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-current-password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-new-password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-confirm-password",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-address.png"
+    },
+    {
+      "group": "phase2",
+      "view": "address",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 17,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "account-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-surname",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "address",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "latitude",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "longitude",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-current-password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-new-password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-confirm-password",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase2",
+      "view": "address",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 17,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "account-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-surname",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "address",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "latitude",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "longitude",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-current-password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-new-password",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "account-confirm-password",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase2",
+      "view": "booking",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 315,
+        "controls": 41,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "booking-timezone",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-booking.png"
+    },
+    {
+      "group": "phase2",
+      "view": "booking",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 315,
+        "controls": 41,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "booking-timezone",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase2",
+      "view": "booking",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 315,
+        "controls": 41,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "booking-timezone",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase2",
+      "view": "booking-review",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 315,
+        "controls": 6,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "booking-participants",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "booking-notes",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-booking-review.png"
+    },
+    {
+      "group": "phase2",
+      "view": "booking-review",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 315,
+        "controls": 6,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "booking-participants",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "booking-notes",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase2",
+      "view": "booking-review",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 315,
+        "controls": 6,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "booking-participants",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "booking-notes",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase3",
+      "view": "availability",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 19,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "availability-service",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "availability-timezone",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "availability-exception-date",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-availability.png"
+    },
+    {
+      "group": "phase3",
+      "view": "availability",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 19,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "availability-service",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "availability-timezone",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "availability-exception-date",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase3",
+      "view": "availability",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 19,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "availability-service",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "availability-timezone",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "availability-exception-date",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase3",
+      "view": "team",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 13,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "team-email",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "team-role",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "team-employee",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-team.png"
+    },
+    {
+      "group": "phase3",
+      "view": "team",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 13,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "team-email",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "team-role",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "team-employee",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase3",
+      "view": "team",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 13,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "team-email",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "team-role",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "team-employee",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase3",
+      "view": "filters",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 10,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "admin-user-search",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-company-search",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-email-status",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-account-status",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-registered-from",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-registered-to",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-sort-by",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-sort-direction",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-filters.png"
+    },
+    {
+      "group": "phase3",
+      "view": "filters",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 10,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "admin-user-search",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-company-search",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-email-status",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-account-status",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-registered-from",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-registered-to",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-sort-by",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-sort-direction",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase3",
+      "view": "filters",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 10,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "admin-user-search",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-company-search",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-email-status",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-account-status",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-registered-from",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-registered-to",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-sort-by",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "admin-sort-direction",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase3",
+      "view": "categories",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 8,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "category-key",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "category-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "category-icon",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "category-keywords",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-categories.png"
+    },
+    {
+      "group": "phase3",
+      "view": "categories",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 8,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "category-key",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "category-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "category-icon",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "category-keywords",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase3",
+      "view": "categories",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 8,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "category-key",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "category-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "category-icon",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "category-keywords",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase3",
+      "view": "storefront",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 8,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "storefront-slug",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "storefront-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "storefront-description",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-storefront.png"
+    },
+    {
+      "group": "phase3",
+      "view": "storefront",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 8,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "storefront-slug",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "storefront-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "storefront-description",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase3",
+      "view": "storefront",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 8,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "storefront-slug",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "storefront-name",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "storefront-description",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase3",
+      "view": "subscriptions",
+      "language": "en",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 4,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "subscription-kind",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "subscription-target",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "screenshot": "docs/forms-task022-zoom-subscriptions.png"
+    },
+    {
+      "group": "phase3",
+      "view": "subscriptions",
+      "language": "lv",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 4,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "subscription-kind",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "subscription-target",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "group": "phase3",
+      "view": "subscriptions",
+      "language": "ru",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "height": 201,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 4,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "subscription-kind",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "subscription-target",
+          "focused": true,
+          "visible": true
+        }
+      ]
+    }
+  ],
+  "limits": "Isolated mocked fixtures. No physical devices, screen reader, native-speaker review, connected APIs/database or deployment."
+}

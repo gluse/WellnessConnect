@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-23",
+  "checks": [
+    "Missing Maps key: failed address offers explicit browsing; catalog renders without coordinate/radius parameters or distances",
+    "Keyword and category filtering work without Google; map failure offers direct return to the matching list",
+    "Fallback to GPS to forget to fallback retains applied query/category, and GPS remains independent of Google",
+    "Pending saved-address restoration can be bypassed immediately; late resolution cannot reactivate location, reopen the dialog, or delete the preference",
+    "Failed remembered-address restoration offers browsing and preserves explicit retry; successful retry uses the restored location",
+    "Disabled invalid radius cannot block browsing; translated action works with keyboard in en/lv/ru at phone/tablet/desktop and short viewport sizes"
+  ],
+  "matrix": [
+    {
+      "locale": "en",
+      "width": 320
+    },
+    {
+      "locale": "en",
+      "width": 390
+    },
+    {
+      "locale": "en",
+      "width": 768
+    },
+    {
+      "locale": "en",
+      "width": 1280
+    },
+    {
+      "locale": "lv",
+      "width": 320
+    },
+    {
+      "locale": "lv",
+      "width": 390
+    },
+    {
+      "locale": "lv",
+      "width": 768
+    },
+    {
+      "locale": "lv",
+      "width": 1280
+    },
+    {
+      "locale": "ru",
+      "width": 320
+    },
+    {
+      "locale": "ru",
+      "width": 390
+    },
+    {
+      "locale": "ru",
+      "width": 768
+    },
+    {
+      "locale": "ru",
+      "width": 1280
+    }
+  ],
+  "browser": "Chrome/155.0.8059.85",
+  "services": "Isolated static UI; all APIs, preferences, Google and GPS mocked; no connected server/DB",
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "No physical device, screen reader, native-language or live Google outage verification"
+}

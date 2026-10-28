@@ -12,9 +12,9 @@ export default function AppHeader() {
   const { t } = useTranslation();
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-neutral-200 pt-[env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-40 bg-header text-white border-b border-white/15 pt-[env(safe-area-inset-top)] [--accent:#343c53] [--accent-foreground:#fff] [--ring:#fff] [--background:var(--header-background)]">
       <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-        <Link href="/" className="flex items-center gap-3 font-semibold text-lg text-neutral-800">
+        <Link href="/" className="flex items-center gap-3 rounded-md font-semibold text-lg text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
           <span className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <Heart className="w-4 h-4 text-white" aria-hidden="true" />
           </span>

@@ -1,10 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import { privacyPolicyPlugin } from "./scripts/privacy-policy";
 
 export default defineConfig({
   plugins: [
     react(),
+    privacyPolicyPlugin(),
   ],
   resolve: {
     alias: {

@@ -4,6 +4,8 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { BILLING_TABLES } from "../migrations/billing/contract.mjs";
+import { BILLING_V2_TABLES } from "../migrations/billing/v2-contract.mjs";
 
 const tables = ["sessions", "users", "services", "bookings", "service_embeddings", "availability"];
 const sequences = ["services_id_seq", "bookings_id_seq", "service_embeddings_id_seq", "availability_id_seq"];
@@ -68,6 +70,14 @@ try {
   target = new pg.Client({ connectionString: targetUrl, connectionTimeoutMillis: 10_000 });
   await source.connect();
   await target.connect();
+
+  // This historical six-table runner cannot preserve recurring billing history.
+  // Fail before dump/restore instead of silently omitting the new source records.
+  const billing = await source.query(
+    "SELECT c.relname FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname=ANY($1::text[])",
+    [[...BILLING_TABLES,...BILLING_V2_TABLES]],
+  );
+  if (billing.rows.length) throw new Error("Billing tables require the reviewed choice-2 full transfer manifest and runtime recovery plan; this legacy transfer is disabled for that source.");
 
   const existing = await target.query(
     "SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relname = ANY($1::text[])",

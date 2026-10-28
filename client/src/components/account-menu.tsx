@@ -34,7 +34,7 @@ export default function AccountMenu() {
   return <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="w-8 h-8 p-0" aria-label="Open account menu" disabled={!user || signingOut}>
-          <span className="w-6 h-6 bg-neutral-200 rounded-full flex items-center justify-center">
+          <span className="w-6 h-6 bg-white/15 rounded-full flex items-center justify-center">
             <UserRound className="w-4 h-4" aria-hidden="true" />
           </span>
         </Button>

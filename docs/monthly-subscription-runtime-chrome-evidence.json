@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-26",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/155.0.8059.85",
+    "revision": "@0e66b94549a8bd85f03fbdf189b752d6e7b63c32",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "jsVersion": "15.5.35.25"
+  },
+  "locales": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    {
+      "lang": "en",
+      "flow": "server-ready Administration gate",
+      "result": "passed"
+    },
+    {
+      "lang": "en",
+      "flow": "server-ready selected workspace/manual grant/return",
+      "result": "passed"
+    },
+    {
+      "lang": "lv",
+      "flow": "server-ready Administration gate",
+      "result": "passed"
+    },
+    {
+      "lang": "lv",
+      "flow": "server-ready selected workspace/manual grant/return",
+      "result": "passed"
+    },
+    {
+      "lang": "ru",
+      "flow": "server-ready Administration gate",
+      "result": "passed"
+    },
+    {
+      "lang": "ru",
+      "flow": "server-ready selected workspace/manual grant/return",
+      "result": "passed"
+    },
+    {
+      "mode": "runtime-admin-page",
+      "state": "disabled=true",
+      "privateBillingProbes": 0,
+      "result": "passed"
+    },
+    {
+      "mode": "runtime-settings",
+      "state": "disabled=true",
+      "privateBillingProbes": 0,
+      "result": "passed"
+    },
+    {
+      "mode": "runtime-admin-page",
+      "state": "missing=true",
+      "privateBillingProbes": 0,
+      "result": "passed"
+    },
+    {
+      "mode": "runtime-settings",
+      "state": "missing=true",
+      "privateBillingProbes": 0,
+      "result": "passed"
+    },
+    {
+      "flow": "pending workspace switch suspends private billing and refreshes on completion",
+      "result": "passed"
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "serverWrites": []
+}

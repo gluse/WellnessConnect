@@ -9,6 +9,9 @@ import * as provider from "../shared/provider.ts";
 import * as scheduling from "../shared/scheduling.ts";
 import * as reviews from "../shared/reviews.ts";
 import * as searchInput from "../server/searchInput.ts";
+import * as auditContext from "../server/audit/context.ts";
+import * as auditEvents from "../server/audit/events.ts";
+import * as auditCapture from "../server/audit/capture.ts";
 
 // Execute the actual storage module against an injected query adapter. The
 // import whitelist deliberately prevents loading server/db or any live client.
@@ -38,6 +41,7 @@ const dependencies = {
   "./storefronts": { storefrontStore: { async slugs() { slugsLoaded++; return new Map(); } } },
   "./addresses": { serviceLocation: (service, address) => ({ ...service, latitude: address?.latitude ?? null, longitude: address?.longitude ?? null }) },
   "@shared/scheduling": scheduling, "@shared/reviews": reviews, "./searchInput": searchInput,
+  "./audit/context": auditContext, "./audit/events": auditEvents, "./audit/capture": auditCapture,
 };
 const source = await readFile(new URL("../server/storage.ts", import.meta.url), "utf8");
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
@@ -82,6 +86,20 @@ assert.match(narrowed.where.sql, /"companies"\."is_active"/);
 const priorQueries = executed.length;
 assert.deepEqual(Array.from(await storage.searchServices({ serviceIds: [] })), []);
 assert.equal(executed.length, priorQueries);
+
+// Public result caps are applied in SQL without the legacy 500-match failure.
+fixtures.set("services", Array.from({ length: 501 }, (_, id) => result(id + 1)));
+assert.equal((await storage.searchServices({ latitude: 0, longitude: 0, radius: 25, limit: 50 })).length, 50);
+assert.equal(executed.at(-1).limit, 50);
+assert.ok(executed.at(-1).where.params.includes(25));
+
+// Availability filtering must consider matches after the first 50 candidates.
+fixtures.set("services", Array.from({ length: 100 }, (_, id) => result(id + 1, 7)));
+fixtures.set("availability", Array.from({ length: 50 }, (_, id) => ({ id: id + 1, serviceId: id + 51,
+  providerId: "fixture-provider", companyId: 7, isActive: true, scheduleType: "specific",
+  specificDate: new Date("2099-06-04"), startTime: "09:00", endTime: "10:00", breaks: [] })));
+const availablePage = await storage.searchServices({ latitude: 0, longitude: 0, radius: 25, limit: 50, date: "2099-06-04", availableOnly: true });
+assert.deepEqual(Array.from(availablePage, row => row.id), Array.from({ length: 50 }, (_, id) => id + 51));
 
 fixtures.set("service_embeddings", Array.from({ length: 501 }, (_, index) => ({ serviceId: index + 1, embedding: [1, 0] })));
 await assert.rejects(() => storage.getPublicServiceEmbeddings({ category: "education" }), tooBroad);

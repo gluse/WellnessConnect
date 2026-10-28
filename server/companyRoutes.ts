@@ -1,12 +1,13 @@
 import type { Express, Request, Response } from "express";
 import { randomBytes, randomUUID, createHash } from "node:crypto";
-import { and, eq, gt, isNull, sql } from "drizzle-orm";
+import { and, eq, gt, isNull, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "./db";
 import { companies, companyMemberships, companyInvitations, employees, users, services, type CompanyRole } from "@shared/schema";
 import { isAuthenticated } from "./auth";
 import { scope, workspaceContext, saveWorkspaceSession, AccessError } from "./companyAccess";
 import { supabaseAdmin, appUrl } from "./supabase";
+import { sendInvitationEmailOnce } from "./invitationEmail";
 
 const roleSchema = z.enum(["admin", "provider", "viewer"]);
 const assignmentSchema = z.object({ role: roleSchema, employeeId: z.number().int().positive().nullable().default(null) })
@@ -88,10 +89,33 @@ export function setupCompanyRoutes(app: Express) {
     });
     let emailSent = false;
     if (data.sendEmail) {
-      const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, { redirectTo: `${appUrl}/api/callback` });
-      emailSent = !error;
+      emailSent = await sendInvitationEmailOnce(() => supabaseAdmin.auth.admin.inviteUserByEmail(data.email, { redirectTo: `${appUrl}/api/callback` }));
     }
     res.status(201).json({ id, invitationUrl: `${appUrl}/invite?token=${token}`, emailSent, message: emailSent ? "Invitation emailed." : "Invitation created. Share the invitation link with this email address." });
+  }));
+  app.patch("/api/company/invitations/:id", isAuthenticated, safe(async (req, res) => {
+    const current = scope(req, "manageTeam");
+    if (!current.companyId) throw new AccessError(400, "Choose a company workspace.");
+    const id = z.string().uuid().parse(req.params.id);
+    const data = assignmentSchema.parse(req.body);
+    await db.transaction(async tx => {
+      // Match manager/acceptance lock ordering before checking mutable access/state.
+      const company = await manager(tx, current.companyId!, current.userId);
+      if (!company.isActive) throw new AccessError(403, "This company is not active.");
+      const [invite] = await tx.select().from(companyInvitations).where(and(eq(companyInvitations.id, id), eq(companyInvitations.companyId, company.id))).for("update");
+      if (!invite) throw new AccessError(404, "Invitation not found.");
+      if (invite.acceptedAt || invite.revokedAt || invite.expiresAt <= new Date()) throw new AccessError(410, "Invitation is no longer available.");
+      const [inviter] = await tx.select().from(companyMemberships).where(and(eq(companyMemberships.companyId, company.id), eq(companyMemberships.userId, invite.invitedBy)));
+      if (!inviter || !["owner", "admin"].includes(inviter.role)) throw new AccessError(410, "The invitation sender no longer manages this company.");
+      await assignment(tx, company.id, data.employeeId);
+      if (data.employeeId != null) {
+        const [pending] = await tx.select().from(companyInvitations).where(and(eq(companyInvitations.companyId, company.id), eq(companyInvitations.employeeId, data.employeeId), ne(companyInvitations.id, id), isNull(companyInvitations.acceptedAt), isNull(companyInvitations.revokedAt), gt(companyInvitations.expiresAt, new Date())));
+        if (pending) throw new AccessError(409, "This employee already has a pending invitation.");
+      }
+      const updated = await tx.update(companyInvitations).set(data).where(and(eq(companyInvitations.id, id), eq(companyInvitations.companyId, company.id), isNull(companyInvitations.acceptedAt), isNull(companyInvitations.revokedAt), gt(companyInvitations.expiresAt, new Date()))).returning({ id: companyInvitations.id });
+      if (!updated.length) throw new AccessError(410, "Invitation is no longer available.");
+    });
+    res.json({ success: true });
   }));
   app.delete("/api/company/invitations/:id", isAuthenticated, safe(async (req, res) => {
     const current = scope(req, "manageTeam");

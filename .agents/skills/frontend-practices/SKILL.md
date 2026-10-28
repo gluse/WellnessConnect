@@ -11,12 +11,16 @@ that existing interfaces are secure, accessible, translated, or tested.
 
 ## Authority and context
 
-- Read project-root `AGENTS.md` and `FRONT-END-DEVELOPER.md`. Preserve the assigned
+- Read project-root `AGENTS.md` and `ROLE-FRONT-END-DEVELOPER.md`. Preserve the assigned
   role/task and scoped approvals. Loading this skill does not assign the role or
   authorize frontend changes by other agents.
 - Preserve backend, database, and CI/CD boundaries. Browser/API tests can write
   session/application records; use offline fixtures/mocked APIs unless the exact
   live operations and environment are authorized under the applicable role rules.
+- Use `AGENTS.md` cross-role cooperation and `docs/agent-coordination.md`: contact
+  Backend, DB or CI/CD directly for dependencies, check recorded approvals before
+  escalating, and implement accepted local frontend requests without another user
+  approval. Return verification evidence and check the integrated contract.
 - Inspect the manifest/lockfile, existing components, locales, styles, query
   helpers, and test scripts. Keep current architecture and versions unless an
   upgrade is in scope. Read-only review does not approve implementation.

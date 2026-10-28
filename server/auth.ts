@@ -15,7 +15,7 @@ import { ensureCompany } from "./companyAccess";
 import { db } from "./db";
 import { companyInvitations } from "@shared/schema";
 import { and, eq, gt, isNull } from "drizzle-orm";
-import { auditEnabled, recordAudit, recordDenial, denyWithAudit, auditGap, requireAuditAvailability } from "./audit/http";
+import { auditEnabled, auditAuthEventsEnabled, recordAudit, recordDenial, denyWithAudit, auditGap, requireAuditAvailability } from "./audit/http";
 import { AuditCaptureUnavailable } from "./audit/capture";
 
 interface AuthSession {
@@ -72,7 +72,7 @@ async function establishSession(req: Request, tokens: Session, socialCompanyName
     profileImageUrl: existing?.profileImageUrl || (typeof user.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null),
     ...(!existing && newCompanyName ? { providerType: "company", companyName: newCompanyName, currentRole: "provider" } as const : {}),
   });
-  if (auditEnabled()) {
+  if (auditAuthEventsEnabled()) {
     if (profile.currentRole !== "provider" && profile.currentRole !== "seeker") { auditGap(); throw new AuditCaptureUnavailable(); }
     req.auditPersonalRole = profile.currentRole;
     if (authEvent) await recordAudit(req, { eventName: authEvent, outcome: "succeeded", changes: [] }, user.id);
@@ -81,7 +81,7 @@ async function establishSession(req: Request, tokens: Session, socialCompanyName
   const companyName = profile.providerType === "company" && profile.companyName ? profile.companyName : socialCompanyName;
   if (companyName) {
     await provisionCompany(user.id, companyName);
-    if (auditEnabled()) {
+    if (auditAuthEventsEnabled()) {
       const current = await storage.getUser(user.id);
       if (!current || (current.currentRole !== "seeker" && current.currentRole !== "provider")) { auditGap(); throw new AuditCaptureUnavailable(); }
       req.auditPersonalRole = current.currentRole;
@@ -145,7 +145,7 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
       }
       await establishSession(req, data.session, undefined, ensureCompany, "auth.login.v1");
       res.json({ success: true });
-    } catch (error) { next(error instanceof AuditCaptureUnavailable || !auditEnabled() ? error : new AuditCaptureUnavailable()); }
+    } catch (error) { next(error instanceof AuditCaptureUnavailable || !auditAuthEventsEnabled() ? error : new AuditCaptureUnavailable()); }
   });
 
   app.post("/api/auth/signup", authLimit, async (req, res, next) => {
@@ -319,7 +319,7 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
   app.post("/api/logout", async (req, res, next) => {
     try {
       let verifiedUser: string | undefined;
-      if (auditEnabled() && req.session.auth) {
+      if (auditAuthEventsEnabled() && req.session.auth) {
         const checked = await createAuthClient().auth.getUser(req.session.auth.accessToken);
         if (!checked.error && checked.data.user?.id === req.session.auth.userId) {
           verifiedUser = checked.data.user.id;
@@ -336,7 +336,7 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
       if (verifiedUser) await recordAudit(req, { eventName: "auth.logout.v1", outcome: revoked?.error ? "failed" : "succeeded",
         ...(revoked?.error ? { reasonCode: "PROVIDER_UNAVAILABLE" as const } : {}), changes: [] }, verifiedUser);
       res.json({ success: true });
-    } catch (error) { next(auditEnabled() ? new AuditCaptureUnavailable() : error); }
+    } catch (error) { next(auditAuthEventsEnabled() ? new AuditCaptureUnavailable() : error); }
   });
 }
 

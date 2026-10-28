@@ -11,10 +11,18 @@ const correlations = new WeakMap<object, { requestId: string; operationId: strin
 let runtime: Promise<Runtime> | undefined;
 let injected: Sink | undefined;
 let injectedReady: (() => Promise<void>) | undefined;
+let injectedAuthEvents = true;
 
 export const auditEnabled = () => injected !== undefined || process.env.AUDIT_ENABLED === "true";
+// New R90 production requires its forward DB contract and an updated worker.
+export const serviceViewAuditEnabled = () => auditEnabled() && process.env.AUDIT_SERVICE_VIEWS_ENABLED === "true";
+// Real remote-provider producers are deliberately staged. Enabling their reserved
+// flag is rejected by runtime/startup configuration; tests can exercise the hooks.
+export const auditAuthEventsEnabled = () => injected !== undefined && injectedAuthEvents;
 /** Synthetic tests/in-process host composition only; never exposed to HTTP. */
-export function setAuditSink(sink?: Sink, ready?: () => Promise<void>) { injected = sink; injectedReady = ready; }
+export function setAuditSink(sink?: Sink, ready?: () => Promise<void>, options = { authEvents: true }) {
+  injected = sink; injectedReady = ready; injectedAuthEvents = options.authEvents;
+}
 export function auditGap() { console.error("Audit capture gap", "CAPTURE_UNAVAILABLE"); }
 export async function closeAuditCapture() { if (runtime) { const active = runtime; runtime = undefined; await (await active).close(); } }
 function captureRuntime() {
@@ -23,7 +31,7 @@ function captureRuntime() {
 }
 /** Availability probe only, NOT durable remote intent or a cross-service transaction. */
 export async function requireAuditAvailability(): Promise<void> {
-  if (!auditEnabled()) return;
+  if (!auditAuthEventsEnabled()) return;
   try { if (injected) await injectedReady?.(); else await (await captureRuntime()).ready(); }
   catch { auditGap(); throw new AuditCaptureUnavailable(); }
 }
@@ -32,6 +40,23 @@ function identity(req: Request) {
   let value = correlations.get(req);
   if (!value) { value = { requestId: randomUUID(), operationId: randomUUID() }; correlations.set(req, value); }
   return value;
+}
+
+export type ServiceViewActor = { kind: "anonymous" } | {
+  kind: "user"; userId: string; effectiveRole: "seeker" | "provider";
+};
+
+/** Explicit public-details notification only; availability/identity resolved by the server. */
+export async function recordServiceView(req: Request, serviceId: number, actor: ServiceViewActor): Promise<void> {
+  if (!serviceViewAuditEnabled()) return;
+  try {
+    const context = createAuditContext({ ...identity(req), actor, scope: { kind: "unknown" },
+      target: { type: "service", id: String(serviceId) },
+      source: { application: "fitsmytime", environment: injected ? "development" : process.env.AUDIT_ENVIRONMENT!, component: "service" } });
+    const event = createAuditEvent(context, { eventName: "service.viewed.v1", outcome: "succeeded", changes: [] });
+    if (injected) await injected(event);
+    else await (await captureRuntime()).capture(event);
+  } catch { auditGap(); } // Public viewing remains available when evidence cannot be captured.
 }
 
 /** userId may come only from verified Auth response or isAuthenticated, NEVER a session/body claim. */
@@ -47,6 +72,7 @@ export function requestAuditContext(req: Request, component: "auth" | "account" 
 
 export async function recordAudit(req: Request, action: AuditAction, userId?: string): Promise<void> {
   if (!auditEnabled()) return;
+  if (action.eventName.startsWith("auth.") && !auditAuthEventsEnabled()) return;
   try {
     const context = requestAuditContext(req, action.eventName === "security.action_denied.v1" ? "authorization" : "auth", userId)!;
     const event = createAuditEvent(context, action);

@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import tls from "node:tls";
-import { auditConnection, auditEnvironment, AUDIT_USERS, type AuditConnectionKind } from "./config.ts";
+import { auditConnection, auditEnvironment, assertAuditActivation, AUDIT_USERS, type AuditConnectionKind } from "./config.ts";
 import { AuditCaptureUnavailable, captureIndependent, type AuditPool, type AuditExecutor, type PreparedAuditEvent } from "./capture.ts";
 import { AuditPortFailure, type AuditClaim, type AuditWorkerPorts, type DeliveryDisposition } from "./worker.ts";
 
@@ -16,6 +16,7 @@ async function openPool(url: string | undefined, kind: AuditConnectionKind) {
   if (config.caPath) ssl.ca = await readFile(config.caPath, "utf8");
   // Explicit fields only: URL/libpq SSL/host/query options cannot override policy.
   const pool = new pg.Pool({ host: config.host, port: config.port, user: config.user, password: config.password,
+    ...{ replication: "false", sslnegotiation: "postgres" },
     database: config.database, ssl, max: kind === "capture" ? 2 : 1,
     connectionTimeoutMillis: 5000, idleTimeoutMillis: 10000,
     application_name: `fitsmytime-audit-${kind}`, query_timeout: 6000,
@@ -59,21 +60,21 @@ async function run(pool: RuntimePool, text: string, values: unknown[] = [], sign
 export function assertAuditRuntimeRole(rows: Record<string, unknown>[], kind: AuditConnectionKind): void {
   const row = rows[0];
   if (rows.length !== 1 || row.principal !== AUDIT_USERS[kind] || row.group_member !== true || row.may_execute !== true ||
-    ["rolsuper", "rolbypassrls", "rolcreaterole", "rolcreatedb", "base_access", "owner_member", "extra_application_role"].some(key => row[key] !== false)) throw new AuditCaptureUnavailable();
+    ["rolsuper", "rolbypassrls", "rolcreaterole", "rolcreatedb", "rolreplication", "base_access", "owner_member", "extra_application_role"].some(key => row[key] !== false)) throw new AuditCaptureUnavailable();
 }
 
 async function checkRole(pool: RuntimePool, kind: AuditConnectionKind) {
   const group = kind === "worker" ? "fm_audit_delivery" : kind === "writer" ? "fm_audit_writer" : "fm_audit_capture";
   const object = kind === "writer" ? "audit.events" : "audit_capture.audit_outbox";
   const entry = kind === "writer" ? "audit.accept(text,text,text)" : kind === "worker" ? "audit_capture.claim(integer)" : "audit_capture.enqueue(text,text,text)";
-  const result = await run(pool, `SELECT current_user AS principal,r.rolsuper,r.rolbypassrls,r.rolcreaterole,r.rolcreatedb,
+  const result = await run(pool, `SELECT current_user AS principal,r.rolsuper,r.rolbypassrls,r.rolcreaterole,r.rolcreatedb,r.rolreplication,
     pg_has_role(current_user,$1,'MEMBER') AS group_member,
     has_function_privilege(current_user,$2,'EXECUTE') AS may_execute,
     has_table_privilege(current_user,$3,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') AS base_access,
     EXISTS (SELECT 1 FROM pg_roles owner_role WHERE owner_role.rolname IN
       ('fm_audit_contract_owner','fm_audit_source_owner','fm_audit_destination_owner')
       AND pg_has_role(current_user,owner_role.oid,'MEMBER')) AS owner_member,
-    EXISTS (SELECT 1 FROM pg_roles extra_role WHERE left(extra_role.rolname,3) = 'fm_'
+    EXISTS (SELECT 1 FROM pg_roles extra_role WHERE extra_role.rolname <> current_user
       AND extra_role.rolname <> $1 AND ($4 <> 'worker' OR extra_role.rolname <> 'fm_audit_source_monitor')
       AND pg_has_role(current_user,extra_role.oid,'MEMBER')) AS extra_application_role
     FROM pg_roles r WHERE r.rolname=current_user`, [group, entry, object, kind]);
@@ -81,6 +82,7 @@ async function checkRole(pool: RuntimePool, kind: AuditConnectionKind) {
 }
 
 export async function createCaptureRuntime(environment: Environment) {
+  assertAuditActivation(environment);
   auditEnvironment(environment);
   if (environment.AUDIT_ENABLED !== "true") throw new AuditCaptureUnavailable();
   const pool = await openPool(environment.AUDIT_CAPTURE_DATABASE_URL, "capture");
@@ -91,6 +93,7 @@ export async function createCaptureRuntime(environment: Environment) {
 }
 
 export async function createWorkerRuntime(environment: Environment): Promise<{ ports: AuditWorkerPorts; close(): Promise<void> }> {
+  assertAuditActivation(environment);
   auditEnvironment(environment);
   if (environment.AUDIT_WORKER_ENABLED !== "true") throw new AuditCaptureUnavailable();
   const source = await openPool(environment.AUDIT_SOURCE_DATABASE_URL, "worker");

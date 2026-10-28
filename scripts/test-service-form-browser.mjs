@@ -12,7 +12,8 @@ import loadConfig from "tailwindcss/loadConfig.js";
 
 const root = path.resolve(import.meta.dirname, "..");
 const tailwindConfig = loadConfig(path.join(root, "tailwind.config.ts"));
-const languages = ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"];
+import { languages, deferredLanguages, verificationDate, evidencePrefix } from "./fixtures/forms-verification-scope.mjs";
+const prefix = evidencePrefix("service");
 const resources = {};
 for (const language of languages) resources[language] = { translation: JSON.parse(await readFile(path.join(root, "client/public/locales", language, "translation.json"), "utf8")) };
 const keys = Object.keys(resources.en.translation.serviceForm);
@@ -115,12 +116,14 @@ try {
     await new Promise(requestAnimationFrame);
   }, { id, value });
   const pointer = async box => {
+    await api("Input.dispatchMouseEvent", { type: "mouseMoved", x: box.x, y: box.y, buttons: 0 });
     await api("Input.dispatchMouseEvent", { type: "mousePressed", x: box.x, y: box.y, button: "left", clickCount: 1 });
     await api("Input.dispatchMouseEvent", { type: "mouseReleased", x: box.x, y: box.y, button: "left", clickCount: 1 });
+    await evaluate(() => new Promise(requestAnimationFrame));
   };
   const click = async selector => pointer(await evaluate(selector => { const element = document.querySelector(selector); if (!element) throw Error("Missing element " + selector); element.scrollIntoView({ block: "center" }); const box = element.getBoundingClientRect(); return { x: box.x + box.width / 2, y: box.y + box.height / 2 }; }, selector));
   const button = async text => {
-    await pointer(await evaluate(text => { const dialog = document.querySelector('[role="alertdialog"][data-state="open"]'); const element = [...(dialog || document).querySelectorAll("button")].find(button => button.textContent.trim() === text); if (!element) throw Error("Missing button " + text); element.scrollIntoView({ block: "center" }); const box = element.getBoundingClientRect(); return { x: box.x + box.width / 2, y: box.y + box.height / 2 }; }, text));
+    await pointer(await evaluate(async text => { const dialog = document.querySelector('[role="alertdialog"][data-state="open"]'); const element = [...(dialog || document).querySelectorAll("button")].find(button => button.textContent.trim() === text); if (!element) throw Error("Missing button " + text); for (let index = 0; index < 3; index++) await new Promise(requestAnimationFrame); element.scrollIntoView({ block: "center" }); for (let index = 0; index < 3; index++) await new Promise(requestAnimationFrame); const box = element.getBoundingClientRect(), x = box.x + box.width / 2, y = box.y + box.height / 2; const hit = document.elementFromPoint(x, y); if (hit !== element && !element.contains(hit)) throw Error("Obscured button " + text); return { x, y }; }, text));
     if (text === "Keep editing") await until(() => !document.querySelector('[role="alertdialog"]'), "dialog closes and restores focus");
   };
   const value = id => evaluate(id => document.getElementById(id)?.value, id);
@@ -128,7 +131,7 @@ try {
   const dialog = () => until(() => !!document.querySelector('[role="alertdialog"]'), "confirmation dialog");
   const waitSave = () => until(() => location.pathname === "/my-services/services", "successful save");
   const screenshot = async name => {
-    const filename = "docs/forms-implementation-" + name + ".png";
+    const filename = "docs/" + prefix + "-" + name + ".png";
     await until(() => document.getAnimations().every(animation => animation.playState !== "running"), "screenshot transitions finish");
     const result = await api("Page.captureScreenshot", { format: "png", captureBeyondViewport: !name.includes("dialog") });
     await writeFile(path.join(root, filename), Buffer.from(result.data, "base64")); screenshots.push(filename);
@@ -319,13 +322,13 @@ try {
       matrix.push(language + ":" + width);
     }
     assert.equal(await value("serviceName"), "Synthetic العربية 123");
-    assert.equal(await evaluate(() => document.documentElement.dir), language === "ar" ? "rtl" : "ltr");
+    assert.equal(await evaluate(() => document.documentElement.dir), "ltr");
     assert.equal(await evaluate(() => document.documentElement.lang), language);
   }
   await set("fixture-language", "en");
   await until(() => document.documentElement.lang === "en", "language switch");
   assert.equal(await value("serviceName"), "Synthetic العربية 123");
-  checks.push("All 11 locales at 320/390/639/640/641/768/1280px reflow, Arabic direction and mixed text; live language switching retains edits.");
+  checks.push("en/lv/ru at 320/390/639/640/641/768/1280px reflow and mixed text; live language switching retains edits.");
 
   await visit("inactive", "en");
   await api("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
@@ -337,11 +340,11 @@ try {
   const darkContrast = await contrast(); assert.deepEqual(darkContrast.failures, []); assert.ok(Number.isFinite(darkContrast.minControlBorder) && darkContrast.minControlBorder >= 3); contrastEvidence.push({ mode: "dark", ...darkContrast });
   await api("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
   await click('[data-testid="button-save-inactive-service"]'); await waitSave();
-  await visit("active", "ar");
+  await visit("active", "ru");
   await button("Toggle fixture theme");
-  await set("serviceName", "خدمة تجريبية");
+  await set("serviceName", "Тестовая услуга");
   await button("Switch workspace"); await dialog();
-  await screenshot("arabic-dark-dialog");
+  await screenshot("russian-dark-dialog");
   assert.ok(await evaluate(() => document.querySelector('[role="alertdialog"]').contains(document.activeElement)));
   for (let index = 0; index < 5; index++) {
     await api("Input.dispatchKeyEvent", { type: "keyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
@@ -350,7 +353,7 @@ try {
   }
   await evaluate(() => document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true })));
   await until(() => !document.querySelector('[role="alertdialog"]'), "Escape closes dialog");
-  assert.equal(await value("serviceName"), "خدمة تجريبية");
+  assert.equal(await value("serviceName"), "Тестовая услуга");
 
   // Text sizing/reflow and keyboard navigation are measured in the rendered DOM.
   await evaluate(() => { document.documentElement.style.fontSize = "32px"; });
@@ -374,9 +377,9 @@ try {
   assert.deepEqual(blocked, []);
   assert.deepEqual(runtimeErrors, []);
   assert.deepEqual(await evaluate(() => window.serviceFormFixture.unexpected), []);
-  const evidence = { browser: await api("Browser.getVersion"), checks, matrix, contrast: contrastEvidence, screenshots, localeKeys: keys.length, blockedUnexpectedRequests: blocked, runtimeErrors, limitations: ["Firefox and WebKit unavailable; no browser download attempted.", "No physical device, virtual keyboard or screen-reader verification.", "Translations have coverage and layout checks, but need native-language review.", "320px reflow is the CSS-width equivalent of 400% zoom at 1280px; real browser zoom was not automated."] };
-  await writeFile(path.join(root, "docs/forms-implementation-evidence.json"), JSON.stringify(evidence, null, 2) + "\n");
-  console.log("Passed: " + checks.length + " browser behavior groups; " + matrix.length + " locale/width combinations; " + keys.length + " keys in all 11 locales; zero unexpected requests/runtime exceptions.");
+  const evidence = { date: verificationDate, languages, deferredLanguages, browser: await api("Browser.getVersion"), checks, matrix, contrast: contrastEvidence, screenshots, localeKeys: keys.length, blockedUnexpectedRequests: blocked, runtimeErrors, limitations: ["This runner covers installed Chrome; see separate cross-browser evidence for Firefox/WebKit.", "No physical device, virtual keyboard or screen-reader verification.", "Translations have coverage and layout checks, but need native-language review.", "320px reflow is the CSS-width equivalent of 400% zoom at 1280px; real browser zoom was not automated."] };
+  await writeFile(path.join(root, "docs/" + prefix + "-evidence.json"), JSON.stringify(evidence, null, 2) + "\n");
+  console.log("Passed: " + checks.length + " browser behavior groups; " + matrix.length + " locale/width combinations; " + keys.length + " keys in en/lv/ru; zero unexpected requests/runtime exceptions.");
 } finally {
   if (socket?.readyState === WebSocket.OPEN) { try { await api("Browser.close"); } catch {} socket.close(); }
   if (browser.exitCode === null) browser.kill();

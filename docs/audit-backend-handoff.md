@@ -1,5 +1,19 @@
 # Backend audit capture and worker handoff
 
+Later narrow producer request: [one explicit service-details event](service-view-audit-handoff.md)
+adds a local twelve-name registry and `service.viewed.v1` R90 contract. Its DB
+forward migration and frontend callback are separate sequential dependencies;
+the earlier eleven-event infrastructure evidence below remains historical.
+
+Latest completion work, 23 October 2026: the user's broad TASK-014 completion
+authorization supersedes the earlier phase-specific execution holds below for
+necessary operations on the fixed development pair. DB remains the executor for
+private configuration, credentials, SQL and connected rehearsals. Both runtime
+0003 installations and the source-only 0009 location dependency are committed
+and catalog-verified; the applied SQL is immutable. See the
+[completion execution record](audit-completion-execution.md) for current connected
+state. Historical paragraphs below describe the evidence available at that time.
+
 Prepared 19 October 2026; final local checks 20 October 2026 by the assigned Back End Developer. Local implementation
 for TASK-014 and an initial TASK-015 subset under the user's request to proceed,
 selected C/R1/P1/failure behavior, and General Manager's scoped assignment.
@@ -205,3 +219,234 @@ and revert only these scoped code/config-example additions if needed. Never dele
 outbox/destination evidence or run destructive SQL to recover from code. Any
 connected rollback, private credential restoration or replay remains DB/CI/CD
 work under its approved scope. No commit or release was created here.
+
+## TASK-014 resumed backend review — 23 October 2026
+
+Approval/executor: the user's request to continue TASK-014, the recorded Back End
+Developer assignment `/root/audit_backend`, and the General Manager's scoped
+resumption. Local backend audit modules, the three isolated audit test scripts,
+and this handoff only; no frontend, database-owned changes, private configuration,
+credential reads/writes, database/provider connection, app/worker startup or
+deployment. Recovery remains a scoped code revert with both enable flags false.
+
+The runtime capability guard now also requires `rolreplication=false`. Its
+server-side membership query rejects every unexpected role membership, rather
+than inspecting only role names starting with `fm_`; a membership in a privileged
+predefined PostgreSQL role must not bypass the restriction. Only the exact
+capture/delivery/writer group and worker's source-monitor group are allowed in
+addition to the login itself. Snapshot validation rejects true, null and missing
+capabilities for all three principals. The live catalog query and live role grants
+remain unverified by these mocked tests.
+
+Fresh commands and results on Node v24.21.0:
+
+| Command | Result |
+| --- | --- |
+| `node --experimental-strip-types scripts/test-audit-events.mjs` | Passed: eleven contracts and 105 rejected invalid inputs. |
+| `node --experimental-strip-types scripts/test-audit-worker.mjs` | Passed: transaction/rollback adapters, runtime restrictions, duplicate recovery, timeout/outage, stale leases, quarantine and cancellation. Expected injected enqueue failures produced fixed safe gap markers only. |
+| `node --import tsx scripts/test-audit-auth.mjs` | Passed: actual enabled auth/access/persona behavior using injected DB/session/Auth boundaries; no listener or live service. |
+| `node node_modules/typescript/bin/tsc --noEmit --incremental false` | Passed; no incremental cache written. |
+
+Inspected current test scripts/imports before execution. The auth suite still
+redirects dotenv to an asserted nonexistent path, replaces runtime credentials
+with synthetic values, injects the capture sink and rejects unexpected pool or
+transaction use. The newly imported search-location store performs no query on
+import or route registration. No unchanged mixed frontend suite was rerun during
+this resumption. No language matrix ran; current language verification scope is
+en/lv/ru. ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred; historical evidence
+above is preserved.
+
+Read-only compatibility review found the current application also declares and
+registers `user_search_locations`, outside Choice 1's selected sixteen-table
+manifest. Its current get/upsert/remove methods need SELECT, INSERT, UPDATE and
+DELETE plus an applicable server-role policy, with no sequence. The DB owner must
+present an amendment/alternative and obtain the user's choice before extending
+that grant scope; keep application cutover blocked in the meantime. This does not
+prevent separately prepared restricted worker/synthetic rehearsal work.
+
+The existing remote Auth intent/reconciliation gate still applies. Prepared code
+and these passing offline checks do not complete TASK-014 or authorize activation,
+private provisioning, connected rehearsal or production changes.
+
+Read-only DB-package compatibility/security review also covered
+`runtime-contract.mjs`, `runtime-support.mjs`, `execute-runtime-setup.mjs`, the four
+new 0003 SQL files, the ACL helper's verify-only path, and
+`scripts/test-audit-db.mjs`. The setup CLI exposes only `offline` and catalog-only
+`preflight`: fixed SELECT statements inside a read-only transaction, safe boolean
+output, no role switching or business/audit-row reads, and connection cleanup.
+Destination diagnostics may reuse the existing independently pinned source
+provider CA in memory only when no explicit destination CA is configured; native
+chain/hostname checks remain required. This setup-only compatibility path does
+not change either application's runtime TLS policy.
+
+`node migrations/audit/execute-runtime-setup.mjs offline` and
+`node --experimental-strip-types scripts/test-audit-db.mjs offline` passed; the
+latter initially reported 220 checks; the final focused rerun reported **239
+checks** after diagnostic hardening. These are manifest/contract/endpoint guards, static
+SQL boundaries, unsupported-mode rejection and scripted metadata-adapter control
+tests, including rollback after failure. They execute no SQL, read no private
+file and prove no live PostgreSQL syntax, ACL, lease/concurrency, expiry, duplicate
+or recovery behavior. Final diagnostics separately report principal presence,
+required membership MEMBER/USAGE/SET, membership ADMIN, and setup-owner
+MEMBER/USAGE/SET/ADMIN observations. These resolve the absent-role reporting
+ambiguity; no live principal, membership or EXECUTE verification occurred.
+Protected-write/settings primitives and a uniform-newline fixture do not establish
+a completed byte-preserving, recoverable multi-file private handoff. Apply,
+provisioning and connected rehearsal modes remain unimplemented in this CLI.
+
+Final narrow review also verified dynamic driver import, explicit read-only
+startup options, explicit normal-replication/SSL-negotiation values and rejection
+of PGBINARY overrides. The focused offline runner constructs an actual pg client
+under ambient-option canaries and a socket guard, and tests client cleanup after
+connection/inspection/output failure. The corrected setup offline command also
+passed with current pinned draft hashes. No blocker was found for **requesting
+the user's specific approval** of the bounded metadata-only preflight described
+in [runtime execution handoff](audit-runtime-execution.md); this review does not
+authorize that privileged connection or any mutation.
+
+## Accepted cross-role dependency and frontend contract — 23 October 2026
+
+The assigned Back End Developer `/root/audit_backend` accepts the TASK-014
+dependency delivered by `/root` from the
+[coordination queue](agent-coordination.md#task-014--unblock-dependent-frontendbackend-work).
+Acceptance uses the user's 23 October standing cross-role authorization in
+AGENTS.md. It covers necessary reversible local backend contract work and
+offline/mocked verification; it does not transfer DB execution permissions or
+lift the existing stop-on-failure, activation, frontend ownership or deployment
+holds. `/root` owns the queue record; DB retains its own SQL/helpers/evidence.
+
+The usable interface for frontend integration is the application's normal domain
+API. There is **no generic browser audit-write endpoint** and no browser audit DB
+credential. The server derives authenticated identity, current authority,
+workspace/object scope, timestamps and request/operation UUIDs; browser-supplied
+actor, role, outcome, audit envelope or authorization claims confer no authority.
+Frontend can continue its UI and mocked API contract work independently of the
+disabled worker/runtime installation.
+
+For backend producers, the implemented internal capture contract is:
+
+| Boundary | Contract and evidence |
+| --- | --- |
+| Prepare an event | `createAuditContext` after real server authorization, then `createAuditEvent`. Eleven staged event names, strict safe-field/outcome rules, immutable envelope, canonical `sha256-sorted-json-v1`, and 32 KiB payload bound. The isolated event suite passes eleven contracts and 105 invalid cases. |
+| Local mutation | `enqueueDrizzleAudit(tx, prepared)` or `enqueueAudit(tx, prepared)` uses the caller's transaction. Audit enqueue failure rejects the operation with a safe 503; the implemented persona-change route rolls back its domain mutation. Mocked route/storage/transaction tests pass; live atomicity remains DB rehearsal work. |
+| Independent failure/denial | `captureIndependent` uses a separate transaction. `recordDenial`/`denyWithAudit` await available denial capture; a capture outage never grants access. Fixed gap signals contain no driver/query/token payload. |
+| Delivery | `createAuditWorker` uses committed-operation ports, stable event UUID/hash, matching-duplicate acceptance, lease tokens, bounded backoff/timeouts, quarantine and payload-free metrics. Offline tests cover outage, timeout, ack-loss matching, stale tokens and cancellation; connected delivery is not yet verified. |
+| API outcomes | Frontend renders the domain API's confirmed result. Do not infer durable audit success from a browser action or manufacture a success event. Remote Auth outcomes can differ from local capture/session outcomes; do not automatically replay an uncertain mutation. |
+
+TASK-025's browser permission/processing-consent events are **not among the eleven
+implemented names** and have no implemented HTTP intake route. Do not repurpose a
+server authorization-denial event for a client-reported browser/OS permission
+observation. Backend accepts the related local contract dependency: agree with
+Frontend and DB on an explicit allowlisted intake/event family, mark browser
+observations as client-reported, keep consent distinct from permission and saved
+location restoration, and define correlation/replay bounds and outage behavior.
+Coordinates, addresses, place IDs, cookies/session/token values, raw IP/user-agent
+and raw browser payloads must stay out of audit. This paragraph is an acceptance
+and contract boundary, not a claim that TASK-025 capture exists. Frontend may use
+an explicit mock port for that pending contract; production telemetry requires
+the actual reviewed backend/DB implementation and passing checks.
+
+Current runtime evidence belongs to the DB owner's
+[execution handoff](audit-runtime-execution.md). The disabled destination committed;
+source installation and runtime delivery are not implied. Credential provisioning,
+connected rollback/lease/duplicate/outage rehearsal, practical monitoring/recovery,
+the application's extra location-table cutover scope, and remote Auth durable
+intent/reconciliation remain gates. No production audit coverage or TASK-014
+completion follows from these local contracts. Current test languages remain
+en/lv/ru; ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred.
+
+## Completion integration — 23 October 2026
+
+Backend owns application integration and the actual capture/delivery loop;
+DB owns private handoff and the bounded synthetic connected rehearsal. No real
+Auth call, user/business/session mutation, application listener or connected
+worker was started by this Backend agent. Production deployment remains outside
+this development task.
+
+The explicit activation contract is `AUDIT_ENABLED=true` for local transactional
+capture and independent security denials, `AUDIT_WORKER_ENABLED=true` in the
+separate worker process, and `AUDIT_ENVIRONMENT=development` for either enabled
+runtime. **`AUDIT_AUTH_EVENTS_ENABLED=false` is required for this staged producer
+scope**; true/invalid values fail startup. Remote Auth hooks remain implemented
+and tested with injected adapters, but actual Auth producer activation requires
+TASK-015's durable intent/reconciliation. Registry support for eleven names is
+not a claim of eleven live producers. Transport activation preserves existing
+login/OAuth/password/logout outcomes while continuing local persona audit and
+security denial capture. There is no claim that external Auth mutations are
+audited in this stage.
+
+When capture is enabled, `server/db.ts` refuses a stale ambient owner DATABASE_URL
+before creating a connection. It constructs the application pool from the exact
+restricted application URI with verified TLS/hostname and fixed driver options.
+`verifyAuditApplicationPool` checks actual TLS and the server's restricted
+`fmt_app_dev` principal/capability snapshot before route/session registration or
+listening. A connection/query/capability failure produces a safe audit error;
+it never falls back to owner credentials. App startup loads its normal `.env`;
+it never loads the dedicated setup file. Native pg actual-principal verification
+is a separate connected acceptance check, not proved by snapshot tests.
+
+The existing `npm run audit:worker` command explicitly selects the protected
+`.env.audit-worker.local` through Node's `--env-file`. Run it from the repository
+root after DB activation checks; do not substitute the setup file or put URLs in
+arguments. Ambient environment values still take precedence: runtime parsers
+reject owner/wrong-target connection values and unsafe flags. The application
+does not launch this worker. The DB owner controls its activation after rehearsal;
+no unbounded worker should run concurrently with the exclusive synthetic cohort.
+
+`worker-loop.ts` shares the actual daemon loop with bounded connected rehearsal
+(`maxSteps`), awaits reporting and closes runtime pools in `finally` on shutdown
+or failure. SIGINT/SIGTERM abort the loop; interrupted/uncertain operations retain
+their leases for normal expiry and stable-ID retry. Health reports occur on the
+first step and every five steps by default (one-second polling), contain only
+bounded counts/age and metrics, and include no envelope, UUID, credentials or
+driver error. Status is `unavailable` when health cannot be read, `attention` for
+new source/destination failures, quarantine, expiry, invalid claim shapes or backlog age
+of at least 300 seconds, and `healthy` otherwise. `recovered=true` marks the first
+healthy report after attention. These are local operational signals; no external
+alerting integration or production service deployment is claimed. The worker's
+`metrics.captureGaps` counts invalid claim shapes returned by its source port;
+it does **not** aggregate capture failures in the separate application process.
+Producer failures emit `Audit capture gap CAPTURE_UNAVAILABLE` through the
+capture/HTTP adapters. Operators must inspect both worker health reports and
+application gap logs: a healthy worker does not certify that no producer event
+was lost or refused before enqueue.
+
+For an outage, retain the source outbox and restore connectivity/credentials
+through the DB owner. Normal pending or expired-lease events retry with the same
+event ID/hash; a matching committed duplicate can be acknowledged without another
+destination row. Check health until backlog catches up. A capture gap, expiry,
+quarantine or hash conflict requires operator investigation and remains attention;
+never edit the canonical payload/hash, acknowledge an unaccepted event, replay a
+real uncertain business/Auth mutation or delete P1 evidence to clear the signal.
+Schema/grant repair, restricted recovery and evidence retention belong to the DB
+owner's reviewed recovery scope. Stop the worker before any exclusive rehearsal
+or scoped recovery. Connected recovery evidence is recorded separately by DB.
+
+Fresh safe checks passed after these changes:
+
+- `node --import tsx scripts/test-audit-activation.mjs`: actual pool adapter
+  capability/TLS acceptance/refusal, configuration flags, reserved Auth gate,
+  connection-error redaction and real `server/db.ts` import refusing stale owner
+  ambient configuration under a socket guard and absent dotenv fixture.
+- `node --experimental-strip-types scripts/test-audit-worker-loop.mjs`: actual
+  worker/loop with injected ports, bounded cadence/no final wait, transient
+  failure/recovery, health outage, attention thresholds, cancellation and pool
+  cleanup after reporting/wait/options failure.
+- Existing event (eleven staged contracts, 105 rejected inputs), worker and Auth
+  suites passed. Auth now also exercises staged remote producers during capture
+  outage while security denial and the real mocked persona transaction remain
+  enabled. No live Auth, SQL, private configuration or listener was used.
+- `node node_modules/typescript/bin/tsc --noEmit --incremental false` passed.
+- Under explicit DB-owner delegation, the local seventeen-table location
+  postflight profile retains the no-restrictive-policy gate over **all seventeen**
+  tables and exact inaccessible-provider 8+8 baseline. The offline location
+  package runner passed **163 checks**, including false-gate refusal/rollback.
+  This does not simulate PostgreSQL CHECK/ACL semantics; DB separately executed
+  and verified the now-immutable location migration.
+
+Remaining connected acceptance at this checkpoint: DB private handoff/provisioning,
+actual application/capture/worker factory verification, the selected synthetic
+cohort's atomic rollback/outage/lease/duplicate/conflict/expiry/catchup evidence,
+test-access cleanup and final activation state. These are completion work owned
+by the active DB executor, not fresh permission requests. Locale testing remains
+en/lv/ru; other languages and RTL remain deferred.

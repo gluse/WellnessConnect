@@ -1,5 +1,38 @@
 # Audit non-production setup handoff
 
+Current status, 23 October 2026: TASK-014 prototype-development acceptance passed.
+Protected setup/app/worker files and restricted runtime credentials are active.
+All twelve fixed synthetic events delivered with matching hashes and retained
+P1 provenance; connected rollback, permissions, retention, lease, duplicate,
+conflict and outage/catch-up checks passed. Temporary test login/helper access is
+revoked. Final active profiles and a bounded healthy worker run passed with no
+backlog. No background worker, HTTP server or production deployment was started;
+use `npm run audit:worker` when running the prototype. Remote Auth producers stay
+disabled for TASK-015. Follow the
+[completion execution record](audit-completion-execution.md) for recovery and
+limits. Earlier dated setup checkpoints below describe historical states.
+
+Continuation, 23 October 2026: the approved source and destination runtime-0003
+migrations are committed and final read-only verification passed on both named
+development targets. All runtime accounts remain restricted NOLOGIN/passwordless;
+source grants cover sixteen application tables, ten sequences and sixteen
+server-role policies. See the [runtime execution handoff](audit-runtime-execution.md)
+and [preflight report](audit-preflight-report.md) for exact commands, immutable
+SQL pins, safe results, partial stops and protected ACL recovery evidence.
+
+Reviewed verifier corrections pin exact dormant PUBLIC monitoring/cron ACLs while
+requiring no schema USAGE, no grant options and no other unreviewed rights. No
+provider grant repair or migration reapply was used. Installed-state policy checks
+also reject restrictive policies. Backend independently passed 264 continuation
+and 246 installer checks; the earlier database offline checks passed 243. These
+offline driver/static checks do not test mutated live PostgreSQL objects.
+
+No credentials, LOGIN, fixtures, app cutover, collection activation or deployment
+occurred. Private provisioning/logging safety, connected rehearsals, remote Auth
+reconciliation and location-feature cutover compatibility remain gates. The
+original diagnostic helper still supports only `offline` and read-only `preflight`.
+Earlier setup results below remain historical.
+
 Prepared 19 October 2026 by the assigned DB Analyst/Developer. Documentation only:
 no connections, credentials, provisioning, migrations, application changes or
 database tests performed. Continue from [storage design](audit-storage-proposal.md),

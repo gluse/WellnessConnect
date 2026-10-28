@@ -36,6 +36,16 @@ See the [official Google setup guide](https://supabase.com/docs/guides/auth/soci
 
 ## Facebook
 
+The public policy page is `/privacy-policy.html`. Set the public
+`PRIVACY_POLICY_*` details in `.env` as documented in `.env.example`, restart the
+development server or rebuild, and check that the draft notice is gone. Once
+published on the public HTTPS origin, use
+`https://<your-domain>/privacy-policy.html` as the app's Privacy Policy URL.
+Data-deletion instructions are in its `#data-deletion` section; no automatic
+deletion callback is implemented. See the [privacy policy handoff](privacy-policy-handoff.md)
+for configuration, container-build limitations and verification status. Localhost
+and an unconfigured draft are not public submission URLs.
+
 1. In Meta for Developers, create an app with the Facebook Login use case.
 2. Set its valid OAuth redirect URI to the Supabase callback.
 3. Configure the `email` permission alongside `public_profile`; Supabase requires

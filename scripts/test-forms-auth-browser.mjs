@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { browserFixture, measureFormContrast } from "./fixtures/browser-harness.mjs";
-const root = path.resolve(import.meta.dirname, ".."), languages = ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"], resources = {};
+import { languages, deferredLanguages, verificationDate, evidencePrefix } from "./fixtures/forms-verification-scope.mjs";
+const root = path.resolve(import.meta.dirname, ".."), resources = {}, prefix = evidencePrefix("auth");
 for (const language of languages) resources[language] = { translation: JSON.parse(await readFile(path.join(root, "client/public/locales", language, "translation.json"), "utf8")) };
 const messages = resources.en.translation.authForm, keys = Object.keys(messages);
 for (const language of languages) {
@@ -21,13 +22,14 @@ async function open(extra = "") { assert.deepEqual(await evaluate(() => window.a
 async function signup(language = "en") { await button(resources[language].translation.authForm.switchSignup); await until(() => !!document.getElementById("confirm-password"), "signup"); }
 async function fill(password = "SyntheticPass123!") { await set("email", "synthetic@example.test"); await set("password", password); if (await evaluate(() => !!document.getElementById("confirm-password"))) await set("confirm-password", password); }
 async function reflow() { assert.ok(await evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "auth page reflow"); }
-async function capture(name) { const file = "docs/forms-auth-" + name + ".png"; await screenshot(file); screenshots.push(file); }
+async function capture(name) { const file = "docs/" + prefix + "-" + name + ".png"; await screenshot(file); screenshots.push(file); }
 try {
   await viewport(1280); await open("providers=loading");
   await until(() => document.body.innerText.includes("Loading sign-in options"), "provider loading"); assert.ok(await evaluate(() => !document.querySelector('button[type="submit"]').disabled));
   await config({ providers: "all" }); await evaluate(() => window.authFixture.resolveProviders()); await until(() => document.body.innerText.includes("Continue with Google"), "provider loaded");
   const languageOptions = await evaluate(() => [...document.getElementById("auth-language").options].map(option => ({ code: option.value, label: option.text, lang: option.lang })));
-  assert.deepEqual(languageOptions.map(option => option.code), languages); assert.ok(languageOptions.every(option => option.label && option.lang === option.code));
+  const selectedOptions = languageOptions.filter(option => languages.includes(option.code));
+  assert.deepEqual(selectedOptions.map(option => option.code), languages); assert.ok(selectedOptions.every(option => option.label && option.lang === option.code));
   assert.equal(await evaluate(() => document.querySelector('label[for="auth-language"]').textContent), "Language");
   await button(messages.signIn); assert.equal((await writes()).length, 0); assert.equal(await evaluate(() => document.activeElement.id), "email");
   await open("providers=error"); await until(() => document.body.innerText.includes("Other sign-in options could not load"), "provider error"); await config({ providers: "none" }); await button(messages.retryOptions); await until(() => !document.body.innerText.includes("Retry sign-in options"), "provider retry"); assert.ok(!await evaluate(() => document.body.innerText.includes("Continue with")));
@@ -66,22 +68,24 @@ try {
 
   await open(); await signup(); await set("first-name", "Synthetic العربية"); await set("last-name", "Example"); await fill();
   for (const language of languages) {
-    await set("auth-language", language); await until(() => document.documentElement.lang === document.getElementById("auth-language").value, "auth language"); assert.equal(await value("first-name"), "Synthetic العربية"); assert.equal(await value("email"), "synthetic@example.test"); assert.equal(await value("password"), "SyntheticPass123!"); assert.equal(await evaluate(() => document.documentElement.dir), language === "ar" ? "rtl" : "ltr"); assert.ok(!await evaluate(() => document.body.innerText.includes("authForm.")));
+    await set("auth-language", language); await until(() => document.documentElement.lang === document.getElementById("auth-language").value, "auth language"); assert.equal(await value("first-name"), "Synthetic العربية"); assert.equal(await value("email"), "synthetic@example.test"); assert.equal(await value("password"), "SyntheticPass123!"); assert.equal(await evaluate(() => document.documentElement.dir), "ltr"); assert.ok(!await evaluate(() => document.body.innerText.includes("authForm.")));
     for (const width of [320, 390, 639, 640, 641, 768, 1280]) {
       await viewport(width); await reflow();
-      assert.ok(await evaluate(width => { const first = document.getElementById("first-name").getBoundingClientRect(), last = document.getElementById("last-name").getBoundingClientRect(); return width < 640 ? last.top > first.bottom : Math.abs(last.top - first.top) < 1; }, width), "name field responsive grouping");
+      const names = await evaluate(() => ({ width: innerWidth, clientWidth: document.documentElement.clientWidth, media640: matchMedia("(min-width:640px)").matches, first: document.getElementById("first-name").getBoundingClientRect().toJSON(), last: document.getElementById("last-name").getBoundingClientRect().toJSON() }));
+      assert.equal(names.width, width, "requested viewport width");
+      assert.ok(names.media640 ? Math.abs(names.last.top - names.first.top) < 1 : names.last.top > names.first.bottom, "name fields follow the browser's 640px media breakpoint: " + JSON.stringify({ language, requestedWidth: width, ...names }));
       matrix.push({ language, width });
     }
   }
-  checks.push("77 locale/viewport cases: all 11 languages, Arabic document direction, native language choice, retained form values and one-column phone/two-column wider names");
+  checks.push("21 en/lv/ru locale/viewport cases: language choice, retained form values and one-column phone/two-column wider names");
   await set("auth-language", "en"); await viewport(1280); await set("password", ""); await set("confirm-password", ""); await evaluate(() => document.activeElement?.blur()); contrast.push({ view: "signup-light", ...await measureFormContrast(fixture, ".auth-form") }); assert.deepEqual(contrast.at(-1).failures, []); await capture("signup-desktop");
-  await click("#fixture-theme"); contrast.push({ view: "signup-dark", ...await measureFormContrast(fixture, ".auth-form") }); assert.deepEqual(contrast.at(-1).failures, []); await set("auth-language", "ar"); await viewport(390); await capture("signup-arabic-dark");
+  await click("#fixture-theme"); contrast.push({ view: "signup-dark", ...await measureFormContrast(fixture, ".auth-form") }); assert.deepEqual(contrast.at(-1).failures, []); await set("auth-language", "ru"); await viewport(390); await capture("signup-russian-dark");
   await open("returnTo=%2Finvite&lang=en"); await viewport(320); await reflow(); contrast.push({ view: "login-recovery-light", ...await measureFormContrast(fixture, ".auth-form") }); assert.deepEqual(contrast.at(-1).failures, []); await capture("login-phone");
   await click("#fixture-theme"); contrast.push({ view: "login-recovery-dark", ...await measureFormContrast(fixture, ".auth-form") }); assert.deepEqual(contrast.at(-1).failures, []);
   await open(); await signup(); await viewport(320); await evaluate(() => { document.documentElement.style.fontSize = "200%"; }); await reflow(); assert.ok(await evaluate(() => document.getElementById("email").clientWidth >= 160)); await evaluate(() => { document.documentElement.style.fontSize = ""; });
   await api("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] }); await evaluate(() => document.getElementById("auth-language").focus()); await key("Tab"); assert.ok(await evaluate(() => document.activeElement.matches("select,button,input,a"))); await evaluate(() => document.getElementById("auth-language").focus()); await key("ArrowDown"); await key("Enter"); assert.ok(await evaluate(() => document.documentElement.lang === document.getElementById("auth-language").value));
   checks.push("light/dark text/control contrast, 320px 200% text reflow, native language keyboard operation and reduced-motion preference");
   assert.deepEqual(await evaluate(() => window.authFixture.unexpected), []); assert.deepEqual(fixture.network, []); assert.deepEqual(fixture.blocked, []); assert.deepEqual(fixture.errors, []);
-  await writeFile(path.join(root, "docs/forms-auth-browser-evidence.json"), JSON.stringify({ date: "2026-10-20", browser: "Chrome 155 headless, isolated synthetic fixture", checks, matrix, messageCount: keys.length, contrast, screenshots, unexpectedNetwork: fixture.network, blockedNetwork: fixture.blocked, runtimeErrors: fixture.errors, limits: "No connected auth, app server, database, email, OAuth provider, session persistence or deployment. Other browsers, physical devices/keyboards, screen readers, native-language quality and actual 400% browser zoom remain unverified." }, null, 2) + "\n");
-  console.log(`Passed auth: ${checks.length} groups, ${matrix.length} locale/viewport cases, ${keys.length} messages in 11 locales; zero unexpected requests/runtime exceptions.`);
+  await writeFile(path.join(root, "docs/" + prefix + "-evidence.json"), JSON.stringify({ date: verificationDate, browser: await api("Browser.getVersion"), checks, matrix, languages, deferredLanguages, messageCount: keys.length, contrast, screenshots, unexpectedNetwork: fixture.network, blockedNetwork: fixture.blocked, runtimeErrors: fixture.errors, limits: "No connected auth, app server, database, email, OAuth provider, session persistence or deployment. Physical devices/keyboards, screen readers, native-language quality and actual 400% browser zoom are outside this runner." }, null, 2) + "\n");
+  console.log(`Passed auth: ${checks.length} groups, ${matrix.length} locale/viewport cases, ${keys.length} messages in en/lv/ru; zero unexpected requests/runtime exceptions.`);
 } finally { await fixture.close(); }

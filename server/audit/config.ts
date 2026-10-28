@@ -34,9 +34,34 @@ export function auditConnection(value: unknown, kind: AuditConnectionKind): Audi
   } catch { throw new AuditConfigurationError(); }
 }
 
+/** Same fixed source/TLS policy for the independently restricted application. */
+export function auditApplicationConnection(value: unknown): AuditConnection {
+  try {
+    if (typeof value !== "string" || /[\x00-\x20\x7f]/.test(value)) throw new AuditConfigurationError();
+    const uri = new URL(value), user = decodeURIComponent(uri.username);
+    const direct = uri.hostname.toLowerCase() === `db.${AUDIT_PROJECTS.source}.supabase.co`;
+    const expected = direct ? "fmt_app_dev" : `fmt_app_dev.${AUDIT_PROJECTS.source}`;
+    if (user !== expected) throw new AuditConfigurationError();
+    uri.username = direct ? AUDIT_USERS.capture : `${AUDIT_USERS.capture}.${AUDIT_PROJECTS.source}`;
+    return { ...auditConnection(uri.href, "capture"), user };
+  } catch { throw new AuditConfigurationError(); }
+}
+
 export function auditEnvironment(input: Record<string, string | undefined>): string {
   if (input.AUDIT_ENVIRONMENT !== "development") throw new AuditConfigurationError();
   return input.AUDIT_ENVIRONMENT;
+}
+
+/** Remote Auth producers remain staged until durable intent/reconciliation exists. */
+export function assertAuditActivation(input: Record<string, string | undefined>): void {
+  for (const key of ["AUDIT_ENABLED", "AUDIT_WORKER_ENABLED", "AUDIT_SERVICE_VIEWS_ENABLED"]) {
+    if (input[key] !== undefined && input[key] !== "true" && input[key] !== "false") throw new AuditConfigurationError();
+  }
+  if (input.AUDIT_AUTH_EVENTS_ENABLED !== undefined && input.AUDIT_AUTH_EVENTS_ENABLED !== "false") throw new AuditConfigurationError();
+  if (input.AUDIT_ENABLED === "true" || input.AUDIT_WORKER_ENABLED === "true") {
+    auditEnvironment(input);
+    if (input.PGBINARY) throw new AuditConfigurationError();
+  }
 }
 export const workerOptionsSchema = z.object({
   batchSize: z.number().int().min(1).max(100), timeoutMs: z.number().int().min(100).max(8000),

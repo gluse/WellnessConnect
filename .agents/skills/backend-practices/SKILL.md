@@ -11,13 +11,18 @@ development skill, not an audit result or authority to change live services.
 
 ## Authority and version checks
 
-- Read root `AGENTS.md` and `BACK-END-DEVELOPER.md`. Preserve the assigned role,
+- Read root `AGENTS.md` and `ROLE-BACK_END_DEVELOPER.md`. Preserve the assigned role,
   task, and scoped approvals. Other agents need specific user or assigned Back
   End Developer approval to implement backend changes; loading this skill does
   not assign the role. Read-only repository analysis may proceed within the task.
 - Database-affecting files and database execution also follow
-  `DB-ANALYST-DEVELOPER.md`, including the user's choice before database changes.
+  `ROLE-DB-ANALYST-DEVELOPER.md`, including standing local-dependency authorization
+  and material-choice/connected-execution requirements.
   Coordinate infrastructure with CI/CD. Neither role can approve the other's scope.
+- Use `AGENTS.md` cross-role cooperation and `docs/agent-coordination.md`: accept
+  valid local backend dependencies and implement/test without another user approval;
+  route other scopes to their owners and reuse recorded choices/operation approvals.
+  Preserve explicit execution holds and return contract/verification evidence.
 - Inspect `package.json`, the lockfile, imports, and runtime configuration.
   Distinguish declared ranges, locked packages, local Node, container Node, and
   verified deployed versions. Do not infer runtime support from `@types/node`.

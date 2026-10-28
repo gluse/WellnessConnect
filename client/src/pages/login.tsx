@@ -120,6 +120,7 @@ export default function Login() {
         {/^\/invite(?:\?|$)/.test(returnTo) && <InvitationRecovery returnTo={returnTo} />}
         <Button type="button" variant="ghost" className="w-full" disabled={busy} onClick={() => { setSignup(!signup); setMessage(""); setError(""); setPassword(""); setConfirmPassword(""); setConfirmPasswordError(""); setCompanyNameError(""); requestAnimationFrame(() => heading.current?.focus({ preventScroll: true })); }}>{t(signup ? "authForm.switchSignIn" : "authForm.switchSignup")}</Button>
         <Link href="/" className="block text-center text-sm">{t("authForm.back")}</Link>
+        <a href="/privacy-policy.html" className="block text-center text-sm underline underline-offset-4">{t("legal.privacyPolicy")}</a>
       </CardContent>
     </Card>
   </main>;

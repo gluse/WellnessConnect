@@ -1,0 +1,157 @@
+{
+  "date": "2026-10-21",
+  "browser": {
+    "product": "webkit/27.2"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "checks": [
+    "invalid save makes no write; linked errors and focused summary",
+    "rejected save retains draft and sanitizes feedback; pending guard prevents duplicate write; successful save returns to services",
+    "named dirty-exit dialog traps keyboard focus; Escape preserves draft and workspace",
+    "en/lv/ru phone/tablet/desktop and short-height reflow, control labels, reachable focus and retained drafts; short height is emulation only",
+    "denied permission exposes no editor or save"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "height": 900,
+      "layout": {
+        "overflow": false,
+        "unnamed": [],
+        "clipped": []
+      }
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "height": 300,
+      "layout": {
+        "overflow": false,
+        "unnamed": [],
+        "clipped": []
+      }
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "height": 900,
+      "layout": {
+        "overflow": false,
+        "unnamed": [],
+        "clipped": []
+      }
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "height": 900,
+      "layout": {
+        "overflow": false,
+        "unnamed": [],
+        "clipped": []
+      }
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "height": 900,
+      "layout": {
+        "overflow": false,
+        "unnamed": [],
+        "clipped": []
+      }
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "height": 300,
+      "layout": {
+        "overflow": false,
+        "unnamed": [],
+        "clipped": []
+      }
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "height": 900,
+      "layout": {
+        "overflow": false,
+        "unnamed": [],
+        "clipped": []
+      }
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "height": 900,
+      "layout": {
+        "overflow": false,
+        "unnamed": [],
+        "clipped": []
+      }
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "height": 900,
+      "layout": {
+        "overflow": false,
+        "unnamed": [],
+        "clipped": []
+      }
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "height": 300,
+      "layout": {
+        "overflow": false,
+        "unnamed": [],
+        "clipped": []
+      }
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "height": 900,
+      "layout": {
+        "overflow": false,
+        "unnamed": [],
+        "clipped": []
+      }
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "height": 900,
+      "layout": {
+        "overflow": false,
+        "unnamed": [],
+        "clipped": []
+      }
+    }
+  ],
+  "screenshots": [
+    "docs/forms-task022-service-webkit-phone.png"
+  ],
+  "unexpectedRequests": [],
+  "blockedRequests": [],
+  "runtimeErrors": [],
+  "limits": "Synthetic mocked APIs only. Short viewport does not verify a physical keyboard/device. Screen reader and native-speaker review remain unverified."
+}

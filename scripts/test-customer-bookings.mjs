@@ -15,7 +15,7 @@ const { default: RoleSwitcher } = await import("../client/src/components/role-sw
 const { act, create } = renderer;
 const user = { id: "customer", firstName: "Customer", currentRole: "seeker" };
 const booking = (id, status, days) => ({
-  id, status, scheduledDate: new Date(Date.now() + days * 86400_000).toISOString(), totalAmount: "25.00",
+  id, seekerId: user.id, status, scheduledDate: new Date(Date.now() + days * 86400_000).toISOString(), totalAmount: "25.00",
   provider: { firstName: "Test", lastName: "Provider" }, service: { name: `Service ${id}`, duration: 60 },
 });
 const records = [booking(1, "confirmed", 2), booking(2, "pending", 3), booking(3, "completed", -2), booking(4, "cancelled", 4)];

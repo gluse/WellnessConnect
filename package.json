@@ -11,6 +11,7 @@
     "db:setup-storefronts": "node scripts/setup-storefronts.mjs",
     "test:storefronts": "node --import tsx scripts/test-storefronts.mjs",
     "test:storefronts-db": "node --import tsx scripts/test-storefronts-db.mjs",
+    "billing:dev": "node --import tsx scripts/start-stripe-local.mjs",
     "dev": "cross-env NODE_ENV=development tsx watch server/index.ts",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "cross-env NODE_ENV=production node dist/index.js",

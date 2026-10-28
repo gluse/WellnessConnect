@@ -1,0 +1,31 @@
+{
+  "checks": [
+    "First visit asks; 25 km/50 cap; explicit remember; typed guest return resolves automatically without persistent Google coordinates or GPS prompt",
+    "Guest GPS selection restores without geocoding or another browser permission request; forget clears cookie and stops search",
+    "Guest preference adopted only into empty profile; no cookie survives login; logout and account switching clear private location/results; account return restores",
+    "Profile read failure retains error instead of guest fallback; failed forget stops use, preserves honest feedback and supports retry",
+    "Late geocoder completion after account change cannot update the new account or expose an obsolete draft",
+    "Failed account save is visible; retry persists the selected place without another location prompt",
+    "English/Latvian/Russian location choice, notice and remember control reflow at desktop/phone widths"
+  ],
+  "locales": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "viewports": [
+    1280,
+    390
+  ],
+  "externalServices": "mocked",
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ]
+}

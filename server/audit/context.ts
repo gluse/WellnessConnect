@@ -6,6 +6,7 @@ const roleSchema = z.enum(["seeker", "provider", "owner", "admin", "viewer", "su
 const actorSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("user"), userId: userIdSchema, effectiveRole: roleSchema }).strict(),
   z.object({ kind: z.literal("anonymous") }).strict(),
+  z.object({ kind: z.literal("service"), serviceId: z.literal("billing-worker") }).strict(),
 ]);
 const scopeSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("personal"), workspaceId: userIdSchema }).strict(),
@@ -18,6 +19,13 @@ const targetSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("user"), id: userIdSchema }).strict(),
   z.object({ type: z.literal("membership"), id: userIdSchema }).strict(),
   z.object({ type: z.literal("company"), id: z.string().regex(/^[1-9][0-9]{0,9}$/) }).strict(),
+  z.object({ type: z.literal("billing_operation"), id: z.string().uuid() }).strict(),
+  z.object({ type: z.literal("billing_subscription"), id: z.string().uuid() }).strict(),
+  z.object({ type: z.literal("billing_event"), id: z.string().uuid() }).strict(),
+  z.object({ type: z.literal("manual_grant"), id: z.string().uuid() }).strict(),
+  z.object({ type: z.literal("billing_offer"), id: z.string().uuid() }).strict(),
+  z.object({ type: z.literal("service"), id: z.string().regex(/^[1-9][0-9]{0,9}$/)
+    .refine(value => Number(value) <= 2147483647) }).strict(),
 ]);
 
 export const auditContextSchema = z.object({
@@ -27,7 +35,7 @@ export const auditContextSchema = z.object({
   source: z.object({
     application: z.literal("fitsmytime"),
     environment: z.string().regex(/^[a-z][a-z0-9-]{0,31}$/),
-    component: z.enum(["auth", "account", "company-access", "authorization"]),
+    component: z.enum(["auth", "account", "company-access", "authorization", "service", "billing"]),
     release: z.string().regex(/^[a-f0-9]{7,64}$/).optional(),
   }).strict(),
   requestId: z.string().uuid(),
@@ -35,13 +43,20 @@ export const auditContextSchema = z.object({
   parentEventId: z.string().uuid().optional(),
 }).strict().superRefine((context, issue) => {
   const invalid = () => issue.addIssue({ code: "custom", message: "Invalid audit context" });
-  if (context.actor.kind === "anonymous" && (context.scope.kind !== "unknown" || context.target.type !== "request")) invalid();
-  if (context.scope.kind === "unknown" && context.target.type !== "request") invalid();
+  const publicService = context.target.type === "service" && context.source.component === "service" && context.scope.kind === "unknown";
+  const billing = context.source.component === "billing";
+  if (context.actor.kind === "service" && (!billing || context.scope.kind === "global" ||
+    (context.scope.kind === "unknown" && context.target.type !== "billing_event"))) invalid();
+  if (billing && context.actor.kind === "anonymous") invalid();
+  if (context.actor.kind === "anonymous" && (context.scope.kind !== "unknown" || (context.target.type !== "request" && !publicService))) invalid();
+  if (context.scope.kind === "unknown" && context.target.type !== "request" && !publicService &&
+    !(billing && context.actor.kind === "service" && context.target.type === "billing_event")) invalid();
+  if (context.target.type === "service" && !publicService) invalid();
   if (context.scope.kind === "global" && (context.actor.kind !== "user" || context.actor.effectiveRole !== "support")) invalid();
   if (context.scope.kind === "company" && context.actor.kind === "user" &&
-    !["owner", "admin", "provider", "viewer"].includes(context.actor.effectiveRole)) invalid();
+    !["owner", "admin", "provider", "viewer"].includes(context.actor.effectiveRole) && !(billing && context.actor.effectiveRole === "support")) invalid();
   if (context.scope.kind === "personal" && context.actor.kind === "user" &&
-    !["seeker", "provider"].includes(context.actor.effectiveRole)) invalid();
+    !["seeker", "provider"].includes(context.actor.effectiveRole) && !(billing && context.actor.effectiveRole === "support")) invalid();
   if (context.target.type === "company" && (context.scope.kind !== "company" || context.target.id !== context.scope.workspaceId)) invalid();
   if (context.target.type === "membership" && context.scope.kind !== "company") invalid();
 });
@@ -56,7 +71,8 @@ const contexts = new WeakSet<object>();
  * authority and resolved object/workspace with the domain's real authorization.
  * This pure function validates a snapshot; it cannot authenticate or query
  * memberships. Never pass req.body/query/headers/session directly as this input.
- * Anonymous attempts retain no claimed identity, workspace or resolved target.
+ * Anonymous attempts retain no claimed identity/workspace. Only the explicit
+ * public-service notification may retain its server-resolved service target.
  */
 export function createAuditContext(input: AuditContextInput): AuditContext {
   try {

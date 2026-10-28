@@ -1,0 +1,55 @@
+{
+  "task": "TASK-024",
+  "recordedAt": "2026-10-27T08:39:41Z",
+  "timezone": "Europe/Riga",
+  "executor": "/root/subscription_database",
+  "status": "approved-database-only-package-completed",
+  "exitCode": 0,
+  "targets": {
+    "source": "hbkooiknruimukkhshrk",
+    "destination": "ynygqodmtgjrngiudalw",
+    "environment": "development"
+  },
+  "authority": {
+    "databasePlan": "Approve the DB plan",
+    "backupException": "Can you Proceed without backup? I have only test data here",
+    "stopAndSingleRetry": "yes, stop it.",
+    "release": "Root released one fresh attempt after Backend verified the approved process stop",
+    "backupVerified": false
+  },
+  "localQuiescence": "passed-no-matches",
+  "baselines": {
+    "source": {"tlsVerified": true, "groups": 19, "booleans": 72},
+    "destination": {"tlsVerified": true, "groups": 12, "booleans": 53}
+  },
+  "stages": [
+    {"target":"source","file":"0010_monthly_billing.sql","sha256":"8cef42902a4c7fe6d0a2a56e6b4393a0da040b422874eb54bbc3400bc5f28385","status":"committed-and-verified","groups":22,"booleans":79},
+    {"target":"source","file":"0011_monthly_billing_runtime.sql","sha256":"f5bf16e8adb538cff19c613d569d123f85fdcc08a68b65425804aa0bacf3f4e5","status":"committed-and-verified","groups":22,"booleans":79},
+    {"target":"source","file":"0012_monthly_billing_offers.sql","sha256":"ffd4c75021941a61b00d91f22c3d7c3f60fa613f452b54481a4eea0f0eed635e","status":"committed-and-verified","groups":26,"booleans":88},
+    {"target":"source","file":"0013_monthly_billing_offers_runtime.sql","sha256":"550b1d011b85e36ae81a07657c844876245421bf110a426c3e9d3de09382ae10","status":"committed-and-verified","groups":26,"booleans":88},
+    {"target":"destination","file":"0006_destination_billing.sql","sha256":"5591c9fca54138f3263448d34cfbbd969e2fd4671586811aa037e207a332d0ab","status":"committed-and-verified","groups":15,"booleans":56},
+    {"target":"destination","file":"0007_destination_billing_portal.sql","sha256":"e7c1f5a5c57fee9998a6c58fd9ca2e9b54d2281acec00ea320f308cb69c94642","status":"committed-and-verified","groups":15,"booleans":56},
+    {"target":"source","file":"0006_source_billing.sql","sha256":"0e0af1553e9715ab7c629ff8ad526378155be343503028515fbb168065007a46","status":"committed-and-verified","groups":29,"booleans":91},
+    {"target":"source","file":"0007_source_billing_portal.sql","sha256":"f022e6e2dbc9280cd1f6b8b690ce9a1d680b5f0be431c73159a6159352bbd8c0","status":"committed-and-verified","groups":29,"booleans":91}
+  ],
+  "exactSetupMembershipsRestored": true,
+  "restrictedReadOnlyTlsProbes": {
+    "fmt_app_dev": "passed-including-own-role-billing-database-readiness",
+    "fmt_audit_capture_dev": "passed",
+    "fmt_audit_worker_dev": "passed",
+    "fmt_audit_writer_dev": "passed"
+  },
+  "limits": {
+    "automaticRetry": false,
+    "fixtureOrSessionWrites": false,
+    "workerClaims": false,
+    "applicationStarted": false,
+    "stripeOperations": false,
+    "privateConfigurationEdited": false,
+    "backupExportOrRestore": false,
+    "deployment": false,
+    "legacyEntitlementBackfillOrProjectionCutover": false,
+    "authorizedCatalogSeed": "Initial immutable EUR1900-cent monthly tax-inclusive offer and current pointer from pinned0012"
+  },
+  "remainingAcceptance": "Local app/session, Stripe sandbox, real transactional fixture/concurrency tests and bounded worker acceptance require their separate execution scope; database catalog readiness alone does not establish end-to-end billing readiness."
+}

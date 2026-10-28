@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { browserFixture, measureFormContrast } from "./fixtures/browser-harness.mjs";
-const root = path.resolve(import.meta.dirname, ".."), languages = ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"], resources = {};
+import { languages, deferredLanguages, evidencePrefix } from "./fixtures/forms-verification-scope.mjs";
+const verificationDate = "2026-10-28";
+const root = path.resolve(import.meta.dirname, ".."), resources = {}, prefix = evidencePrefix("phase3") + "-team-redesign";
 for (const language of languages) resources[language] = { translation: JSON.parse(await readFile(path.join(root, "client/public/locales", language, "translation.json"), "utf8")) };
 const messages = resources.en.translation.operationsForm, keys = Object.keys(messages);
 for (const language of languages) {
@@ -24,12 +26,15 @@ const status = () => until(() => [...document.querySelectorAll('[role="status"]'
 async function open(mode, extra = "") {
   await visit("/?mode=" + mode + extra);
   if (extra.includes("denied") && mode !== "team") await until(() => !!document.querySelector('[role="alert"]'), "denied form"); else await until(() => !!document.querySelector('.phase3-form'), "operational form");
-  if (mode === "team" && !extra.includes("denied")) await until(() => !!document.getElementById("team-email") || !!document.querySelector('[role="alert"]'), "team ready");
+  if (mode === "team" && !extra.includes("denied")) {
+    await until(() => !!document.getElementById("team-roster") || !!document.querySelector('[role="alert"]'), "team ready");
+    if (!extra.includes("loadError")) { await click("#team-invite"); await settle(); }
+  }
   if (mode === "categories") await until(() => !!document.getElementById("category-key"), "categories ready");
 }
 async function timeIds() { await evaluate(() => { document.querySelectorAll('input[type="time"]').forEach((input, index) => { input.id = "fixture-time-" + index; }); }); }
 async function reflow() { assert.ok(await evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "page reflow"); }
-async function capture(name) { const file = "docs/forms-phase3-" + name + ".png"; await screenshot(file); screenshots.push(file); }
+async function capture(name) { const file = "docs/" + prefix + "-" + name + ".png"; await screenshot(file); screenshots.push(file); }
 try {
   await viewport(1280);
   await open("availability"); await timeIds();
@@ -65,12 +70,15 @@ try {
   await config({ result: "pending" }); await button(messages.createInvitation); await until(() => !!window.phase3Fixture.resolve, "invite pending"); const invited = (await writes()).length;
   await evaluate(() => document.querySelector("form").requestSubmit()); assert.equal((await writes()).length, invited); await config({ result: "success" }); await evaluate(() => window.phase3Fixture.resolve()); await until(() => !!document.getElementById("invitation-link"), "invitation link");
   assert.deepEqual((await writes()).at(-1).body, { email: "new@example.test", role: "provider", employeeId: 11, sendEmail: true });
-  assert.equal(await value("team-email"), "");
-  await evaluate(() => { document.querySelector('select[aria-label="Access for member@example.test"]').id = "member-role"; }); await set("member-role", "admin"); await config({ result: "error" }); await button(messages.saveAccess); await until(() => !!document.querySelector("li [role='alert']"), "member operation error"); assert.equal(await value("member-role"), "admin");
-  await config({ result: "success" }); await button(messages.saveAccess); await until(() => !!document.querySelector("li [role='status']"), "member saved");
-  await evaluate(() => { document.querySelector('select[aria-label="New owner"]').id = "fixture-owner"; }); await set("fixture-owner", "member"); await button(messages.transfer); await status(); assert.deepEqual((await writes()).at(-1).body, { userId: "member" }); assert.ok(await evaluate(() => window.phase3Fixture.confirmations.at(-1).includes("member@example.test")));
+  assert.ok(!await evaluate(() => !!document.getElementById("team-email")), "success replaces invite form with link receipt");
+  await button(resources.en.translation.teamManagement.done); await settle(); await click("#edit-member-member"); await settle();
+  await set("member-role-member", "admin"); await config({ result: "error" }); await button(messages.saveAccess); await until(() => !!document.querySelector('[role="dialog"] [role="alert"]'), "member operation error"); assert.equal(await value("member-role-member"), "admin");
+  await config({ result: "success" }); await button(messages.saveAccess); await until(() => !document.querySelector('[role="dialog"][data-state="open"]'), "member saved"); await settle();
+  assert.ok(await evaluate(() => document.getElementById("team-row-member-member").textContent.includes("Administrator")));
+  await click("summary"); await set("team-new-owner", "member"); await button(messages.transfer); await status(); assert.deepEqual((await writes()).at(-1).body, { userId: "member" }); assert.ok(await evaluate(() => window.phase3Fixture.confirmations.at(-1).includes("member@example.test")));
+  await click("#edit-member-member"); await settle();
   await config({ confirm: false }); const count = (await writes()).length; await button(messages.removeAccess); assert.equal((await writes()).length, count);
-  await config({ confirm: true }); await button(messages.removeAccess); await until(() => !document.querySelector('select[aria-label="Access for member@example.test"]'), "member removed"); assert.ok(await evaluate(() => document.body.innerText.includes("Changes saved.")));
+  await config({ confirm: true }); await button(messages.removeAccess); await until(() => !document.getElementById("team-row-member-member"), "member removed"); await settle(); assert.ok(await evaluate(() => document.body.innerText.includes("Changes saved.")));
   await button(messages.closeCompany); await status(); assert.equal((await writes()).at(-1).path, "/api/company/active"); assert.deepEqual((await writes()).at(-1).body, { isActive: false });
   checks.push("team employee explanation, invitation error/pending/success, exact payload, member field retention, named removal cancellation, owner controls and durable removed-member receipt");
   await open("team", "&denied=1&viewer=1"); assert.ok(!await evaluate(() => !!document.querySelector("form"))); assert.deepEqual(await writes(), []);
@@ -117,7 +125,7 @@ try {
     const retained = mode === "availability" ? "Europe/Riga" : "Synthetic retained"; await set(id, retained);
     for (const language of languages) {
       await set("fixture-language", language); assert.equal(await value(id), retained, "locale change retains draft");
-      assert.equal(await evaluate(() => document.documentElement.dir), language === "ar" ? "rtl" : "ltr");
+      assert.equal(await evaluate(() => document.documentElement.dir), "ltr");
       assert.equal(await evaluate(() => document.documentElement.lang), language);
       assert.ok(!await evaluate(() => document.body.innerText.includes("operationsForm.")), "no unresolved keys");
       for (const width of [320, 390, 639, 640, 641, 768, 1280]) { await viewport(width); await reflow(); matrix.push({ mode, language, width }); }
@@ -125,16 +133,19 @@ try {
     await set("fixture-language", "en"); await viewport(1280); await evaluate(() => document.activeElement?.blur());
     contrast.push({ mode, theme: "light", ...await measureFormContrast(fixture, ".phase3-form") }); assert.deepEqual(contrast.at(-1).failures, [], mode + " light contrast");
     if (mode === "availability") await capture("availability-desktop");
-    await click("#fixture-theme"); contrast.push({ mode, theme: "dark", ...await measureFormContrast(fixture, ".phase3-form") }); assert.deepEqual(contrast.at(-1).failures, [], mode + " dark contrast");
-    if (mode === "team") { await set("fixture-language", "ar"); await viewport(390); await capture("team-arabic-dark"); }
+    if (mode === "team") { await button(resources.en.translation.teamManagement.cancel); await settle(); }
+    await click("#fixture-theme");
+    if (mode === "team") { await click("#team-invite"); await settle(); }
+    contrast.push({ mode, theme: "dark", ...await measureFormContrast(fixture, ".phase3-form") }); assert.deepEqual(contrast.at(-1).failures, [], mode + " dark contrast");
+    if (mode === "team") { await set("fixture-language", "ru"); await viewport(390); await capture("team-russian-dark"); }
   }
-  checks.push("462 locale/viewport combinations across six forms, all 11 locale dictionaries/placeholders, draft retention, document language/direction, light/dark text and control contrast");
-  await open("availability"); await viewport(320); await evaluate(() => { document.documentElement.style.fontSize = "200%"; }); await reflow(); assert.ok(await evaluate(() => [...document.querySelectorAll('input[type="time"]')].every(input => input.clientWidth >= 160)), "time entry remains readable at 200% text"); await evaluate(() => document.getElementById("weekly-heading").scrollIntoView()); await screenshot("docs/forms-phase3-availability-text200.png", false); screenshots.push("docs/forms-phase3-availability-text200.png"); await evaluate(() => { document.documentElement.style.fontSize = ""; });
+  checks.push("126 en/lv/ru locale/viewport combinations across six forms, dictionaries/placeholders, draft retention, document language/direction, light/dark text and control contrast");
+  await open("availability"); await viewport(320); await evaluate(() => { document.documentElement.style.fontSize = "200%"; }); await reflow(); assert.ok(await evaluate(() => [...document.querySelectorAll('input[type="time"]')].every(input => input.clientWidth >= 160)), "time entry remains readable at 200% text"); await evaluate(() => document.getElementById("weekly-heading").scrollIntoView()); await screenshot("docs/" + prefix + "-availability-text200.png", false); screenshots.push("docs/" + prefix + "-availability-text200.png"); await evaluate(() => { document.documentElement.style.fontSize = ""; });
   await api("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
   await set("availability-timezone", "Europe/Riga"); await set("availability-service", "7"); await until(() => !!document.querySelector('[role="alertdialog"]'), "reduced motion confirmation"); await reflow(); assert.ok(await evaluate(() => document.querySelector('[role="alertdialog"]').contains(document.activeElement))); await key("Tab"); assert.ok(await evaluate(() => document.querySelector('[role="alertdialog"]').contains(document.activeElement))); await key("Escape"); await until(() => !document.querySelector('[role="alertdialog"]'), "dialog escape"); assert.equal(await evaluate(() => document.activeElement?.id), "availability-service", "scope dialog restores focus");
   checks.push("320px 200% text reflow, reduced-motion confirmation, keyboard focus containment and Escape");
   assert.deepEqual(await evaluate(() => window.phase3Fixture.unexpected), []); assert.deepEqual(fixture.network, []); assert.deepEqual(fixture.blocked, []); assert.deepEqual(fixture.errors, []);
-  const evidence = { date: "2026-10-20", browser: "Chrome 155 headless, isolated synthetic fixture", messageCount: keys.length, checks, matrix, contrast, screenshots, unexpectedNetwork: fixture.network, blockedNetwork: fixture.blocked, runtimeErrors: fixture.errors, limits: "No connected app, database, services, deployment, Firefox/WebKit, physical devices, screen readers, native-language review or actual 400% browser zoom. 320px tests equivalent reflow only." };
-  await writeFile(path.join(root, "docs/forms-phase3-browser-evidence.json"), JSON.stringify(evidence, null, 2) + "\n");
-  console.log(`Passed: ${checks.length} Phase 3 browser groups, ${matrix.length} locale/viewport combinations, ${keys.length} messages in 11 locales; no unexpected requests or runtime errors.`);
+  const evidence = { date: verificationDate, browser: await api("Browser.getVersion"), languages, deferredLanguages, messageCount: keys.length, checks, matrix, contrast, screenshots, unexpectedNetwork: fixture.network, blockedNetwork: fixture.blocked, runtimeErrors: fixture.errors, limits: "No connected app, database, services or deployment. Physical devices, screen readers, native-language review and actual 400% browser zoom are outside this runner. 320px tests equivalent reflow only." };
+  await writeFile(path.join(root, "docs/" + prefix + "-evidence.json"), JSON.stringify(evidence, null, 2) + "\n");
+  console.log(`Passed: ${checks.length} Phase 3 browser groups, ${matrix.length} locale/viewport combinations, ${keys.length} messages in en/lv/ru; no unexpected requests or runtime errors.`);
 } finally { await fixture.close(); }

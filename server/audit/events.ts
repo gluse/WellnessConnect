@@ -11,6 +11,12 @@ export const SUPPORTED_AUDIT_EVENTS = Object.freeze([
   "security.action_denied.v1", "account.details_changed.v1",
   "account.active_role_changed.v1", "company.membership_changed.v1",
   "company.ownership_transferred.v1",
+  "service.viewed.v1",
+  "billing.checkout_reserved.v1", "billing.checkout_created.v1", "billing.checkout_unknown.v1",
+  "billing.checkout_resolved.v1", "billing.event_accepted.v1", "billing.event_quarantined.v1",
+  "billing.subscription_reconciled.v1", "billing.offer_changed.v1", "billing.price_mapping_changed.v1",
+  "billing.manual_grant_changed.v1", "billing.workspace_initialized.v1",
+  "billing.portal_reserved.v1", "billing.portal_created.v1", "billing.portal_unknown.v1",
 ] as const);
 export type AuditEventName = typeof SUPPORTED_AUDIT_EVENTS[number];
 const outcomes = ["succeeded", "rejected", "denied", "failed", "unknown"] as const;
@@ -36,7 +42,7 @@ const timestampSchema = z.string().datetime({ precision: 3 }).refine(value =>
 const envelopeSchema = z.object({
   ...auditContextSchema.innerType().shape,
   eventId: z.string().uuid(), schemaVersion: z.literal(1), catalogVersion: z.literal(1),
-  occurredAt: timestampSchema, ...actionSchema.shape, retentionClass: z.enum(["B", "S"]),
+  occurredAt: timestampSchema, ...actionSchema.shape, retentionClass: z.enum(["B", "S", "R"]),
 }).strict();
 export type AuditEnvelope = ReturnType<typeof parseAuditEnvelope>;
 
@@ -45,17 +51,53 @@ const selfEvents = new Set<AuditEventName>([
   "account.details_changed.v1", "account.active_role_changed.v1",
 ]);
 const companyEvents = new Set<AuditEventName>(["company.membership_changed.v1", "company.ownership_transferred.v1"]);
-function retention(eventName: AuditEventName): "B" | "S" {
+function retention(eventName: AuditEventName): "B" | "S" | "R" {
+  if (eventName.startsWith("billing.")) return eventName === "billing.event_quarantined.v1" ? "S" : "B";
+  if (eventName === "service.viewed.v1") return "R";
   return eventName.startsWith("account.") || companyEvents.has(eventName) ? "B" : "S";
 }
 
 function validatePolicy(event: z.infer<typeof envelopeSchema>): void {
   const reject = () => { throw new AuditContractError(); };
   const { actor, scope, target, eventName, outcome, reasonCode, changes } = event;
+  if (eventName.startsWith("billing.")) {
+    auditContextSchema.parse({ actor, scope, target, source: event.source,
+      requestId: event.requestId, operationId: event.operationId,
+      ...(event.parentEventId ? { parentEventId: event.parentEventId } : {}) });
+    if (event.source.component !== "billing" || event.retentionClass !== retention(eventName) || changes.length || actor.kind === "anonymous") reject();
+    if (eventName === "billing.event_quarantined.v1") {
+      if (outcome !== "rejected" || reasonCode !== "CONFLICT") reject();
+    } else if (["billing.checkout_unknown.v1", "billing.portal_unknown.v1"].includes(eventName)) {
+      if (outcome !== "unknown" || reasonCode !== "PROVIDER_TIMEOUT") reject();
+    } else if (outcome !== "succeeded" || reasonCode !== undefined) reject();
+    const resolved = scope.kind === "personal" || scope.kind === "company";
+    if (scope.kind === "company" && Number(scope.workspaceId) > 2147483647) reject();
+    const owner = actor.kind === "user" && (scope.kind === "personal" ? actor.effectiveRole === "provider" && actor.userId === scope.workspaceId
+      : scope.kind === "company" && actor.effectiveRole === "owner");
+    const worker = actor.kind === "service" && actor.serviceId === "billing-worker";
+    const support = actor.kind === "user" && actor.effectiveRole === "support";
+    if (eventName === "billing.offer_changed.v1") {
+      if (!support || scope.kind !== "global" || target.type !== "billing_offer") reject();
+    } else if (eventName === "billing.manual_grant_changed.v1") {
+      if (!support || !resolved || target.type !== "manual_grant") reject();
+    } else if (eventName === "billing.workspace_initialized.v1") {
+      if (!owner || (scope.kind === "personal" ? target.type !== "user" || target.id !== scope.workspaceId
+        : scope.kind !== "company" || target.type !== "company" || target.id !== scope.workspaceId)) reject();
+    } else if (eventName === "billing.event_quarantined.v1") {
+      if (!worker || (!resolved && scope.kind !== "unknown") || target.type !== "billing_event") reject();
+    } else if (eventName === "billing.event_accepted.v1") {
+      if (!worker || !resolved || target.type !== "billing_event") reject();
+    } else if (eventName === "billing.subscription_reconciled.v1") {
+      if (!worker || !resolved || target.type !== "billing_subscription") reject();
+    } else if (eventName === "billing.price_mapping_changed.v1" || eventName === "billing.checkout_resolved.v1") {
+      if (!worker || !resolved || target.type !== "billing_operation") reject();
+    } else if (!resolved || target.type !== "billing_operation" || !(owner || (worker && ["billing.checkout_unknown.v1", "billing.portal_unknown.v1"].includes(eventName)))) reject();
+    return;
+  }
   const localMutation = eventName.startsWith("account.") || companyEvents.has(eventName);
   const expectedComponent = eventName.startsWith("auth.") ? "auth"
     : eventName.startsWith("account.") ? "account"
-      : companyEvents.has(eventName) ? "company-access" : "authorization";
+      : companyEvents.has(eventName) ? "company-access" : eventName === "service.viewed.v1" ? "service" : "authorization";
   if (event.source.component !== expectedComponent) reject();
   if (localMutation && outcome === "unknown") reject();
   // Also apply context refinements when parsing an envelope received for replay.
@@ -64,6 +106,9 @@ function validatePolicy(event: z.infer<typeof envelopeSchema>): void {
     ...(event.parentEventId ? { parentEventId: event.parentEventId } : {}) });
   if (event.retentionClass !== retention(eventName)) reject();
   if (scope.kind === "global") reject(); // No staged event grants global audit access.
+  if (eventName === "service.viewed.v1" && (target.type !== "service" || scope.kind !== "unknown" ||
+    outcome !== "succeeded" || reasonCode !== undefined || changes.length ||
+    (actor.kind === "user" && !["seeker", "provider"].includes(actor.effectiveRole)))) reject();
   if (eventName === "security.action_denied.v1") {
     if (outcome !== "denied" || target.type !== "request" || !reasonCode ||
       !["UNAUTHENTICATED", "FORBIDDEN", "CROSS_WORKSPACE", "WRONG_ORIGIN", "RATE_LIMITED", "SESSION_EXPIRED"].includes(reasonCode)) reject();
@@ -147,8 +192,8 @@ export function createAuditEvent(context: AuditContext, action: AuditAction, dep
   } catch { throw new AuditContractError(); }
 }
 
-/** Selected P1: B/S expire 365 days after occurrence, never after retry/receipt. */
+/** Selected P1: R expires after 90 days, B/S after 365; retries never extend it. */
 export function auditEventExpiresAt(input: unknown): string {
   const event = parseAuditEnvelope(input);
-  return new Date(Date.parse(event.occurredAt) + 365 * 24 * 60 * 60 * 1000).toISOString();
+  return new Date(Date.parse(event.occurredAt) + (event.retentionClass === "R" ? 90 : 365) * 24 * 60 * 60 * 1000).toISOString();
 }

@@ -11,9 +11,13 @@ and database state remain unverified.
 
 ## Authority and context
 
-- Read root `AGENTS.md` and `DB-ANALYST-DEVELOPER.md`. Preserve the assigned role,
-  user selection before changes, target-specific execution scope, and delegation
+- Read root `AGENTS.md` and `ROLE-DB-ANALYST-DEVELOPER.md`. Preserve the assigned role,
+  standing local-dependency authorization, material user choices, target-specific execution scope, and delegation
   boundaries. This skill does not grant database access or write authorization.
+- Accept valid routine local DB-file dependencies without another user selection;
+  document the technical choice and offline verification. Use cross-role routing
+  and `docs/agent-coordination.md` to find existing execution approvals and owners.
+  Standing local authorization does not permit connected operations or lift holds.
 - Start with schema, migrations, table filters, setup/transfer scripts, connection
   code, and actual queries. Distinguish declared, migrated, and verified live state.
 - When inspection is authorized, establish server/driver versions, connection mode,
@@ -33,8 +37,9 @@ and database state remain unverified.
 3. Report prioritized findings with evidence, consequence, and a practical
    recommendation. Separate repository findings from assumptions about live data.
 4. For changes, offer meaningful alternatives with a recommendation, application
-   impact, locking/cost, validation, and recovery. Follow the role's user-choice
-   workflow before implementation. Proposal approval is distinct from execution.
+   impact, locking/cost, validation, and recovery. Follow the role's standing local
+   authorization or material-choice workflow as applicable. Preparation is distinct
+   from connected execution.
 5. Within selected scope, use reviewable migrations and coordinate ORM/application
    changes. Record target, executor, approval, validation, and prepared/applied status.
 

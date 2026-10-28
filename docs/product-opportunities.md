@@ -186,3 +186,27 @@ or treat this document as approval to run persisted tests or commercial actions.
 
 Sources were reviewed on 19 October 2026. Recheck prices, regional availability,
 and provider terms before making a purchasing or launch decision.
+
+Payment follow-up, 22 October 2026: [payment business scenarios and fair profit](payment-business-plan.md)
+compares subscription, provider-owned deposits, marketplace commission and a
+capped new-customer hybrid, with fresh pricing references and downside economics.
+Decision update, 23 October 2026: user selected **Option A, subscription only,
+monthly billing at launch**. PM-07 now has selected delivery scope in
+[TASK-024](../TASKS.md#billing) and the
+[monthly subscription brief](monthly-subscription-brief.md). EUR 19/month remains
+a research price; annual plans and the other monetization scenarios are deferred.
+This choice does not itself approve billing execution, database changes or release.
+
+Feature discovery follow-up, 25 October 2026:
+[user cases and feature sheet](user-cases-feature-sheet.md) develops selected-customer
+services, private calendars with time requests/approval/alternatives, shared group
+sessions and announcements, online services, and related booking/retention ideas.
+UC-01–13 are proposal IDs, not delivery tasks. The sheet distinguishes existing
+source behavior from proposed workflows and includes acceptance criteria, proposed
+priorities, effort assumptions, pilot measures and owner handoff. Recommended first
+bundle: UC-01/02/03 with UC-07 notification reliability, subject to selection.
+UC-07/08, UC-09, UC-11/13 and UC-12 extend PM-05, PM-08, PM-06 and PM-03 respectively;
+they do not create duplicate implementation assignments or change TASK-024 scope.
+UC-13 adds the user's follow-up idea: around a month after positive feedback,
+invite the customer to book the same or a similar service, with separate reminder
+preferences, timing controls and checks against redundant or inaccessible offers.

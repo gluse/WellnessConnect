@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile, writeFile, mkdtemp, rm } from "node:fs/promises";
+import { readFile, writeFile, mkdtemp, mkdir, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
@@ -10,13 +10,13 @@ import postcss from "postcss";
 import tailwindcss from "tailwindcss";
 import loadConfig from "tailwindcss/loadConfig.js";
 
-export async function browserFixture({ entry, resources, html: previewHtml }) {
+export async function serveBrowserFixture({ entry, resources, html: previewHtml }) {
   const root = path.resolve(import.meta.dirname, "../..");
   const config = loadConfig(path.join(root, "tailwind.config.ts"));
   const javascript = previewHtml ? "" : (await build({
     entryPoints: [path.join(root, entry)], bundle: true, write: false, format: "esm", platform: "browser", target: "chrome120", jsx: "automatic", loader: { ".css": "empty" },
     alias: { "@": path.join(root, "client/src"), "@shared": path.join(root, "shared") },
-    define: { __FORM_RESOURCES__: JSON.stringify(resources), "process.env.NODE_ENV": '"test"' },
+    define: { __FORM_RESOURCES__: JSON.stringify(resources), __SERVICE_FORM_RESOURCES__: JSON.stringify(resources), "process.env.NODE_ENV": '"test"' },
   })).outputFiles[0].text;
   const cssSource = previewHtml ? "" : (await Promise.all(["client/src/index.css", "client/src/components/provider/service-editor.css", "client/src/components/forms-phase2.css", "client/src/components/forms-phase3.css", "client/src/components/forms-auth.css", "client/src/components/search-page.css"].map(file => readFile(path.join(root, file), "utf8")))).join("\n");
   const css = previewHtml ? "" : (await postcss([tailwindcss({ ...config, content: [...config.content, entry] })]).process(cssSource, { from: path.join(root, "client/src/index.css") })).css;
@@ -31,17 +31,38 @@ export async function browserFixture({ entry, resources, html: previewHtml }) {
   });
   await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
   const origin = "http://127.0.0.1:" + server.address().port;
+  const close = () => new Promise(resolve => { server.close(resolve); server.closeAllConnections(); });
+  return { root, origin, network, blocked, errors, close };
+}
+
+export async function browserFixture(options) {
+  const served = await serveBrowserFixture(options);
+  if (process.env.FORMS_BROWSER && process.env.FORMS_BROWSER !== "chrome") {
+    try {
+      const { playwrightFixture } = await import("./playwright-harness.mjs");
+      return await playwrightFixture(served, process.env.FORMS_BROWSER);
+    } catch (error) { await served.close(); throw error; }
+  }
+  const { root, origin, network, blocked, errors } = served;
   const executable = ["C:/Program Files/Google/Chrome/Application/chrome.exe", "/usr/bin/google-chrome", "/usr/bin/chromium"].find(existsSync);
   assert.ok(executable, "A local Chromium browser is required; no download is attempted.");
   const taskTemporaryRoot = path.resolve(tmpdir());
   const profile = await mkdtemp(path.join(taskTemporaryRoot, "fits-phase2-forms-"));
-  const browser = spawn(executable, ["--headless=new", "--remote-debugging-port=0", "--user-data-dir=" + profile, "--no-first-run", "--no-default-browser-check", "--disable-background-networking", "--disable-component-update", "--disable-default-apps", "--disable-extensions", "--disable-sync", "--disable-features=Translate,MediaRouter,OptimizationHints", "about:blank"], { windowsHide: true, stdio: ["ignore", "ignore", "pipe"] });
+  const zoomArgs = [];
+  if (options.nativeZoom !== undefined) {
+    assert.equal(options.nativeZoom, 4, "Only the TASK-022 400% zoom preset is supported");
+    await mkdir(path.join(profile, "Default"));
+    // Chromium's persisted browser zoom preference, not CSS zoom or pinch scale.
+    await writeFile(path.join(profile, "Default/Preferences"), JSON.stringify({ partition: { default_zoom_level: { x: Math.log(4) / Math.log(1.2) } } }));
+    zoomArgs.push("--window-size=1280,900", "--force-device-scale-factor=1");
+  }
+  const browser = spawn(executable, ["--headless=new", "--remote-debugging-port=0", "--user-data-dir=" + profile, "--no-first-run", "--no-default-browser-check", "--disable-background-networking", "--disable-component-update", "--disable-default-apps", "--disable-extensions", "--disable-sync", "--disable-features=Translate,MediaRouter,OptimizationHints", ...zoomArgs, "about:blank"], { windowsHide: true, stdio: ["ignore", "ignore", "pipe"] });
   let socket, api;
   const close = async () => {
     if (socket?.readyState === WebSocket.OPEN) { try { await api("Browser.close"); } catch {} socket.close(); }
     if (browser.exitCode === null) browser.kill();
     await new Promise(resolve => { if (browser.exitCode !== null) resolve(); else { browser.once("exit", resolve); setTimeout(resolve, 3000); } });
-    await new Promise(resolve => server.close(resolve)); server.closeAllConnections();
+    await served.close();
     const resolvedProfile = path.resolve(profile), relativeProfile = path.relative(taskTemporaryRoot, resolvedProfile);
     if (!relativeProfile || relativeProfile.startsWith("..") || path.isAbsolute(relativeProfile) || !path.basename(resolvedProfile).startsWith("fits-phase2-forms-")) throw Error("Refusing to remove an unexpected browser-profile path");
     await rm(resolvedProfile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
@@ -153,7 +174,9 @@ export async function measureFormContrast(fixture, selector = ".phase2-form") {
         textRatios.push(textRatio);
         if (!Number.isFinite(textRatio) || textRatio < (large ? 3 : 4.5)) failures.push({ kind: "text", text: element.textContent.slice(0, 50), ratio: textRatio });
       }
-      if (element.matches("input,textarea,select")) {
+      // Native checkbox/radio paint is not represented by computed border colors.
+      // Their visible states still need visual/assistive-technology review.
+      if (element.matches('input:not([type="checkbox"]):not([type="radio"]),textarea,select')) {
         const borderRatio = ratio(rgb(style.borderTopColor), background(element.parentElement));
         borderRatios.push(borderRatio);
         if (!Number.isFinite(borderRatio) || borderRatio < 3) failures.push({ kind: "border", id: element.id, ratio: borderRatio });

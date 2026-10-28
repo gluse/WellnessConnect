@@ -1,0 +1,66 @@
+{
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/155.0.8059.85",
+    "revision": "@0e66b94549a8bd85f03fbdf189b752d6e7b63c32",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "jsVersion": "15.5.35.25"
+  },
+  "locales": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    {
+      "language": "en",
+      "width": 320,
+      "nativeZoom": true,
+      "viewport": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1"
+      },
+      "contrast": 19.755527314743425,
+      "reflow": "passed"
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "nativeZoom": true,
+      "viewport": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1"
+      },
+      "contrast": 19.755527314743425,
+      "reflow": "passed"
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "nativeZoom": true,
+      "viewport": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1"
+      },
+      "contrast": 19.061142529601344,
+      "reflow": "passed"
+    }
+  ],
+  "screenshots": [
+    "docs/monthly-subscription-chrome-en-zoom400.png",
+    "docs/monthly-subscription-chrome-lv-zoom400.png",
+    "docs/monthly-subscription-chrome-ru-zoom400.png"
+  ],
+  "network": [],
+  "blocked": [],
+  "errors": []
+}

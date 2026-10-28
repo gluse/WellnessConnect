@@ -38,12 +38,13 @@ try {
     { latitude: "91", longitude: "0", radius: "50" }, { latitude: "0" },
     { latitude: ["0"], longitude: "0", radius: "1" }, { radius: "NaN" },
     { searchQuery: ["value"] }, { searchQuery: "a".repeat(201) },
+    { limit: "0" }, { limit: "51" }, { limit: "1.5" }, { limit: ["1", "2"] },
     { companyId: "1" }, { providerId: "fixture" }, { serviceIds: [1] },
   ]) assert.equal(publicSearchSchema.safeParse(query).success, false, JSON.stringify(query));
   for (const query of [{ date: "2026-01-01", dateEnd: "2026-01-31" },
     { date: "2028-02-01", dateEnd: "2028-03-02" },
     { latitude: "0", longitude: "0", radius: "50", ageGroups: "adults" },
-    { searchQuery: "  unicode Rīga العربية  " }]) assert.equal(publicSearchSchema.safeParse(query).success, true);
+    { searchQuery: "  unicode Rīga Русский  " }]) assert.equal(publicSearchSchema.safeParse(query).success, true);
   assert.equal(semanticSearchSchema.safeParse({ query: " " }).success, false);
   assert.equal(searchFiltersSchema.safeParse({ date: "2026-01-01", dateEnd: "9999-12-31", availableOnly: true }).success, false);
 
@@ -63,6 +64,11 @@ try {
   assert.equal(successful.headers.get("cache-control"), "no-store");
 
   const text = await harness({ searchServices: async () => [service(7)] });
+  const fifty = await harness({ searchServices: async filters => {
+    assert.equal(filters.limit, 50, "The public endpoint defaults to 50 even without a limit parameter");
+    return Array.from({ length: 100 }, (_, index) => service(index + 1));
+  } });
+  assert.equal((await (await fifty.request("search")).json()).length, 50);
   assert.deepEqual(await (await text.request("semantic-search?query=fixture")).json(), [service(7)]);
   assert.equal(text.calls.embeddings.length, 0, "Text matches must avoid paid calls");
   const noCandidates = await harness({ getPublicServiceEmbeddings: async () => [] });
@@ -82,7 +88,7 @@ try {
   });
   const boundedMatches = await manyMatches.request("semantic-search?query=fixture");
   assert.equal(boundedMatches.headers.get("x-search-truncated"), "true");
-  assert.deepEqual((await boundedMatches.json()).map(row => row.id), Array.from({ length: 100 }, (_, index) => index + 1));
+  assert.deepEqual((await boundedMatches.json()).map(row => row.id), Array.from({ length: 50 }, (_, index) => index + 1));
 
   let fallbackCalls = [];
   const fallback = await harness({

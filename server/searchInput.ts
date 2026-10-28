@@ -14,6 +14,7 @@ const date = z.string().refine(validDateKey, "Choose a valid date in YYYY-MM-DD 
 const clock = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, "Choose a valid time in HH:mm format.");
 const ageGroup = z.enum(["children", "teens", "adults", "seniors"]);
 const filterShape = {
+  limit: z.number().int().min(1).max(50).optional(),
   category: z.string().trim().min(1).max(64).optional(),
   serviceType: z.enum(["one_to_one", "group"]).optional(),
   ageGroups: z.array(ageGroup).max(4).optional(),
@@ -49,6 +50,7 @@ const numericQuery = (schema: z.ZodNumber) => z.preprocess(value =>
   typeof value === "string" && value.trim() !== "" ? Number(value) : value, schema.optional());
 const queryShape = {
   ...filterShape,
+  limit: numericQuery(z.number().int().min(1).max(50)),
   latitude: numericQuery(z.number().finite().min(-90).max(90)),
   longitude: numericQuery(z.number().finite().min(-180).max(180)),
   radius: numericQuery(z.number().finite().positive().max(20000)),

@@ -3,6 +3,7 @@ import { db } from "./db";
 import { companies, providerSubscriptions, storefronts, users, type ServiceWithProvider } from "@shared/schema";
 import { hasPro, StorefrontError, type StorefrontInput, type SubscriptionTarget, type SubscriptionOptionsQuery, type SubscriptionOptionsPage, type subscriptionUpdateSchema } from "@shared/storefront";
 import type { z } from "zod";
+import { billingManualWriter, assertLegacyManualWritable } from "./billing/manual-writer";
 
 const targetWhere = (target: SubscriptionTarget) => target.kind === "company"
   ? eq(providerSubscriptions.companyId, target.id) : eq(providerSubscriptions.userId, target.id);
@@ -84,10 +85,19 @@ export const storefrontStore = {
   },
   async adminUpdate(input: z.infer<typeof subscriptionUpdateSchema>, adminId: string) {
     await this.adminGet(input.target);
+    const writer = billingManualWriter();
+    if (writer) { await writer(adminId, input); return this.adminGet(input.target); }
     const values = { plan: input.plan, proUntil: input.plan === "pro" ? new Date(input.proUntil!) : null, updatedBy: adminId, updatedAt: new Date() };
-    await db.insert(providerSubscriptions).values({ ...values, userId: input.target.kind === "user" ? input.target.id : null,
+    await db.transaction(async tx => {
+      // Create a harmless free anchor before locking; never overwrite a source-aware row.
+      await tx.insert(providerSubscriptions).values({ plan: "free", updatedBy: adminId, userId: input.target.kind === "user" ? input.target.id : null,
+        companyId: input.target.kind === "company" ? input.target.id : null }).onConflictDoNothing();
+      const [workspace] = await tx.select().from(providerSubscriptions).where(targetWhere(input.target)).for("update");
+      await assertLegacyManualWritable(tx, workspace.id);
+      await tx.insert(providerSubscriptions).values({ ...values, userId: input.target.kind === "user" ? input.target.id : null,
       companyId: input.target.kind === "company" ? input.target.id : null })
       .onConflictDoUpdate({ target: input.target.kind === "company" ? providerSubscriptions.companyId : providerSubscriptions.userId, set: values });
+    });
     return this.adminGet(input.target);
   },
 };

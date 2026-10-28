@@ -58,6 +58,38 @@ Company signup also supports configured social providers: the company name is
 validated and stored in the server session before OAuth, then provisioned for
 the verified identity. Existing companies are reused rather than renamed.
 
+## Auth email delivery
+
+Supabase sends authentication and new-account invitation emails; Stripe `.env`
+profiles do not configure this delivery. With Supabase's default SMTP service,
+recipients must belong to the Supabase organization team, and the documented
+limit is currently two messages per hour across the project. Application team
+memberships are separate from Supabase organization memberships.
+
+For ordinary employee addresses, configure an existing or selected SMTP provider
+in the Supabase project's Authentication email/SMTP settings: host, port, username,
+password, sender email and sender name. Follow the provider's sender/domain
+verification steps and review Authentication rate limits. Keep credentials in
+the provider/Supabase configuration, not browser code or task records.
+
+Inspect Authentication logs for a failed send's error code:
+`email_address_not_authorized` indicates the default-service recipient restriction;
+`over_email_send_rate_limit` indicates a sending limit. `email_exists` or
+`user_already_exists` can indicate an existing account; Auth's new-account invite
+API cannot invite a confirmed account again. Use the application invitation link
+and normal sign-in/acceptance flow for that person. SMTP configuration alone does
+not turn that Auth operation into an existing-account team email.
+
+`emailSent:false` means the application invitation exists but email sending did
+not succeed or was not requested. Preserve the shareable link; it does not prove
+an email was delivered. The application must not expose raw provider messages,
+recipient addresses or tokens in diagnostic logs.
+
+References, reviewed 27 October 2026:
+[Supabase SMTP](https://supabase.com/docs/guides/auth/auth-smtp),
+[Auth invitations](https://supabase.com/docs/guides/auth/users),
+[error codes](https://supabase.com/docs/guides/auth/debugging/error-codes).
+
 ## Company invitations
 
 Run `npm run db:setup-company` to add company workspaces and team memberships to

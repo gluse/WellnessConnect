@@ -1,0 +1,139 @@
+{
+  "date": "2026-10-26",
+  "browser": {
+    "product": "firefox/157.0"
+  },
+  "locales": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    {
+      "lang": "en",
+      "width": 320,
+      "nativeZoom": false,
+      "metrics": {
+        "overflow": false,
+        "innerWidth": 320,
+        "outerWidth": 500,
+        "dpr": 1,
+        "cssZoom": "1",
+        "scale": 1,
+        "clipped": false
+      },
+      "contrast": 5.506681400777804,
+      "result": "passed",
+      "exactDecimalKeyboardSaveConflictReload": "passed"
+    },
+    {
+      "lang": "en",
+      "width": 1280,
+      "nativeZoom": false,
+      "metrics": {
+        "overflow": false,
+        "innerWidth": 1280,
+        "outerWidth": 1280,
+        "dpr": 1,
+        "cssZoom": "1",
+        "scale": 1,
+        "clipped": false
+      },
+      "contrast": 5.506681400777804,
+      "result": "passed"
+    },
+    {
+      "lang": "lv",
+      "width": 320,
+      "nativeZoom": false,
+      "metrics": {
+        "overflow": false,
+        "innerWidth": 320,
+        "outerWidth": 500,
+        "dpr": 1,
+        "cssZoom": "1",
+        "scale": 1,
+        "clipped": false
+      },
+      "contrast": 5.506681400777804,
+      "result": "passed",
+      "exactDecimalKeyboardSaveConflictReload": "passed"
+    },
+    {
+      "lang": "lv",
+      "width": 1280,
+      "nativeZoom": false,
+      "metrics": {
+        "overflow": false,
+        "innerWidth": 1280,
+        "outerWidth": 1280,
+        "dpr": 1,
+        "cssZoom": "1",
+        "scale": 1,
+        "clipped": false
+      },
+      "contrast": 5.506681400777804,
+      "result": "passed"
+    },
+    {
+      "lang": "ru",
+      "width": 320,
+      "nativeZoom": false,
+      "metrics": {
+        "overflow": false,
+        "innerWidth": 320,
+        "outerWidth": 500,
+        "dpr": 1,
+        "cssZoom": "1",
+        "scale": 1,
+        "clipped": false
+      },
+      "contrast": 5.506681400777804,
+      "result": "passed",
+      "exactDecimalKeyboardSaveConflictReload": "passed"
+    },
+    {
+      "lang": "ru",
+      "width": 1280,
+      "nativeZoom": false,
+      "metrics": {
+        "overflow": false,
+        "innerWidth": 1280,
+        "outerWidth": 1280,
+        "dpr": 1,
+        "cssZoom": "1",
+        "scale": 1,
+        "clipped": false
+      },
+      "contrast": 5.506681400777804,
+      "result": "passed"
+    },
+    {
+      "mode": "actual Administration page",
+      "result": "passed"
+    },
+    {
+      "mode": "mode=admin-page&denied=true",
+      "result": "passed"
+    },
+    {
+      "mode": "mode=admin&unavailable=true",
+      "result": "passed"
+    },
+    {
+      "mode": "actual provider settings return/manual-wait",
+      "result": "passed"
+    }
+  ],
+  "screenshots": [
+    "docs/monthly-subscription-price-firefox-en-phone.png",
+    "docs/monthly-subscription-price-firefox-en-desktop.png",
+    "docs/monthly-subscription-price-firefox-lv-phone.png",
+    "docs/monthly-subscription-price-firefox-lv-desktop.png",
+    "docs/monthly-subscription-price-firefox-ru-phone.png",
+    "docs/monthly-subscription-price-firefox-ru-desktop.png"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "serverWrites": []
+}

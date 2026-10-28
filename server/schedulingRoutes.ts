@@ -3,7 +3,8 @@ import { z } from "zod";
 import { addDateDays, bookableSlots, validDateKey, validTimezone } from "@shared/scheduling";
 import { storage } from "./storage";
 import { isAuthenticated } from "./auth";
-import { AccessError, assertBooking, assertService, scope } from "./companyAccess";
+import { AccessError, assertBookingChange, assertService, scope } from "./companyAccess";
+import { CustomerBookingError } from "./customerBookings";
 
 const timezoneSchema = z.string().max(100).refine(validTimezone, "Choose a valid timezone.");
 const dateSchema = z.string().refine(validDateKey, "Choose a valid date.");
@@ -16,8 +17,8 @@ const intervals = z.array(z.object({ startTime: clock, endTime: clock }).refine(
   .refine(ranges => [...ranges].sort((a, b) => a.startTime.localeCompare(b.startTime)).every((range, index, sorted) => index === 0 || sorted[index - 1].endTime <= range.startTime), "Working hours must not overlap.");
 const target = { serviceId: z.number().int().positive().nullable(), timezone: timezoneSchema };
 function failure(error: unknown, res: import("express").Response) {
-  res.status(error instanceof AccessError ? error.status : error instanceof z.ZodError ? 400 : 500)
-    .json({ message: error instanceof AccessError ? error.message : error instanceof z.ZodError ? error.issues[0].message : "Unable to update availability. Please try again." });
+  res.status(error instanceof AccessError || error instanceof CustomerBookingError ? error.status : error instanceof z.ZodError ? 400 : 500)
+    .json({ message: error instanceof AccessError || error instanceof CustomerBookingError ? error.message : error instanceof z.ZodError ? error.issues[0].message : "Unable to update availability. Please try again." });
 }
 export async function serviceSlotData(serviceId: number, first: string, last = first) {
   const service = await storage.getServiceById(serviceId);
@@ -54,7 +55,7 @@ export function setupSchedulingRoutes(app: Express) {
     try {
       const id = z.coerce.number().int().positive().parse(req.params.id);
       const booking = await storage.getBookingById(id);
-      assertBooking(req, booking, true);
+      assertBookingChange(req, booking);
       const timezone = timezoneSchema.parse(req.query.timezone ?? "UTC");
       const month = req.query.month == null ? null : monthSchema.parse(req.query.month);
       const { first, last } = month ? monthBounds(month) : { first: dateSchema.parse(req.query.date), last: dateSchema.parse(req.query.date) };

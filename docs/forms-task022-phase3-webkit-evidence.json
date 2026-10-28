@@ -1,0 +1,762 @@
+{
+  "date": "2026-10-21",
+  "browser": {
+    "product": "webkit/27.2"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "messageCount": 137,
+  "checks": [
+    "availability linked range/timezone validation, refresh retention, scope keep, rejected save retention, pending duplicate protection and independent weekly payload",
+    "availability exception save and scope discard/inherited week preserve API semantics",
+    "team employee explanation, invitation error/pending/success, exact payload, member field retention, named removal cancellation, owner controls and durable removed-member receipt",
+    "team permission-denied view excludes management and owner operations",
+    "availability denied/load error and team load error do not expose a schedule editor or stale member list",
+    "admin filters edit without querying, advanced group, linked/focused date-order validation, explicit Apply/Clear and timezone retention",
+    "category local validation/reserved key, linked focus, rejected/pending retention, immutable edit key, named separate deletion confirmation and safe conflict feedback",
+    "storefront linked validation, explicit preview without saving, conflict retention, duplicate protection, publication payload, immutable slug, Pro and permissions",
+    "subscription keyboard target selection, focused future-expiry validation, free-plan exact payload, pending duplicate guard and target switch clears editor",
+    "126 en/lv/ru locale/viewport combinations across six forms, dictionaries/placeholders, draft retention, document language/direction, light/dark text and control contrast",
+    "320px 200% text reflow, reduced-motion confirmation, keyboard focus containment and Escape"
+  ],
+  "matrix": [
+    {
+      "mode": "availability",
+      "language": "en",
+      "width": 320
+    },
+    {
+      "mode": "availability",
+      "language": "en",
+      "width": 390
+    },
+    {
+      "mode": "availability",
+      "language": "en",
+      "width": 639
+    },
+    {
+      "mode": "availability",
+      "language": "en",
+      "width": 640
+    },
+    {
+      "mode": "availability",
+      "language": "en",
+      "width": 641
+    },
+    {
+      "mode": "availability",
+      "language": "en",
+      "width": 768
+    },
+    {
+      "mode": "availability",
+      "language": "en",
+      "width": 1280
+    },
+    {
+      "mode": "availability",
+      "language": "lv",
+      "width": 320
+    },
+    {
+      "mode": "availability",
+      "language": "lv",
+      "width": 390
+    },
+    {
+      "mode": "availability",
+      "language": "lv",
+      "width": 639
+    },
+    {
+      "mode": "availability",
+      "language": "lv",
+      "width": 640
+    },
+    {
+      "mode": "availability",
+      "language": "lv",
+      "width": 641
+    },
+    {
+      "mode": "availability",
+      "language": "lv",
+      "width": 768
+    },
+    {
+      "mode": "availability",
+      "language": "lv",
+      "width": 1280
+    },
+    {
+      "mode": "availability",
+      "language": "ru",
+      "width": 320
+    },
+    {
+      "mode": "availability",
+      "language": "ru",
+      "width": 390
+    },
+    {
+      "mode": "availability",
+      "language": "ru",
+      "width": 639
+    },
+    {
+      "mode": "availability",
+      "language": "ru",
+      "width": 640
+    },
+    {
+      "mode": "availability",
+      "language": "ru",
+      "width": 641
+    },
+    {
+      "mode": "availability",
+      "language": "ru",
+      "width": 768
+    },
+    {
+      "mode": "availability",
+      "language": "ru",
+      "width": 1280
+    },
+    {
+      "mode": "team",
+      "language": "en",
+      "width": 320
+    },
+    {
+      "mode": "team",
+      "language": "en",
+      "width": 390
+    },
+    {
+      "mode": "team",
+      "language": "en",
+      "width": 639
+    },
+    {
+      "mode": "team",
+      "language": "en",
+      "width": 640
+    },
+    {
+      "mode": "team",
+      "language": "en",
+      "width": 641
+    },
+    {
+      "mode": "team",
+      "language": "en",
+      "width": 768
+    },
+    {
+      "mode": "team",
+      "language": "en",
+      "width": 1280
+    },
+    {
+      "mode": "team",
+      "language": "lv",
+      "width": 320
+    },
+    {
+      "mode": "team",
+      "language": "lv",
+      "width": 390
+    },
+    {
+      "mode": "team",
+      "language": "lv",
+      "width": 639
+    },
+    {
+      "mode": "team",
+      "language": "lv",
+      "width": 640
+    },
+    {
+      "mode": "team",
+      "language": "lv",
+      "width": 641
+    },
+    {
+      "mode": "team",
+      "language": "lv",
+      "width": 768
+    },
+    {
+      "mode": "team",
+      "language": "lv",
+      "width": 1280
+    },
+    {
+      "mode": "team",
+      "language": "ru",
+      "width": 320
+    },
+    {
+      "mode": "team",
+      "language": "ru",
+      "width": 390
+    },
+    {
+      "mode": "team",
+      "language": "ru",
+      "width": 639
+    },
+    {
+      "mode": "team",
+      "language": "ru",
+      "width": 640
+    },
+    {
+      "mode": "team",
+      "language": "ru",
+      "width": 641
+    },
+    {
+      "mode": "team",
+      "language": "ru",
+      "width": 768
+    },
+    {
+      "mode": "team",
+      "language": "ru",
+      "width": 1280
+    },
+    {
+      "mode": "filters",
+      "language": "en",
+      "width": 320
+    },
+    {
+      "mode": "filters",
+      "language": "en",
+      "width": 390
+    },
+    {
+      "mode": "filters",
+      "language": "en",
+      "width": 639
+    },
+    {
+      "mode": "filters",
+      "language": "en",
+      "width": 640
+    },
+    {
+      "mode": "filters",
+      "language": "en",
+      "width": 641
+    },
+    {
+      "mode": "filters",
+      "language": "en",
+      "width": 768
+    },
+    {
+      "mode": "filters",
+      "language": "en",
+      "width": 1280
+    },
+    {
+      "mode": "filters",
+      "language": "lv",
+      "width": 320
+    },
+    {
+      "mode": "filters",
+      "language": "lv",
+      "width": 390
+    },
+    {
+      "mode": "filters",
+      "language": "lv",
+      "width": 639
+    },
+    {
+      "mode": "filters",
+      "language": "lv",
+      "width": 640
+    },
+    {
+      "mode": "filters",
+      "language": "lv",
+      "width": 641
+    },
+    {
+      "mode": "filters",
+      "language": "lv",
+      "width": 768
+    },
+    {
+      "mode": "filters",
+      "language": "lv",
+      "width": 1280
+    },
+    {
+      "mode": "filters",
+      "language": "ru",
+      "width": 320
+    },
+    {
+      "mode": "filters",
+      "language": "ru",
+      "width": 390
+    },
+    {
+      "mode": "filters",
+      "language": "ru",
+      "width": 639
+    },
+    {
+      "mode": "filters",
+      "language": "ru",
+      "width": 640
+    },
+    {
+      "mode": "filters",
+      "language": "ru",
+      "width": 641
+    },
+    {
+      "mode": "filters",
+      "language": "ru",
+      "width": 768
+    },
+    {
+      "mode": "filters",
+      "language": "ru",
+      "width": 1280
+    },
+    {
+      "mode": "categories",
+      "language": "en",
+      "width": 320
+    },
+    {
+      "mode": "categories",
+      "language": "en",
+      "width": 390
+    },
+    {
+      "mode": "categories",
+      "language": "en",
+      "width": 639
+    },
+    {
+      "mode": "categories",
+      "language": "en",
+      "width": 640
+    },
+    {
+      "mode": "categories",
+      "language": "en",
+      "width": 641
+    },
+    {
+      "mode": "categories",
+      "language": "en",
+      "width": 768
+    },
+    {
+      "mode": "categories",
+      "language": "en",
+      "width": 1280
+    },
+    {
+      "mode": "categories",
+      "language": "lv",
+      "width": 320
+    },
+    {
+      "mode": "categories",
+      "language": "lv",
+      "width": 390
+    },
+    {
+      "mode": "categories",
+      "language": "lv",
+      "width": 639
+    },
+    {
+      "mode": "categories",
+      "language": "lv",
+      "width": 640
+    },
+    {
+      "mode": "categories",
+      "language": "lv",
+      "width": 641
+    },
+    {
+      "mode": "categories",
+      "language": "lv",
+      "width": 768
+    },
+    {
+      "mode": "categories",
+      "language": "lv",
+      "width": 1280
+    },
+    {
+      "mode": "categories",
+      "language": "ru",
+      "width": 320
+    },
+    {
+      "mode": "categories",
+      "language": "ru",
+      "width": 390
+    },
+    {
+      "mode": "categories",
+      "language": "ru",
+      "width": 639
+    },
+    {
+      "mode": "categories",
+      "language": "ru",
+      "width": 640
+    },
+    {
+      "mode": "categories",
+      "language": "ru",
+      "width": 641
+    },
+    {
+      "mode": "categories",
+      "language": "ru",
+      "width": 768
+    },
+    {
+      "mode": "categories",
+      "language": "ru",
+      "width": 1280
+    },
+    {
+      "mode": "storefront",
+      "language": "en",
+      "width": 320
+    },
+    {
+      "mode": "storefront",
+      "language": "en",
+      "width": 390
+    },
+    {
+      "mode": "storefront",
+      "language": "en",
+      "width": 639
+    },
+    {
+      "mode": "storefront",
+      "language": "en",
+      "width": 640
+    },
+    {
+      "mode": "storefront",
+      "language": "en",
+      "width": 641
+    },
+    {
+      "mode": "storefront",
+      "language": "en",
+      "width": 768
+    },
+    {
+      "mode": "storefront",
+      "language": "en",
+      "width": 1280
+    },
+    {
+      "mode": "storefront",
+      "language": "lv",
+      "width": 320
+    },
+    {
+      "mode": "storefront",
+      "language": "lv",
+      "width": 390
+    },
+    {
+      "mode": "storefront",
+      "language": "lv",
+      "width": 639
+    },
+    {
+      "mode": "storefront",
+      "language": "lv",
+      "width": 640
+    },
+    {
+      "mode": "storefront",
+      "language": "lv",
+      "width": 641
+    },
+    {
+      "mode": "storefront",
+      "language": "lv",
+      "width": 768
+    },
+    {
+      "mode": "storefront",
+      "language": "lv",
+      "width": 1280
+    },
+    {
+      "mode": "storefront",
+      "language": "ru",
+      "width": 320
+    },
+    {
+      "mode": "storefront",
+      "language": "ru",
+      "width": 390
+    },
+    {
+      "mode": "storefront",
+      "language": "ru",
+      "width": 639
+    },
+    {
+      "mode": "storefront",
+      "language": "ru",
+      "width": 640
+    },
+    {
+      "mode": "storefront",
+      "language": "ru",
+      "width": 641
+    },
+    {
+      "mode": "storefront",
+      "language": "ru",
+      "width": 768
+    },
+    {
+      "mode": "storefront",
+      "language": "ru",
+      "width": 1280
+    },
+    {
+      "mode": "subscriptions",
+      "language": "en",
+      "width": 320
+    },
+    {
+      "mode": "subscriptions",
+      "language": "en",
+      "width": 390
+    },
+    {
+      "mode": "subscriptions",
+      "language": "en",
+      "width": 639
+    },
+    {
+      "mode": "subscriptions",
+      "language": "en",
+      "width": 640
+    },
+    {
+      "mode": "subscriptions",
+      "language": "en",
+      "width": 641
+    },
+    {
+      "mode": "subscriptions",
+      "language": "en",
+      "width": 768
+    },
+    {
+      "mode": "subscriptions",
+      "language": "en",
+      "width": 1280
+    },
+    {
+      "mode": "subscriptions",
+      "language": "lv",
+      "width": 320
+    },
+    {
+      "mode": "subscriptions",
+      "language": "lv",
+      "width": 390
+    },
+    {
+      "mode": "subscriptions",
+      "language": "lv",
+      "width": 639
+    },
+    {
+      "mode": "subscriptions",
+      "language": "lv",
+      "width": 640
+    },
+    {
+      "mode": "subscriptions",
+      "language": "lv",
+      "width": 641
+    },
+    {
+      "mode": "subscriptions",
+      "language": "lv",
+      "width": 768
+    },
+    {
+      "mode": "subscriptions",
+      "language": "lv",
+      "width": 1280
+    },
+    {
+      "mode": "subscriptions",
+      "language": "ru",
+      "width": 320
+    },
+    {
+      "mode": "subscriptions",
+      "language": "ru",
+      "width": 390
+    },
+    {
+      "mode": "subscriptions",
+      "language": "ru",
+      "width": 639
+    },
+    {
+      "mode": "subscriptions",
+      "language": "ru",
+      "width": 640
+    },
+    {
+      "mode": "subscriptions",
+      "language": "ru",
+      "width": 641
+    },
+    {
+      "mode": "subscriptions",
+      "language": "ru",
+      "width": 768
+    },
+    {
+      "mode": "subscriptions",
+      "language": "ru",
+      "width": 1280
+    }
+  ],
+  "contrast": [
+    {
+      "mode": "availability",
+      "theme": "light",
+      "failures": [],
+      "minText": 4.797580078171407,
+      "minControlBorder": 4.346480679240557
+    },
+    {
+      "mode": "availability",
+      "theme": "dark",
+      "failures": [],
+      "minText": 5.506681400777804,
+      "minControlBorder": 3.1412133975640883
+    },
+    {
+      "mode": "team",
+      "theme": "light",
+      "failures": [],
+      "minText": 4.797580078171407,
+      "minControlBorder": 4.346480679240557
+    },
+    {
+      "mode": "team",
+      "theme": "dark",
+      "failures": [],
+      "minText": 5.506681400777804,
+      "minControlBorder": 3.1412133975640883
+    },
+    {
+      "mode": "filters",
+      "theme": "light",
+      "failures": [],
+      "minText": 5.506681400777804,
+      "minControlBorder": 4.346480679240557
+    },
+    {
+      "mode": "filters",
+      "theme": "dark",
+      "failures": [],
+      "minText": 5.506681400777804,
+      "minControlBorder": 3.1412133975640883
+    },
+    {
+      "mode": "categories",
+      "theme": "light",
+      "failures": [],
+      "minText": 4.797580078171407,
+      "minControlBorder": 4.741667181590045
+    },
+    {
+      "mode": "categories",
+      "theme": "dark",
+      "failures": [],
+      "minText": 5.506681400777804,
+      "minControlBorder": 4.1958570466569505
+    },
+    {
+      "mode": "storefront",
+      "theme": "light",
+      "failures": [],
+      "minText": 4.797580078171407,
+      "minControlBorder": 4.741667181590045
+    },
+    {
+      "mode": "storefront",
+      "theme": "dark",
+      "failures": [],
+      "minText": 5.506681400777804,
+      "minControlBorder": 4.1958570466569505
+    },
+    {
+      "mode": "subscriptions",
+      "theme": "light",
+      "failures": [],
+      "minText": 4.797580078171407,
+      "minControlBorder": 4.741667181590045
+    },
+    {
+      "mode": "subscriptions",
+      "theme": "dark",
+      "failures": [],
+      "minText": 5.506681400777804,
+      "minControlBorder": 4.1958570466569505
+    }
+  ],
+  "screenshots": [
+    "docs/forms-task022-phase3-webkit-availability-desktop.png",
+    "docs/forms-task022-phase3-webkit-team-russian-dark.png",
+    "docs/forms-task022-phase3-webkit-availability-text200.png"
+  ],
+  "unexpectedNetwork": [],
+  "blockedNetwork": [],
+  "runtimeErrors": [],
+  "limits": "No connected app, database, services or deployment. Physical devices, screen readers, native-language review and actual 400% browser zoom are outside this runner. 320px tests equivalent reflow only."
+}

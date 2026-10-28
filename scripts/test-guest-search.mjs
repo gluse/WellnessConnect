@@ -7,6 +7,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 import { isAllowedAuthReturnTo } from "../shared/navigation.ts";
+import { encodeSearchLocation, SEARCH_LOCATION_COOKIE } from "../shared/search-location.ts";
 
 globalThis.React = React;
 globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
@@ -21,6 +22,7 @@ globalThis.fetch = async url => {
     return holdAuth ? new Promise(resolve => { releaseAuth = () => resolve(response()); }) : response();
   }
   if (url === "/api/auth/providers") return new Response("{}");
+  if (url === "/api/account/search-location") return new Response(JSON.stringify({ source: "device", latitude: 56.95, longitude: 24.1 }));
   if (url === "/api/admin/access") return new Response('{"isAdmin":false}');
   if (url === "/api/config/maps") return new Response('{"apiKey":"fixture-key"}');
   if (url.startsWith("/api/services/search?") || url.startsWith("/api/services/semantic-search?") || url.startsWith("/api/services/catalog?")) return new Response(JSON.stringify([record]));
@@ -39,7 +41,7 @@ globalThis.window = {
   location: { pathname: "/", search: "", hash: "" }, setTimeout, clearTimeout, addEventListener() {}, removeEventListener() {},
   HTMLSelectElement: { prototype: { value: "" } }, HTMLInputElement: { prototype: { checked: false } },
 };
-globalThis.document = { visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
+globalThis.document = { cookie: `${SEARCH_LOCATION_COOKIE}=${encodeSearchLocation({ source: "device", latitude: 56.95, longitude: 24.1 })}`, visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
 globalThis.google = window.google = { maps: { importLibrary: async name => name === "maps" ? { Map: class {} } : { Marker: class {} } } };
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
 const { default: App } = await import("../client/src/App.tsx");
@@ -100,8 +102,8 @@ await act(async () => component.root.findAllByType("button").find(node => node.p
 assert.ok(component.root.findByType(GoogleMap));
 assert.ok(requests.includes("/api/config/maps"));
 await mount("/search", null, true);
-assert.ok(component.root.findByType(Home), "Search must not wait for the account request");
-assert.equal(component.root.findAllByType(ServiceCard).length, 1);
+assert.ok(component.root.findByType(Home), "The search route remains available during identity resolution");
+assert.equal(component.root.findAllByType(ServiceCard).length, 0, "Wait for identity before selecting a private or guest location");
 await act(async () => releaseAuth()); await flush();
 assert.equal(location.history.at(-1), "/search");
 await mount("/login?returnTo=%2Fsearch");

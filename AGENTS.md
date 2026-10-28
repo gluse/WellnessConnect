@@ -17,9 +17,59 @@ this instruction changes testing scope, not supported application languages.
 This user-selected scope takes precedence over broader language-test matrices
 in role documents, skills, proposals and earlier task records.
 
+## Cross-role cooperation and standing authorization
+
+User instruction, 23 October 2026: all project roles may contact one another to
+resolve dependencies. The receiving owner evaluates the request and, when valid,
+implements it within the scope below without another user permission round.
+This section supersedes older requirements to obtain a fresh approval for every
+local dependency or local database-file change. Specific execution holds remain.
+
+- Any assigned role may request work from another owner directly; General Manager
+  mediation is optional. Link the originating task, problem/contract, acceptance
+  criteria, affected files, environment, and known approvals/limits. Product and
+  management roles may route dependencies of accepted work; an unapproved product
+  proposal does not become an implementation assignment merely by routing it.
+- The receiving assigned owner decides validity, compatibility, security and
+  priority. Acceptance authorizes that owner to implement necessary, reversible
+  local repository changes and offline/mocked tests for the accepted task. This
+  includes frontend, backend, database migration/ORM files and infrastructure
+  files in their respective roles. Record acceptance and proceed; do not ask the
+  user to approve the same dependency, files or covered checks again. Routine
+  local technical choices belong to the owner; explain the choice in the handoff.
+- Ownership still applies: request backend work from Backend, database work from
+  DB, and so on. An owner may explicitly delegate its own accepted scope and
+  review the result; requesting work does not let the requester edit that scope.
+  Coordinate mixed files and interface contracts before concurrent edits.
+- Before declaring a permissions blocker, inspect TASKS.md, the relevant handoff
+  and [the coordination queue](docs/agent-coordination.md). Reuse recorded user
+  choices and operation/environment approvals. If approval names another
+  executor, route to that executor or obtain a permitted delegation from its
+  owning role; do not silently transfer executor-specific access. Role acceptance
+  alone does not expand a recorded connected-operation approval.
+- Connected database/service access and writes, private configuration/credentials,
+  ACL changes, deployment, publishing, spending and destructive operations need
+  existing authorization for the exact action and target. New material product,
+  architecture, data/retention or security-policy decisions still go to the user.
+  Complete authorized preparation first, then ask only for the missing decision
+  or execution scope. Preserve explicit stop-on-failure/no-retry instructions and
+  deployment holds; this standing authorization does not lift them.
+- Use available agent tools to contact/reuse a reachable owner. If needed, an
+  assigned role may spawn a clearly assigned owner agent for the scoped dependency
+  and give it the task, limits and file ownership. Do not create a duplicate worker
+  when an owner is already working on it. If another session cannot be contacted,
+  persist a request in the coordination queue, report the control limitation, and
+  continue independent work. Saved session IDs do not prove a live/delivered request.
+- Track requested, accepted, in progress, blocked and completed states in the task
+  or queue. Record requester/owner/executor, scope, approval source, checks,
+  recovery and next action; use links instead of copying approval histories.
+  The owner returns implementation and verification evidence to the requester,
+  who checks the integrated contract. A blocker must name the actual missing
+  decision/capability/check, its owner, and what can proceed meanwhile.
+
 ## Frontend authority
 
-The [Front End Developer](FRONT-END-DEVELOPER.md) owns frontend application
+The [Front End Developer](ROLE-FRONT-END-DEVELOPER.md) owns frontend application
 operations and changes for WellnessConnect / FitsMyTime. Read that role before
 frontend work. Use the project-local
 [frontend practices skill](.agents/skills/frontend-practices/SKILL.md) for UI work,
@@ -54,7 +104,7 @@ Reuse it within scope; ask again when scope or risk materially changes.
 
 ## Backend authority
 
-The [Back End Developer](BACK-END-DEVELOPER.md) owns backend application operations
+The [Back End Developer](ROLE-BACK_END_DEVELOPER.md) owns backend application operations
 and changes for WellnessConnect / FitsMyTime. Read that role before backend work.
 Use the project-local [backend practices skill](.agents/skills/backend-practices/SKILL.md)
 for backend implementation, review, and unit tests within authorized scope.
@@ -79,8 +129,8 @@ review, and management sessions.
   verification, and handoff rules. Report failed or unavailable required checks
   and unresolved security issues as incomplete work.
 - Backend ownership does not grant database authority. Work crossing backend and
-  database boundaries needs both applicable authorizations, including the user's
-  choice before database changes. Neither role may delegate the other's scope.
+  database boundaries needs both applicable authorizations under the standing
+  cooperation and database rules. Neither role may delegate the other's scope.
   Frontend changes also require frontend authority above. Coordinate infrastructure
   and deployments with CI/CD.
 
@@ -90,7 +140,7 @@ plan. Reuse it within scope; ask again when scope or risk materially changes.
 
 ## Database authority
 
-The [DB Analyst/Developer](DB-ANALYST-DEVELOPER.md) owns database operations for
+The [DB Analyst/Developer](ROLE-DB-ANALYST-DEVELOPER.md) owns database operations for
 WellnessConnect / FitsMyTime. Read that role's authority and approval workflow
 before undertaking database work. This rule applies to every project agent,
 including application, CI/CD, review, and management sessions.
@@ -104,10 +154,12 @@ including application, CI/CD, review, and management sessions.
   imports, deletes, SQL functions/triggers/jobs, indexes, constraints, extensions,
   grants/RLS, database configuration, and backup/restore operations. It also covers
   database-affecting ORM definitions and migration configuration.
-- Before any database change is implemented or applied, advise the user, present
-  practical options with a recommendation and tradeoffs, and wait for the user's
-  selection as described in the role document. DB Analyst approval of another
-  agent delegates execution within that choice; it cannot replace the choice.
+- For accepted routine local database-file dependencies, use the standing
+  authorization above: the DB owner records its technical choice and implements
+  without a new user selection. For material decisions or connected changes
+  outside existing approval, present practical options/recommendation and obtain
+  the missing user choice/execution scope under the role workflow. DB delegation
+  cannot expand an existing selection or connected-operation authorization.
 - Inspect repository code and prepare proposals without database access. Other
   agents may use non-privileged read-only database access only when already
   authorized for that task; otherwise route the inspection to the DB role.
@@ -136,16 +188,16 @@ enforce technical access controls.
 Role files define responsibilities when that role is assigned; they do not assign
 every session the same role. Existing roles:
 
-- [General Manager](GENERAL-MANAGER.md): documentation and coordination only.
-- [Product Manager](PRODUCT-MANAGER.md): product discovery, growth and retention
+- [General Manager](ROLE-GENERAL-MANAGER.md): documentation and coordination only.
+- [Product Manager](ROLE-PRODUCT-MANAGER.md): product discovery, growth and retention
   proposals, prioritization, monetization, and cost/income analysis; documentation
   and research only, subject to the implementation and database boundaries above.
-- [CI/CD Developer](CI-CD-DEVELOPER.md): infrastructure and delivery, subject to
+- [CI/CD Developer](ROLE-CI-CD-DEVELOPER.md): infrastructure and delivery, subject to
   the frontend, backend, and database boundaries above.
-- [Front End Developer](FRONT-END-DEVELOPER.md): frontend operations only, including
+- [Front End Developer](ROLE-FRONT-END-DEVELOPER.md): frontend operations only, including
   tests, security, localization, accessibility, and device support; other agents
   need specific approval for frontend changes.
-- [Back End Developer](BACK-END-DEVELOPER.md): backend operations only, including
+- [Back End Developer](ROLE-BACK_END_DEVELOPER.md): backend operations only, including
   unit tests and security; other agents need specific approval for backend changes.
-- [DB Analyst/Developer](DB-ANALYST-DEVELOPER.md): database work only, subject to
-  user selection before changes.
+- [DB Analyst/Developer](ROLE-DB-ANALYST-DEVELOPER.md): database work only, under the
+  standing cooperation and database decision/execution rules above.

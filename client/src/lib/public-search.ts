@@ -41,6 +41,7 @@ export interface PublicSearchResult {
 
 export async function fetchPublicSearch(filters: SearchFilters, location: { lat: number; lng: number } | null, signal?: AbortSignal): Promise<PublicSearchResult> {
   const params = new URLSearchParams();
+  params.set("limit", "50");
   const semantic = filters.searchMode === "semantic" && Boolean(filters.searchQuery.trim());
   if (filters.searchQuery.trim()) params.set(semantic ? "query" : "searchQuery", filters.searchQuery.trim());
   for (const key of ["category", "serviceType", "date", "dateEnd", "time", "timeEnd"] as const) {

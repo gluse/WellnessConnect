@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-23",
+  "checks": [
+    "Initial modal makes no search/GPS request; traps focus; Escape restores trigger; required/denied feedback; address selection closes modal without applying query draft",
+    "Change reopens selected location; dismiss preserves results",
+    "Account restoration failure and retry are contained in modal; successful retry closes it",
+    "en/lv/ru modal fits desktop/tablet/phone and short viewports, 200% text, Russian dark theme"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320
+    },
+    {
+      "language": "en",
+      "width": 390
+    },
+    {
+      "language": "en",
+      "width": 768
+    },
+    {
+      "language": "en",
+      "width": 1280
+    },
+    {
+      "language": "lv",
+      "width": 320
+    },
+    {
+      "language": "lv",
+      "width": 390
+    },
+    {
+      "language": "lv",
+      "width": 768
+    },
+    {
+      "language": "lv",
+      "width": 1280
+    },
+    {
+      "language": "ru",
+      "width": 320
+    },
+    {
+      "language": "ru",
+      "width": 390
+    },
+    {
+      "language": "ru",
+      "width": 768
+    },
+    {
+      "language": "ru",
+      "width": 1280
+    }
+  ],
+  "browser": "Installed headless Chrome",
+  "services": "All APIs, geocoding and geolocation mocked; no connected app/DB",
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "No physical device, screen reader or real permission-dialog coverage"
+}

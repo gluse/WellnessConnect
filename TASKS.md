@@ -8,6 +8,11 @@ and verification.
 Completed tasks are archived in [TASKS_COMPLETED.md](TASKS_COMPLETED.md).
 Keep tasks awaiting testing or external setup here, and preserve task IDs when archiving.
 
+Cross-role dependencies follow [standing cooperation authorization](AGENTS.md#cross-role-cooperation-and-standing-authorization)
+and [the shared request queue](docs/agent-coordination.md). Owners may accept and
+implement valid local dependencies without another user permission round; check
+recorded operation/target approvals and explicit holds before escalating.
+
 ## Authentication
 
 - [ ] **TASK-003 — Support social sign-in.** Add or complete authentication
@@ -20,109 +25,6 @@ Keep tasks awaiting testing or external setup here, and preserve task IDs when a
 
 - [ ] **TASK-005 — Refactor the landing page.** Agree on the desired layout,
   content, and behavior when starting this task, then implement the refactor.
-
-## Form design
-
-- [ ] **TASK-023 — Design and implement service search.** User requested
-  design files for `/search` on 20 October 2026. Front End Developer `/root`
-  prepared [the proposal](docs/search-design-proposal.md),
-  [interactive preview](docs/search-design-preview.html) and desktop/phone/map/error
-  screenshots. **User selected option A on 20 October 2026** in the proposal's
-  Recommended direction section: combined search bar, compact filter sidebar,
-  phone filter panel and readable service rows. User subsequently instructed
-  “Go ahead and implement as planned,” approving the explicit Search/Apply,
-  phone dialog and details-first flow. Executor: Front End Developer `/root`;
-  environment: local repository. Allowed: scoped frontend/resources/tests and
-  isolated mocked verification. No backend/database/ORM, connected service/session
-  writes, paid APIs, infrastructure or deployment. Existing deployment hold remains.
-  **Status: implemented locally; focused offline/Chrome checks pass.** Application
-  and fixture types, production build, public-search UI, sorting, guest-search and
-  provider-catalog frontend regressions pass. Chrome: 5 groups/12 locale-viewport
-  cases, English/Latvian/Russian only, zero unexpected requests/runtime exceptions.
-  The other eight languages are deferred; broader browser/device/assistive-tech/
-  zoom/integration release checks remain unverified, so full release verification
-  stays open. Recovery and evidence: [implementation handoff](docs/search-implementation-handoff.md).
-
-- [ ] **TASK-021 — Propose improvements to existing UI forms.** Assigned at the
-  user's request on 19 October 2026 to Front End Developer `/root/forms_design`.
-  Review representative forms and prepare
-  [a design proposal](docs/forms-design-proposal.md) with layout examples,
-  prioritized changes, mobile/accessibility requirements, and multilingual/RTL
-  behavior. **Status, 20 October 2026:** User reviewed and approved the visual
-  proposal and requested that the Front End Developer start implementation.
-  Selected direction: A, consistent sectioned forms using the existing system.
-  Proposal and isolated visual-preview checks are documented in the proposal;
-  application implementation and its verification are tracked in TASK-022.
-
-- [ ] **TASK-022 — Implement the approved forms design.**
-  **Testing scope update, 20 October 2026:** From now onward, the user requires
-  testing only English (`en`), Latvian (`lv`) and Russian (`ru`). Arabic/RTL,
-  Chinese, French, German, Hindi, Japanese, Portuguese and Spanish checks are
-  deferred until later and are not current acceptance blockers. Existing
-  11-language evidence below is historical and need not be repeated. Native-language
-  review of the other eight languages is likewise deferred. See the project-wide
-  [test language scope](AGENTS.md#test-language-scope).
-  **Deployment hold, 20 October 2026:** User explicitly requested "hold on deploy."
-  Do not publish, deploy or trigger a release until the user explicitly resumes
-  deployment. Local implementation and offline/mocked verification may continue.
-  **Local preview restored, 20 October 2026:** At the user's request, started the
-  existing development server at `http://localhost:50000` with process-only
-  `PORT=50000`/`APP_URL=http://localhost:50000`; `.env` remains configured for 5000.
-  Cookie-free homepage and `/health/live` returned HTTP 200. No authenticated,
-  database-readiness or write flows were exercised. This is not a deployment.
-  **Implementation approval:** 20 October 2026, "I have reviewed Proposed forms design and I like it . Ask
-  Front End Designer to start implement them." Assigned executor:
-  Front End Developer `/root/forms_implementation`, started through this thread's
-  collaboration controls. General Manager owns task/status coordination.
-  **Status, 20 October 2026: Local implementation complete; broader release
-  verification remains open.** The user directly assigned Front End Developer
-  `/root` to finish the task with reduced repeated testing and existing browser
-  tooling. The remaining login/signup implementation was already present. This
-  pass completed its browser verification, security review and final handoff;
-  no application source change or new browser infrastructure was needed.
-  Final auth: visible language choice, separate authentication/profile/email
-  groups, stacked phone names, linked errors and safe localized feedback;
-  **48 messages in all 11 locales**. Mocked social-auth frontend regression,
-  application/fixture TypeScript and production build pass. Existing Chrome
-  harness: **8 behavior groups and 77 locale/viewport cases**, with no unexpected
-  requests or runtime exceptions. Three rendered screenshots reviewed.
-  Evidence and approval/recovery record: [auth handoff](docs/forms-auth-handoff.md).
-  Existing build warnings concern Browserslist age and bundle size.
-  Earlier passing phase evidence is retained without repeating the full matrices:
-  Phase 1 service editor, 13 groups/77 cases and 67 messages;
-  Phase 2 booking/account/address, 14 groups/231 cases and 105 messages;
-  Phase 3 availability/team/admin/storefront, 11 groups/462 cases and 137 messages.
-  See [Phase 1](docs/forms-implementation-handoff.md),
-  [Phase 2](docs/forms-phase2-handoff.md) and
-  [Phase 3](docs/forms-phase3-handoff.md) for detailed results.
-  **Open verification:** Firefox/WebKit, physical devices/virtual keyboards,
-  screen readers, actual 400% browser zoom and native-language review. The local
-  implementation and available focused checks are complete, but these existing
-  role/proposal acceptance requirements keep TASK-022 open for full verification.
-  No connected services/database operations or deployment; deployment hold remains.
-  **Scope and environment:** Local frontend implementation of
-  [the approved proposal](docs/forms-design-proposal.md) and visual concept.
-  Start with service-editor sections, responsive actions, linked field errors,
-  accessible choices, dirty exits and inactive/publish behavior. Include affected
-  translations in all 11 locales, scoped tests and isolated browser fixtures.
-  Phase 2 covers booking/account/address; Phase 3 covers availability, company,
-  admin/storefront forms, following the proposal's staged sequence.
-  **Allowed operations and limits:** Frontend source/locale/test edits and safe
-  offline or mocked checks; minimal frontend test tooling if needed. Preserve
-  existing API contracts and other sessions' changes. No backend, database/ORM,
-  live-service access, connected tests/session writes, deployment, infrastructure,
-  browser draft storage or broad global styling rewrite. Coordinate shared
-  manifest edits before making them.
-  **Validation:** Front End Developer owns interaction/regression tests,
-  applicable type/build checks, synthetic browser checks, security review,
-  responsive/accessibility and multilingual/RTL checks per the role/proposal.
-  Record actual coverage and unavailable checks; required failures/unavailable
-  checks mean incomplete work. Evidence and next steps belong in
-  [the implementation handoff](docs/forms-implementation-handoff.md).
-  **Recovery:** Revert only attributable implementation edits, preserving prior
-  and concurrent changes. No rollout is included. Reuse this approval within
-  scope; obtain additional authority for material boundary or risk changes.
-
 
 ## Translations
 - [ ] **Make sure interface is translated in multiple languages ** All labels , button names, tooltip texts should be translated when user switch language.
@@ -151,7 +53,7 @@ are authorized by the initial preparation assignment. The user selected storage
 Option C, R1, P1 and recommended failure behavior on 19 October 2026. Subsequent
 local backend BE-14A implementation/offline testing is assigned below; named
 database targets and scoped execution remain required under
-[the DB role workflow](DB-ANALYST-DEVELOPER.md#advise-offer-options-and-wait-for-the-users-choice).
+[the DB role workflow](ROLE-DB-ANALYST-DEVELOPER.md#advise-offer-options-and-wait-for-the-users-choice).
 Validation is source-to-catalog review and joint contract review; implementation
 will require offline backend tests and separately authorized database checks.
 Recovery for this preparation is to revise/remove only the new proposal files,
@@ -186,144 +88,8 @@ the Front End Developer; hosting and rollout need CI/CD coordination.
   queue locally within capacity. Named targets/readers/operators, hosting setup
   and provider/direct-SQL gaps remain pending. No runtime coverage verified.
 
-- [ ] **TASK-014 — Build reliable audit storage and delivery.** Add the separate
-  audit database, restricted credentials, event schema, and application outbox.
-  Record business changes and their events in one transaction. Add a delivery
-  worker with retries, duplicate protection, backlog monitoring, and recovery.
-  Test audit-database outages without losing events or stopping normal reads.
-  **Current package BE-14A:** assigned `/root/audit_backend` (Back End Developer)
-  to implement pure event registry/validation, safe-field redaction, trusted
-  context, bounds and canonical hashing in new `server/audit/*.ts`, with isolated
-  synthetic tests in `scripts/test-audit-events.mjs`. Approval source: user's
-  audit work request and C/R1/P1/failure-policy choices; General Manager routes
-  the scoped assignment. Environment: local repository only. No DB/provider
-  imports, connected tests, startup, provisioning, schema/config changes or
-  deployment. Validation: deterministic offline behavior/security tests and
-  inspected type checks. Recovery: revert only this package's new files.
-  DB Analyst prepares [test setup handoff](docs/audit-test-setup.md); database
-  integration and rehearsals await named targets and scoped execution approval.
-  **BE-14A result, 19 October 2026:** completed local
-  [event contracts](server/audit/events.ts),
-  [context snapshots](server/audit/context.ts),
-  [canonical JSON/hashing](server/audit/canonical.ts), and
-  [offline tests](scripts/test-audit-events.mjs). Initial registry supports 11
-  security/account/access event names; other events, system actors, producers,
-  database outbox/worker and viewer remain pending. Context snapshots validate
-  caller assertions; future adapters must verify identity/membership themselves.
-  On Node v24.21.0, `node --experimental-strip-types scripts/test-audit-events.mjs`
-  passed (11 event names; 105 rejected-input cases), and
-  `node node_modules/typescript/bin/tsc --noEmit --incremental false` passed.
-  Backend reviewed import isolation, security and four new files' whitespace.
-  No database/service/config/credential access, startup or connected tests.
-  DB setup handoff is prepared; TASK-014 remains incomplete pending integration.
-  **DB-14 preparation:** assigned `/root/audit_database` to new
-  `migrations/audit/*` and `docs/audit-migration-package.md`, under the user's
-  selected C/R1/P1/failure policy and supplied audit target/connection. Allowed:
-  local SQL preparation, offline checks, and bounded private inspection of
-  relevant `.env` configuration for non-secret target metadata. No credential
-  output/copies, database/service connections, SQL execution, app startup,
-  connected tests, infrastructure/config edits or deployment. Back End Developer
-  reviews envelope/hash/transaction/delivery contract read-only. Validation:
-  offline SQL/package checks plus joint review; live rehearsal still pending.
-  Recovery for this preparation: revise/remove only these new package files.
-  **DB-14 result, 19 October 2026:** six SQL files and
-  [migration/recovery package](docs/audit-migration-package.md) prepared, unapplied.
-  Includes read-only metadata preflight/verification, shared staged contract,
-  separate source outbox and destination migrations, NOLOGIN groups and explicit
-  execution scope. Backend static review found no remaining compatibility blocker
-  after validator permissions and replay-target evidence were corrected. Local
-  document links and whitespace checked. SQL compilation/live privileges,
-  rollback/concurrency/retention/restore behavior remain unverified; `psql` is not
-  on PATH and no inspected offline PostgreSQL parser is available. No tooling
-  installed, database connected, runtime login bound, cron scheduled or business
-  table rewritten. Execution remains a separate named-target step; TASK-014 is
-  incomplete until integration and required live checks pass.
-  **Execution approval, 19 October 2026:** user replied "yes" to DB Analyst
-  preflight followed, if checks pass, by additive audit schemas/NOLOGIN roles
-  and metadata verification on development/testing source
-  `hbkooiknruimukkhshrk` and audit destination `ynygqodmtgjrngiudalw`.
-  Executor: assigned DB Analyst `/root/audit_database`; backend reviews the
-  fixed-manifest Node/pg helper read-only (existing tools; no installation).
-  Label: `development`. Recheck endpoint mappings privately, verified TLS,
-  PostgreSQL/encoding/powers/schema/role preconditions on both before writes.
-  Apply destination then source, preserving each script's transaction and
-  collecting sanitized versions/digests/metadata verification. Excludes business
-  DML, fixtures, runtime logins/bindings, cron/extensions, backups/restores,
-  deployment and production. On failure roll back the current transaction;
-  preserve committed audit objects/evidence and review corrective changes.
-  Do not re-request covered execution approval; stop for material scope/risk changes.
-  **Execution result, 19 October 2026:** DB Analyst applied `destination-0001`
-  to audit `ynygqodmtgjrngiudalw` at 16:09:50 Europe/Riga, then `source-0001`
-  to application `hbkooiknruimukkhshrk` at 16:09:51. Both PG17.11 preflights
-  passed over verified TLS. Destination reused the already configured public
-  Supabase Root 2021 CA through a fingerprint-pinned, destination-only helper
-  option; no `.env` or machine trust changes. Both commits are confirmed,
-  with no SQL retries/corrections or uncertain outcomes. Read-only metadata
-  verification passed: destination 60 boolean checks; source 80. No business
-  DML, event fixtures, runtime login bindings, cron or deployment occurred.
-  See [execution evidence and applied digests](docs/audit-execution-report.md).
-  **Next:** backend transaction adapters/worker and capture instrumentation;
-  scoped runtime accounts and behavioral/permission/outage/recovery rehearsals.
-  The scaffolding is installed, but event collection/delivery is not active and
-  TASK-014 remains incomplete.
-  **Next work authorized, 19 October 2026:** user requested "Proceed with next
-  work" after the activation path. General Manager assigned Back End Developer
-  `/root/audit_backend` to transaction-aware capture adapters, bounded reliable
-  delivery worker/configuration and initial supported authentication/access
-  instrumentation, with meaningful isolated tests. Backend owns `server/audit/*`,
-  affected backend auth/account/access/storage/startup hooks, backend-specific
-  audit test scripts/commands and audit-only `.env.example` settings. Environment:
-  local development; no frontend/schema edits, live providers, real app startup,
-  connected tests, credential reads/`.env` edits or deployment in this assignment.
-  Verification: behavior/security tests with mocked external boundaries, relevant
-  affected backend regressions and type checks. Recovery: revert only this
-  package's changes while preserving installed DB objects and earlier work.
-  DB Analyst `/root/audit_database` prepares concrete restricted-runtime-account
-  options and a bounded synthetic rehearsal package in new runtime SQL/helpers,
-  `scripts/test-audit-db.mjs` and `docs/audit-runtime-proposal.md`. Bounded catalog
-  metadata review may support that proposal; no new grants/role bindings,
-  credentials/config changes, fixtures or DB writes until the user selects the
-  new scope under the DB workflow. Prior C/R1/P1/setup approval stays in force;
-  its exclusions are not silently broadened. Backend and DB Analyst coordinate
-  interfaces, privilege boundaries, TLS/CA and test provenance before execution.
-  **Runtime proposal prepared:** [account and rehearsal package](docs/audit-runtime-proposal.md)
-  compares restricted application/capture/worker accounts (recommended) with a
-  development-only owner-connected application alternative. Both include bounded
-  rollback tests and up to twelve marked, retained synthetic audit events. User
-  selected **Choice 1: restricted application, capture, and worker accounts;
-  include the synthetic rehearsal**, on 19 October 2026. DB Analyst now implements
-  the concrete additive runtime/rehearsal SQL and helpers locally; the question
-  requested package preparation, so new connected writes, private configuration,
-  credentials and fixtures await final review/execution approval. Validation:
-  static/offline checks plus Backend compatibility/security review. Executor and
-  target scope remain the DB Analyst and the two named development/test projects;
-  no live Auth/business DML or deployment. Preserve existing objects and evidence
-  on failure; do not rerun initial setup. No new privileges, private configuration
-  or fixtures have been applied. Remote Auth intent/reconciliation remains an additional activation
-  gate; local outbox atomicity cannot roll back a completed provider operation.
-  **Regression ownership coordination:** General Manager asked assigned Front End
-  Developer `/root/forms_design` to review the unchanged mixed social-auth,
-  password-update, account-details and administration scripts and specifically
-  authorize Backend execution of their synthetic frontend assertions if isolated.
-  No frontend implementation, browser/app startup or connected writes are included.
-  The Front End Developer approved execution of those four unchanged scripts
-  under the [documented isolation and limits](docs/audit-frontend-regression-approval.md):
-  fresh child processes, redirected dotenv path that must not exist, synthetic
-  mocked services/database/session state and disabled audit flags for baselines.
-  Executor: `/root/audit_backend`; no frontend edits, installs, real browser,
-  connected writes or app startup. Recover by stopping the isolated processes
-  and restoring parent environment overrides. Execution results remain pending;
-  separate enabled backend audit tests verify the new capture behavior.
-  **Backend verification result:** Back End Developer reports passing contract
-  tests (11 event names / 105 invalid cases), capture/worker/config/runtime-role
-  policy tests, enabled Auth/access handler tests and the actual account-role
-  route/storage branch using mocked external boundaries. Account-role tests cover
-  lock/update/enqueue order, true before/after, no-op, mismatched actor rejection,
-  and enqueue failure returning 503 with transaction rollback and sanitized logs.
-  The four approved unchanged mixed regressions and root no-emit TypeScript check
-  passed. No real database, Auth service, credentials or application startup was
-  exercised. This is local evidence; runtime privilege/delivery rehearsals and
-  remote intent/reconciliation remain incomplete activation gates.
+Completed: [TASK-014 — audit storage and delivery](TASKS_COMPLETED.md#audit).
+See the [development acceptance record](docs/audit-completion-execution.md).
 
 - [ ] **TASK-015 — Audit authentication, accounts, and access changes.** Capture
   sign-in/out, signup, social-auth outcomes, recovery/password changes, account
@@ -335,6 +101,13 @@ the Front End Developer; hosting and rollout need CI/CD coordination.
   employees, schedules, bookings, reviews, categories, storefronts, subscriptions,
   and administrative actions. Record safe field changes and server-confirmed
   outcomes, including multi-record updates, copies, deletion, and bulk operations.
+  **One-event follow-up implemented, 25 October 2026:** `service.viewed.v1` for
+  explicit found-service details opens, using selected R/90-day read retention.
+  Backend/Frontend focused checks and TypeScript passed; both development DB
+  extensions committed and rollback-only R90/legacy checks passed. Protected
+  producer flag is enabled. Restart app and use the updated audit worker;
+  no daemon was left running. Broader mutation coverage remains open.
+  [Scope, owners, evidence and recovery](docs/audit-service-view-execution.md).
 
 - [ ] **TASK-017 — Audit sensitive reads, integrations, and background work.**
   Cover private/admin data access, exports, protected file access, geocoding,
@@ -354,6 +127,38 @@ the Front End Developer; hosting and rollout need CI/CD coordination.
   review procedures, an incident runbook, and deployment/rollback instructions.
   Start with security-critical events, then complete the coverage matrix.
 
+- [ ] **TASK-025 — Audit current-location permission and location consent.**
+  **Requested, 23 October 2026:** Record when a registered user or guest permits
+  current-location use in the [remembered-location flow](docs/search-location-proposal.md#location-permission-and-consent-audit).
+  **Scope:** Audit the app's location-use request, observed browser permission
+  result, separate choice to remember the location in a profile/cookie, and
+  withdrawal/forget actions. A button click is not a permission grant; an already
+  granted browser permission or restored saved location is not fresh consent.
+  Mark browser observations as client-reported, not server-verified OS decisions;
+  do not misclassify timeout, unavailable location or policy blocking as a user denial.
+  **Evidence:** Server receipt timestamp, event/operation IDs, verified account
+  actor or privacy-reviewed guest correlation, purpose, notice/consent-text
+  version and language, requested storage scope, observed outcome and evidence
+  source. Exclude coordinates, addresses, Google Place IDs, cookies/tokens and
+  raw browser/IP data. Use reliable TASK-014 capture/delivery; define and test
+  failure behavior before consent-dependent use/storage. No duplicate consent
+  grants on repeat visits or cached location restoration.
+  **Legal acceptance:** Obtain qualified review of the applicable lawful basis,
+  browser-permission versus processing/storage consent, guest-cookie rules,
+  notice, withdrawal, minimization and evidence retention/access/deletion.
+  Audit logging alone does not establish compliance with all legal requirements.
+  **Owners/dependencies:** Front End Developer owns notice/choice/permission UI
+  and browser tests; Back End Developer owns validated capture and unit tests;
+  DB Analyst owns approved storage/retention work. Extend TASK-013's catalog and
+  TASK-019's verification before releasing the location feature. Current scope
+  is task/design documentation only, with no new role assignment, database
+  execution or deployment authorization. Location storage A was subsequently
+  selected for TASK-026; permission-audit implementation/legal review remain open.
+  **Validation:** Mock fresh grant, existing grant, denial, unavailable/timeout,
+  unobservable revocation, explicit withdrawal, guest/account transitions,
+  failed delivery/retries, spoofed reports, replay/deduplication and redaction.
+  Test only en/lv/ru; ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred.
+
 ## Test scripts
 
 ## notifications
@@ -364,22 +169,220 @@ the Front End Developer; hosting and rollout need CI/CD coordination.
 
 ## New tasks
 
-Product proposals are maintained by the [Product Manager](PRODUCT-MANAGER.md) in
+Completed locally: [TASK-027 — Google unavailable browsing fallback](TASKS_COMPLETED.md#search-resilience).
+
+Product proposals are maintained by the [Product Manager](ROLE-PRODUCT-MANAGER.md) in
 [Product opportunities](docs/product-opportunities.md), including priorities,
 cost/income scenarios, and pilot decision criteria. PM proposal IDs are separate
 from delivery task IDs. These proposals are not approved implementation tasks;
 create a TASK entry when work is selected. TASK-018 remains the audit viewer.
 
+- [ ] **TASK-026 — Remember search location and show nearby services.**
+  **Resilience follow-up, 23 October 2026:** TASK-027 adds an explicit
+  browse-without-location choice, including during failed/pending restoration.
+  Initial location prompting remains; opting out searches the existing catalog
+  without a radius. [Implementation and verification](docs/google-api-fallback-handoff.md).
+  **Modal follow-up, 23 October 2026:** User specifically authorized Codex `/root`
+  to replace the inline location-choice block with a modal in the local frontend.
+  Implemented choice/remember/privacy/retry/forget dialog and compact reopen control;
+  mocked Chrome modal, saved-location and search regressions, TypeScript and frontend
+  build pass. [Scope, evidence and recovery](docs/search-location-modal-handoff.md).
+  No connected execution/deployment; existing release gates remain. Fresh coverage
+  en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es deferred.
+  **User selection, 23 October 2026:** Option A, a private location record linked
+  to the registered user's profile; a 180-day cookie for guests. Default 25 km;
+  request location before initial search; return up to 50 nearest services.
+  **Local scope:** User authorized Codex `/root` to implement this frontend/API
+  flow, prepare the additive schema/migration, and run offline/mocked tests.
+  That initial approval excludes live database access/execution, real service
+  calls and deployment; subsequent metadata-only approval is recorded below.
+  The deployment hold remains. TASK-025 is a separate release requirement.
+  **Prepared:** Owner-scoped location API/table, explicit remember choice,
+  restore/change/update/forget controls, guest adoption without overwriting an
+  existing account preference, account/cache isolation, safe persistence failures,
+  and nearest-50 search limit. Supported translations maintained; fresh tests
+  cover only en/lv/ru. ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred.
+  **Verification:** API/storage/public-search/guest regressions pass; mocked
+  Chrome saved-location (7 groups), GPS (7 groups), search page (5 groups/12
+  locale/viewport cases), application/fixture TypeScript and build pass. See the
+  handoff for exact commands, evidence limits and existing build warnings.
+  **Pending before release:** Named-target migration/grant/RLS verification and
+  authorized execution; TASK-025 permission/consent audit and qualified privacy
+  review; live acceptance within scoped approval. Do not mark fully complete
+  from mocked evidence. See [proposal](docs/search-location-proposal.md) and
+  [handoff, verification and recovery](docs/search-remembered-location-handoff.md).
+  **Resumed review, 23 October 2026:** Recorded approvals reused; no additional
+  application/schema changes needed by the review. Current-tree mocked storage,
+  search UI (en/lv/ru) and non-incremental TypeScript checks passed. Prepared the
+  [remaining-gate checklist](docs/search-location-release-checklist.md), including
+  a concrete read-only preflight scope and subsequent migration/live acceptance
+  plan. This local review made no live connection or deployment.
+  **Approved metadata preflight, 23 October 2026:** User replied "yes" to Codex
+  `/root` inspecting catalogs only on development/testing `hbkooiknruimukkhshrk`.
+  Verified-TLS/read-only preflight completed: PostgreSQL 17.11, compatible users
+  key, location table absent, locally configured `postgres` runtime principal,
+  planned restricted roles absent. Default `service_role` privileges and the
+  pending audit runtime's sixteen-table manifest need a coordinated decision.
+  See [findings, evidence and next options](docs/search-location-preflight-report.md).
+  No user-row reads, writes, migration, grant changes, application startup or
+  deployment occurred. TASK-026 remains unchecked pending the release gates.
+  **Next-step A selected and locally prepared, 23 October 2026:** User approved
+  Codex `/root` to prepare coordinated location grants/runtime compatibility.
+  [Package and exact hashes](docs/search-location-database-package.md) prepared:
+  revoke service_role defaults, server-group-only DML/policy and an opt-in
+  seventeen-table verifier after the unchanged sixteen-table audit runtime.
+  New offline checks pass (155); existing audit installer (242), audit contracts
+  (243) and mocked owner-scoped location API/store regression pass. Audit pins
+  and applied history preserved; [owner integration queued](docs/agent-coordination.md#task-026-local-locationruntime-extension).
+  No connected execution or deployment. Live SQL/constraints/grants, audit-owner
+  integration, TASK-025/privacy and live acceptance remain open; task unchecked.
+
+## Bookings
+
+- [ ] **TASK-028 — Warn customers before booking overlapping services.**
+  **User story:** As a customer, when I am about to book another service whose
+  time overlaps one of my existing bookings, I want a warning so I can choose
+  whether to book anyway or cancel.
+  **Acceptance:** Before creating the new booking, check the customer's existing
+  active bookings across services/providers for partial or full time overlap.
+  Show the conflicting service name(s), date(s) and time(s), with explicit
+  **Book anyway** and **Cancel** actions. Book anyway continues the booking;
+  Cancel or dismissing the warning creates no booking and preserves the selected
+  service/time. Do not create a booking while awaiting confirmation.
+  Cancelled bookings do not trigger the warning; appointments that only touch
+  at an end/start boundary do not overlap. Compare actual appointment intervals
+  consistently across time zones. Show only the customer's own booking details.
+  Confirmation applies to the selected service/time and must be requested again
+  if that selection changes. Confirming must still respect provider availability,
+  capacity and other booking rules, and retries must not create duplicates.
+  **Owners/validation:** Front End Developer owns the accessible confirmation
+  dialog/translations and mocked browser checks; Back End Developer owns overlap
+  detection, booking confirmation handling and offline unit tests. Involve the DB
+  Analyst if database changes are needed. Cover no overlap, partial/full overlap,
+  multiple conflicts, boundary times, cancelled bookings, confirm/cancel/dismiss
+  and retries. Language checks cover en/lv/ru; ar/RTL, zh, fr, de, hi, ja, pt and es
+  remain deferred.
+  **Status, 25 October 2026:** Added to backlog at the user's request;
+  implementation and verification have not started.
+
 ## Security
 Encrypt network traffic. Passwords and other sensitive information
+
+- [ ] **TASK-029 — Separate platform administration into a protected staff app.**
+  **Status, 27 October 2026:** Deferred future work at the user's request;
+  implementation, assignment and verification have not started. Record the
+  security/architecture recommendation now and resume when the user returns to it.
+  **Direction:** Separate staff administration frontend, admin sessions and backend
+  runtime; retain company/workspace management in the customer application.
+  Preserve server-side authorization, introduce stronger staff authentication and
+  scoped permissions, and reduce public-runtime privileges. A separate URL alone
+  does not provide the intended isolation. One repository and database may remain.
+  **Owners when resumed:** Front End Developer, Back End Developer, CI/CD Developer
+  and DB Analyst/Developer for their respective scopes; no owners assigned now.
+  **Acceptance and next action:** Follow the [future-task brief](docs/administration-separation-future-task.md)
+  for rationale, proposed stages, decisions, security checks and recovery. Confirm
+  the concrete design and rollout scope when resuming. This backlog entry
+  authorizes recording only; existing implementation/execution holds remain.
+
 ## discounts
 
 ## compaigns
 
 ## billing
 
+Payment decision, 23 October 2026: user selected **Option A — subscription only,
+monthly billing at launch**, following the 22 October Product Manager comparison.
+Market order remains Latvia → other Baltic states → UK → further markets.
+See [business scenarios](docs/payment-business-plan.md),
+[payment processing plan](docs/payment-processing-plan.md) and the
+[monthly subscription brief](docs/monthly-subscription-brief.md).
+
+- [ ] **TASK-024 — Deliver monthly workspace Pro subscriptions (Option A).**
+  **Latest, 27 October:** Stripe sandbox own-account authentication and configured
+  merchant match passed on the fifth separately authorized read. User selected
+  local app testing and requested the existing Backend/Frontend/DB owners complete
+  runtime integration; all accepted local/offline work and completed preparation. See
+  [local app setup](docs/stripe-local-app-testing.md). Runtime integration is
+  prepared; DB migration/readiness is verified, connected checkout acceptance remains pending. Account verification alone
+  does not activate billing. Earlier connected-operation holds remain except for
+  those five consumed read scopes; no migration/checkout/launch approval inferred.
+  User subsequently approved the development DB migration/readiness plan for
+  source `hbkooiknruimukkhshrk` and audit `ynygqodmtgjrngiudalw`; DB owner accepted.
+  User then explicitly waived backup for these test-data targets; DB owner
+  accepted. After user-approved identity-checked local server stop, one released
+  attempt committed and verified all eight source/billing/audit migrations.
+  Restricted app/capture/worker/writer read-only probes and billing DB readiness
+  passed; setup memberships restored. Earlier stopped attempts are preserved in
+  the DB execution plan. Backup waiver remains effective; no backup created.
+  Backend did not restart the server. A later public local runtime check returned
+  billing/Administration readiness false; explicit sandbox startup remains pending.
+  App/Stripe/fixture/session/worker execution remains separately held.
+  **Selected scope:** one monthly Pro offer per individual/company workspace;
+  free customer browsing/ordinary booking, provider service payments collected
+  separately. Annual billing, deposits, booking commissions, acquisition fees,
+  connected-provider accounts and payouts are deferred. **User confirmed EUR 19
+  per workspace/month including tax**, configurable through Administration;
+  Stripe, company-owner-only billing and waiting for manual grants to expire
+  are selected. See [selected decisions](docs/monthly-subscription-decisions.md).
+  **Status, 26 October 2026:** Started at the user's request. Assigned Backend
+  `/root/subscription_backend` and DB Analyst `/root/subscription_database`
+  delivered [backend contract](docs/monthly-subscription-backend-design.md) and
+  [data options](docs/monthly-subscription-data-options.md). **User selected
+  choice 2 on 25 October:** separate billing/grant sources; preserve existing Pro projection.
+  Local selected-policy implementation prepared: Stripe checkout/portal/signature
+  adapter, protected route factories, owner/manual-wait checks, immutable
+  Administration pricing, checkout conversion, reconciliation and audit modules.
+  DB expansion now includes ten billing/source tables in an explicit 27-table
+  profile, with forward source/destination audit validators; all eight prepared
+  migration stages applied and verified on the approved development pair on 27 October.
+  See [DB handoff](docs/monthly-subscription-database-handoff.md),
+  [Backend handoff](docs/monthly-subscription-backend-handoff.md) and
+  [coordination](docs/agent-coordination.md#task-024--monthly-pro-subscriptions).
+  Explicit local runtime/bootstrap, source-aware manual writer and bounded worker
+  are now prepared and verified offline. Connected DB/checkout verification,
+  broader recovery and launch gates remain incomplete. Billing stays inactive.
+  **Frontend delivery, 26 October 2026:** Front End Developer
+  `/root/subscription_frontend` delivered the Administration amount editor,
+  guarded HTTP adapters, selected manual-wait/offer-revision behavior and status
+  freshness. Default runtime remains disabled; current views show unavailable.
+  Backend accepted the contract. See [frontend handoff](docs/monthly-subscription-frontend-handoff.md).
+  **Authority/environment:** User selected the model on 23 October and requested
+  work start and choice 2 on 25 October 2026. Under standing cooperation, owners
+  may implement reversible local schema/migration/backend preparation, opt-in
+  ORM/runtime/transfer compatibility guards and
+  offline checks for choice 2. No private configuration, connected database or
+  processor access, real charges, vendor spending, runtime activation or deployment.
+  The three existing owners resumed local implementation for the selected Stripe,
+  owner/manual-wait and Administration pricing scope. Price changes apply to new
+  subscriptions only; existing subscribers keep their agreed price (user confirmed
+  26 October). Other commercial/retention gates remain.
+  The user's frontend-start request authorizes the assigned Front End Developer's
+  reversible local UI/translations/tests and mocked browser checks only; no
+  backend/database operations, processor access, deployment or live activation.
+  Root coordinates task/handoff documentation. Reuse completed work.
+  **Acceptance:** Follow the brief for workspace authorization, server-selected
+  monthly prices, hosted checkout/management, verified and deduplicated billing
+  events, renewal/failure/cancellation/expiry, manual-grant compatibility,
+  reconciliation and owner verification. Front End Developer owns frontend
+  implementation/tests; Back End Developer owns backend implementation/unit
+  tests; DB Analyst owns user-selected database work; CI/CD owns release work.
+  Connected tests and activation require scoped authority. Language checks are
+  en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred.
+  **Validation/recovery, 26 October:** DB: 236 preserved-foundation and 190
+  new offline structural/profile checks pass. Backend: 42 distinct billing cases
+  pass; existing audit regression passes, rejecting 105 invalid inputs. Frontend:
+  22 component/transport cases, 3 affected minimum-price checks and 33 new
+  browser/zoom checks pass (en/lv/ru). Final integrated TypeScript passes after
+  correction of one new invoice-ID type error. Historical evidence remains in
+  the handoffs; no unchanged suite needs repeating. Production
+  Vite build was not run because its plugin loads private configuration; isolated
+  esbuild/Tailwind checks cover the changed interface. No connected SQL/processor/
+  API/session verification; actual locks/RLS/webhooks/checkout remain unverified. Revert only
+  attributable dormant preparation edits. Delivery rollback must preserve paid-through access, financial/audit
+  records and handling for existing subscriptions as described in the brief.
+
 ## Reports
 
 ## SMS
 ## Terms of Use
-<!-- Add the next task here using TASK-024, or place it in the relevant section. -->
+<!-- Add the next task here using TASK-031, or place it in the relevant section. -->

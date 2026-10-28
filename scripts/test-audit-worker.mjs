@@ -55,11 +55,13 @@ assert.equal(auditEnvironment({ AUDIT_ENVIRONMENT: "development" }), "developmen
 assert.throws(() => auditEnvironment({})); assert.throws(() => auditEnvironment({ AUDIT_ENVIRONMENT: "production" }));
 for (const kind of ["capture", "worker", "writer"]) {
   const snapshot = { principal: AUDIT_USERS[kind], group_member: true, may_execute: true,
-    rolsuper: false, rolbypassrls: false, rolcreaterole: false, rolcreatedb: false, base_access: false, owner_member: false, extra_application_role: false };
+    rolsuper: false, rolbypassrls: false, rolcreaterole: false, rolcreatedb: false, rolreplication: false, base_access: false, owner_member: false, extra_application_role: false };
   assert.doesNotThrow(() => assertAuditRuntimeRole([snapshot], kind));
-  for (const capability of ["rolsuper", "rolbypassrls", "rolcreaterole", "rolcreatedb", "base_access", "owner_member", "extra_application_role"]) {
+  for (const capability of ["rolsuper", "rolbypassrls", "rolcreaterole", "rolcreatedb", "rolreplication", "base_access", "owner_member", "extra_application_role"]) {
     assert.throws(() => assertAuditRuntimeRole([{ ...snapshot, [capability]: true }], kind));
     assert.throws(() => assertAuditRuntimeRole([{ ...snapshot, [capability]: null }], kind));
+    const missing = { ...snapshot }; delete missing[capability];
+    assert.throws(() => assertAuditRuntimeRole([missing], kind));
   }
   for (const requirement of ["group_member", "may_execute"]) assert.throws(() => assertAuditRuntimeRole([{ ...snapshot, [requirement]: false }], kind));
   assert.throws(() => assertAuditRuntimeRole([{ ...snapshot, principal: "postgres" }], kind));
@@ -134,4 +136,13 @@ const stop = new AbortController(); f = fixture();
 f.ports.accept = async (_row, abort) => new Promise((_, reject) => abort.addEventListener("abort", () => reject(new Error("cancelled")), { once: true }));
 worker = f.worker(); const pending = worker.step(stop.signal); setTimeout(() => stop.abort(), 5); await pending;
 assert.equal(worker.snapshot().delivered, 0); assert.equal(worker.snapshot().retried, 0);
+// The one newly supported R90 service event traverses the actual worker parser
+// and committed-operation ports without changing its canonical evidence.
+const viewed = createAuditEvent(createAuditContext({ actor: { kind: "anonymous" }, scope: { kind: "unknown" },
+  target: { type: "service", id: "42" }, source: { application: "fitsmytime", component: "service", environment: "development" },
+  requestId: randomUUID(), operationId: randomUUID() }), { eventName: "service.viewed.v1", outcome: "succeeded", changes: [] });
+f = fixture({ event_id: viewed.envelope.eventId, canonical_json: viewed.canonicalJson, payload_hash: viewed.payloadHash });
+worker = f.worker(); await worker.step(signal());
+assert.equal(worker.snapshot().delivered, 1); assert.equal(worker.snapshot().quarantined, 0);
+assert.equal(f.destination.get(viewed.envelope.eventId), viewed.payloadHash);
 console.log("Passed: same-transaction enqueue/rollback and isolated capture; restricted endpoint config; leased delivery, duplicate recovery, outage/timeout, stale CAS, expiry/conflict quarantine, cancellation and bounded metrics. Mocked only; no SQL/services/listeners.");

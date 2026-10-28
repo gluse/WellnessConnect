@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-27",
+  "browser": {
+    "product": "webkit/27.2"
+  },
+  "matrix": [
+    {
+      "language": "en",
+      "width": 1280,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "ru",
+      "width": 375,
+      "height": 900,
+      "nativeZoom": 1
+    }
+  ],
+  "checks": [
+    "en: own future controls; no provider actions; cancel dismiss/denial/pending/duplicate/success; conflict slot recovery; rejected reschedule retention; canonical payload; cache invalidation; focus and reflow",
+    "lv: own future controls; no provider actions; cancel dismiss/denial/pending/duplicate/success; conflict slot recovery; rejected reschedule retention; canonical payload; cache invalidation; focus and reflow",
+    "ru: own future controls; no provider actions; cancel dismiss/denial/pending/duplicate/success; conflict slot recovery; rejected reschedule retention; canonical payload; cache invalidation; focus and reflow",
+    "Account switch closes old dialog and ignores old mutation's 401 without clearing the new identity.",
+    "Canonical successful mutation updates the retained list even if the follow-up list refresh fails; retry warning remains visible.",
+    "Current-account mutation 401 clears authentication/private booking cache and redirects to sign in."
+  ],
+  "screenshots": [
+    "docs/customer-booking-webkit-en.png",
+    "docs/customer-booking-webkit-lv.png",
+    "docs/customer-booking-webkit-ru.png"
+  ],
+  "mocked": "All API/auth reads and writes intercepted in memory; no app server, database, sessions or external services",
+  "deferred": [
+    "ar including RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limitations": [
+    "No physical devices, screen readers or live connected-service verification"
+  ]
+}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { format } from "date-fns";
 import { CalendarDays, Clock } from "lucide-react";
 import type { BookingWithDetails, Employee } from "@shared/schema";
@@ -9,11 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { BookingReviewSummary } from "@/components/booking-review";
 
-export default function AppointmentAgenda({ bookings, employees = [], provider = false, loading = false, updating = false, onStatusChange, onReschedule }: {
+export default function AppointmentAgenda({ bookings, employees = [], provider = false, loading = false, updating = false, onStatusChange, onReschedule, renderCustomerActions }: {
   bookings: BookingWithDetails[]; employees?: Employee[]; provider?: boolean; loading?: boolean;
   updating?: boolean;
   onStatusChange?: (id: number, status: "confirmed" | "cancelled" | "completed") => void;
   onReschedule?: (booking: BookingWithDetails) => void;
+  renderCustomerActions?: (booking: BookingWithDetails) => ReactNode;
 }) {
   const [view, setView] = useState<"upcoming" | "date" | "past">("upcoming");
   const [date, setDate] = useState(new Date());
@@ -58,6 +60,7 @@ export default function AppointmentAgenda({ bookings, employees = [], provider =
             <div className="flex flex-wrap gap-3 text-sm text-neutral-600"><span className="flex items-center gap-1"><Clock className="w-4 h-4" />{format(new Date(booking.scheduledDate), "HH:mm")}–{format(new Date(new Date(booking.scheduledDate).getTime() + (booking.bookingDuration ?? booking.service.duration) * 60_000), "HH:mm")}</span><span>${booking.totalAmount}</span>{(booking.participantCount ?? 1) > 1 && <span>{booking.participantCount} participants</span>}</div>
             {provider && booking.notes && <p className="text-sm text-neutral-500 whitespace-pre-wrap break-words">{booking.notes}</p>}
             {!provider && booking.review && <BookingReviewSummary key={booking.review.id} booking={booking} />}
+            {!provider && renderCustomerActions?.(booking)}
             {provider && (booking.status === "pending" || booking.status === "confirmed") && (onStatusChange || onReschedule) && <div className="flex flex-wrap gap-2">
               {booking.status === "pending" && onStatusChange && <Button size="sm" disabled={updating} onClick={() => onStatusChange(booking.id, "confirmed")}>Approve</Button>}
               {booking.status === "confirmed" && onStatusChange && <Button size="sm" disabled={updating} onClick={() => onStatusChange(booking.id, "completed")}>Mark complete</Button>}

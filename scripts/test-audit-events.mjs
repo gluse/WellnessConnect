@@ -178,5 +178,5 @@ assert.throws(() => { context.actor.userId = ids.other; }, TypeError);
 assert.throws(() => { login.envelope.changes.push({ field: "email" }); }, TypeError);
 assert.throws(() => { login.envelope.source.environment = "production"; }, TypeError);
 assert.throws(() => { SUPPORTED_AUDIT_EVENTS.push("fake.v1"); }, TypeError);
-assert.equal(SUPPORTED_AUDIT_EVENTS.length, 11);
-console.log(`Passed: 11 staged event contracts, truthful outcomes, trusted-context boundary, safe fields/redaction, immutable snapshots, canonical hash/expiry and payload bounds; ${rejected} invalid inputs rejected. No DB/services/application runtime used.`);
+assert.equal(SUPPORTED_AUDIT_EVENTS.length, 26); // Original 12 producers + explicit billing/portal extensions.
+console.log(`Passed: existing security/business event contracts and registry extension, truthful outcomes, trusted-context boundary, safe fields/redaction, immutable snapshots, canonical hash/expiry and payload bounds; ${rejected} invalid inputs rejected. No DB/services/application runtime used.`);

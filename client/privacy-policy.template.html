@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How FitsMyTime handles personal information, Facebook sign-in data, and requests to delete your data.">
+  <meta name="robots" content="{{ROBOTS}}">
+  <title>Privacy Policy | FitsMyTime</title>
+  <link rel="icon" href="data:,">
+  {{CANONICAL}}
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1e293b; background: #f3f7f8; line-height: 1.7; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #075b68; text-underline-offset: .2em; overflow-wrap: anywhere; }
+    a:hover { text-decoration-thickness: .15em; }
+    a:focus-visible { outline: 3px solid #087889; outline-offset: 4px; border-radius: 2px; }
+    .skip { position: absolute; inset-inline-start: 1rem; top: -6rem; padding: .6rem 1rem; background: #fff; z-index: 1; }
+    .skip:focus { top: 1rem; }
+    .shell { width: min(100% - 2rem, 52rem); margin-inline: auto; }
+    header { padding-block: 2rem 1rem; }
+    .brand { font-size: 1.2rem; font-weight: 750; text-decoration: none; }
+    main { background: #fff; border: 1px solid #d6e2e5; border-radius: 1.25rem; padding: clamp(1.25rem, 4vw, 3rem); margin-block: 1rem 2rem; overflow-wrap: anywhere; }
+    .eyebrow { color: #075b68; font-weight: 700; font-size: .85rem; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.15; margin-block: .5rem 1rem; letter-spacing: -.035em; }
+    h2 { font-size: 1.3rem; line-height: 1.4; margin-block: 2rem .6rem; scroll-margin-top: 1rem; }
+    p { margin-block: .75rem; }
+    li + li { margin-top: .55rem; }
+    ul, ol { padding-inline-start: 1.5rem; }
+    nav { background: #eff7f7; border-radius: .75rem; padding: 1rem 1.25rem; margin-block: 1.5rem; }
+    nav ul { margin-block: .5rem 0; }
+    nav a { display: inline-block; padding-block: .2rem; }
+    .meta, footer { color: #475569; font-size: .95rem; }
+    address { font-style: normal; white-space: pre-line; }
+    .draft { background: #fff4d6; color: #654100; border: 2px solid #9b6a00; border-radius: .75rem; padding: 1rem; margin-bottom: 1.5rem; }
+    footer { padding-block: 0 2rem; }
+    @media (prefers-color-scheme: dark) {
+      :root { color: #e2e8f0; background: #101b23; }
+      main { background: #172530; border-color: #3a505e; }
+      nav { background: #203642; }
+      a, .eyebrow { color: #8de0e5; }
+      .meta, footer { color: #c0cdd5; }
+      a:focus-visible { outline-color: #8de0e5; }
+      .skip { background: #172530; }
+    }
+    @media print {
+      :root, main { background: white; color: black; }
+      .shell { width: 100%; }
+      header, nav, footer, .skip { display: none; }
+      main { border: 0; padding: 0; }
+      a, .eyebrow, .meta { color: black; }
+      h2 { break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#policy">Skip to privacy policy</a>
+  <header class="shell"><a class="brand" href="{{HOME}}">FitsMyTime</a></header>
+  <main class="shell" id="policy" tabindex="-1">
+    {{STATUS}}
+    <p class="eyebrow">Your information</p>
+    <h1>Privacy Policy</h1>
+    <p class="meta">Last updated: <time datetime="2026-10-22">22 October 2026</time> · English</p>
+    <p>This policy explains how FitsMyTime handles personal information when you browse services, create an account, make bookings, offer services, or use Facebook or another sign-in provider.</p>
+    <nav aria-label="Privacy policy contents">
+      <strong>On this page</strong>
+      <ul>
+        <li><a href="#controller">Who is responsible and how to contact us</a></li>
+        <li><a href="#information">Information we process</a></li>
+        <li><a href="#facebook">Facebook sign-in</a></li>
+        <li><a href="#purposes">Purposes and legal bases</a></li>
+        <li><a href="#sharing">Sharing and service providers</a></li>
+        <li><a href="#storage">Cookies, storage and security</a></li>
+        <li><a href="#retention">Retention and international transfers</a></li>
+        <li><a href="#rights">Your privacy rights</a></li>
+        <li><a href="#data-deletion">Delete your account or Facebook data</a></li>
+        <li><a href="#changes">Changes to this policy</a></li>
+      </ul>
+    </nav>
+    <section aria-labelledby="controller">
+      <h2 id="controller">1. Who is responsible</h2>
+      <p>FitsMyTime is operated by <strong>{{OPERATOR}}</strong>, the controller responsible for personal information processed to run this platform.</p>
+      <address>{{ADDRESS}}</address>
+      <p>For privacy questions and requests, contact {{CONTACT}}.</p>
+      <p>Service providers you book with may separately act as controllers for information they use to deliver their services. Contact the provider for details of its own privacy practices.</p>
+    </section>
+    <section aria-labelledby="information">
+      <h2 id="information">2. Information we process</h2>
+      <ul>
+        <li><strong>Account and sign-in information:</strong> account identifiers, email address, names you provide, profile image where supplied by a sign-in provider, account role, authentication records and session information. Email/password authentication is handled through Supabase Auth.</li>
+        <li><strong>Bookings and reviews:</strong> selected services, customer and provider identifiers, appointment dates and times, booking status, notes you choose to enter, payment status, ratings and review text.</li>
+        <li><strong>Provider and company information:</strong> company and storefront details, team memberships and invitations, employee names, services, descriptions, images, prices, availability and business addresses.</li>
+        <li><strong>Search and location information:</strong> search terms, filters, addresses and coordinates used to find or display services. If you choose to use your device location, your browser asks for permission; you can decline and use other search options.</li>
+        <li><strong>Technical and security information:</strong> request and device information, such as IP address and browser information, session identifiers, errors and activity records used to operate and protect the platform.</li>
+      </ul>
+      <p>Information comes from you, the providers and company administrators you interact with, your browser, and sign-in providers you choose. Public service listings, storefronts and submitted reviews can be visible to other visitors. Avoid putting sensitive personal or health information in public content or booking notes.</p>
+    </section>
+    <section aria-labelledby="facebook">
+      <h2 id="facebook">3. Facebook and other social sign-in</h2>
+      <p>If you choose Facebook Login, Facebook and Supabase Auth provide identity information used to create or identify your FitsMyTime account. This may include your Facebook user identifier, name, email address and public profile information, such as a profile picture, depending on what Facebook returns and the permissions you grant.</p>
+      <p>The integration uses <code>public_profile</code> and requests the <code>email</code> permission. FitsMyTime uses this information to authenticate you, maintain your profile and help protect your account. FitsMyTime does not receive your Facebook password. This integration does not request access to your Facebook friends list or permission to publish to your Facebook profile.</p>
+      <p>Other enabled sign-in providers, such as Google, Apple or Microsoft, supply similar identity information according to their permissions. Their own handling of your data is explained in their privacy policies. See <a href="https://www.facebook.com/privacy/policy/">Meta’s Privacy Policy</a> and the <a href="#data-deletion">deletion instructions below</a>.</p>
+    </section>
+    <section aria-labelledby="purposes">
+      <h2 id="purposes">4. Purposes and legal bases</h2>
+      <ul>
+        <li><strong>Providing the service:</strong> account creation, authentication, bookings, provider listings, team administration and related communications are processed to perform our contract with you or take steps you request before entering a contract.</li>
+        <li><strong>Operating and protecting the platform:</strong> troubleshooting, preventing fraud and abuse, managing access and resolving disputes support our legitimate interests in a reliable, secure marketplace, subject to your rights and interests.</li>
+        <li><strong>Legal obligations:</strong> information may be processed where necessary to comply with applicable law or valid legal requests.</li>
+        <li><strong>Optional features:</strong> where processing relies on consent, you may withdraw it. You can revoke browser location permission in your browser settings and manage social sign-in permissions with the relevant provider. Withdrawal does not affect processing lawfully carried out before withdrawal.</li>
+      </ul>
+      <p>Required account and booking information is needed to provide those features; without it, we may be unable to create an account or complete a booking. Optional profile fields may be left blank.</p>
+    </section>
+    <section aria-labelledby="sharing">
+      <h2 id="sharing">5. Sharing and service providers</h2>
+      <p>Information is shared where needed to provide the features you use:</p>
+      <ul>
+        <li>With the provider, customer and authorised company team members involved in a booking or workspace.</li>
+        <li>With hosting, database, authentication, file-storage and operational service providers. The platform uses Supabase for authentication and storage services.</li>
+        <li>With Google Maps services for maps and address lookup when those features are used.</li>
+        <li>With OpenAI for semantic search: search text and service listing text can be sent to generate search embeddings. Avoid including sensitive information in searches or listings.</li>
+        <li>With authorities or professional advisers where necessary to meet legal obligations, protect rights or resolve disputes.</li>
+      </ul>
+      <p>Signing in through Facebook also involves communications with Meta and Supabase. Public information you choose to publish may be viewed by anyone who can access the relevant listing or review.</p>
+    </section>
+    <section aria-labelledby="storage">
+      <h2 id="storage">6. Cookies, browser storage and security</h2>
+      <p>The application uses a session cookie, <code>wellness.sid</code>, to maintain sign-in. It is configured as HttpOnly, with a seven-day maximum age, and Secure when the application uses HTTPS. Browser storage is also used to remember preferences such as your selected language and appearance. Blocking necessary cookies may prevent sign-in from working.</p>
+      <p>Maps and external sign-in services may process technical information under their own privacy policies when used. This policy page itself does not load analytics, maps, social widgets, external fonts or scripts.</p>
+      <p>Access controls and session protections help protect personal information. No online service can guarantee absolute security. Do not send passwords, access tokens or payment card details with privacy requests.</p>
+    </section>
+    <section aria-labelledby="retention">
+      <h2 id="retention">7. Retention and international transfers</h2>
+      <p>{{RETENTION}}</p>
+      <p>{{TRANSFERS}}</p>
+    </section>
+    <section aria-labelledby="rights">
+      <h2 id="rights">8. Your privacy rights</h2>
+      <p>Depending on applicable law, you may request access to your personal information, correction, deletion, restriction of processing or a portable copy. You may object to processing based on legitimate interests and withdraw consent where consent is the basis of processing.</p>
+      <p>Send requests to {{CONTACT}}. We may ask for information reasonably needed to verify that the request concerns your account. Where the GDPR applies, we normally respond within one month; if a lawful extension is needed, we will explain why within that period.</p>
+      <p>You may complain to the supervisory authority in the EEA country where you live or work, or where you believe an infringement occurred. In Latvia, this is the <a href="https://www.dvi.gov.lv/en">Data State Inspectorate (Datu valsts inspekcija)</a>.</p>
+    </section>
+    <section aria-labelledby="data-deletion">
+      <h2 id="data-deletion">9. Delete your account or Facebook data</h2>
+      <p>You can request deletion without signing in to FitsMyTime:</p>
+      <ol>
+        <li>Email {{CONTACT}} with the subject <strong>FitsMyTime data deletion request</strong>.</li>
+        <li>Include the email address associated with your FitsMyTime account and say whether you want your account and associated personal information deleted, or only information obtained through Facebook Login. If you cannot access that email address, explain this so we can arrange another way to verify your request.</li>
+        <li>After verification, we will handle the request under applicable law and tell you the outcome, including any information that must be retained and why. Legal obligations, security investigations or legal claims may limit deletion.</li>
+      </ol>
+      <p>You can also remove FitsMyTime from Facebook’s <strong>Settings → Apps and websites</strong> to revoke future access. Removing the app from Facebook does not by itself erase information already held by FitsMyTime. Use the email process above to request its deletion. Deleting FitsMyTime information does not delete your Facebook account or information held independently by Meta or your service provider.</p>
+    </section>
+    <section aria-labelledby="changes">
+      <h2 id="changes">10. Changes to this policy</h2>
+      <p>We may update this policy as the service or its data practices change. The latest version will appear on this page with an updated date. Where required, we will provide additional notice of material changes.</p>
+    </section>
+  </main>
+  <footer class="shell"><a href="{{HOME}}">Return to FitsMyTime</a> · <a href="#policy">Back to top</a></footer>
+</body>
+</html>

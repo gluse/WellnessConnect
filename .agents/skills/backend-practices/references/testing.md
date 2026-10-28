@@ -1,7 +1,7 @@
 # Backend unit tests and verification
 
 Reviewed: 18 October 2026. Test ownership/completion requirements remain in
-`BACK-END-DEVELOPER.md`; database authorization remains in `AGENTS.md`.
+`ROLE-BACK_END_DEVELOPER.md`; database authorization remains in `AGENTS.md`.
 
 ## Select safe checks
 

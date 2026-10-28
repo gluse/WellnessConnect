@@ -1,0 +1,179 @@
+{
+  "browser": {
+    "product": "webkit/27.2"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    "en: exact member PATCH→GET, pending lock, duplicate suppression, reassignment, authoritative refresh/remount, rejected draft, discard/cancel and focus restore",
+    "lv: exact member PATCH→GET, pending lock, duplicate suppression, reassignment, authoritative refresh/remount, rejected draft, discard/cancel and focus restore",
+    "ru: exact member PATCH→GET, pending lock, duplicate suppression, reassignment, authoritative refresh/remount, rejected draft, discard/cancel and focus restore",
+    "en/1280: invite keyboard focus, validation/filtering, failure retention, POST/GET lock, two separate pending invitations, email choice, copy success/failure, retained link, revoke frees assignment, unassigned administrator",
+    "en/320: invite keyboard focus, validation/filtering, failure retention, POST/GET lock, two separate pending invitations, email choice, copy success/failure, retained link, revoke frees assignment, unassigned administrator",
+    "lv/1280: invite keyboard focus, validation/filtering, failure retention, POST/GET lock, two separate pending invitations, email choice, copy success/failure, retained link, revoke frees assignment, unassigned administrator",
+    "lv/320: invite keyboard focus, validation/filtering, failure retention, POST/GET lock, two separate pending invitations, email choice, copy success/failure, retained link, revoke frees assignment, unassigned administrator",
+    "ru/1280: invite keyboard focus, validation/filtering, failure retention, POST/GET lock, two separate pending invitations, email choice, copy success/failure, retained link, revoke frees assignment, unassigned administrator",
+    "ru/320: invite keyboard focus, validation/filtering, failure retention, POST/GET lock, two separate pending invitations, email choice, copy success/failure, retained link, revoke frees assignment, unassigned administrator",
+    "en/1280: same pending invitation edited; identity/email/expiry/other records unchanged; assignment required; rejection retained; duplicate/refresh lock; authoritative GET; remotely reserved selections stay visible and blocked across all three forms",
+    "en/320: same pending invitation edited; identity/email/expiry/other records unchanged; assignment required; rejection retained; duplicate/refresh lock; authoritative GET; remotely reserved selections stay visible and blocked across all three forms",
+    "lv/1280: same pending invitation edited; identity/email/expiry/other records unchanged; assignment required; rejection retained; duplicate/refresh lock; authoritative GET; remotely reserved selections stay visible and blocked across all three forms",
+    "lv/320: same pending invitation edited; identity/email/expiry/other records unchanged; assignment required; rejection retained; duplicate/refresh lock; authoritative GET; remotely reserved selections stay visible and blocked across all three forms",
+    "ru/1280: same pending invitation edited; identity/email/expiry/other records unchanged; assignment required; rejection retained; duplicate/refresh lock; authoritative GET; remotely reserved selections stay visible and blocked across all three forms",
+    "ru/320: same pending invitation edited; identity/email/expiry/other records unchanged; assignment required; rejection retained; duplicate/refresh lock; authoritative GET; remotely reserved selections stay visible and blocked across all three forms",
+    "owner transfer/close/reopen and remove confirmations, rejected removal, denied/no GET, read-only, empty/loading/error/retry, saved-but-refresh-failed recovery, workspace and permission changes clear panels and ignore old receipts"
+  ],
+  "layouts": [
+    "en/1280: roster + member/invite panel, filters/search, light/dark, modal focus, reflow",
+    "en/768: roster + member/invite panel, filters/search, light/dark, modal focus, reflow",
+    "en/320: roster + member/invite panel, filters/search, light/dark, modal focus, reflow",
+    "lv/1280: roster + member/invite panel, filters/search, light/dark, modal focus, reflow",
+    "lv/768: roster + member/invite panel, filters/search, light/dark, modal focus, reflow",
+    "lv/320: roster + member/invite panel, filters/search, light/dark, modal focus, reflow",
+    "ru/1280: roster + member/invite panel, filters/search, light/dark, modal focus, reflow",
+    "ru/768: roster + member/invite panel, filters/search, light/dark, modal focus, reflow",
+    "ru/320: roster + member/invite panel, filters/search, light/dark, modal focus, reflow"
+  ],
+  "contrasts": [
+    {
+      "language": "en",
+      "width": 1280,
+      "light": {
+        "failures": [],
+        "minText": 4.797580078171407,
+        "minControlBorder": 4.741667181590045
+      },
+      "dark": {
+        "failures": [],
+        "minText": 5.506681400777804,
+        "minControlBorder": 4.1958570466569505
+      }
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "light": {
+        "failures": [],
+        "minText": 4.797580078171407,
+        "minControlBorder": 4.741667181590045
+      },
+      "dark": {
+        "failures": [],
+        "minText": 5.506681400777804,
+        "minControlBorder": 4.1958570466569505
+      }
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "light": {
+        "failures": [],
+        "minText": 4.797580078171407,
+        "minControlBorder": 4.741667181590045
+      },
+      "dark": {
+        "failures": [],
+        "minText": 5.506681400777804,
+        "minControlBorder": 4.1958570466569505
+      }
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "light": {
+        "failures": [],
+        "minText": 4.797580078171407,
+        "minControlBorder": 4.741667181590045
+      },
+      "dark": {
+        "failures": [],
+        "minText": 5.506681400777804,
+        "minControlBorder": 4.1958570466569505
+      }
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "light": {
+        "failures": [],
+        "minText": 4.797580078171407,
+        "minControlBorder": 4.741667181590045
+      },
+      "dark": {
+        "failures": [],
+        "minText": 5.506681400777804,
+        "minControlBorder": 4.1958570466569505
+      }
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "light": {
+        "failures": [],
+        "minText": 4.797580078171407,
+        "minControlBorder": 4.741667181590045
+      },
+      "dark": {
+        "failures": [],
+        "minText": 5.506681400777804,
+        "minControlBorder": 4.1958570466569505
+      }
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "light": {
+        "failures": [],
+        "minText": 4.797580078171407,
+        "minControlBorder": 4.741667181590045
+      },
+      "dark": {
+        "failures": [],
+        "minText": 5.506681400777804,
+        "minControlBorder": 4.1958570466569505
+      }
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "light": {
+        "failures": [],
+        "minText": 4.797580078171407,
+        "minControlBorder": 4.741667181590045
+      },
+      "dark": {
+        "failures": [],
+        "minText": 5.506681400777804,
+        "minControlBorder": 4.1958570466569505
+      }
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "light": {
+        "failures": [],
+        "minText": 4.797580078171407,
+        "minControlBorder": 4.741667181590045
+      },
+      "dark": {
+        "failures": [],
+        "minText": 5.506681400777804,
+        "minControlBorder": 4.1958570466569505
+      }
+    }
+  ],
+  "externalRequests": 0,
+  "mockBoundary": "fetch replaced by synthetic in-memory API; clipboard and confirmation mocked",
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ]
+}

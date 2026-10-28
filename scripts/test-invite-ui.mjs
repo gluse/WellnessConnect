@@ -1,11 +1,16 @@
 import assert from "node:assert/strict";
 import React from "react";
 import renderer from "react-test-renderer";
+import { readFile } from "node:fs/promises";
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 import { QueryClientProvider } from "@tanstack/react-query";
 
 globalThis.React = React;
+const translation = JSON.parse(await readFile(new URL("../client/public/locales/en/translation.json", import.meta.url), "utf8"));
+await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation } }, interpolation: { escapeValue: false } });
 const destinations = [];
 const token = "a".repeat(64);
 globalThis.window = {
@@ -46,6 +51,7 @@ async function scenario(mode) {
   } else {
     if (mode === "password-expired") await act(async () => {
       component.root.findByProps({ id: "invited-password", type: "password" }).props.onChange({ target: { value: "Aa1!fixture-password" } });
+      component.root.findByProps({ id: "invited-confirm-password", type: "password" }).props.onChange({ target: { value: "Aa1!fixture-password" } });
     });
     const button = component.root.findAllByType("button").find(node => node.children.includes("Accept Invitation"));
     assert.equal(button.props.disabled, false);
@@ -85,6 +91,6 @@ assert.equal(recovery.root.findAllByType("input").some(node => node.props.type =
 await act(async () => { await recovery.root.findByType("form").props.onSubmit({ preventDefault() {} }); });
 assert.equal(recoveryRequests[0].url, "/api/auth/invite-recovery");
 assert.deepEqual(recoveryRequests[0].body, { email: "invited@example.com", returnTo: `/invite?token=${token}` });
-assert.ok(recovery.root.findByProps({ role: "status" }).children.join("").includes("newest email"));
+assert.equal(recovery.root.findByProps({ role: "status" }).children.join(""), translation.authForm.recoverySent);
 await act(async () => recovery.unmount());
 console.log("Passed: expired invitation sessions, stale password flags, and 401 recovery with the invitation preserved.");

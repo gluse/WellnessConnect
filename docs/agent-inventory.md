@@ -4,6 +4,145 @@ Snapshot: 18 October 2026, Europe/Riga. Scope: the current agent tree, this
 repository, and local Codex session records whose initial working directory is
 `C:\Source\Private\WellnessConnect`. This is not an account-wide inventory.
 
+## Cross-role cooperation update — 23 October 2026
+
+Source: user's request that roles contact one another, accept valid dependencies
+and implement without repeated permissions, reusing other agents' existing
+approvals. `/root` updates Markdown instructions only: AGENTS.md, six role files,
+five project skill entrypoints, TASKS.md and
+[the shared dependency queue](agent-coordination.md). The queue records the
+TASK-014 request and approval lookup without claiming delivery or completion.
+
+Approval record: user approves; `/root` executes documentation/instruction changes
+in this local repository. Allowed operations are Markdown edits and offline
+instruction/link/skill checks; no application changes, private-file/service/DB
+access, ACL operation, activation or deployment. Recovery is reverting only this
+request's attributable edits while preserving the existing dirty workspace.
+Standing local-dependency authorization is recorded in
+[AGENTS.md](../AGENTS.md#cross-role-cooperation-and-standing-authorization);
+explicit connected-operation limits and execution holds remain.
+
+Live roster observed before independent review: only `/root`. A scoped child
+`/root/coordination_review` subsequently reviews these instructions read-only;
+it is not the Backend/DB executor for TASK-014. Historical audit agent IDs below
+are saved assignment evidence, not proof that they are live or reachable in this
+thread. No account-wide/session inventory was refreshed and no request was sent
+to those independent sessions. Owners must check the queue on resume.
+
+Validation: independent read-only scenario review passed after correcting stale
+GM database-choice wording and adding the queue. All 170 local links/anchors in
+15 Markdown files resolve; all five skill entrypoints pass YAML, naming,
+description and placeholder checks using Node and the installed YAML parser.
+The standard Python skill validator could not launch: Windows Python aliases
+were inaccessible and registered Python 3.11/3.14 executable paths were missing;
+the Node checks supplied equivalent checks for these entrypoints. Scoped
+`git diff --check` passed. No application/database/browser tests are needed or
+run. Language scope remains en/lv/ru; ar/RTL, zh, fr, de, hi, ja, pt and es
+remain deferred.
+
+## TASK-014 continuation — 23 October 2026
+
+Completion update: after the user requested prototype-level resource frugality,
+only the existing DB owner resumed implementation; Backend and the DB child were
+not restarted. TASK-014 connected acceptance, test-access revocation, final active
+profiles and bounded worker readiness passed. No background worker or HTTP server
+was left running. Root maintains the
+[completion record](audit-completion-execution.md); older roster/work checkpoints
+below are historical and do not imply currently running agents or services.
+
+Completion-run roster update: the audit user approved all actions required to
+finish TASK-014; see the [completion execution scope](audit-completion-execution.md).
+The current thread exposes `/root`, `/root/audit_backend`, `/root/audit_database`
+and DB's narrowly delegated child `/root/audit_database/audit_rehearsal_prep`.
+The child prepares only new 0004 rehearsal SQL/setup and offline tests, without
+private/configuration/ACL or connected DB access. Parent DB retains credential
+handling and live execution; Backend owns app-principal/Auth gates, worker loop,
+monitoring, tests and peer review. Root coordinates Markdown and evidence.
+This is the current thread's roster, not independent session/account status.
+
+Source: current thread's collaboration roster and the user's request to continue
+TASK-014. Live roster at this snapshot: `/root` (coordination/documentation),
+`/root/audit_backend` (Back End Developer) and `/root/audit_database` (DB
+Analyst/Developer). These are scoped agents in this thread; this does not establish
+control or status of independent IDE sessions. No account-wide or local saved-
+session inventory was refreshed.
+
+The existing local backend and selected Choice 1 preparation assignments resume:
+Backend owns audit runtime/capture/worker code, isolated audit tests and its
+handoff; DB owns unapplied 0003 SQL, runtime helpers, bounded rehearsal runner and
+the new execution handoff. Parent owns task/status documentation. No frontend,
+private configuration/credentials, connected database/service operations, app
+startup or deployment. Preserve existing installed audit objects and unrelated
+workspace changes. Offline validation and Backend compatibility/security review
+precede any request for final connected execution approval. Current application
+table drift and remote Auth reconciliation remain activation gates; see
+[TASK-014](../TASKS.md#audit) for the durable scope, evidence and recovery record.
+Language scope stays en/lv/ru; ar/RTL, zh, fr, de, hi, ja, pt and es are deferred.
+
+Outcome update: separate user approvals authorized DB's exact `.env` ACL
+protection and metadata-only preflight on the two named development projects.
+Both completed; protected recovery metadata is retained. Backend completed its
+disabled-installer review (238 focused checks); DB prepared the next execution
+handoff (243 existing offline checks also pass). No database writes or runtime
+activation occurred in preparation. The user subsequently approved installing
+the NOLOGIN runtime roles/policies/grants on the named development pair; DB is
+executing that exact command with fresh gates and guarded recovery. Earlier
+offline-only limits above describe the initial preparation assignment. See the
+runtime handoff for actual execution results; no credential or activation scope
+was added.
+
+Final audit-thread outcome: both runtime-0003 migrations committed and reviewed
+read-only catalog verification passed. DB executed under the recorded named-target
+approval; Backend independently reviewed routine dormant-provider-ACL and
+installed-policy verifier corrections and passed 264 continuation/246 installer
+checks. Source/destination SQL stays immutable, all new roles remain NOLOGIN and
+credential provisioning/connected rehearsals/activation remain incomplete.
+The [coordination queue](agent-coordination.md) records accepted delivery and the
+returned frontend/backend contract without claiming contact with independent
+frontend sessions. No account-wide roster was refreshed.
+
+## Product, General Manager and CI/CD role maintenance — 21 October 2026
+
+At the user's request, `/root` optimized and renamed the
+[Product Manager](../ROLE-PRODUCT-MANAGER.md),
+[General Manager](../ROLE-GENERAL-MANAGER.md) and
+[CI/CD Developer](../ROLE-CI-CD-DEVELOPER.md) definitions. Consolidated repeated
+instructions, linked task-specific context, updated project/skill references,
+and retained planning-only management authority, product metrics/financial
+discipline, technical ownership and deployment/DB approval limits. No runtime
+or token-performance improvement measured.
+
+Historical manager handoff: the initial 18 October inventory contained 18 local
+project session records (two Guardian records), 17 exposed skills and a disk-only
+review skill; automatic discovery of the new optimization skill was unverified.
+Docker/audit workspace work then awaited owner verification, and executable hook
+integration remained developer work. These are historical observations, not a
+fresh roster, implementation check or automation status. Preserve the later audit
+and forms evidence below; load current task handoffs for present status.
+
+Scope: local Markdown only; preserve existing changes and the temporary checkout.
+Validation: renamed-role links/anchors, stale-reference search and whitespace
+checks. No application/container/cloud/database tests or service access. Testing
+remains en/lv/ru; ar/RTL, zh, fr, de, hi, ja, pt and es are deferred. Recovery:
+reverse only these renames and attributable documentation edits. No new agent,
+compaction hook, resource provisioning or deployment.
+
+## DB role context maintenance — 21 October 2026
+
+At the user's request, `/root` streamlined the
+[DB Analyst/Developer role](../ROLE-DB-ANALYST-DEVELOPER.md), added the `ROLE-`
+filename prefix and updated repository links and skill references. Consolidated
+scope, approval, verification and handoff instructions; retained user selection
+before database changes, cross-role authority and scoped execution. Detailed
+PostgreSQL references load only when needed. No runtime/token savings measured.
+
+Scope: local Markdown only; preserve existing workspace and temporary-checkout
+changes. Verification: role links and workflow anchor resolve, no stale old-filename
+references remain outside the temporary checkout, and whitespace checks pass.
+No application/database tests or database access; en/lv/ru remains the testing
+scope, with ar/RTL, zh, fr, de, hi, ja, pt and es deferred. Recovery: reverse only
+this rename and attributable documentation edits. No new agent or deployment.
+
 ## Forms implementation assignment — 20 October 2026
 
 User reviewed and approved the forms visual proposal and asked the Front End
@@ -190,14 +329,14 @@ been verified. The initial session and exposed-skill snapshots below are histori
 ## Agents and role definitions
 
 Role registration update, 19 October 2026: created the
-[Product Manager](../PRODUCT-MANAGER.md) at the user's request, with adoption,
+[Product Manager](../ROLE-PRODUCT-MANAGER.md) at the user's request, with adoption,
 retention, prioritization, and cost/income analysis responsibilities. Initial
 recommendations are in [Product opportunities](product-opportunities.md).
 This records a role definition and product-planning work; no separate agent was
 started, and the historical session/live/skill snapshots were not refreshed.
 
 Role/skill update, 18 October 2026: created the
-[Front End Developer](../FRONT-END-DEVELOPER.md) and repository-wide frontend
+[Front End Developer](../ROLE-FRONT-END-DEVELOPER.md) and repository-wide frontend
 authority rules, plus the project-local
 [`frontend-practices`](../.agents/skills/frontend-practices/SKILL.md) skill with
 development/security, multilingual/RTL, device/accessibility, and testing references.
@@ -207,14 +346,28 @@ The runtime catalog now exposes `backend-practices`; automatic discovery of the
 new frontend skill in another session is unverified. Historical rosters below
 were not refreshed by this documentation update.
 
+Role context maintenance, 21 October 2026: at the user's request, `/root` shortened
+the Front End Developer definition and renamed it to
+[`ROLE-FRONT-END-DEVELOPER.md`](../ROLE-FRONT-END-DEVELOPER.md). Scope: local Markdown
+role/routing/reference updates only; no application, service, database or deployment
+operations. Authority, security and verification requirements remain; detailed
+guidance is linked for task-specific loading. Validation: 25 local role/reference
+links pass, current repository Markdown has no stale filename references, and
+`git diff --check` passes. Application tests were not needed for documentation.
+Future tests remain limited to en/lv/ru; ar/RTL, zh, fr, de, hi, ja, pt and es are
+deferred. Existing changes and the temporary search checkout were preserved.
+Recovery: reverse this rename and its scoped Markdown edits while retaining other
+sessions' work. Next owner: the assigned Front End Developer for application tasks;
+this maintenance does not assign that role or refresh the historical roster below.
+
 | Agent or role | Evidence | Status and control |
 | --- | --- | --- |
 | General Manager (`/root`) | Current conversation and live collaboration roster | Running at inspection; documentation and management only |
-| Product Manager | [Role definition](../PRODUCT-MANAGER.md); user's 19 October 2026 request | Defined for product research and Markdown planning; initial proposals prepared; no separate agent started or implementation authority granted |
-| CI/CD Developer | [Role definition](../CI-CD-DEVELOPER.md); Docker session title below | Role exists; other session's live state is unknown |
-| DB Analyst/Developer | [Role definition](../DB-ANALYST-DEVELOPER.md); [project-wide authority](../AGENTS.md) | Defined for database operations only; user selection before changes; no separate session started or database access granted |
-| Back End Developer | [Role definition](../BACK-END-DEVELOPER.md); [project-wide authority](../AGENTS.md) | Defined for backend operations only, including unit tests and security; other agents require specific approval; no separate session started or technical permissions granted |
-| Front End Developer | [Role definition](../FRONT-END-DEVELOPER.md); [project-wide authority](../AGENTS.md) | Defined for frontend operations only, including tests, security, localization, accessibility, and device support; other agents require specific approval; no separate session started |
+| Product Manager | [Role definition](../ROLE-PRODUCT-MANAGER.md); user's 19 October 2026 request | Defined for product research and Markdown planning; initial proposals prepared; no separate agent started or implementation authority granted |
+| CI/CD Developer | [Role definition](../ROLE-CI-CD-DEVELOPER.md); Docker session title below | Role exists; other session's live state is unknown |
+| DB Analyst/Developer | [Role definition](../ROLE-DB-ANALYST-DEVELOPER.md); [project-wide authority](../AGENTS.md) | Defined for database operations only; user selection before changes; no separate session started or database access granted |
+| Back End Developer | [Role definition](../ROLE-BACK_END_DEVELOPER.md); [project-wide authority](../AGENTS.md) | Defined for backend operations only, including unit tests and security; other agents require specific approval; no separate session started or technical permissions granted |
+| Front End Developer | [Role definition](../ROLE-FRONT-END-DEVELOPER.md); [project-wide authority](../AGENTS.md) | Defined for frontend operations only, including tests, security, localization, accessibility, and device support; other agents require specific approval; no separate session started |
 | Guardian review subagents | Two local session headers explicitly identify `subagent.other = guardian` | Historical records; not present in this thread's live roster |
 | Other development sessions | IDE session metadata below | Saved sessions; no persistent named role established by metadata |
 

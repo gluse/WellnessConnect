@@ -1,4 +1,13 @@
 /* Scoped to the approved operational forms. */
+/* Sheet portals sit outside the page form; keep their own sizing and padding. */
+.phase3-form.team-management { padding: 0; }
+.team-management[role="dialog"] { overflow: hidden; }
+.team-management[role="dialog"] > button { top: 1rem; inset-inline-end: 1rem; inset-inline-start: auto; }
+.team-management[role="dialog"] :is(form, form > div) { min-height: 0; }
+.team-management[role="dialog"] [id^="radix-"] { overflow-wrap: anywhere; }
+@media (max-height: 500px) {
+  .team-management[role="dialog"] { display: block; overflow-y: auto; }
+}
 .phase3-form { overflow-wrap: anywhere; }
 .phase3-form :is(input:not([type="checkbox"]), textarea, select) { min-height: 44px; height: auto; border-color: #737373; }
 .phase3-form select { width: 100%; min-width: 0; border: 1px solid #737373; border-radius: .375rem; background: var(--background); color: var(--foreground); padding: .625rem .75rem; }

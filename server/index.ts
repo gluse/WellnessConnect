@@ -3,12 +3,21 @@ import type { ClientConfig, QueryConfig } from "pg";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { apiNotFound } from "./api-fallback";
-import { pool } from "./db";
+import { pool, db } from "./db";
+import { isAuthenticated } from "./auth";
+import { requireAppAdmin, isAppAdmin } from "./appAdmin";
+import { createLocalBillingRuntime, selectedLocalBillingRuntime } from "./billing/runtime";
+import { mountBillingBodyBoundaries } from "./billing/middleware";
+import { verifyBillingDatabaseReadiness } from "./billing/database-readiness";
 import { setupHealthRoutes } from "./health";
 import { closeAuditCapture } from "./audit/http";
+import { assertAuditActivation } from "./audit/config";
+import { verifyAuditApplicationPool } from "./audit/application";
 
+assertAuditActivation(process.env);
 const app = express();
 let draining = false;
+let activeBilling: ReturnType<typeof createLocalBillingRuntime> | undefined;
 setupHealthRoutes(app, () => {
   // pg supports per-query timeouts, but its QueryConfig types omit this option.
   const query: QueryConfig & Pick<ClientConfig, "query_timeout"> = {
@@ -17,8 +26,7 @@ setupHealthRoutes(app, () => {
   };
   return pool.query(query);
 }, () => draining);
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -41,10 +49,23 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  // Verify the actual app principal before registering sessions or accepting requests.
+  await verifyAuditApplicationPool(pool, process.env);
+  const config = selectedLocalBillingRuntime();
+  const billing = config ? createLocalBillingRuntime(db, config, { authenticate: isAuthenticated, requireAdmin: requireAppAdmin,
+    isAdmin: id => isAppAdmin(id), verifyDatabase: () => verifyBillingDatabaseReadiness((text, values) => {
+      const query: QueryConfig & Pick<ClientConfig, "query_timeout"> = { text, values, query_timeout: 5000 };
+      return pool.query(query);
+    }) }) : undefined;
+  activeBilling = billing;
+  if (billing) await billing.verify();
+  mountBillingBodyBoundaries(app, billing);
+  const server = await registerRoutes(app, billing);
+  await billing?.start();
   const shutdown = () => {
     if (draining) return;
     draining = true;
+    billing?.stop();
     log("shutting down");
     // Docker's grace period is 30 seconds; bound long-running requests to 25.
     setTimeout(() => process.exit(1), 25_000).unref();
@@ -75,10 +96,16 @@ app.use((req, res, next) => {
 
   // Serve both the API and client on the host's configured port.
   const port = Number(process.env.PORT || 5000);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-  }, () => {
-    log(`serving on port ${port}`);
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen({ port, host: config?.host ?? "0.0.0.0" }, () => {
+      server.off("error", reject);
+      log(`serving on port ${port}`);
+      resolve();
+    });
   });
-})();
+})().catch(() => {
+  activeBilling?.stop();
+  console.error("Application startup refused; readiness prerequisites were not satisfied.");
+  void Promise.allSettled([pool.end(), closeAuditCapture()]).finally(() => { process.exitCode = 1; });
+});

@@ -5,7 +5,7 @@ The app uses React, Express, Drizzle, and Supabase for PostgreSQL, authenticatio
 and private image storage.
 
 Project agents follow [AGENTS.md](AGENTS.md). Database operations are owned by
-the [DB Analyst/Developer](DB-ANALYST-DEVELOPER.md); database changes require
+the [DB Analyst/Developer](ROLE-DB-ANALYST-DEVELOPER.md); database changes require
 options and the user's choice first, including setup commands below.
 
 ## Local setup

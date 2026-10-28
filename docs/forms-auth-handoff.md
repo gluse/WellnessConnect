@@ -4,6 +4,11 @@
 user to finish TASK-022. **All approved forms implementation is now present and
 locally Chrome-verified. Broader release verification remains incomplete.**
 
+21 October 2026 update: [additional verification and corrections](forms-verification-handoff.md)
+records passing Firefox/WebKit and native 400% Chrome zoom checks in en/lv/ru.
+The evidence below is retained as historical; current remaining acceptance work
+is physical-device/virtual-keyboard, screen-reader and native-speaker review.
+
 ## Approval and recovery
 
 Approving party: user. Environment: local WellnessConnect repository. Scope:

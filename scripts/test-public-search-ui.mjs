@@ -7,6 +7,7 @@ import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 import { categoryFixtures } from "./fixtures/categories.mjs";
 import { fetchPublicSearch, searchErrorKey, searchValidationKey } from "../client/src/lib/public-search.ts";
+import { encodeSearchLocation, SEARCH_LOCATION_COOKIE } from "../shared/search-location.ts";
 
 globalThis.React = React;
 globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
@@ -62,7 +63,7 @@ for (const code of ["en", "lv", "ru"]) {
   i18n.addResourceBundle(code, "translation", bundle, true, true);
 }
 globalThis.window = { location: { pathname: "/search", search: "", hash: "" }, setTimeout, clearTimeout, addEventListener() {}, removeEventListener() {}, HTMLSelectElement: { prototype: { value: "" } }, HTMLInputElement: { prototype: { checked: false } } };
-globalThis.document = { visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
+globalThis.document = { cookie: `${SEARCH_LOCATION_COOKIE}=${encodeSearchLocation({ source: "device", latitude: 0, longitude: 0 })}`, visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
 const { default: Home } = await import("../client/src/pages/home.tsx");
 const { default: ServiceFilters } = await import("../client/src/components/service-filters.tsx");

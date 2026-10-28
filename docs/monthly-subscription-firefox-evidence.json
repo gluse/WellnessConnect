@@ -1,0 +1,174 @@
+{
+  "browser": {
+    "product": "firefox/157.0"
+  },
+  "locales": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    {
+      "language": "en",
+      "width": 320,
+      "nativeZoom": false,
+      "viewport": {
+        "outerWidth": 500,
+        "innerWidth": 320,
+        "dpr": 1,
+        "scale": 1,
+        "cssZoom": "1"
+      },
+      "contrast": 19.755527314743425,
+      "reflow": "passed",
+      "keyboardCheckoutUnknownRecovery": "passed"
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "nativeZoom": false,
+      "viewport": {
+        "outerWidth": 768,
+        "innerWidth": 768,
+        "dpr": 1,
+        "scale": 1,
+        "cssZoom": "1"
+      },
+      "contrast": 19.755527314743425,
+      "reflow": "passed"
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "nativeZoom": false,
+      "viewport": {
+        "outerWidth": 1280,
+        "innerWidth": 1280,
+        "dpr": 1,
+        "scale": 1,
+        "cssZoom": "1"
+      },
+      "contrast": 19.755527314743425,
+      "reflow": "passed"
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "nativeZoom": false,
+      "viewport": {
+        "outerWidth": 500,
+        "innerWidth": 320,
+        "dpr": 1,
+        "scale": 1,
+        "cssZoom": "1"
+      },
+      "contrast": 19.755527314743425,
+      "reflow": "passed",
+      "keyboardCheckoutUnknownRecovery": "passed"
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "nativeZoom": false,
+      "viewport": {
+        "outerWidth": 768,
+        "innerWidth": 768,
+        "dpr": 1,
+        "scale": 1,
+        "cssZoom": "1"
+      },
+      "contrast": 19.755527314743425,
+      "reflow": "passed"
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "nativeZoom": false,
+      "viewport": {
+        "outerWidth": 1280,
+        "innerWidth": 1280,
+        "dpr": 1,
+        "scale": 1,
+        "cssZoom": "1"
+      },
+      "contrast": 19.755527314743425,
+      "reflow": "passed"
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "nativeZoom": false,
+      "viewport": {
+        "outerWidth": 500,
+        "innerWidth": 320,
+        "dpr": 1,
+        "scale": 1,
+        "cssZoom": "1"
+      },
+      "contrast": 19.061142529601344,
+      "reflow": "passed",
+      "keyboardCheckoutUnknownRecovery": "passed"
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "nativeZoom": false,
+      "viewport": {
+        "outerWidth": 768,
+        "innerWidth": 768,
+        "dpr": 1,
+        "scale": 1,
+        "cssZoom": "1"
+      },
+      "contrast": 19.061142529601344,
+      "reflow": "passed"
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "nativeZoom": false,
+      "viewport": {
+        "outerWidth": 1280,
+        "innerWidth": 1280,
+        "dpr": 1,
+        "scale": 1,
+        "cssZoom": "1"
+      },
+      "contrast": 19.061142529601344,
+      "reflow": "passed"
+    },
+    {
+      "mode": "cancel",
+      "width": 320,
+      "result": "passed"
+    },
+    {
+      "mode": "failed",
+      "width": 320,
+      "result": "passed"
+    },
+    {
+      "mode": "expired",
+      "width": 320,
+      "result": "passed"
+    },
+    {
+      "mode": "denied",
+      "width": 320,
+      "result": "passed"
+    },
+    {
+      "mode": "unavailable",
+      "width": 320,
+      "result": "passed"
+    }
+  ],
+  "screenshots": [
+    "docs/monthly-subscription-firefox-en.png",
+    "docs/monthly-subscription-firefox-lv.png",
+    "docs/monthly-subscription-firefox-ru.png"
+  ],
+  "network": [],
+  "blocked": [],
+  "errors": []
+}

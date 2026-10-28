@@ -1,13 +1,13 @@
 ---
 name: joint-be-db-optimization
-description: Coordinate DB Analyst and Backend Programmer work on WellnessConnect database/query optimization within the existing structure, presenting options and obtaining the user's choice for each paired change before implementation and authorized execution.
+description: Coordinate DB Analyst and Backend Programmer work on WellnessConnect database/query optimization within the existing structure, using owner acceptance for routine local dependencies and existing or newly obtained authorization for material choices and connected execution.
 ---
 
 # Joint be-db-optimization
 
 Use a joint DB Analyst/Developer and Backend Programmer session to optimize the
 existing WellnessConnect / FitsMyTime database and backend together. Read the
-repository's `AGENTS.md` and `DB-ANALYST-DEVELOPER.md` before analysis. This workflow
+repository's `AGENTS.md` and `ROLE-DB-ANALYST-DEVELOPER.md` before analysis. This workflow
 does not assign the General Manager or CI/CD roles.
 
 ## Joint ownership
@@ -21,7 +21,7 @@ When collaboration tools are available, create or reuse two working agents:
   behavior, ORM mappings, and backend tests. Database-affecting edits and database
   execution need the specific approval required by the DB role.
 
-The coordinating agent presents one aligned proposal, records the user's choice,
+The coordinating agent presents one aligned plan, records owner acceptance or the user's choice,
 assigns non-overlapping files, and reconciles both reviews. Give each agent the
 same approved contract and environment. Do not have two agents edit the same file
 concurrently. If collaboration is unavailable, state that limitation and perform
@@ -46,11 +46,15 @@ Inspect commands and imports for indirect writes before running them; applicatio
 startup, migration helpers, integration tests, fixtures, and rolled-back writes
 can mutate a database. Use offline or mocked checks before authorized DB work.
 
-## Obtain a choice for every paired change
+## Reuse authorization and accept routine local pairs
 
-Before changing backend or database-affecting implementation files, present a
-concrete proposal for that optimization. Skill instructions and analysis/handoff
-documentation may be prepared as part of the requested coordination work.
+Follow `AGENTS.md` cross-role cooperation and check `docs/agent-coordination.md`,
+TASKS.md and the relevant handoff for existing approvals first. Both owners may
+accept a routine, reversible local optimization dependency within an accepted
+task, record their technical choice, and implement/offline-test without another
+user approval. This includes local database-affecting files, not connected writes.
+For material choices or missing connected-operation scope, prepare one concrete
+proposal and request only the missing decision/authority.
 
 Each proposal must identify:
 
@@ -67,16 +71,16 @@ Each proposal must identify:
 - Validation and recovery for both sides, and whether the choice authorizes
   preparation only or execution against a named environment too.
 
-Ask for the user's selection and wait before dependent implementation. Do not
-interpret invocation of this skill or an agent's agreement as selection. A choice
-can cover the explicitly described DB/backend pair and its checks; do not ask
-again for each covered file or step. Ask again for each subsequent change or any
-material change to design, environment, scope, or risk. Continue independent
-analysis while waiting, without implementing pending proposals.
+Wait only for a missing material user choice or execution approval; owner
+acceptance covers routine local pairs under standing authorization. A recorded
+choice can cover the described DB/backend pair and its checks; do not ask again
+for each covered file, step or subsequent in-scope dependency. Escalate material
+changes to design, environment, scope or risk. Continue independent authorized
+work while a genuinely missing decision is pending.
 
 ## Implement and validate the selected pair
 
-Record the user's choice before edits. Delegate SQL/migrations to the DB Analyst
+Record owner acceptance or the existing/new user choice before edits. Delegate SQL/migrations to the DB Analyst
 and backend/query/ORM/test files to the Backend Programmer with DB review and
 specific delegation where required. Keep database and backend contracts aligned
 through a compatible deployment sequence and reversible, reviewable changes.
@@ -100,7 +104,7 @@ finding a measured speedup.
 ## Persist the handoff
 
 Use the current task or a focused document under `docs/` to record the proposal ID,
-user-selected option, approving party, executor per side, target environment,
+owner-accepted or user-selected option, approving party, executor per side, target environment,
 allowed operations and limits, DB-to-backend contract, application/deployment
 order, validation, recovery, actual results, and next action. Record delegated
 approval explicitly. Keep pending choices and unknown environment/access visible;

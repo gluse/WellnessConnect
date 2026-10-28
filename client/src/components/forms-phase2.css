@@ -1,5 +1,7 @@
 /* Local form conventions; other application surfaces keep their existing styles. */
+.phase2-form { overflow-wrap: anywhere; }
 .phase2-form :is(input, textarea, select, [role="combobox"]) {
+  min-width: 0;
   min-height: 44px;
   border-color: #737373;
 }

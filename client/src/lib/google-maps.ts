@@ -37,14 +37,3 @@ export async function loadGeocoder() {
   await configureMaps();
   return withDeadline(importLibrary("geocoding"));
 }
-
-// The script may load successfully while the provider never invokes its callback.
-export async function geocodeAddress(address: string): Promise<google.maps.GeocoderResult> {
-  const { Geocoder } = await loadGeocoder();
-  return withDeadline(new Promise<google.maps.GeocoderResult>((resolve, reject) => {
-    new Geocoder().geocode({ address }, (results, status) => {
-      if (status === "OK" && results?.[0]) resolve(results[0]);
-      else reject(new Error("Location unavailable"));
-    });
-  }));
-}

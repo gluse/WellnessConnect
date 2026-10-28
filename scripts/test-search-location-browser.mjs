@@ -23,8 +23,11 @@ const error = async message => {
 };
 try {
   await viewport(1280); await visit('/search');
-  await until(() => document.querySelectorAll('.search-service-card').length === 3, 'initial results');
+  await until(() => !!document.querySelector('.search-results') && document.querySelector('.search-results').getAttribute('aria-busy') === 'false', 'initial location choice');
+  await until(() => !!document.querySelector('.search-location-dialog[data-state="open"]'), 'initial modal open'); await fixture.key('Escape'); await until(() => !document.querySelector('.search-location-dialog'), 'location modal dismissed');
   assert.equal(await evaluate(() => document.querySelector('option[value="distance-asc"]').disabled), true);
+  await set('search-location', 'Synthetic city'); await submit();
+  await until(() => document.querySelectorAll('.search-service-card').length === 3, 'initial located results');
   await set('service-query', 'Unsubmitted text');
   await set(await evaluate(() => document.querySelector('.search-desktop-filters [data-testid="search-category"]').id), 'fitness');
   await config({ locationCoords: { latitude: 0, longitude: 0.029 }, geocode: 'error' });
@@ -40,6 +43,7 @@ try {
   await set('service-sort', 'distance-asc');
   assert.deepEqual(await evaluate(() => [...document.querySelectorAll('.search-service-title')].map(node => node.textContent)), ['Personal training', 'Deep tissue massage', 'Restorative yoga']);
   await click('.search-chip');
+  await until(() => !!document.querySelector('.search-location-dialog'), 'forgotten location modal'); await fixture.key('Escape'); await until(() => !document.querySelector('.search-location-dialog'), 'modal dismissed');
   assert.equal(await evaluate(() => document.querySelector('option[value="distance-asc"]').disabled), true);
   assert.equal(await evaluate(() => document.querySelector('#service-sort').value), 'default');
   checks.push('Location icon immediately applies coordinates and enables both distance sorts; nearest-first orders results; unapplied query/filter drafts stay intact; removing location disables distance sorting');
@@ -64,7 +68,7 @@ try {
       assert.equal(await requests(), appliedRequests, 'Failure keeps the applied search');
       assert.equal(await evaluate(() => document.querySelectorAll('.search-service-card').length), 3);
       assert.ok(await evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Localized feedback reflows');
-      if (language === 'en' && outcome === 'error') await fixture.screenshot('docs/search-location-denied.png');
+      if (language === 'en' && outcome === 'error') await fixture.screenshot('docs/search-modal-gps-denied.png');
     }
     for (const outcome of ['unavailable', 'timeout']) {
       await config({ geolocation: 'success', geolocationQueue: [outcome, 'success'] });
@@ -118,10 +122,10 @@ try {
   assert.equal(await requests(), appliedRequests + 1, 'Submitting unchanged coordinates reuses the applied search');
   const url = await evaluate(() => window.searchFixture.requests.at(-1));
   const params = new URL(url, 'http://fixture.invalid').searchParams;
-  assert.equal(params.get('latitude'), '56.95'); assert.equal(params.get('longitude'), '24.1'); assert.equal(params.get('radius'), '50');
+  assert.equal(params.get('latitude'), '56.95'); assert.equal(params.get('longitude'), '24.1'); assert.equal(params.get('radius'), '25');
   checks.push('Successful location follows language changes, immediately searches with detected coordinates/radius, and enables distance sorting');
   assert.deepEqual(await evaluate(() => window.searchFixture.unexpected), []);
   assert.deepEqual(fixture.errors, []); assert.deepEqual(fixture.network, []); assert.deepEqual(fixture.blocked, []);
-  await writeFile(new URL('../docs/search-location-evidence.json', import.meta.url), JSON.stringify({ date: '2026-10-21', checks, languages: ['en','lv','ru'], viewports: [390,1280], browser: 'Installed headless Chrome', deferredLanguages: ['ar','zh','fr','de','hi','ja','pt','es'], limits: 'Synthetic geolocation and API responses; real application timer. No real location, external requests, database/session writes, paid services or deployment. Device/browser permission settings and live location provider remain unverified.' }, null, 2) + '\n');
+  await writeFile(new URL('../docs/search-modal-gps-evidence.json', import.meta.url), JSON.stringify({ date: '2026-10-23', checks, languages: ['en','lv','ru'], viewports: [390,1280], browser: 'Installed headless Chrome', deferredLanguages: ['ar','zh','fr','de','hi','ja','pt','es'], limits: 'Synthetic geolocation and API responses; real application timer. No real location, external requests, database/session writes, paid services or deployment. Device/browser permission settings and live location provider remain unverified.' }, null, 2) + '\n');
   console.log(`Passed search location: ${checks.length} groups; en/lv/ru; no unexpected network or runtime errors.`);
 } finally { await fixture.close(); }

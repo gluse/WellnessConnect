@@ -13,6 +13,7 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        header: "var(--header-background)",
         card: {
           DEFAULT: "var(--card)",
           foreground: "var(--card-foreground)",

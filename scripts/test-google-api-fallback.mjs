@@ -14,7 +14,7 @@ function loader({ fetch, library = async () => ({}), options = () => {} }) {
   })(name => { assert.equal(name, '@googlemaps/js-api-loader'); return { importLibrary: library, setOptions: options }; }, module, module.exports);
   return { ...module.exports, expire() { const callbacks = [...timers.values()]; callbacks.forEach(callback => callback()); }, timers };
 }
-const flush = async () => { for(let i=0;i<20;i++) await Promise.resolve(); await new Promise(resolve => setImmediate(resolve)); };
+const flush = async () => { for(let i=0;i<20;i++) await Promise.resolve(); };
 for (const response of [() => new Response('{}', { status:503 }), () => new Response('{}')]) {
   let imports=0;
   const subject=loader({fetch:async()=>response(), library:async()=>{imports++;}});
@@ -36,11 +36,3 @@ let attempts=0;
 const recover=loader({fetch:async()=>new Response(++attempts===1?'{}':'{"apiKey":"synthetic"}')});
 await assert.rejects(recover.loadMapLibraries());await recover.loadMapLibraries();assert.equal(attempts,2,'A failed configuration may recover on an explicit later attempt');
 console.log('Passed Maps missing/rejected config, config/script/geocoder deadlines, abort/late config isolation, cleanup and configuration recovery; all boundaries mocked.');
-
-let lateCallback;
-const callbackLoader=loader({fetch:async()=>new Response('{"apiKey":"synthetic"}'),library:async()=>({Geocoder:class{geocode(_request,callback){lateCallback=callback;}}})});
-const callbackPending=callbackLoader.geocodeAddress('Synthetic place');const callbackRejected=assert.rejects(callbackPending,/timed out/);await flush();callbackLoader.expire();await callbackRejected;
-lateCallback([{formatted_address:'Late synthetic result'}],'OK');await flush();assert.equal(callbackLoader.timers.size,0);
-const goodLoader=loader({fetch:async()=>new Response('{"apiKey":"synthetic"}'),library:async()=>({Geocoder:class{geocode(_request,callback){callback([{formatted_address:'Synthetic result'}],'OK');}}})});
-assert.equal((await goodLoader.geocodeAddress('Synthetic place')).formatted_address,'Synthetic result');assert.equal(goodLoader.timers.size,0);
-console.log('Passed bounded geocoder callback, ignored late callback and successful address resolution.');

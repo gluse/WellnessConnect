@@ -1,4 +1,5 @@
 /* Contrast and control sizing are scoped to the service form pilot. */
+.service-editor { overflow-wrap: anywhere; }
 .service-editor :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select, [role="combobox"]),
 .service-editor label:has(input) {
   border-color: #737373;

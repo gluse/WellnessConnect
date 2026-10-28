@@ -2,6 +2,7 @@ import type { Request } from "express";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./db";
 import { companies, companyMemberships, employees, services, addresses, bookings, availability, users, type WorkspaceContext, type Service, type Booking } from "@shared/schema";
+import { assertCustomerBookingChange } from "./customerBookings";
 
 declare module "express-session" { interface SessionData { activeCompanyId?: number | null; } }
 declare global { namespace Express { interface Request { workspace?: WorkspaceContext; } } }
@@ -46,6 +47,26 @@ export function assertBooking(req: Request, booking: Booking | undefined, write 
   if (!booking || (current.companyId != null ? booking.companyId !== current.companyId : booking.companyId != null || booking.providerId !== current.userId)) throw new AccessError(403, "Reservation is not in this workspace.");
   if (!current.ctx.permissions.readAll && (current.employeeId == null || booking.employeeId !== current.employeeId)) throw new AccessError(403, "This reservation is not assigned to you.");
   return current;
+}
+
+// Customer ownership is independent of the currently selected provider workspace.
+// All other callers still need the existing provider/employee permissions.
+export function assertBookingChange(req: Request, booking: Booking | undefined): string | undefined {
+  try {
+    assertBooking(req, booking, true);
+    return undefined;
+  } catch (error) {
+    if (!(error instanceof AccessError)) throw error;
+    // An actor can be both provider and customer; preserve provider authority
+    // before considering the narrower customer permission.
+    if (!booking || booking.seekerId !== req.user?.claims.sub) throw error;
+  }
+  const userId = req.user?.claims.sub;
+  if (booking && userId && booking.seekerId === userId) {
+    assertCustomerBookingChange(booking, userId);
+    return userId;
+  }
+  throw new AccessError(403, "Reservation is not in this workspace.");
 }
 
 // Idempotent conversion for signup and existing individual providers, preserving all records.

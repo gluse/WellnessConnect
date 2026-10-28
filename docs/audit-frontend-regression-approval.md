@@ -65,7 +65,7 @@ a focused review of that change before relying on this approval.
 ## Review findings
 
 Read [AGENTS.md](../AGENTS.md), the
-[Front End Developer role](../FRONT-END-DEVELOPER.md), the
+[Front End Developer role](../ROLE-FRONT-END-DEVELOPER.md), the
 [frontend practices skill](../.agents/skills/frontend-practices/SKILL.md) and its
 [testing reference](../.agents/skills/frontend-practices/references/testing.md).
 Reviewed the four scripts and relevant frontend/backend imports and startup paths.

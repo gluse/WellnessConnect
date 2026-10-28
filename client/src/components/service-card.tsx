@@ -106,8 +106,9 @@ export default function ServiceCard({ service, onBook, onViewDetails, onViewProv
                     {service.instantBooking ? "Instant Book" : "Requires Approval"}
                   </Badge>
                 </div>
+                {/* Safari pointer clicks may leave focus on the page body. */}
                 <Button 
-                  onClick={onBook}
+                  onClick={event => { event.currentTarget.focus(); onBook(); }}
                   size="sm"
                   className="bg-primary hover:bg-primary/90"
                 >

@@ -1,6 +1,49 @@
 # Audit plan
 
-Current implementation state, 19 October 2026: development/test audit destination
+Current status, 23 October 2026: TASK-014 is complete for prototype development.
+Restricted runtime accounts and protected configuration are provisioned; all
+twelve synthetic events passed connected delivery/recovery and retention checks.
+Temporary test access is revoked, final active profiles passed, and a bounded
+worker run was healthy with no backlog. Capture/worker configuration is enabled;
+start `npm run audit:worker` alongside the prototype when needed. No daemon,
+application HTTP server or production deployment was started. Remote Auth event
+producers remain disabled for TASK-015. Follow the
+[completion execution record](audit-completion-execution.md) for acceptance and
+limits. Earlier dated checkpoints below are historical.
+
+Continuation, 23 October 2026: both approved runtime-0003 migrations committed on
+the named development projects and final read-only catalog verification passed.
+All new runtime accounts remain NOLOGIN/passwordless. The selected source
+foundation covers sixteen application tables, ten sequences and sixteen
+server-role RLS policies. Auditing is not collecting events yet.
+
+The [runtime execution handoff](audit-runtime-execution.md) and
+[preflight report](audit-preflight-report.md) preserve commands, pinned applied
+SQL, approvals, partial stops and final safe results. The separately approved
+`.env` ACL protection succeeded; its protected recovery record is retained.
+Backend runtime guards reject replication capability and unexpected memberships;
+isolated event/worker/auth tests and TypeScript checking passed earlier in this
+continuation. The affected database offline checks passed 243 assertions.
+
+Catalog verifier corrections distinguish exact dormant provider ACLs from usable
+extra access. The destination's two named monitoring views and source's two cron
+tables/two sequences have PUBLIC ACLs, but the runtime roles lack schema USAGE.
+Exact object/owner/grantor/privilege/no-grant-option guards report those ACLs and
+reject all other unexpected rights. No grant repair or migration reapply was used.
+The installed-source verifier separately checks expected runtime policies and
+rejects restrictive policies. Backend independently reviewed the SQL and passed
+264 continuation and 246 installer checks; those offline checks do not execute
+mutated PostgreSQL privilege scenarios.
+
+TASK-014 remains open for safe credential/private-file provisioning, connected
+rollback/delivery/lease/duplicate/outage rehearsals and activation. Visible logging
+observations do not establish password/provider logging safety. App cutover also
+needs the separate saved-location compatibility package and remote Auth durable
+intent/reconciliation gate. TASK-026's selected local location extension work is
+separate and grants no connected execution approval. No passwords, LOGIN,
+fixtures, application startup, activation or deployment occurred in this step.
+
+Historical implementation state, 19 October 2026: development/test audit destination
 and application outbox scaffolding are applied; both metadata checks passed after
 verified-TLS preflights. Local capture/worker/config code and initial auth/access
 and account-role producers passed isolated tests and TypeScript checking.

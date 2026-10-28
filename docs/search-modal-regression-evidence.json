@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-23",
+  "checks": [
+    "independent query/filter drafts, no automatic requests, explicit Search/Apply and empty results",
+    "invalid radius/date range retains prior results, focuses feedback; existing price sort",
+    "explicit geocoding, resolved coordinates, failed-location retention and current location enabling distance sorting",
+    "rate-limit retry, map fallback to list, details-first flow and guest sign-in without writes",
+    "en/lv/ru responsive matrix, draft-preserving phone dialog/Escape/focus/apply, dark mode, 200% text and reduced motion"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320
+    },
+    {
+      "language": "en",
+      "width": 390
+    },
+    {
+      "language": "en",
+      "width": 768
+    },
+    {
+      "language": "en",
+      "width": 1280
+    },
+    {
+      "language": "lv",
+      "width": 320
+    },
+    {
+      "language": "lv",
+      "width": 390
+    },
+    {
+      "language": "lv",
+      "width": 768
+    },
+    {
+      "language": "lv",
+      "width": 1280
+    },
+    {
+      "language": "ru",
+      "width": 320
+    },
+    {
+      "language": "ru",
+      "width": 390
+    },
+    {
+      "language": "ru",
+      "width": 768
+    },
+    {
+      "language": "ru",
+      "width": 1280
+    }
+  ],
+  "screenshots": [
+    "docs/search-modal-regression-desktop.png",
+    "docs/search-modal-regression-phone.png",
+    "docs/search-modal-regression-phone-filters.png",
+    "docs/search-modal-regression-russian-dark.png"
+  ],
+  "unexpectedNetwork": [],
+  "runtimeErrors": [],
+  "deferredLanguages": [
+    "ar",
+    "de",
+    "es",
+    "fr",
+    "hi",
+    "ja",
+    "pt",
+    "zh"
+  ],
+  "limits": "Installed headless Chrome; synthetic API/geocoding/location boundaries. No real maps, connected server/session/database writes or deployment. Physical devices, screen readers, other browser engines and native-language review not performed."
+}

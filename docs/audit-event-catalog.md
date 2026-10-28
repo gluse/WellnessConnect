@@ -1,9 +1,80 @@
 # Audit event catalog and backend implementation map
 
 Catalog draft: `1`, reviewed against repository source on 19 October 2026.
-TASK-013 backend deliverable; all instrumentation below is **proposed**, with no
-implemented or execution-verified event coverage. Read with [audit plan](audit-plan.md)
-and the DB Analyst's [storage proposal](audit-storage-proposal.md).
+TASK-013 backend deliverable; the route/event matrix describes proposed coverage
+and does not establish that every producer is implemented. TASK-014 development
+storage and delivery subsequently completed on 23 October 2026; see the
+[final execution result](audit-runtime-execution.md#final-development-result--23-october-2026).
+Earlier dated preparation checkpoints below are historical. Read with
+[audit plan](audit-plan.md) and the DB Analyst's
+[storage proposal](audit-storage-proposal.md).
+
+## Audit tables and their purpose
+
+Reference added 23 October 2026 from the applied 0001 storage and 0004 rehearsal
+migrations and final execution evidence; no new database connection was made for
+this documentation update. Tables use dedicated schemas rather than `public`.
+
+The independent audit destination is project `ynygqodmtgjrngiudalw`:
+
+| Table | Description |
+| --- | --- |
+| `audit.events` | Accepted audit history. Stores the event name, occurrence/receipt times, actor, workspace, target, outcome, safe field changes, correlation IDs, canonical payload/hash and retention expiry. This is the main table for investigating recorded actions. |
+| `audit.integrity_incidents` | Evidence that an existing event ID was submitted with a different payload hash. Stores the candidate hash, detection time and database principal; the originally accepted event stays unchanged. |
+| `audit.maintenance_runs` | Retention-cleanup receipts: who ran cleanup, when, which policy version applied, and counts of removed events, integrity incidents and older maintenance receipts. |
+| `audit.schema_migrations` | Installed audit schema/contract versions and installation timestamps. Describes database setup, not user actions. |
+
+The main application/source database is project `hbkooiknruimukkhshrk`:
+
+| Table | Description |
+| --- | --- |
+| `audit_capture.audit_outbox` | Captured events awaiting or tracking delivery. Contains the payload/hash, status (`pending`, `leased`, `delivered`, `quarantined`), attempt count, next retry, lease, acknowledgment time and safe error code. Local audited mutations enqueue their event in the same transaction. |
+| `audit_capture.maintenance_runs` | Source maintenance receipts for event replay, delivered-copy cleanup and expired-event disposal, including executor, time and affected counts. |
+| `audit_capture.schema_migrations` | Installed source capture schema/contract versions and installation timestamps. |
+
+Both projects also contain contract metadata:
+
+| Table | Description |
+| --- | --- |
+| `audit_contract.installation` | The project's expected reference and deployment environment, checked when validating incoming events. |
+| `audit_contract.migrations` | Installed shared event-contract versions and their installation timestamps. |
+
+Both projects contain these retained test-evidence tables:
+
+| Table | Description |
+| --- | --- |
+| `audit_rehearsal.run` | The explicitly synthetic development rehearsal's run ID, start/completion times, overall pass result and evidence-retention deadline. |
+| `audit_rehearsal.cohort` | The twelve approved synthetic event IDs, their run/scenario association and individual completion/pass results. Identifies test events so they are not mistaken for real user activity. |
+
+The rehearsal test login/helper permissions were revoked after acceptance;
+the manifests and synthetic events remain retained evidence. Wrong-password/login
+audit capture remains disabled pending TASK-015, so those attempts do not yet
+produce new `audit.events` rows. The worker moves captured outbox events into
+`audit.events` when running (`npm run audit:worker`).
+
+Related **views**, rather than additional tables: destination `audit.reader_events`
+filters out expired events; `audit.integrity_history` and `audit.maintenance_history`
+provide incident/maintenance access. Source `audit_capture.delivery_health` exposes
+queue counts/age, and `audit_capture.maintenance_history` exposes maintenance
+receipts. Reading any table or view still requires the applicable database grants.
+
+### Requested exception: explicit service details opens
+
+On 23 October 2026 the user requested one `service.viewed.v1` event when a found
+service is clicked to open its details. It records a server-accepted notification
+for an available public service: verified user or anonymous actor, unknown scope,
+`service` target with its ID, `service` source component, `succeeded` outcome,
+empty changes and R/90-day retention. No search text, location, service content
+or guest identifier is captured. It does not prove a human saw the screen.
+Public viewing continues if capture fails; the existing gap signal reports that
+failure. This exception does not enable other public browsing analytics.
+
+Implemented and enabled in development configuration on 25 October 2026. The
+frontend/backend focused checks, TypeScript, both DB extensions, rollback-only
+R90/legacy acceptance and final read-only verification passed. Restart the app
+and use the updated worker to collect new views. Follow the
+[single-event execution record](audit-service-view-execution.md) for current
+status, approvals and verification. Broader TASK-016/017 coverage remains open.
 
 ## Assignment and evidence limits
 
@@ -351,7 +422,7 @@ an optional initial snapshot must be explicitly a migration baseline.
 
 ## Analysis verification record
 
-- Read `AGENTS.md`, `BACK-END-DEVELOPER.md`, backend-practices skill, `TASKS.md`
+- Read `AGENTS.md`, `ROLE-BACK_END_DEVELOPER.md`, backend-practices skill, `TASKS.md`
   and `docs/audit-plan.md`; applied repository authority/isolation rules.
 - Used `git status --short`, `rg --files server scripts shared`, route/symbol/
   transaction/provider/script searches, and `Get-Content` for the files cited

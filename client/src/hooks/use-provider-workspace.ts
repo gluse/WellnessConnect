@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Availability, BookingWithDetails, Employee, Service, WorkspaceContext } from "@shared/schema";
+export const WORKSPACE_CHANGE_KEY = ["provider-workspace-change"] as const;
 
 export function useProviderWorkspace() {
   return useQuery<WorkspaceContext>({ queryKey: ["/api/company/context"], retry: false });

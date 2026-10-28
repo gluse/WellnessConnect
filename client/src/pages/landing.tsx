@@ -111,6 +111,7 @@ export default function Landing() {
           <p className="text-center text-sm text-neutral-500 mt-4">
             {t("guestSearch.landingNote")}
           </p>
+          <a href="/privacy-policy.html" className="block text-center text-sm underline underline-offset-4 mt-4">{t("legal.privacyPolicy")}</a>
         </div>
       </div>
     </div>

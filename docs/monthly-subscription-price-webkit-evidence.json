@@ -1,0 +1,139 @@
+{
+  "date": "2026-10-26",
+  "browser": {
+    "product": "webkit/27.2"
+  },
+  "locales": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    {
+      "lang": "en",
+      "width": 320,
+      "nativeZoom": false,
+      "metrics": {
+        "overflow": false,
+        "innerWidth": 320,
+        "outerWidth": 336,
+        "dpr": 1,
+        "cssZoom": "1",
+        "scale": 1,
+        "clipped": false
+      },
+      "contrast": 5.506681400777804,
+      "result": "passed",
+      "exactDecimalKeyboardSaveConflictReload": "passed"
+    },
+    {
+      "lang": "en",
+      "width": 1280,
+      "nativeZoom": false,
+      "metrics": {
+        "overflow": false,
+        "innerWidth": 1280,
+        "outerWidth": 1296,
+        "dpr": 1,
+        "cssZoom": "1",
+        "scale": 1,
+        "clipped": false
+      },
+      "contrast": 5.506681400777804,
+      "result": "passed"
+    },
+    {
+      "lang": "lv",
+      "width": 320,
+      "nativeZoom": false,
+      "metrics": {
+        "overflow": false,
+        "innerWidth": 320,
+        "outerWidth": 336,
+        "dpr": 1,
+        "cssZoom": "1",
+        "scale": 1,
+        "clipped": false
+      },
+      "contrast": 5.506681400777804,
+      "result": "passed",
+      "exactDecimalKeyboardSaveConflictReload": "passed"
+    },
+    {
+      "lang": "lv",
+      "width": 1280,
+      "nativeZoom": false,
+      "metrics": {
+        "overflow": false,
+        "innerWidth": 1280,
+        "outerWidth": 1296,
+        "dpr": 1,
+        "cssZoom": "1",
+        "scale": 1,
+        "clipped": false
+      },
+      "contrast": 5.506681400777804,
+      "result": "passed"
+    },
+    {
+      "lang": "ru",
+      "width": 320,
+      "nativeZoom": false,
+      "metrics": {
+        "overflow": false,
+        "innerWidth": 320,
+        "outerWidth": 336,
+        "dpr": 1,
+        "cssZoom": "1",
+        "scale": 1,
+        "clipped": false
+      },
+      "contrast": 5.506681400777804,
+      "result": "passed",
+      "exactDecimalKeyboardSaveConflictReload": "passed"
+    },
+    {
+      "lang": "ru",
+      "width": 1280,
+      "nativeZoom": false,
+      "metrics": {
+        "overflow": false,
+        "innerWidth": 1280,
+        "outerWidth": 1296,
+        "dpr": 1,
+        "cssZoom": "1",
+        "scale": 1,
+        "clipped": false
+      },
+      "contrast": 5.506681400777804,
+      "result": "passed"
+    },
+    {
+      "mode": "actual Administration page",
+      "result": "passed"
+    },
+    {
+      "mode": "mode=admin-page&denied=true",
+      "result": "passed"
+    },
+    {
+      "mode": "mode=admin&unavailable=true",
+      "result": "passed"
+    },
+    {
+      "mode": "actual provider settings return/manual-wait",
+      "result": "passed"
+    }
+  ],
+  "screenshots": [
+    "docs/monthly-subscription-price-webkit-en-phone.png",
+    "docs/monthly-subscription-price-webkit-en-desktop.png",
+    "docs/monthly-subscription-price-webkit-lv-phone.png",
+    "docs/monthly-subscription-price-webkit-lv-desktop.png",
+    "docs/monthly-subscription-price-webkit-ru-phone.png",
+    "docs/monthly-subscription-price-webkit-ru-desktop.png"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "serverWrites": []
+}

@@ -1,0 +1,50 @@
+{
+  "browser": {
+    "product": "firefox/157.0"
+  },
+  "checks": [
+    {
+      "language": "en",
+      "light": {
+        "failures": [],
+        "minText": 4.797580078171407,
+        "minControlBorder": 4.741667181590045
+      },
+      "dark": {
+        "failures": [],
+        "minText": 5.506681400777804,
+        "minControlBorder": 4.1958570466569505
+      },
+      "recovery": "save confirmed, failed GET blocks additional writes, in-panel retry recovers authoritative data and clears error"
+    },
+    {
+      "language": "lv",
+      "light": {
+        "failures": [],
+        "minText": 4.797580078171407,
+        "minControlBorder": 4.741667181590045
+      },
+      "dark": {
+        "failures": [],
+        "minText": 5.506681400777804,
+        "minControlBorder": 4.1958570466569505
+      },
+      "recovery": "save confirmed, failed GET blocks additional writes, in-panel retry recovers authoritative data and clears error"
+    },
+    {
+      "language": "ru",
+      "light": {
+        "failures": [],
+        "minText": 4.797580078171407,
+        "minControlBorder": 4.741667181590045
+      },
+      "dark": {
+        "failures": [],
+        "minText": 5.506681400777804,
+        "minControlBorder": 4.1958570466569505
+      },
+      "recovery": "save confirmed, failed GET blocks additional writes, in-panel retry recovers authoritative data and clears error"
+    }
+  ],
+  "externalRequests": 0
+}

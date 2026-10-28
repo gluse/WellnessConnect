@@ -4,11 +4,13 @@ import { storage, BookingConflictError } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { insertServiceSchema, insertBookingSchema, insertAvailabilitySchema, providerProfileSchema, employeeSchema, accountDetailsSchema, addressInputSchema, type AddressLocation } from "@shared/schema";
 import { addressStore } from "./addresses";
-import { supabaseAdmin } from "./supabase";
+import { supabaseAdmin, createAuthClient } from "./supabase";
 import { z } from "zod";
 import { createImageUpload, validateOwnedImage, validateServiceImage, canReadImage, downloadImage, ImageStorageError } from "./imageStorage";
 import { generateEmbedding } from "./embeddings";
 import { setupPublicSearchRoutes } from "./publicSearch";
+import { setupSearchLocationRoutes } from "./searchLocationRoutes";
+import { searchLocationStore } from "./searchLocations";
 import { setupPaymentRoutes } from "./payments";
 import { GeocodingError } from "./geocoding";
 import { registerLocation, resolveServiceLocation } from "./registeredLocations";
@@ -21,19 +23,21 @@ import { CategoryError } from "@shared/categories";
 import { setupReviewRoutes } from "./reviewRoutes";
 import { setupProviderCatalogRoutes } from "./providerCatalogRoutes";
 import { setupStorefrontRoutes } from "./storefrontRoutes";
-import { scope, assertService, assertBooking, ensureCompany, workspaceContext, saveWorkspaceSession, AccessError } from "./companyAccess";
+import { scope, assertService, assertBookingChange, ensureCompany, workspaceContext, saveWorkspaceSession, AccessError } from "./companyAccess";
+import { CustomerBookingError } from "./customerBookings";
 import { db } from "./db";
 import { companies } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { requestAuditContext } from "./audit/http";
 import { AuditCaptureUnavailable } from "./audit/capture";
+import { setupServiceViewRoutes } from "./serviceViewRoutes";
 
 function apiFailure(error: unknown, res: import("express").Response, fallback: string) {
   const pgError = (error as any)?.cause ?? error;
   if ((pgError as any)?.code === "23503" && (pgError as any)?.constraint === "services_category_categories_key_fk") {
     return res.status(400).json({ message: "Choose an existing category." });
   }
-  const known = error instanceof AccessError || error instanceof ImageStorageError || error instanceof GeocodingError || error instanceof CategoryError || error instanceof AuditCaptureUnavailable;
+  const known = error instanceof AccessError || error instanceof CustomerBookingError || error instanceof ImageStorageError || error instanceof GeocodingError || error instanceof CategoryError || error instanceof AuditCaptureUnavailable;
   res.status(known ? error.status : error instanceof z.ZodError ? 400 : error instanceof BookingConflictError ? 409 : 500)
     .json({ message: known || error instanceof BookingConflictError ? error.message : error instanceof z.ZodError ? error.issues[0].message : fallback });
 }
@@ -75,7 +79,7 @@ async function enrichEmbeddingText(name: string, description: string | null, cat
   return text;
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express, billing?: { mountAuthenticated(app: Express): void }): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
   // Coordinate retention is managed explicitly, not by intermediary HTTP caches.
@@ -86,6 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupAdminRoutes(app);
   setupCategoryRoutes(app);
   setupCompanyRoutes(app);
+  billing?.mountAuthenticated(app);
   setupSchedulingRoutes(app);
   setupReviewRoutes(app);
   setupProviderCatalogRoutes(app);
@@ -96,6 +101,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     generateEmbedding,
   });
   setupPaymentRoutes(app, isAuthenticated);
+  setupSearchLocationRoutes(app, isAuthenticated, searchLocationStore);
+  setupServiceViewRoutes(app, {
+    getService: id => storage.getServiceById(id),
+    verifyActor: async (token, expectedUserId) => {
+      const { data, error } = await createAuthClient().auth.getUser(token);
+      if (error || !data.user || data.user.id !== expectedUserId) return { kind: "anonymous" };
+      const profile = await storage.getUser(data.user.id);
+      if (!profile || (profile.currentRole !== "seeker" && profile.currentRole !== "provider")) return { kind: "anonymous" };
+      return { kind: "user", userId: data.user.id, effectiveRole: profile.currentRole };
+    },
+  });
 
   // Object Storage routes
   app.post('/api/objects/upload', isAuthenticated, async (req: any, res) => {
@@ -585,15 +601,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch('/api/bookings/:id/status', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const bookingId = parseInt(req.params.id);
+      const bookingId = z.coerce.number().int().positive().parse(req.params.id);
       const { status } = z.object({ status: z.enum(["pending", "confirmed", "cancelled", "completed"]) }).parse(req.body);
       
-      // Verify booking belongs to user (as provider)
       const booking = await storage.getBookingById(bookingId);
-      assertBooking(req, booking, true);
+      const seekerId = assertBookingChange(req, booking);
+      if (seekerId && status !== "cancelled") throw new AccessError(403, "Customers can only cancel their reservations.");
       
-      const updatedBooking = await storage.updateBookingStatus(bookingId, status);
+      const updatedBooking = await storage.updateBookingStatus(bookingId, status, seekerId);
       res.json(updatedBooking);
     } catch (error) {
       console.error("Error updating booking status:", error);
@@ -607,8 +622,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = z.coerce.number().int().positive().parse(req.params.id);
       const date = z.string().datetime().transform(value => new Date(value)).refine(value => value.getTime() > Date.now(), "Choose a future appointment time.").parse(req.body.scheduledDate);
       const booking = await storage.getBookingById(id);
-      assertBooking(req, booking, true);
-      res.json(await storage.rescheduleBooking(id, date));
+      const seekerId = assertBookingChange(req, booking);
+      res.json(await storage.rescheduleBooking(id, date, seekerId));
     } catch (error) { apiFailure(error, res, "Unable to reschedule reservation"); }
   });
 
