@@ -68,6 +68,7 @@ const { queryClient } = await import("../client/src/lib/queryClient.ts");
 const { default: Home } = await import("../client/src/pages/home.tsx");
 const { default: ServiceFilters } = await import("../client/src/components/service-filters.tsx");
 const { default: ServiceCard } = await import("../client/src/components/service-card.tsx");
+const { DialogContent } = await import("../client/src/components/ui/dialog.tsx");
 const { act, create } = renderer;
 queryClient.clear(); queryClient.setQueryData(["/api/auth/user"], null);
 let component;
@@ -79,8 +80,12 @@ assert.equal(component.root.findAllByType(ServiceCard).length, 1);
 const input = id => component.root.findAllByType("input").find(node => node.props.id === id);
 const editQuery = value => act(async () => input("service-query").props.onChange({ target: { value } }));
 const submit = async () => { await act(async () => component.root.findAllByType("form").find(node => node.props.className === "search-query-form").props.onSubmit({ preventDefault() {} })); await flush(30); };
-const updateFilters = changes => act(async () => { const node = component.root.findAllByType(ServiceFilters)[0]; node.props.onFiltersChange({ ...node.props.filters, ...changes }); });
-const apply = async () => { await act(async () => component.root.findAllByType(ServiceFilters)[0].props.onApply()); await flush(30); };
+// Closed Radix portals do not mount their children in react-test-renderer.
+// Exercise the page/Filters callback contract here; real dialog reachability,
+// rendering, validation feedback and focus are checked by the browser suite.
+const filterElement = () => component.root.findAllByType(DialogContent).flatMap(node => React.Children.toArray(node.props.children)).find(node => node.type === ServiceFilters);
+const updateFilters = changes => act(async () => { const node = filterElement(); node.props.onFiltersChange({ ...node.props.filters, ...changes }); });
+const apply = async () => { await act(async () => filterElement().props.onApply()); await flush(30); };
 const text = () => JSON.stringify(component.toJSON());
 assert.equal(input("service-query").props.maxLength, 200);
 searchRequests = [];
@@ -100,7 +105,7 @@ await updateFilters({ date: "2026-10-01", dateEnd: "2026-11-01" });
 const beforeInvalid = searchRequests.length; await apply();
 assert.equal(searchRequests.length, beforeInvalid, "Invalid draft filters must not issue requests");
 assert.equal(component.root.findAllByType(ServiceCard).length, 1, "Rejected draft filters retain the last applied results");
-assert.ok(text().includes(english.dateRange));
+assert.equal(filterElement().props.error, "publicSearch.dateRange");
 await updateFilters({ date: "", dateEnd: "" });
 status = 429;
 await editQuery("massage"); await submit();

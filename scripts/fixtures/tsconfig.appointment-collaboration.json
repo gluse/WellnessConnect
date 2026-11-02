@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["appointment-collaboration.tsx"],
+  "exclude": [],
+  "compilerOptions": { "target": "ES2022", "incremental": false }
+}

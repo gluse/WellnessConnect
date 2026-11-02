@@ -34,6 +34,7 @@ globalThis.fetch = async (url, options = {}) => {
   }
   if (url === "/api/auth/user") return new Response(JSON.stringify(currentUser));
   if (url === "/api/company/context") return new Response(JSON.stringify(workspace));
+  if (url === "/api/account/communication") return Response.json({ phone: null, phoneVerified: false, preferredMethod: null, language: "en", smsOptIn: false, whatsappOptIn: false, verificationAvailable: false });
   throw new Error(`Unexpected request: ${url}`);
 };
 queryClient.setQueryData(["/api/auth/user"], currentUser);
@@ -62,7 +63,7 @@ await submit();
 assert.deepEqual(writes[0], { firstName: "Āna", lastName: "O’Neil-Smith" });
 assert.equal(queryClient.getQueryData(["/api/auth/user"]).firstName, "Āna");
 assert.equal(input("account-name").props.value, "Āna");
-assert.ok(component.root.findByProps({ role: "status" }).children.includes("Account details saved."));
+assert.ok(component.root.findAllByProps({ role: "status" }).some(node => node.children.includes("Account details saved.")));
 responseStatus = 503;
 await edit("account-name", "Retry name");
 await submit();

@@ -1,0 +1,155 @@
+{
+  "date": "2026-11-02",
+  "browser": {
+    "product": "firefox/157.0"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    "en: personal-only hidden; one/two companies visible in navigation; localized labels, responsive popover and Escape/focus",
+    "lv: personal-only hidden; one/two companies visible in navigation; localized labels, responsive popover and Escape/focus",
+    "ru: personal-only hidden; one/two companies visible in navigation; localized labels, responsive popover and Escape/focus",
+    "keyboard open/focus; company and personal switching; safe company text; role notices; failed/pending switches; duplicate/navigation protection; viewer permissions",
+    "dirty editor switch has no request before confirmation; Keep editing preserves draft; Discard switches once"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "height": 700,
+      "companies": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "language": "en",
+      "width": 767,
+      "height": 900,
+      "companies": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "height": 900,
+      "companies": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "height": 900,
+      "companies": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "height": 700,
+      "companies": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "language": "lv",
+      "width": 767,
+      "height": 900,
+      "companies": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "height": 900,
+      "companies": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "height": 900,
+      "companies": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "height": 700,
+      "companies": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "language": "ru",
+      "width": 767,
+      "height": 900,
+      "companies": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "height": 900,
+      "companies": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "height": 900,
+      "companies": [
+        0,
+        1,
+        2
+      ]
+    }
+  ],
+  "screenshots": [
+    "docs/workspace-navigation-firefox-desktop.png",
+    "docs/workspace-navigation-firefox-phone.png"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Isolated frontend fixture, synthetic fetch mocks, blocked external network. No connected services/database/session writes. Native-language review, physical devices and screen readers unverified."
+}

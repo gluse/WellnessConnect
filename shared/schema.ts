@@ -421,10 +421,14 @@ export const services = pgTable("services", {
   advancePaymentPercent: integer("advance_payment_percent").default(50),
   imageUrl: text("image_url"),
   externalUrl: text("external_url"),
+  reminderEnabled: boolean("reminder_enabled").notNull().default(false),
+  reminderMethod: varchar("reminder_method", { enum: ["email", "sms", "whatsapp"] }).notNull().default("email"),
+  reminderHours: integer("reminder_hours").notNull().default(24),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-}, table => [index("services_address_idx").on(table.addressId), index("services_category_idx").on(table.category), check("services_cleanup_time_check", sql`${table.cleanupTime} BETWEEN 0 AND 1440`)]).enableRLS();
+}, table => [index("services_address_idx").on(table.addressId), index("services_category_idx").on(table.category), check("services_cleanup_time_check", sql`${table.cleanupTime} BETWEEN 0 AND 1440`),
+  check("services_reminder_settings_check", sql`${table.reminderMethod} IN ('email','sms','whatsapp') AND ${table.reminderHours} BETWEEN 1 AND 168`)]).enableRLS();
 
 // Only accepted Google coordinates, never Google's formatted address or response.
 // Place IDs may survive coordinate expiry; the key hashes the user's address.
@@ -450,13 +454,177 @@ export const bookings = pgTable("bookings", {
   bookingDuration: integer("booking_duration"), // Duration in minutes for this specific booking
   bookingCleanupTime: integer("booking_cleanup_time").notNull().default(0), // Snapshot; listing edits do not change reservations
   status: varchar("status", { enum: ["pending", "confirmed", "cancelled", "completed"] }).default("pending"),
+  closedAt: timestamp("closed_at", { withTimezone: true }), // Terminal transition snapshot; payment updates must not extend history retention.
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   advanceAmount: decimal("advance_amount", { precision: 10, scale: 2 }).notNull(),
   paymentStatus: varchar("payment_status", { enum: ["pending", "advance_paid", "fully_paid"] }).default("pending"),
   notes: text("notes"),
+  notificationRevision: integer("notification_revision").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => [index("bookings_employee_date_idx").on(table.employeeId, table.scheduledDate), check("bookings_cleanup_time_check", sql`${table.bookingCleanupTime} BETWEEN 0 AND 1440`)]).enableRLS();
+}, (table) => [index("bookings_employee_date_idx").on(table.employeeId, table.scheduledDate), check("bookings_cleanup_time_check", sql`${table.bookingCleanupTime} BETWEEN 0 AND 1440`),
+  index("bookings_message_retention_idx").on(table.closedAt, table.id).where(sql`${table.closedAt} IS NOT NULL AND ${table.status} IN ('cancelled','completed')`),
+  check("bookings_notification_revision_check", sql`${table.notificationRevision} >= 0`),
+  check("bookings_closed_at_check", sql`${table.closedAt} IS NULL OR ${table.status} IN ('cancelled','completed')`)]).enableRLS();
+
+// Private booking conversations and agreement requests. Only the server runtime
+// accesses these; booking/workspace authorization is checked per operation.
+export const bookingMessages = pgTable("booking_messages", {
+  id: uuid("id").primaryKey(),
+  bookingId: integer("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
+  authorId: varchar("author_id").notNull().references(() => users.id),
+  authorRole: varchar("author_role", { enum: ["provider", "customer"] }).notNull(),
+  body: text("body").notNull(),
+  clientRequestId: uuid("client_request_id").notNull(),
+  broadcastId: uuid("broadcast_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  uniqueIndex("booking_message_request_identity").on(table.authorId, table.clientRequestId, table.bookingId),
+  index("booking_message_history_idx").on(table.bookingId, table.createdAt, table.id),
+  index("booking_message_broadcast_idx").on(table.broadcastId).where(sql`${table.broadcastId} IS NOT NULL`),
+  check("booking_message_shape", sql`${table.authorRole} IN ('provider','customer') AND length(trim(${table.body})) BETWEEN 1 AND 4000 AND length(${table.body}) <= 4000 AND (${table.broadcastId} IS NULL OR ${table.authorRole} = 'provider')`),
+]).enableRLS();
+
+export const bookingRescheduleRequests = pgTable("booking_reschedule_requests", {
+  id: uuid("id").primaryKey(),
+  bookingId: integer("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
+  requestedById: varchar("requested_by_id").notNull().references(() => users.id),
+  requestedByRole: varchar("requested_by_role", { enum: ["provider", "customer"] }).notNull(),
+  originalScheduledDate: timestamp("original_scheduled_date", { withTimezone: true }).notNull(),
+  proposedScheduledDate: timestamp("proposed_scheduled_date", { withTimezone: true }).notNull(),
+  fallback: varchar("fallback", { enum: ["keep_original", "cancel_booking"] }).notNull(),
+  state: varchar("state", { enum: ["pending", "accepted", "declined", "withdrawn", "superseded"] }).notNull().default("pending"),
+  batchId: uuid("batch_id"),
+  clientRequestId: uuid("client_request_id").notNull(),
+  note: text("note"),
+  timezone: varchar("timezone", { length: 100 }).notNull().default("UTC"),
+  baseRevision: integer("base_revision").notNull(),
+  respondedById: varchar("responded_by_id").references(() => users.id),
+  respondedAt: timestamp("responded_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  uniqueIndex("booking_reschedule_pending_identity").on(table.bookingId).where(sql`${table.state} = 'pending'`),
+  uniqueIndex("booking_reschedule_request_identity").on(table.requestedById, table.clientRequestId, table.bookingId),
+  index("booking_reschedule_history_idx").on(table.bookingId, table.createdAt, table.id),
+  index("booking_reschedule_batch_idx").on(table.batchId).where(sql`${table.batchId} IS NOT NULL`),
+  check("booking_reschedule_shape", sql`${table.requestedByRole} IN ('provider','customer') AND ${table.fallback} IN ('keep_original','cancel_booking') AND ${table.state} IN ('pending','accepted','declined','withdrawn','superseded') AND ${table.baseRevision} >= 0 AND length(trim(${table.timezone})) BETWEEN 1 AND 100 AND (${table.note} IS NULL OR length(${table.note}) <= 2000) AND ${table.originalScheduledDate} <> ${table.proposedScheduledDate} AND (${table.batchId} IS NULL OR ${table.requestedByRole} = 'provider')`),
+  check("booking_reschedule_response_shape", sql`(${table.state} <> 'pending' OR (${table.respondedAt} IS NULL AND ${table.respondedById} IS NULL)) AND ((${table.state} <> 'accepted' AND ${table.state} <> 'declined') OR (${table.respondedAt} IS NOT NULL AND ${table.respondedById} IS NOT NULL)) AND (${table.respondedAt} IS NULL OR ${table.respondedAt} >= ${table.createdAt})`),
+]).enableRLS();
+
+export type BookingMessage = typeof bookingMessages.$inferSelect;
+export type BookingRescheduleRequest = typeof bookingRescheduleRequests.$inferSelect;
+
+// Private server-only data: never join these into public users/provider payloads.
+export const userCommunicationPreferences = pgTable("user_communication_preferences", {
+  userId: varchar("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  phone: varchar("phone", { length: 16 }),
+  phoneVerifiedAt: timestamp("phone_verified_at", { withTimezone: true }),
+  preferredMethod: varchar("preferred_method", { enum: ["email", "sms", "whatsapp"] }),
+  emailSuppressed: boolean("email_suppressed").notNull().default(false),
+  language: varchar("language", { length: 8 }).notNull().default("en"),
+  smsOptIn: boolean("sms_opt_in").notNull().default(false),
+  whatsappOptIn: boolean("whatsapp_opt_in").notNull().default(false),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  index("communication_preferences_phone_idx").on(table.phone).where(sql`${table.phone} IS NOT NULL`),
+  check("communication_preferences_phone_check", sql`${table.phone} IS NULL OR ${table.phone} ~ '^\\+[1-9][0-9]{7,14}$'`),
+  check("communication_preferences_verification_check", sql`(${table.phoneVerifiedAt} IS NULL OR ${table.phone} IS NOT NULL) AND (NOT ${table.smsOptIn} OR ${table.phoneVerifiedAt} IS NOT NULL) AND (NOT ${table.whatsappOptIn} OR ${table.phoneVerifiedAt} IS NOT NULL)`),
+  check("communication_preferences_method_check", sql`${table.preferredMethod} IS NULL OR ${table.preferredMethod} = 'email' OR (${table.preferredMethod} = 'sms' AND ${table.smsOptIn}) OR (${table.preferredMethod} = 'whatsapp' AND ${table.whatsappOptIn})`),
+  check("communication_preferences_language_check", sql`${table.language} IN ('en','lv','ru','ar','zh','fr','de','hi','ja','pt','es')`),
+]).enableRLS();
+
+export const phoneVerificationChallenges = pgTable("phone_verification_challenges", {
+  id: uuid("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  phone: varchar("phone", { length: 16 }).notNull(),
+  providerRequestId: varchar("provider_request_id", { length: 255 }),
+  status: varchar("status", { enum: ["pending", "verified", "failed", "expired", "unknown"] }).notNull().default("pending"),
+  attemptCount: integer("attempt_count").notNull().default(0),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  nextSendAt: timestamp("next_send_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  index("phone_verification_user_created_idx").on(table.userId, table.createdAt),
+  index("phone_verification_phone_created_idx").on(table.phone, table.createdAt),
+  index("phone_verification_expiry_idx").on(table.expiresAt),
+  uniqueIndex("phone_verification_provider_identity").on(table.providerRequestId),
+  check("phone_verification_shape", sql`${table.phone} ~ '^\\+[1-9][0-9]{7,14}$' AND ${table.status} IN ('pending','verified','failed','expired','unknown') AND ${table.attemptCount} BETWEEN 0 AND 5 AND ${table.expiresAt} > ${table.createdAt} AND ${table.nextSendAt} >= ${table.createdAt}`),
+]).enableRLS();
+
+export const notificationEvents = pgTable("notification_events", {
+  id: uuid("id").primaryKey(),
+  bookingId: integer("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
+  bookingRevision: integer("booking_revision").notNull(),
+  kind: varchar("kind", { enum: ["accepted", "rejected", "rescheduled", "reminder"] }).notNull(),
+  scheduledDate: timestamp("scheduled_date", { withTimezone: true }).notNull(),
+  previousScheduledDate: timestamp("previous_scheduled_date", { withTimezone: true }),
+  timezone: varchar("timezone", { length: 100 }).notNull().default("UTC"),
+  automatic: boolean("automatic").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  uniqueIndex("notification_event_revision_identity").on(table.bookingId, table.bookingRevision, table.kind),
+  uniqueIndex("notification_reminder_identity").on(table.bookingId, table.scheduledDate).where(sql`${table.kind} = 'reminder'`),
+  index("notification_events_retention_idx").on(table.createdAt),
+  check("notification_event_shape", sql`${table.bookingRevision} >= 0 AND ${table.kind} IN ('accepted','rejected','rescheduled','reminder') AND length(trim(${table.timezone})) BETWEEN 1 AND 100 AND (${table.kind} <> 'rescheduled' OR ${table.previousScheduledDate} IS NOT NULL)`),
+]).enableRLS();
+
+export const notificationJobs = pgTable("notification_jobs", {
+  id: uuid("id").primaryKey(),
+  eventId: uuid("event_id").notNull().references(() => notificationEvents.id, { onDelete: "cascade" }),
+  channel: varchar("channel", { enum: ["email", "sms", "whatsapp"] }),
+  state: varchar("state", { enum: ["queued", "leased", "accepted", "delivered", "failed", "unknown", "skipped", "cancelled"] }).notNull().default("queued"),
+  dueAt: timestamp("due_at", { withTimezone: true }).notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  leaseToken: uuid("lease_token"),
+  leaseUntil: timestamp("lease_until", { withTimezone: true }),
+  attemptedAt: timestamp("attempted_at", { withTimezone: true }),
+  providerMessageId: varchar("provider_message_id", { length: 255 }),
+  reasonCode: varchar("reason_code", { length: 64 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  uniqueIndex("notification_job_event_identity").on(table.eventId),
+  index("notification_job_due_idx").on(table.dueAt).where(sql`${table.state} = 'queued'`),
+  index("notification_job_lease_idx").on(table.leaseUntil).where(sql`${table.state} = 'leased'`),
+  index("notification_jobs_retention_idx").on(table.updatedAt),
+  check("notification_job_state_check", sql`${table.state} IN ('queued','leased','accepted','delivered','failed','unknown','skipped','cancelled') AND (${table.channel} IS NULL OR ${table.channel} IN ('email','sms','whatsapp'))`),
+  check("notification_job_lease_check", sql`((${table.leaseToken} IS NULL) = (${table.leaseUntil} IS NULL)) AND (${table.state} <> 'leased' OR ${table.leaseToken} IS NOT NULL)`),
+  check("notification_job_expiry_check", sql`${table.expiresAt} IS NULL OR ${table.expiresAt} >= ${table.dueAt}`),
+]).enableRLS();
+
+export const notificationDeliveryAttempts = pgTable("notification_delivery_attempts", {
+  id: uuid("id").primaryKey(),
+  jobId: uuid("job_id").notNull().references(() => notificationJobs.id, { onDelete: "cascade" }),
+  provider: varchar("provider", { enum: ["vonage", "resend"] }).notNull(),
+  providerMessageId: varchar("provider_message_id", { length: 255 }),
+  state: varchar("state", { enum: ["reserved", "accepted", "delivered", "failed", "unknown"] }).notNull().default("reserved"),
+  errorCode: varchar("error_code", { length: 64 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  uniqueIndex("notification_attempt_job_identity").on(table.jobId),
+  index("notification_attempt_recent_idx").on(table.createdAt, table.jobId),
+  uniqueIndex("notification_attempt_provider_identity").on(table.provider, table.providerMessageId),
+  check("notification_attempt_shape", sql`${table.provider} IN ('vonage','resend') AND ${table.state} IN ('reserved','accepted','delivered','failed','unknown')`),
+]).enableRLS();
+
+export const notificationCallbacks = pgTable("notification_callbacks", {
+  id: uuid("id").primaryKey(),
+  provider: varchar("provider", { enum: ["vonage", "resend"] }).notNull(),
+  providerEventId: varchar("provider_event_id", { length: 255 }).notNull(),
+  receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  uniqueIndex("notification_callback_identity").on(table.provider, table.providerEventId),
+  index("notification_callbacks_retention_idx").on(table.receivedAt),
+  check("notification_callback_shape", sql`${table.provider} IN ('vonage','resend') AND length(trim(${table.providerEventId})) > 0`),
+]).enableRLS();
+
+export type UserCommunicationPreferences = typeof userCommunicationPreferences.$inferSelect;
+export type PhoneVerificationChallenge = typeof phoneVerificationChallenges.$inferSelect;
+export type NotificationEvent = typeof notificationEvents.$inferSelect;
+export type NotificationJob = typeof notificationJobs.$inferSelect;
+export type NotificationDeliveryAttempt = typeof notificationDeliveryAttempts.$inferSelect;
 
 // One review per completed booking; the booking supplies its customer and service.
 export const serviceReviews = pgTable("service_reviews", {
@@ -610,6 +778,9 @@ export type ServiceEmbedding = typeof serviceEmbeddings.$inferSelect;
 
 // Schemas
 export const insertServiceSchema = createInsertSchema(services, {
+  reminderEnabled: z.boolean().optional(),
+  reminderMethod: z.enum(["email", "sms", "whatsapp"]).optional(),
+  reminderHours: z.number().int().min(1).max(168).optional(),
   cleanupTime: z.number().int().min(0).max(1440).optional(),
   category: z.string().trim().min(1, "Choose a category.").max(64),
   ageGroups: z.array(z.string()).nullable().optional(),
@@ -623,6 +794,8 @@ export const insertServiceSchema = createInsertSchema(services, {
 
 export const insertBookingSchema = createInsertSchema(bookings).omit({
   id: true,
+  closedAt: true,
+  notificationRevision: true,
   createdAt: true,
   updatedAt: true,
 }).extend({

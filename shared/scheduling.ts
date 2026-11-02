@@ -1,7 +1,31 @@
 import type { Availability, Booking, Service } from "./schema";
 
 export type TimeRange = { startTime: string; endTime: string };
-export type BookableSlot = TimeRange & { startsAt: string; endsAt: string; timezone: string; available: boolean; slotDuration: number };
+export type BookableSlot = TimeRange & { startsAt: string; endsAt: string; timezone: string; available: boolean; slotDuration: number; availableCapacity?: number };
+// Requests reserve a resource only after approval. Keep completed occupancy for
+// historical appointments and their saved cleanup intervals.
+export const OCCUPYING_BOOKING_STATUSES = ["confirmed", "completed"] as const;
+type SlotService = Pick<Service, "id" | "duration"> & Partial<Pick<Service, "cleanupTime" | "serviceType" | "maxCapacity">>;
+type SlotBooking = Pick<Booking, "scheduledDate" | "bookingDuration" | "status"> & Partial<Pick<Booking, "bookingCleanupTime" | "serviceId" | "participantCount">>;
+
+// Only an identical group session can share the employee's occupied interval.
+// Saved durations prevent changed listings from joining incompatible sessions.
+export function availableCapacity(service: SlotService, bookings: SlotBooking[], start: Date) {
+  const duration = service.duration, cleanup = service.cleanupTime ?? 0;
+  const capacity = service.serviceType === "group" ? service.maxCapacity ?? 1 : 1;
+  const end = start.getTime() + (duration + cleanup) * 60_000;
+  let occupied = 0;
+  for (const booking of bookings) {
+    if (!OCCUPYING_BOOKING_STATUSES.some(status => status === booking.status)) continue;
+    const busyStart = new Date(booking.scheduledDate).getTime();
+    const busyDuration = booking.bookingDuration ?? 60, busyCleanup = booking.bookingCleanupTime ?? 0;
+    if (start.getTime() >= busyStart + (busyDuration + busyCleanup) * 60_000 || end <= busyStart) continue;
+    if (service.serviceType !== "group" || booking.serviceId !== service.id || busyStart !== start.getTime()
+      || busyDuration !== duration || busyCleanup !== cleanup) return 0;
+    occupied += booking.participantCount ?? 1;
+  }
+  return Math.max(0, capacity - occupied);
+}
 const formatters = new Map<string, Intl.DateTimeFormat>();
 export function validTimezone(value: string) {
   try { new Intl.DateTimeFormat("en", { timeZone: value }); return true; } catch { return false; }
@@ -72,12 +96,13 @@ function withinRecurrence(schedule: Availability, day: string) {
   return true;
 }
 
-export function bookableSlots({ service, schedules, bookings, date, timezone, now = new Date() }: {
-  service: Pick<Service, "id" | "duration"> & Partial<Pick<Service, "cleanupTime">>;
+export function bookableSlots({ service, schedules, bookings, date, timezone, participantCount = 1, now = new Date() }: {
+  service: SlotService;
   schedules: Availability[];
-  bookings: (Pick<Booking, "scheduledDate" | "bookingDuration" | "status"> & Partial<Pick<Booking, "bookingCleanupTime">>)[];
+  bookings: SlotBooking[];
   date: string;
   timezone: string;
+  participantCount?: number;
   now?: Date;
 }): BookableSlot[] {
   const relevant = schedules.filter(item => item.isActive !== false && (item.serviceId == null || item.serviceId === service.id));
@@ -105,12 +130,9 @@ export function bookableSlots({ service, schedules, bookings, date, timezone, no
             const occupiedEnd = new Date(instant.getTime() + occupiedDuration * 60_000);
             if (instant <= now || dateInZone(instant, timezone) !== date || dateInZone(occupiedEnd, zone) !== day || timeInZone(occupiedEnd, zone) > range.endTime || timeInZone(occupiedEnd, zone) < range.startTime) continue;
             if (offsets.length > 1 && Array.from({ length: Math.ceil(occupiedDuration / 15) }, (_, index) => new Date(instant.getTime() + index * 15 * 60_000)).some(point => dateInZone(point, zone) !== day || timeInZone(point, zone) < range.startTime || timeInZone(point, zone) >= range.endTime)) continue;
-            if (bookings.some(booking => {
-              if (booking.status === "cancelled") return false;
-              const busyStart = new Date(booking.scheduledDate).getTime();
-              return instant.getTime() < busyStart + ((booking.bookingDuration ?? 60) + (booking.bookingCleanupTime ?? 0)) * 60_000 && occupiedEnd.getTime() > busyStart;
-            })) continue;
-            result.set(instant.toISOString(), { startsAt: instant.toISOString(), endsAt: end.toISOString(), timezone, startTime: timeInZone(instant, timezone), endTime: timeInZone(end, timezone), slotDuration: duration, available: true });
+            const capacity = availableCapacity(service, bookings, instant);
+            if (capacity < participantCount) continue;
+            result.set(instant.toISOString(), { startsAt: instant.toISOString(), endsAt: end.toISOString(), timezone, startTime: timeInZone(instant, timezone), endTime: timeInZone(end, timezone), slotDuration: duration, available: true, availableCapacity: capacity });
           }
         }
       }

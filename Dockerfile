@@ -15,7 +15,7 @@ CMD ["npm", "run", "dev"]
 
 FROM dependencies AS build
 COPY . .
-RUN npm run build
+RUN npm run build && ./node_modules/.bin/esbuild server/audit/run-worker.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/audit-worker.js
 
 FROM ${NODE_IMAGE} AS production-dependencies
 WORKDIR /app
@@ -27,6 +27,8 @@ WORKDIR /app
 ENV NODE_ENV=production PORT=5000
 COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
+COPY --chown=node:node deploy/aws/staging-proxy.mjs ./staging-proxy.mjs
+COPY --chown=node:node deploy/aws-staging/supabase-ca.crt ./certs/supabase-ca.crt
 COPY --chown=node:node package.json ./
 USER node
 EXPOSE 5000

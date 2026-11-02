@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MapPin, List, Map as MapIcon, Search, Target, X, SlidersHorizontal } from "lucide-react";
+import { MapPin, List, LayoutGrid, CalendarDays, Map as MapIcon, Search, Target, X, SlidersHorizontal } from "lucide-react";
 import ServiceFilters, { type SearchFilters } from "@/components/service-filters";
+import SearchDateFields, { searchDates } from "@/components/search-date-fields";
 import ServiceCard from "@/components/service-card";
 import ProviderServicesDialog from "@/components/provider-services-dialog";
 import SearchResultsSort from "@/components/search-results-sort";
@@ -41,7 +42,7 @@ function SearchPage({ userId }: { userId: string | null }) {
   }, [queryClient, userId]);
   const { t, language } = useFormLocale();
   const categories = useCategories();
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("list");
   const [sort, setSort] = useState<ServiceSort>("default");
   const [filters, setFilters] = useState<SearchFilters>(defaults);
   const [draft, setDraft] = useState<SearchFilters>(defaults);
@@ -59,7 +60,12 @@ function SearchPage({ userId }: { userId: string | null }) {
   const [filterError, setFilterError] = useState<string>();
   const [locationReceipt, setLocationReceipt] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [locationOpen, setLocationOpen] = useState(true);
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [whenOpen, setWhenOpen] = useState(false);
+  const [whenDraft, setWhenDraft] = useState<SearchFilters>(defaults);
+  const [whenError, setWhenError] = useState<string>();
+  const whenFeedback = useRef<HTMLParagraphElement>(null);
+  const whenTrigger = useRef<HTMLButtonElement>(null);
   const locationTrigger = useRef<HTMLButtonElement>(null);
   const locked = useRef(false), alive = useRef(true);
   const locationCleanup = useRef<(() => void) | null>(null);
@@ -71,13 +77,9 @@ function SearchPage({ userId }: { userId: string | null }) {
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
-    if (browsingWithoutLocation) return;
-    if (!savedLocation.loading && !savedLocation.saving && !locationBusy) {
-      if (!location || savedLocation.error) setLocationOpen(true);
-      else if (!queryError) setLocationOpen(false);
-    }
-    // React to restoration/selection completion. Editing feedback alone must
-    // not dismiss a dialog that the user has opened to change their location.
+    // Location is optional. Only close an explicitly opened picker after a
+    // successful choice; absence of a remembered location never opens a modal.
+    if (!savedLocation.loading && !savedLocation.saving && !locationBusy && location && !savedLocation.error && !queryError) setLocationOpen(false);
   }, [savedLocation.loading, savedLocation.saving, savedLocation.error, locationBusy, location, browsingWithoutLocation]);
 
   useEffect(() => {
@@ -87,14 +89,7 @@ function SearchPage({ userId }: { userId: string | null }) {
   }, [location]);
 
   useEffect(() => { alive.current = true; return () => { alive.current = false; locationCleanup.current?.(); }; }, []);
-  useEffect(() => {
-    const media = window.matchMedia?.("(min-width: 1024px)");
-    const resize = () => { if (media?.matches) setFiltersOpen(false); };
-    media?.addEventListener("change", resize);
-    return () => media?.removeEventListener("change", resize);
-  }, []);
-
-  const searchEnabled = (!savedLocation.loading && !!location) || browsingWithoutLocation;
+  const searchEnabled = !savedLocation.loading || browsingWithoutLocation;
   const search = useQuery({
     queryKey: ["/api/services/search", userId, filters, location?.coords ?? null],
     queryFn: ({ signal }) => fetchPublicSearch(filters, location?.coords ?? null, signal),
@@ -189,6 +184,18 @@ function SearchPage({ userId }: { userId: string | null }) {
     return true;
   }
   function resetDraft() { setDraft({ ...defaults, searchQuery: filters.searchQuery, searchMode: filters.searchMode }); setFilterError(undefined); }
+  function openWhen() {
+    setWhenDraft(filters); setWhenError(undefined); setWhenOpen(true);
+  }
+  function applyWhen(event: FormEvent) {
+    event.preventDefault();
+    if (locked.current || restoringLocation || savedLocation.saving) return;
+    const next = { ...filters, ...searchDates(whenDraft) };
+    const invalid = validate(next, !!location);
+    setWhenError(invalid);
+    if (invalid) { requestAnimationFrame(() => whenFeedback.current?.focus()); return; }
+    setFilters(next); setDraft(current => ({ ...current, ...searchDates(next) })); setWhenOpen(false);
+  }
   function clearAll() {
     if (locked.current) return;
     setFilters(defaults); setDraft(defaults); setQuery(""); setMode("exact"); setSort("default"); setFilterError(undefined); setQueryError(undefined); setLocationReceipt(false);
@@ -225,6 +232,9 @@ function SearchPage({ userId }: { userId: string | null }) {
   if (filters.time || filters.timeEnd) chips.push({ key: "time", label: t("searchPage.timeRange", { start: filters.time || "00:00", end: filters.timeEnd || "23:59" }), action: () => remove({ time: "", timeEnd: "" }) });
   if (filters.availableOnly) chips.push({ key: "available", label: t("searchPage.availableOnly"), action: () => remove({ availableOnly: false }) });
   const filterProps = { filters: draft, onFiltersChange: (next: SearchFilters) => { setDraft(next); setFilterError(undefined); }, onApply: applyFilters, onReset: resetDraft, error: filterError, pending: locationBusy, hasLocation: !!location };
+  const busy = locationBusy || restoringLocation || savedLocation.saving;
+  const formatDate = (value: string) => new Intl.DateTimeFormat(language, { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
+  const whenSummary = [filters.date ? filters.dateEnd ? t("searchPage.dateRange", { start: formatDate(filters.date), end: formatDate(filters.dateEnd) }) : formatDate(filters.date) : "", filters.time || filters.timeEnd ? t("searchPage.timeRange", { start: filters.time || "00:00", end: filters.timeEnd || "23:59" }) : ""].filter(Boolean).join(" · ") || t("searchPage.anyTime");
   const book = (service: ServiceWithProvider) => { setSelectedService(service); setShowBookingModal(true); };
   const details = (service: ServiceWithProvider) => {
     setSelectedService(service); setShowDetailModal(true);
@@ -235,19 +245,35 @@ function SearchPage({ userId }: { userId: string | null }) {
 
   return <div className="search-design search-page">
     <main className="search-shell">
-      <div className="search-intro"><div><p className="search-eyebrow">{t("searchPage.eyebrow")}</p><h1>{t("searchPage.title")}</h1><p>{t("searchPage.subtitle")}</p></div><p className="search-guest-note">{t("searchPage.guest")}</p></div>
+      <h1 className="sr-only">{t("searchPage.title")}</h1>
       <form className="search-query-form" aria-label={t("searchPage.search")} onSubmit={submitQuery}>
-        <div className="search-location-summary">
-          <span><MapPin aria-hidden="true" />{location ? <bdi>{locationLabel}</bdi> : t("searchLocation.title")}</span>
-          <Button ref={locationTrigger} type="button" variant="ghost" data-testid="open-search-location" onClick={() => setLocationOpen(true)} disabled={locationBusy || restoringLocation || savedLocation.saving}>{t(location ? "searchLocation.change" : "searchLocation.title")}</Button>
+        <div className="search-query-bar">
+          <div className="search-query-field">
+            <Button ref={locationTrigger} type="button" variant="ghost" className="search-field-icon" data-testid="open-search-location" onClick={() => setLocationOpen(true)} disabled={busy} aria-label={t(location ? "searchLocation.change" : "searchLocation.title")}><MapPin aria-hidden="true" /></Button>
+            <div><label htmlFor="search-location">{t("searchPage.whereLabel")}</label><input id="search-location" aria-invalid={(queryError?.startsWith("searchPage.location") || queryError === "searchLocation.required") || false} data-testid="input-location" maxLength={300} aria-describedby={queryError ? "search-query-feedback" : undefined} value={resolvedDraft?.current && locationDraft === resolvedDraft.name ? t("searchPage.currentLocation") : locationDraft} onChange={event => { setLocationDraft(event.target.value); setResolvedDraft(null); setLocationReceipt(false); setQueryError(undefined); }} placeholder={t("searchPage.anyLocation")} disabled={busy} /></div>
+          </div>
+          <Button ref={whenTrigger} variant="ghost" type="button" className="search-when-field" data-testid="open-search-when" aria-haspopup="dialog" aria-expanded={whenOpen} onClick={openWhen} disabled={busy}>
+            <CalendarDays aria-hidden="true" /><span><span className="search-field-label">{t("searchPage.when")}</span><span className="search-field-value">{whenSummary}</span></span>
+          </Button>
+          <div className="search-query-field"><Search className="search-field-icon" aria-hidden="true" /><div><label htmlFor="service-query">{t("searchPage.whatLabel")}</label><input id="service-query" aria-invalid={queryError === "publicSearch.queryTooLong"} aria-describedby={queryError ? "search-query-feedback" : undefined} data-testid="input-search-query" type="search" maxLength={SEARCH_QUERY_LIMIT} value={query} onChange={event => { setQuery(event.target.value); setQueryError(undefined); }} placeholder={t("searchPage.allServices")} disabled={busy} /></div></div>
+          <Button type="submit" className="search-submit" data-testid="button-search-services" disabled={busy} aria-label={t(locationBusy ? "searchPage.resolvingLocation" : "searchPage.search")}><Search aria-hidden="true" /></Button>
         </div>
-        <div className="search-query-bar"><div className="search-query-field"><label htmlFor="service-query">{t("searchPage.what")}</label><div><Search aria-hidden="true" /><input id="service-query" aria-invalid={queryError === "publicSearch.queryTooLong"} aria-describedby={queryError ? "search-query-feedback" : undefined} data-testid="input-search-query" type="search" maxLength={SEARCH_QUERY_LIMIT} value={query} onChange={event => { setQuery(event.target.value); setQueryError(undefined); }} placeholder={t("searchPage.queryPlaceholder")} disabled={locationBusy || restoringLocation || savedLocation.saving} /></div></div><div className="search-query-field"><label htmlFor="search-location">{t("searchPage.where")}</label><div><MapPin aria-hidden="true" /><input id="search-location" aria-invalid={(queryError?.startsWith("searchPage.location") || queryError === "searchLocation.required") || false} data-testid="input-location" maxLength={300} aria-describedby={queryError ? "search-query-feedback" : undefined} value={resolvedDraft?.current && locationDraft === resolvedDraft.name ? t("searchPage.currentLocation") : locationDraft} onChange={event => { setLocationDraft(event.target.value); setResolvedDraft(null); setLocationReceipt(false); setQueryError(undefined); }} placeholder={t("searchPage.locationPlaceholder")} disabled={locationBusy || restoringLocation || savedLocation.saving} /><Button type="button" variant="ghost" className="search-locate-button" aria-describedby={queryError ? "search-query-feedback" : undefined} onClick={useCurrentLocation} disabled={locationBusy || restoringLocation || savedLocation.saving} aria-label={t("searchPage.useLocation")}><Target aria-hidden="true" /></Button></div></div><Button type="submit" data-testid="button-search-services" disabled={locationBusy || restoringLocation || savedLocation.saving}><Search aria-hidden="true" />{t(locationBusy ? "searchPage.resolvingLocation" : "searchPage.search")}</Button></div>
-        <div className="search-query-mode"><fieldset><legend>{t("searchPage.searchMode")}</legend>{["exact", "semantic"].map(value => <label key={value}><input type="radio" name="search-mode" value={value} checked={mode === value} disabled={locationBusy || restoringLocation || savedLocation.saving} onChange={() => setMode(value as SearchFilters["searchMode"])} aria-describedby="search-mode-help" />{t(value === "exact" ? "searchPage.keyword" : "searchPage.ai")}</label>)}</fieldset><p id="search-mode-help">{t(mode === "exact" ? "searchPage.keywordHelp" : "searchPage.aiHelp")}</p></div>
+        <details className="search-query-options"><summary>{t("searchPage.searchMode")}: {t(mode === "exact" ? "searchPage.keyword" : "searchPage.ai")}</summary><div className="search-query-mode"><fieldset><legend className="sr-only">{t("searchPage.searchMode")}</legend>{["exact", "semantic"].map(value => <label key={value}><input type="radio" name="search-mode" value={value} checked={mode === value} disabled={busy} onChange={() => setMode(value as SearchFilters["searchMode"])} aria-describedby="search-mode-help" />{t(value === "exact" ? "searchPage.keyword" : "searchPage.ai")}</label>)}</fieldset><p id="search-mode-help">{t(mode === "exact" ? "searchPage.keywordHelp" : "searchPage.aiHelp")}</p></div></details>
         {queryError && !locationOpen && <p ref={queryFeedback} id="search-query-feedback" tabIndex={-1} role="alert" className="search-query-error">{t(queryError)}</p>}
-        {!location && browsingWithoutLocation && <p role="status" className="search-location-receipt">{t("searchLocation.browseHelp")}</p>}
+        {savedLocation.error && !locationOpen && <p role="alert" className="search-query-error">{t(savedLocation.error)} <button type="button" className="search-text-button" onClick={() => setLocationOpen(true)}>{t("searchLocation.change")}</button></p>}
         {locationBusy && <p role="status" className="search-location-receipt">{t("searchPage.resolvingLocation")}</p>}
         {locationReceipt && <p role="status" className="search-location-receipt">{t("searchPage.locationReady")}</p>}
       </form>
+      <Dialog open={whenOpen} onOpenChange={setWhenOpen}>
+        <DialogContent className="search-design search-when-dialog" closeLabel={t("searchPage.close")} onCloseAutoFocus={event => { event.preventDefault(); whenTrigger.current?.focus(); }}>
+          <DialogHeader><DialogTitle>{t("searchPage.when")}</DialogTitle><DialogDescription>{t("searchPage.dateHelp")}</DialogDescription></DialogHeader>
+          <form onSubmit={applyWhen} noValidate className="search-when-form">
+            <SearchDateFields id="search-when" filters={whenDraft} onChange={changes => { setWhenDraft(current => ({ ...current, ...changes })); setWhenError(undefined); }} error={whenError} disabled={busy} />
+            {whenError && <p id="search-when-error" ref={whenFeedback} tabIndex={-1} role="alert" className="search-query-error">{t(whenError)}</p>}
+            <div className="search-when-actions"><Button type="button" variant="outline" disabled={busy} onClick={() => { setWhenDraft(current => ({ ...current, ...searchDates(defaults) })); setWhenError(undefined); }}>{t("searchPage.reset")}</Button><Button type="submit" disabled={busy}>{t("searchPage.apply")}</Button></div>
+          </form>
+        </DialogContent>
+      </Dialog>
       <Dialog open={locationOpen} onOpenChange={open => { if (!locationBusy && !savedLocation.saving) setLocationOpen(open); }}>
         <DialogContent className="search-design search-location-dialog" closeLabel={t("searchPage.close")} closeDisabled={locationBusy || savedLocation.saving}
           onOpenAutoFocus={event => { event.preventDefault(); document.getElementById("modal-search-location")?.focus(); }}
@@ -281,13 +307,19 @@ function SearchPage({ userId }: { userId: string | null }) {
           </form>
         </DialogContent>
       </Dialog>
-      <div className="search-workspace"><aside className="search-desktop-filters"><ServiceFilters {...filterProps} /></aside><section className="search-results" aria-labelledby="search-results-title" aria-busy={loading}>
-        <div className="search-results-head"><div><h2 id="search-results-title" ref={resultsHeading} tabIndex={-1} aria-live="polite">{loading ? t("publicSearch.loading") : !searchEnabled ? t("searchLocation.title") : errorKey ? t("searchPage.navSearch") : t("searchPage.resultsCount", { count: services.length })}</h2><p>{location ? t("searchPage.locationChip", { location: locationLabel, distance: new Intl.NumberFormat(language).format(filters.distance) }) : t(browsingWithoutLocation ? "searchLocation.browseHelp" : "searchLocation.intro")}</p></div><div className="search-view-actions"><Dialog open={filtersOpen} onOpenChange={setFiltersOpen}><DialogTrigger asChild><Button type="button" variant="outline" className="search-mobile-filter-trigger"><SlidersHorizontal aria-hidden="true" />{t("searchPage.filters")}</Button></DialogTrigger><DialogContent className="search-design search-filter-dialog" closeLabel={t("searchPage.close")} onCloseAutoFocus={event => { if (typeof window.matchMedia === "function" && window.matchMedia("(min-width:1024px)").matches) { event.preventDefault(); resultsHeading.current?.focus(); } }}><DialogHeader className="sr-only"><DialogTitle>{t("searchPage.filters")}</DialogTitle><DialogDescription>{t("searchPage.filterHelp")}</DialogDescription></DialogHeader><ServiceFilters {...filterProps} /></DialogContent></Dialog><div className="search-view-toggle">{(["list", "map"] as const).map(value => <Button key={value} variant="ghost" type="button" data-testid={`button-view-${value}`} aria-pressed={viewMode === value} onClick={() => setViewMode(value)}>{value === "list" ? <List aria-hidden="true" /> : <MapIcon aria-hidden="true" />}<span>{t(`views.${value}`)}</span></Button>)}</div></div></div>
+      <div className="search-workspace"><section className="search-results" aria-labelledby="search-results-title" aria-busy={loading}>
+        <div className="search-results-head">
+          <h2 id="search-results-title" ref={resultsHeading} tabIndex={-1} aria-live="polite">{loading ? t("publicSearch.loading") : errorKey ? t("searchPage.navSearch") : t("searchPage.resultsCount", { count: services.length })}</h2>
+          <div className="search-view-actions">
+            <Dialog open={filtersOpen} onOpenChange={setFiltersOpen}><DialogTrigger asChild><Button type="button" variant="ghost" className="search-mobile-filter-trigger"><SlidersHorizontal aria-hidden="true" />{t("searchPage.filters")}</Button></DialogTrigger><DialogContent className="search-design search-filter-dialog" closeLabel={t("searchPage.close")}><DialogHeader className="sr-only"><DialogTitle>{t("searchPage.filters")}</DialogTitle><DialogDescription>{t("searchPage.filterHelp")}</DialogDescription></DialogHeader><ServiceFilters {...filterProps} /></DialogContent></Dialog>
+            <SearchResultsSort value={effectiveSort} onChange={setSort} hasLocation={!!location} hasRatings={services.some(service => serviceRating(service) !== undefined)} compact />
+          </div>
+        </div>
+        <div className="search-view-toggle" role="group" aria-label={t("searchPage.resultView")}>{(["grid", "list", "map"] as const).map(value => <Button key={value} variant="ghost" type="button" data-testid={`button-view-${value}`} aria-pressed={viewMode === value} onClick={() => setViewMode(value)}>{value === "grid" ? <LayoutGrid aria-hidden="true" /> : value === "list" ? <List aria-hidden="true" /> : <MapIcon aria-hidden="true" />}<span>{t(`views.${value}`)}</span></Button>)}</div>
         {!!chips.length && <div className="search-chips">{chips.map(chip => <button type="button" className="search-chip" key={chip.key} disabled={locationBusy || restoringLocation || savedLocation.saving} onClick={chip.action} aria-label={t("searchPage.remove", { filter: chip.label })}><bdi>{chip.label}</bdi><X aria-hidden="true" /></button>)}<button type="button" className="search-text-button" onClick={clearAll} disabled={locationBusy || restoringLocation || savedLocation.saving}>{t("searchPage.clear")}</button></div>}
-        <div className="search-sort-row"><SearchResultsSort value={effectiveSort} onChange={setSort} hasLocation={!!location} hasRatings={services.some(service => serviceRating(service) !== undefined)} /><p>{t("searchPage.pricesNote")}</p></div>
         {!searchEnabled && !loading ? <div className="search-state" role="status"><p>{t("searchLocation.intro")}</p><Button type="button" variant="outline" onClick={browseWithoutLocation}>{t("searchLocation.browseWithout")}</Button></div> : loading ? <div className="search-loading" role="status"><p>{t("publicSearch.loading")}</p><div /><div /></div> : errorKey ? <div className="search-state" role="alert"><h3>{t("searchPage.errorTitle")}</h3><p>{t(errorKey)}</p><Button variant="outline" onClick={() => void search.refetch()} disabled={search.isFetching}>{t("publicSearch.retry")}</Button></div> : <>
           {search.data?.truncated && <p className="search-truncated" role="status">{t("publicSearch.truncated")}</p>}
-          {viewMode === "list" && (services.length ? <div className="search-cards">{services.map(service => <ServiceCard key={service.id} service={service} searchLayout hasLocation={!!location} onBook={() => book(service)} onViewDetails={() => details(service)} onViewProvider={() => setProviderSource(service)} />)}</div> : <div className="search-state" role="status"><MapPin aria-hidden="true" /><h3>{t("searchPage.emptyTitle")}</h3><p>{t("publicSearch.empty")}</p><Button onClick={clearAll} disabled={locationBusy || restoringLocation || savedLocation.saving}>{t("searchPage.clear")}</Button></div>)}
+          {viewMode !== "map" && (services.length ? <div className={`search-cards search-cards-${viewMode}`}>{services.map(service => <ServiceCard key={service.id} service={service} searchLayout hasLocation={!!location} onBook={() => book(service)} onViewDetails={() => details(service)} onViewProvider={() => setProviderSource(service)} />)}</div> : <div className="search-state" role="status"><MapPin aria-hidden="true" /><h3>{t("searchPage.emptyTitle")}</h3><p>{t("publicSearch.empty")}</p><Button onClick={clearAll} disabled={busy}>{t("searchPage.clear")}</Button></div>)}
           {viewMode === "map" && <div><p className="search-map-help">{t("searchPage.mapHelp")} <button type="button" className="search-text-button" onClick={() => setViewMode("list")}>{t("searchPage.backList")}</button></p>{services.length || location ? <div className="search-map"><GoogleMap services={services} userLocation={location?.coords ?? null} onServiceSelect={details} onShowList={() => setViewMode("list")} /></div> : <div className="search-state"><h3>{t("searchPage.emptyTitle")}</h3><p>{t("searchPage.anyLocation")}</p><Button variant="outline" onClick={() => setViewMode("list")}>{t("searchPage.backList")}</Button></div>}</div>}
         </>}
         {showResults && services.length > 0 && <p className="search-footer">{t("searchPage.footer")}</p>}

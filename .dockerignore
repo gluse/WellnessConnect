@@ -19,6 +19,9 @@
 !scripts/**
 !migrations/
 !migrations/**
+!deploy/
+!deploy/aws/
+!deploy/aws/staging-proxy.mjs
 
 **/node_modules
 **/.env*
@@ -28,3 +31,6 @@
 **/*.crt
 **/*.dump
 **/*.tsbuildinfo
+# Reviewed public trust anchor required by the staging runtime's strict TLS URLs.
+!deploy/aws-staging/
+!deploy/aws-staging/supabase-ca.crt

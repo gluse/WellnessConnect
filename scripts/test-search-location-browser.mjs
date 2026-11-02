@@ -10,7 +10,11 @@ const config = changes => evaluate(changes => Object.assign(window.searchFixture
 const requests = () => evaluate(() => window.searchFixture.requests.length);
 const attempts = () => evaluate(() => window.searchFixture.locationRequests.length);
 const checks = [];
+const closePicker = async () => { if (await evaluate(() => !!document.querySelector('[role="dialog"]'))) { await fixture.key('Escape'); await until(() => !document.querySelector('[role="dialog"]'), 'picker dismissed'); } };
+const gps = async () => { if (!await evaluate(() => !!document.querySelector('.search-location-dialog'))) { await click('[data-testid="open-search-location"]'); await until(() => !!document.querySelector('.search-location-dialog'), 'location picker'); } await click('.search-location-gps'); };
+const categoryDraft = async value => { await closePicker(); await click('.search-mobile-filter-trigger'); await until(() => !!document.querySelector('.search-filter-dialog'), 'filters opened'); if(value !== undefined) await set(await evaluate(() => document.querySelector('[data-testid="search-category"]').id), value); const current = await evaluate(() => document.querySelector('[data-testid="search-category"]').value); await closePicker(); return current; };
 const submit = async () => {
+  await closePicker();
   await click('[data-testid="button-search-services"]');
   await until(() => !document.querySelector('[data-testid="button-search-services"]').disabled && document.querySelector('.search-results').getAttribute('aria-busy') === 'false', 'location resolution and search settled');
 };
@@ -18,20 +22,20 @@ const error = async message => {
   assert.equal(await evaluate(() => document.querySelector('#search-query-feedback')?.textContent), message);
   assert.equal(await evaluate(() => document.activeElement.id), 'search-query-feedback');
   assert.equal(await evaluate(() => document.querySelector('#search-location').getAttribute('aria-invalid')), 'true');
-  assert.equal(await evaluate(() => document.querySelector('.search-locate-button').disabled), false);
+  assert.equal(await evaluate(() => document.querySelector('.search-location-gps').disabled), false);
   assert.equal(await evaluate(() => document.querySelector('[data-testid="button-search-services"]').disabled), false);
 };
 try {
   await viewport(1280); await visit('/search');
   await until(() => !!document.querySelector('.search-results') && document.querySelector('.search-results').getAttribute('aria-busy') === 'false', 'initial location choice');
-  await until(() => !!document.querySelector('.search-location-dialog[data-state="open"]'), 'initial modal open'); await fixture.key('Escape'); await until(() => !document.querySelector('.search-location-dialog'), 'location modal dismissed');
+  assert.equal(await evaluate(() => !!document.querySelector('.search-location-dialog')), false, 'Empty search has no forced location modal');
   assert.equal(await evaluate(() => document.querySelector('option[value="distance-asc"]').disabled), true);
   await set('search-location', 'Synthetic city'); await submit();
   await until(() => document.querySelectorAll('.search-service-card').length === 3, 'initial located results');
   await set('service-query', 'Unsubmitted text');
-  await set(await evaluate(() => document.querySelector('.search-desktop-filters [data-testid="search-category"]').id), 'fitness');
+  await categoryDraft('fitness');
   await config({ locationCoords: { latitude: 0, longitude: 0.029 }, geocode: 'error' });
-  await click('.search-locate-button');
+  await gps();
   assert.equal(await evaluate(() => document.querySelector('option[value="distance-asc"]').disabled), false, 'Detecting current location immediately enables nearest-first sorting');
   assert.equal(await evaluate(() => document.querySelector('option[value="distance-desc"]').disabled), false);
   await until(() => document.querySelector('.search-results').getAttribute('aria-busy') === 'false', 'current location applied');
@@ -39,16 +43,17 @@ try {
   assert.equal(located.get('latitude'), '0'); assert.equal(located.get('longitude'), '0.029');
   assert.equal(located.has('searchQuery'), false); assert.equal(located.has('category'), false);
   assert.equal(await evaluate(() => document.querySelector('#service-query').value), 'Unsubmitted text');
-  assert.equal(await evaluate(() => document.querySelector('.search-desktop-filters [data-testid="search-category"]').value), 'fitness');
+  assert.equal(await categoryDraft(), 'fitness');
   await set('service-sort', 'distance-asc');
   assert.deepEqual(await evaluate(() => [...document.querySelectorAll('.search-service-title')].map(node => node.textContent)), ['Personal training', 'Deep tissue massage', 'Restorative yoga']);
   await click('.search-chip');
-  await until(() => !!document.querySelector('.search-location-dialog'), 'forgotten location modal'); await fixture.key('Escape'); await until(() => !document.querySelector('.search-location-dialog'), 'modal dismissed');
+  await until(() => !document.querySelector('[data-testid="button-search-services"]').disabled && document.querySelector('.search-results').getAttribute('aria-busy') === 'false', 'location cleared');
+  assert.equal(await evaluate(() => !!document.querySelector('.search-location-dialog')), false);
   assert.equal(await evaluate(() => document.querySelector('option[value="distance-asc"]').disabled), true);
   assert.equal(await evaluate(() => document.querySelector('#service-sort').value), 'default');
   checks.push('Location icon immediately applies coordinates and enables both distance sorts; nearest-first orders results; unapplied query/filter drafts stay intact; removing location disables distance sorting');
   await set('service-query', '');
-  await set(await evaluate(() => document.querySelector('.search-desktop-filters [data-testid="search-category"]').id), '');
+  await categoryDraft('');
   await config({ geocode: 'success', locationCoords: { latitude: 0, longitude: 0 } });
   await set('search-location', 'Synthetic city'); await submit();
   const appliedRequests = await requests();
@@ -62,17 +67,17 @@ try {
     ]) {
       await set('search-location', 'Keep this draft');
       await config({ geolocation: outcome }); const before = await attempts();
-      await click('.search-locate-button'); await error(messages[message]);
+      await gps(); await error(messages[message]);
       assert.equal(await attempts(), before + expectedAttempts);
       assert.equal(await evaluate(() => document.querySelector('#search-location').value), 'Keep this draft');
       assert.equal(await requests(), appliedRequests, 'Failure keeps the applied search');
       assert.equal(await evaluate(() => document.querySelectorAll('.search-service-card').length), 3);
       assert.ok(await evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Localized feedback reflows');
-      if (language === 'en' && outcome === 'error') await fixture.screenshot('docs/search-modal-gps-denied.png');
+      if (language === 'en' && outcome === 'error') await fixture.screenshot('docs/search-redesign-gps-denied.png');
     }
     for (const outcome of ['unavailable', 'timeout']) {
       await config({ geolocation: 'success', geolocationQueue: [outcome, 'success'] });
-      await click('.search-locate-button');
+      await gps();
       assert.equal(await evaluate(() => document.querySelector('#search-location').value), messages.currentLocation);
       assert.equal(await evaluate(() => document.querySelector('.search-location-receipt').textContent), messages.locationReady);
       assert.equal(await evaluate(() => document.querySelector('option[value="distance-asc"]').disabled), false);
@@ -83,24 +88,24 @@ try {
   await set('fixture-language', 'en'); await viewport(1280);
   const messages = resources.en.translation.searchPage;
   await evaluate(() => { window.savedGeolocation = navigator.geolocation; Object.defineProperty(navigator, 'geolocation', { configurable: true, value: undefined }); });
-  await click('.search-locate-button'); await error(messages.locationUnsupported);
+  await gps(); await error(messages.locationUnsupported);
   await evaluate(() => { Object.defineProperty(navigator, 'geolocation', { configurable: true, value: window.savedGeolocation }); Object.defineProperty(window, 'isSecureContext', { configurable: true, value: false }); });
-  await click('.search-locate-button'); await error(messages.locationInsecure);
+  await gps(); await error(messages.locationInsecure);
   await evaluate(() => { delete window.isSecureContext; });
   checks.push('Unsupported and insecure contexts give actionable feedback without locking the form');
 
   await config({ geolocation: 'pending', locationCoords: { latitude: 56.95, longitude: 24.1 } });
   await set('search-location', 'Keep this draft');
   const beforePending = await attempts();
-  await click('.search-locate-button');
-  assert.equal(await evaluate(() => document.querySelector('[data-testid="button-search-services"]').textContent), messages.resolvingLocation);
+  await gps();
+  assert.equal(await evaluate(() => document.querySelector('[data-testid="button-search-services"]').getAttribute('aria-label')), messages.resolvingLocation);
   assert.equal(await evaluate(() => document.querySelector('.search-location-receipt').getAttribute('role')), 'status');
-  assert.equal(await evaluate(() => document.querySelector('.search-locate-button').disabled), true);
-  await evaluate(() => document.querySelector('.search-locate-button').click());
+  assert.equal(await evaluate(() => document.querySelector('.search-location-gps').disabled), true);
+  await evaluate(() => document.querySelector('.search-location-gps').click());
   assert.equal(await attempts(), beforePending + 1, 'Disabled control prevents a duplicate pending request');
   // Use the real application deadline: this also covers a native API that never calls back.
   const started = Date.now();
-  while (await evaluate(() => document.querySelector('.search-locate-button').disabled)) {
+  while (await evaluate(() => document.querySelector('.search-location-gps').disabled)) {
     assert.ok(Date.now() - started < 40000, 'Location must unlock within its overall deadline');
     await new Promise(resolve => setTimeout(resolve, 200));
   }
@@ -111,9 +116,9 @@ try {
   assert.equal(await requests(), appliedRequests);
   checks.push('A silent native request unlocks after 35 seconds; duplicate requests and late callbacks cannot change newer input');
 
-  await config({ geolocation: 'pending' }); await click('.search-locate-button');
+  await config({ geolocation: 'pending' }); await gps();
   await set('fixture-language', 'lv'); await evaluate(() => window.searchFixture.resolveLocation());
-  await until(() => !document.querySelector('.search-locate-button').disabled, 'location ready');
+  await until(() => !document.querySelector('[data-testid="button-search-services"]').disabled, 'location ready');
   await until(() => document.querySelector('.search-results').getAttribute('aria-busy') === 'false', 'detected location search settled');
   assert.equal(await evaluate(() => document.querySelector('#search-location').value), resources.lv.translation.searchPage.currentLocation);
   assert.equal(await requests(), appliedRequests + 1, 'Detection applies new coordinates without an extra Search click');
@@ -126,6 +131,6 @@ try {
   checks.push('Successful location follows language changes, immediately searches with detected coordinates/radius, and enables distance sorting');
   assert.deepEqual(await evaluate(() => window.searchFixture.unexpected), []);
   assert.deepEqual(fixture.errors, []); assert.deepEqual(fixture.network, []); assert.deepEqual(fixture.blocked, []);
-  await writeFile(new URL('../docs/search-modal-gps-evidence.json', import.meta.url), JSON.stringify({ date: '2026-10-23', checks, languages: ['en','lv','ru'], viewports: [390,1280], browser: 'Installed headless Chrome', deferredLanguages: ['ar','zh','fr','de','hi','ja','pt','es'], limits: 'Synthetic geolocation and API responses; real application timer. No real location, external requests, database/session writes, paid services or deployment. Device/browser permission settings and live location provider remain unverified.' }, null, 2) + '\n');
+  await writeFile(new URL('../docs/search-redesign-gps-evidence.json', import.meta.url), JSON.stringify({ date: '2026-11-02', checks, languages: ['en','lv','ru'], viewports: [390,1280], browser: 'Installed headless Chrome', deferredLanguages: ['ar','zh','fr','de','hi','ja','pt','es'], limits: 'Synthetic geolocation and API responses; real application timer. No real location, external requests, database/session writes, paid services or deployment. Device/browser permission settings and live location provider remain unverified.' }, null, 2) + '\n');
   console.log(`Passed search location: ${checks.length} groups; en/lv/ru; no unexpected network or runtime errors.`);
 } finally { await fixture.close(); }

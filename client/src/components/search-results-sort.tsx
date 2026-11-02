@@ -6,12 +6,13 @@ interface SearchResultsSortProps {
   onChange: (value: ServiceSort) => void;
   hasLocation: boolean;
   hasRatings: boolean;
+  compact?: boolean;
 }
 
-export default function SearchResultsSort({ value, onChange, hasLocation, hasRatings }: SearchResultsSortProps) {
+export default function SearchResultsSort({ value, onChange, hasLocation, hasRatings, compact = false }: SearchResultsSortProps) {
   const { t } = useTranslation();
   return (
-    <div className="space-y-1">
+    <div className={compact ? "search-compact-sort" : "space-y-1"}>
       <label htmlFor="service-sort" className="block text-sm font-medium text-neutral-700">{t("sorting.label")}</label>
       <select
         id="service-sort"
@@ -29,7 +30,7 @@ export default function SearchResultsSort({ value, onChange, hasLocation, hasRat
         <option value="rating-asc">{t("sorting.ratingAsc")}</option>
         <option value="rating-desc">{t("sorting.ratingDesc")}</option>
       </select>
-      <p id="service-sort-help" className="text-xs text-neutral-500" aria-live="polite">
+      <p id="service-sort-help" className={compact ? "sr-only" : "text-xs text-neutral-500"} aria-live="polite">
         {!hasLocation && t("sorting.locationRequired")}
         {!hasLocation && !hasRatings && " "}
         {!hasRatings && t("sorting.ratingsUnavailable")}

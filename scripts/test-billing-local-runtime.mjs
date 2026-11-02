@@ -100,17 +100,33 @@ test("dormant public flags and webhook bypass body/session/auth work", async () 
   assert.equal(sessions, 0);
 });
 
-function runtimeFixture({ databaseFailure = false, db = scriptedDb().db, config = parseLocalBillingConfig(profile, credentials) } = {}) {
+function runtimeFixture({ databaseFailure = false, accountFailure = false, portalFailure = false, db = scriptedDb().db, config = parseLocalBillingConfig(profile, credentials) } = {}) {
   let accountReads = 0, portalReads = 0;
   const sdk = new Stripe("sk_test_synthetic", { apiVersion: "2025-06-30.basil" });
-  const client = { webhooks: sdk.webhooks, billingPortal: { configurations: { async retrieve() { portalReads++; return portal(); } } } };
+  const client = { webhooks: sdk.webhooks, billingPortal: { configurations: { async retrieve() { portalReads++; if (portalFailure) throw new Error("synthetic portal failure"); return portal(); } } } };
   const runtime = createLocalBillingRuntime(db, config, {
     authenticate: (req, _res, next) => { req.user = { claims: { sub: actor } }; next(); }, requireAdmin: (_req, _res, next) => next(),
-    isAdmin: () => true, stripe: client, verifyAccount: async () => { accountReads++; },
+    isAdmin: () => true, stripe: client, verifyAccount: async () => { accountReads++; if (accountFailure) throw new Error("synthetic account failure"); },
     verifyDatabase: async () => { if (databaseFailure) throw new Error("synthetic"); },
   });
   return { runtime, sdk, get accountReads() { return accountReads; }, get portalReads() { return portalReads; } };
 }
+
+test("startup stages identify the first failing billing guard without advancing or retrying", async () => {
+  for (const [options, expected, accountReads, portalReads] of [
+    [{ databaseFailure: true }, ["billing_database"], 0, 0],
+    [{ accountFailure: true }, ["billing_database", "billing_account"], 1, 0],
+    [{ portalFailure: true }, ["billing_database", "billing_account", "billing_portal"], 1, 1],
+  ]) {
+    const fixture = runtimeFixture(options), stages = [];
+    await assert.rejects(fixture.runtime.verify(stage => stages.push(stage)));
+    assert.deepEqual(stages, expected); assert.equal(fixture.accountReads, accountReads); assert.equal(fixture.portalReads, portalReads); fixture.runtime.stop();
+  }
+  const fixture = runtimeFixture(), stages = [];
+  await fixture.runtime.verify(stage => stages.push(stage));
+  assert.deepEqual(stages, ["billing_database", "billing_account", "billing_portal"]);
+  assert.equal(fixture.accountReads, 1); assert.equal(fixture.portalReads, 1); fixture.runtime.stop();
+});
 
 test("failed database guard makes no provider requests or advertised capability", async () => {
   const fixture = runtimeFixture({ databaseFailure: true }), app = express();

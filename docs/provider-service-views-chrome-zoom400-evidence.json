@@ -1,0 +1,76 @@
+{
+  "date": "2026-11-02",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/156.0.8078.79",
+    "revision": "@a21ce95c24ce3964416f09ae1862f53f319eb4d0",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "jsVersion": "15.6.75.27"
+  },
+  "matrix": [
+    {
+      "language": "en",
+      "width": 315,
+      "view": "list"
+    },
+    {
+      "language": "en",
+      "width": 315,
+      "view": "grid"
+    },
+    {
+      "language": "lv",
+      "width": 315,
+      "view": "list"
+    },
+    {
+      "language": "lv",
+      "width": 315,
+      "view": "grid"
+    },
+    {
+      "language": "ru",
+      "width": 315,
+      "view": "list"
+    },
+    {
+      "language": "ru",
+      "width": 315,
+      "view": "grid"
+    }
+  ],
+  "checks": [
+    "List/Grid share the Search result component and 1:1 media/fallbacks; unpublished services are visible; status/view switches preserve selections and perform no requests or writes; hostile text stays literal",
+    "en/lv/ru responsive List/Grid retain every service, publication label and editing/copy action",
+    "phone list is denser than grid; light/dark text contrast; text/native-zoom reflow; fixed square geometry",
+    "keyboard view switching; correct editor routes; pending/failed copy recovery and duplicate prevention across views; successful copy still opens existing editor",
+    "read-only permissions retain previews and remove management actions; company uses business name; load error/retry, empty and loading states recover"
+  ],
+  "screenshots": [
+    "docs/provider-service-views-chrome-zoom400-desktop-grid.png",
+    "docs/provider-service-views-chrome-zoom400-phone-grid.png",
+    "docs/provider-service-views-chrome-zoom400-phone-list.png",
+    "docs/provider-service-views-chrome-zoom400-phone-dark.png"
+  ],
+  "light": {
+    "failures": [],
+    "minText": 5.659498607641199,
+    "minControlBorder": null
+  },
+  "dark": {
+    "failures": [],
+    "minText": 5.659498607641199,
+    "minControlBorder": null
+  },
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Synthetic services and data-URI images; mocked APIs/auth/workspaces/copy and blocked external network. No live server, database, publishing, paid service or deployment. Physical devices, screen readers and native-language review unverified."
+}

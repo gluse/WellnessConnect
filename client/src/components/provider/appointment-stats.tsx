@@ -1,15 +1,16 @@
 import type { BookingWithDetails } from "@shared/schema";
-import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 export default function AppointmentStats({ bookings }: { bookings: BookingWithDetails[] }) {
+  const { t } = useTranslation();
   const revenue = bookings.filter(booking => booking.status === "confirmed" || booking.status === "completed")
     .reduce((sum, booking) => sum + Number(booking.totalAmount), 0);
   const stats = [
-    { label: "Total Bookings", value: bookings.length },
-    { label: "Awaiting approval", value: bookings.filter(booking => booking.status === "pending").length },
-    { label: "Revenue", value: `$${revenue.toFixed(0)}` },
+    { label: t("appointmentAgenda.totalBookings"), value: bookings.length },
+    { label: t("appointmentAgenda.awaitingApproval"), value: bookings.filter(booking => booking.status === "pending").length },
+    { label: t("appointmentAgenda.revenue"), value: `$${revenue.toFixed(0)}` },
   ];
-  return <div className="grid grid-cols-3 gap-2 sm:gap-4">{stats.map(stat => <Card key={stat.label}>
-    <CardContent className="p-3 sm:p-4 text-center"><div className="text-xl sm:text-2xl font-bold text-primary">{stat.value}</div><div className="text-xs sm:text-sm text-neutral-600">{stat.label}</div></CardContent>
-  </Card>)}</div>;
+  return <dl className="grid grid-cols-3 rounded-xl border bg-white py-3 divide-x rtl:divide-x-reverse" data-testid="appointment-summary">{stats.map(stat => <div key={stat.label} className="min-w-0 px-2 sm:px-4 text-center flex flex-col">
+    <dt className="text-xs sm:text-sm text-neutral-600">{stat.label}</dt><dd className="order-first text-xl sm:text-2xl font-bold text-neutral-900 mb-1">{stat.value}</dd>
+  </div>)}</dl>;
 }

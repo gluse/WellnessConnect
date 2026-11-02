@@ -1,0 +1,91 @@
+{
+  "date": "2026-11-02",
+  "browser": {
+    "product": "firefox/157.0"
+  },
+  "checks": [
+    "en: disabled service offers one manual action, composer preview and focus recovery; stale automation status hidden",
+    "en: configured service shows Automatic reminders and honest delivery/errors, no duplicate manual action; service changes update presentation",
+    "lv: disabled service offers one manual action, composer preview and focus recovery; stale automation status hidden",
+    "lv: configured service shows Automatic reminders and honest delivery/errors, no duplicate manual action; service changes update presentation",
+    "ru: disabled service offers one manual action, composer preview and focus recovery; stale automation status hidden",
+    "ru: configured service shows Automatic reminders and honest delivery/errors, no duplicate manual action; service changes update presentation",
+    "unknown/failed capabilities, missing setting and revoked booking permission do not expose reminder controls"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "height": 700,
+      "mode": "automatic"
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "height": 900,
+      "mode": "automatic"
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "height": 900,
+      "mode": "automatic"
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "height": 700,
+      "mode": "automatic"
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "height": 900,
+      "mode": "automatic"
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "height": 900,
+      "mode": "automatic"
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "height": 700,
+      "mode": "automatic"
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "height": 900,
+      "mode": "automatic"
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "height": 900,
+      "mode": "automatic"
+    }
+  ],
+  "screenshots": [
+    "docs/pro-reminders-collaboration-firefox-manual.png",
+    "docs/pro-reminders-collaboration-firefox-automatic.png"
+  ],
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Synthetic fetch mocks and blocked external network; no database writes or real sending. Physical devices, screen readers and native-language review unverified."
+}

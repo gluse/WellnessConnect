@@ -10,6 +10,7 @@ import BottomNavigation from "@/components/bottom-navigation";
 import { Button } from "@/components/ui/button";
 import PendingReviews from "@/components/booking-review";
 import CustomerBookingChange, { canCustomerChangeBooking } from "@/components/customer-booking-change";
+import { BookingConversationDialog, BookingRescheduleRequests } from "@/components/booking-collaboration";
 
 const signInUrl = "/login?returnTo=%2Fmy-bookings";
 
@@ -25,6 +26,7 @@ function CustomerBookings() {
   const { t } = useTranslation();
   const [change, setChange] = useState<{ booking: BookingWithDetails; action: "cancel" | "reschedule" } | null>(null);
   const [message, setMessage] = useState("");
+  const [conversation, setConversation] = useState<BookingWithDetails | null>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const queryClient = useQueryClient();
@@ -35,12 +37,9 @@ function CustomerBookings() {
   }, [bookings.error, queryClient]);
   if (bookings.error && isUnauthorizedError(bookings.error)) return <Redirect to={signInUrl} />;
 
-  return <div className="min-h-[calc(100dvh-4rem)] bg-neutral-50">
-    <main className="max-w-7xl mx-auto p-4 sm:p-6 pb-24 lg:pb-6 space-y-5">
-      <div>
-        <h1 ref={heading} tabIndex={-1} className="text-2xl font-semibold">My Bookings</h1>
-        <p className="mt-2 text-neutral-600">View your upcoming appointments and booking history.</p>
-      </div>
+  return <div className="min-h-[calc(100dvh-4rem)] bg-[#EAF7F3]" data-appointment-area="customer">
+    <main className="max-w-7xl mx-auto p-4 sm:p-6 pb-24 lg:pb-6 space-y-3">
+      <h1 ref={heading} tabIndex={-1} className="text-2xl font-semibold focus:outline focus:outline-2 focus:outline-offset-2">{t("notifications.appointments")}</h1>
       {message && <p role="status" className="rounded-lg border bg-white p-3">{message}</p>}
       {bookings.isError ? <div role="alert" className="border rounded-xl bg-white p-6 space-y-3">
         <p>Unable to load your bookings. Please try again.</p>
@@ -50,7 +49,7 @@ function CustomerBookings() {
       </div> : null}
       {(!bookings.isError || bookings.data) && <>
         <PendingReviews bookings={customerBookings} />
-        <AppointmentAgenda bookings={customerBookings} loading={bookings.isLoading} renderCustomerActions={booking => user && canCustomerChangeBooking(booking, user.id) && <div className="flex flex-wrap gap-2">
+        <AppointmentAgenda bookings={customerBookings} loading={bookings.isLoading} renderBookingDetails={booking => <><Button variant="outline" className="min-h-11" onClick={event => { trigger.current = event.currentTarget; setConversation(booking); }}>{t("appointmentCollaboration.messageProvider")}</Button><BookingRescheduleRequests booking={booking} scope={`customer:${user?.id}`} /></>} renderCustomerActions={booking => user && canCustomerChangeBooking(booking, user.id) && <div className="flex flex-wrap gap-2">
           {(["reschedule", "cancel"] as const).map(action => <Button key={action} variant="outline" className="min-h-11 h-auto whitespace-normal" onClick={event => {
             trigger.current = event.currentTarget; trigger.current.focus(); setMessage(""); setChange({ booking, action });
           }}>{t(action === "cancel" ? "bookingChanges.cancel" : "bookingChanges.reschedule")}</Button>)}
@@ -60,6 +59,7 @@ function CustomerBookings() {
     {change && <CustomerBookingChange key={`${user?.id}-${change.booking.id}-${change.action}`} {...change} onClose={() => setChange(null)} onSuccess={setMessage} restoreFocus={() => {
       if (trigger.current?.isConnected) trigger.current.focus(); else heading.current?.focus();
     }} />}
+    {conversation && <BookingConversationDialog viewer="customer" key={conversation.id} booking={conversation} scope={`customer:${user?.id}`} onClose={() => setConversation(null)} restoreFocus={() => { if (trigger.current?.isConnected) trigger.current.focus(); else heading.current?.focus(); }} />}
     <div className="lg:hidden"><BottomNavigation /></div>
   </div>;
 }

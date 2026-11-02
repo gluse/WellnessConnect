@@ -1,0 +1,822 @@
+{
+  "version": "notifications-runtime-v1",
+  "tables": [
+    "user_communication_preferences",
+    "phone_verification_challenges",
+    "notification_events",
+    "notification_jobs",
+    "notification_delivery_attempts",
+    "notification_callbacks"
+  ],
+  "columns": [
+    {
+      "table": "user_communication_preferences",
+      "name": "user_id",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "phone",
+      "type": "character varying(16)",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "phone_verified_at",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "preferred_method",
+      "type": "character varying",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "email_suppressed",
+      "type": "boolean",
+      "notNull": true,
+      "default": "false"
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "language",
+      "type": "character varying(8)",
+      "notNull": true,
+      "default": "'en'"
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "sms_opt_in",
+      "type": "boolean",
+      "notNull": true,
+      "default": "false"
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "whatsapp_opt_in",
+      "type": "boolean",
+      "notNull": true,
+      "default": "false"
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "user_id",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "phone",
+      "type": "character varying(16)",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "provider_request_id",
+      "type": "character varying(255)",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "status",
+      "type": "character varying",
+      "notNull": true,
+      "default": "'pending'"
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "attempt_count",
+      "type": "integer",
+      "notNull": true,
+      "default": "0"
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "expires_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "next_send_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "notification_events",
+      "name": "id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_events",
+      "name": "booking_id",
+      "type": "integer",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_events",
+      "name": "booking_revision",
+      "type": "integer",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_events",
+      "name": "kind",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_events",
+      "name": "scheduled_date",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_events",
+      "name": "previous_scheduled_date",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "notification_events",
+      "name": "timezone",
+      "type": "character varying(100)",
+      "notNull": true,
+      "default": "'UTC'"
+    },
+    {
+      "table": "notification_events",
+      "name": "automatic",
+      "type": "boolean",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_events",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "notification_jobs",
+      "name": "id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "event_id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "channel",
+      "type": "character varying",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "state",
+      "type": "character varying",
+      "notNull": true,
+      "default": "'queued'"
+    },
+    {
+      "table": "notification_jobs",
+      "name": "due_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "expires_at",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "lease_token",
+      "type": "uuid",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "lease_until",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "attempted_at",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "provider_message_id",
+      "type": "character varying(255)",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "reason_code",
+      "type": "character varying(64)",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "notification_jobs",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "job_id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "provider",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "provider_message_id",
+      "type": "character varying(255)",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "state",
+      "type": "character varying",
+      "notNull": true,
+      "default": "'reserved'"
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "error_code",
+      "type": "character varying(64)",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "notification_callbacks",
+      "name": "id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_callbacks",
+      "name": "provider",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_callbacks",
+      "name": "provider_event_id",
+      "type": "character varying(255)",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "notification_callbacks",
+      "name": "received_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "services",
+      "name": "reminder_enabled",
+      "type": "boolean",
+      "notNull": true,
+      "default": "false"
+    },
+    {
+      "table": "services",
+      "name": "reminder_method",
+      "type": "character varying",
+      "notNull": true,
+      "default": "'email'"
+    },
+    {
+      "table": "services",
+      "name": "reminder_hours",
+      "type": "integer",
+      "notNull": true,
+      "default": "24"
+    },
+    {
+      "table": "bookings",
+      "name": "notification_revision",
+      "type": "integer",
+      "notNull": true,
+      "default": "0"
+    }
+  ],
+  "constraints": [
+    {
+      "table": "user_communication_preferences",
+      "name": "communication_preferences_phone_check",
+      "type": "c",
+      "expression": "phoneisnullorphone~'^\\+[1-9][0-9]{7,14}$'"
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "communication_preferences_verification_check",
+      "type": "c",
+      "expression": "phone_verified_atisnullorphoneisnotnullandnotsms_opt_inorphone_verified_atisnotnullandnotwhatsapp_opt_inorphone_verified_atisnotnull"
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "communication_preferences_method_check",
+      "type": "c",
+      "expression": "preferred_methodisnullorpreferred_method='email'orpreferred_method='sms'andsms_opt_inorpreferred_method='whatsapp'andwhatsapp_opt_in"
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "communication_preferences_language_check",
+      "type": "c",
+      "expression": "language=anyarray['en','lv','ru','ar','zh','fr','de','hi','ja','pt','es']"
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "user_communication_preferences_pkey",
+      "type": "p",
+      "columns": [
+        "user_id"
+      ]
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "user_communication_preferences_user_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "user_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "phone_verification_shape",
+      "type": "c",
+      "expression": "phone~'^\\+[1-9][0-9]{7,14}$'andstatus=anyarray['pending','verified','failed','expired','unknown']andattempt_count>=0andattempt_count<=5andexpires_at>created_atandnext_send_at>=created_at"
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "phone_verification_challenges_pkey",
+      "type": "p",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "phone_verification_challenges_user_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "user_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "notification_events",
+      "name": "notification_event_shape",
+      "type": "c",
+      "expression": "booking_revision>=0andkind=anyarray['accepted','rejected','rescheduled','reminder']andlengthtrimtimezone>=1andlengthtrimtimezone<=100andkind<>'rescheduled'orprevious_scheduled_dateisnotnull"
+    },
+    {
+      "table": "notification_events",
+      "name": "notification_events_pkey",
+      "type": "p",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table": "notification_events",
+      "name": "notification_events_booking_id_bookings_id_fk",
+      "type": "f",
+      "columns": [
+        "booking_id"
+      ],
+      "referenceTable": "bookings",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "notification_jobs",
+      "name": "notification_job_state_check",
+      "type": "c",
+      "expression": "state=anyarray['queued','leased','accepted','delivered','failed','unknown','skipped','cancelled']andchannelisnullorchannel=anyarray['email','sms','whatsapp']"
+    },
+    {
+      "table": "notification_jobs",
+      "name": "notification_job_lease_check",
+      "type": "c",
+      "expression": "lease_tokenisnull=lease_untilisnullandstate<>'leased'orlease_tokenisnotnull"
+    },
+    {
+      "table": "notification_jobs",
+      "name": "notification_job_expiry_check",
+      "type": "c",
+      "expression": "expires_atisnullorexpires_at>=due_at"
+    },
+    {
+      "table": "notification_jobs",
+      "name": "notification_jobs_pkey",
+      "type": "p",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table": "notification_jobs",
+      "name": "notification_jobs_event_id_notification_events_id_fk",
+      "type": "f",
+      "columns": [
+        "event_id"
+      ],
+      "referenceTable": "notification_events",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "notification_attempt_shape",
+      "type": "c",
+      "expression": "provider=anyarray['vonage','resend']andstate=anyarray['reserved','accepted','delivered','failed','unknown']"
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "notification_delivery_attempts_pkey",
+      "type": "p",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "notification_delivery_attempts_job_id_notification_jobs_id_fk",
+      "type": "f",
+      "columns": [
+        "job_id"
+      ],
+      "referenceTable": "notification_jobs",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "notification_callbacks",
+      "name": "notification_callback_shape",
+      "type": "c",
+      "expression": "provider=anyarray['vonage','resend']andlengthtrimprovider_event_id>0"
+    },
+    {
+      "table": "notification_callbacks",
+      "name": "notification_callbacks_pkey",
+      "type": "p",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table": "services",
+      "name": "services_reminder_settings_check",
+      "type": "c",
+      "expression": "reminder_method=anyarray['email','sms','whatsapp']andreminder_hours>=1andreminder_hours<=168"
+    },
+    {
+      "table": "bookings",
+      "name": "bookings_notification_revision_check",
+      "type": "c",
+      "expression": "notification_revision>=0"
+    }
+  ],
+  "indexes": [
+    {
+      "table": "user_communication_preferences",
+      "name": "user_communication_preferences_pkey",
+      "unique": true,
+      "columns": [
+        "user_id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "user_communication_preferences",
+      "name": "communication_preferences_phone_idx",
+      "unique": false,
+      "columns": [
+        "phone"
+      ],
+      "predicate": "phoneisnotnull"
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "phone_verification_challenges_pkey",
+      "unique": true,
+      "columns": [
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "phone_verification_user_created_idx",
+      "unique": false,
+      "columns": [
+        "user_id",
+        "created_at"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "phone_verification_phone_created_idx",
+      "unique": false,
+      "columns": [
+        "phone",
+        "created_at"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "phone_verification_expiry_idx",
+      "unique": false,
+      "columns": [
+        "expires_at"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "phone_verification_challenges",
+      "name": "phone_verification_provider_identity",
+      "unique": true,
+      "columns": [
+        "provider_request_id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_events",
+      "name": "notification_events_pkey",
+      "unique": true,
+      "columns": [
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_events",
+      "name": "notification_event_revision_identity",
+      "unique": true,
+      "columns": [
+        "booking_id",
+        "booking_revision",
+        "kind"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_events",
+      "name": "notification_reminder_identity",
+      "unique": true,
+      "columns": [
+        "booking_id",
+        "scheduled_date"
+      ],
+      "predicate": "kind='reminder'"
+    },
+    {
+      "table": "notification_events",
+      "name": "notification_events_retention_idx",
+      "unique": false,
+      "columns": [
+        "created_at"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "notification_jobs_pkey",
+      "unique": true,
+      "columns": [
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "notification_job_event_identity",
+      "unique": true,
+      "columns": [
+        "event_id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_jobs",
+      "name": "notification_job_due_idx",
+      "unique": false,
+      "columns": [
+        "due_at"
+      ],
+      "predicate": "state='queued'"
+    },
+    {
+      "table": "notification_jobs",
+      "name": "notification_job_lease_idx",
+      "unique": false,
+      "columns": [
+        "lease_until"
+      ],
+      "predicate": "state='leased'"
+    },
+    {
+      "table": "notification_jobs",
+      "name": "notification_jobs_retention_idx",
+      "unique": false,
+      "columns": [
+        "updated_at"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "notification_delivery_attempts_pkey",
+      "unique": true,
+      "columns": [
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "notification_attempt_job_identity",
+      "unique": true,
+      "columns": [
+        "job_id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "notification_attempt_recent_idx",
+      "unique": false,
+      "columns": [
+        "created_at",
+        "job_id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_delivery_attempts",
+      "name": "notification_attempt_provider_identity",
+      "unique": true,
+      "columns": [
+        "provider",
+        "provider_message_id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_callbacks",
+      "name": "notification_callbacks_pkey",
+      "unique": true,
+      "columns": [
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_callbacks",
+      "name": "notification_callback_identity",
+      "unique": true,
+      "columns": [
+        "provider",
+        "provider_event_id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "notification_callbacks",
+      "name": "notification_callbacks_retention_idx",
+      "unique": false,
+      "columns": [
+        "received_at"
+      ],
+      "predicate": null
+    }
+  ]
+}

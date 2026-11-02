@@ -4,6 +4,11 @@ import renderer from "react-test-renderer";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 import { QueryClientProvider } from "@tanstack/react-query";
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
+import { readFile } from "node:fs/promises";
+
+await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation: JSON.parse(await readFile("client/public/locales/en/translation.json", "utf8")) } } });
 
 globalThis.React = React;
 globalThis.window = { location: { pathname: "/", search: "", hash: "" }, addEventListener() {}, removeEventListener() {} };
@@ -33,6 +38,9 @@ queryClient.setQueryData(["/api/availability/provider"], []);
 const requests = [];
 let resolveWrite;
 globalThis.fetch = async (url, options = {}) => {
+  if (url === "/api/notifications/capabilities") return Response.json({ hasPro: false, automationEnabled: false, channels: { email: false, sms: false, whatsapp: false } });
+  if (/^\/api\/bookings\/\d+\/notifications$/.test(url)) return Response.json({ notification: { mode: "none" }, reminder: { state: "off" } });
+  if (/^\/api\/bookings\/\d+\/reschedule-requests$/.test(url)) return Response.json({ requests: [] });
   if (options.method === "PATCH") {
     requests.push({ url, body: JSON.parse(options.body) });
     return new Promise(resolve => { resolveWrite = resolve; });
@@ -51,6 +59,7 @@ await act(async () => {
 const buttons = label => component.root.findAllByType("button").filter(node => node.children.includes(label));
 const click = async label => act(async () => buttons(label)[0].props.onClick());
 const flush = async () => act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+await flush();
 assert.equal(buttons("Mark complete").length, 1, "Only confirmed appointments can be completed");
 assert.equal(buttons("Approve").length, 1, "Pending appointments still require approval");
 await click("Past & cancelled");
@@ -59,10 +68,9 @@ const revenueIsPreserved = () => component.root.findAllByType("div").some(node =
 assert.equal(revenueIsPreserved(), true);
 await click("Mark complete");
 await flush();
-assert.deepEqual(requests[0], { url: "/api/bookings/2/status", body: { status: "completed" } });
+assert.deepEqual(requests[0], { url: "/api/bookings/2/status", body: { status: "completed", timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone } });
 assert.equal(buttons("Mark complete")[0].props.disabled, true);
-assert.equal(buttons("Cancel booking")[0].props.disabled, true);
-assert.equal(buttons("Reschedule")[0].props.disabled, true);
+assert.equal(buttons("More actions")[0].props.disabled, true, "Reschedule/cancel menu is disabled during save");
 await act(async () => resolveWrite(new Response(JSON.stringify({ message: "Try again" }), { status: 500 })));
 await flush();
 assert.equal(buttons("Mark complete")[0].props.disabled, false, "Allow retry after a failed save");

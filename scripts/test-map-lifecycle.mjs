@@ -122,7 +122,7 @@ assert.ok(markers.some(marker => marker.options.position.lat === initialLocation
 
 const updatedLocation = { lat: 57.5, lng: 25.4 };
 const offers = [
-  { id: 1, latitude: 0, longitude: 0, name: '<img src=x onerror="alert(1)">', description: 'A short <script>alert(1)</script> description.', price: "10", provider: null },
+  { id: 1, latitude: 0, longitude: 0, name: '<img src=x onerror="alert(1)">', description: 'A short <script>alert(1)</script> description.', price: "10", provider: null, duration: 60, serviceType: "group", instantBooking: true, imageUrl: "/synthetic-image.png" },
   { id: 2, latitude: 56, longitude: 24, name: "Yoga", description: " \n ", price: "20", provider: null },
   { id: 3, latitude: null, longitude: null, name: "Unlocated", price: "20", provider: null },
   { id: 4, latitude: 55, longitude: 22, name: "Expired Google location", locationSource: "google", locationExpiresAt: "2000-01-01T00:00:00Z", price: "20", provider: null },
@@ -155,6 +155,11 @@ assert.equal(preview.options.disableAutoPan, true);
 assert.equal(card.children[0].children[0].textContent, offers[0].name);
 assert.equal(card.children[1].textContent, offers[0].description, "Markup is rendered as literal text");
 assert.equal(card.children[2].textContent, english.mapPreview.viewDetails);
+assert.equal(card.children[3].children[0].attributes.src, offers[0].imageUrl);
+assert.ok(card.children[4].textContent.includes(english.searchPage.group));
+assert.ok(card.children[4].textContent.includes(english.searchPage.instant));
+card.children[3].children[0].emit("error");
+assert.equal(card.children[3].textContent, "◇", "A broken map image has a placeholder");
 assert.deepEqual(selections, [], "Hover does not open details or bookings");
 first.emit("mouseout"); advance(100); card.emit("mouseenter"); advance(500);
 assert.equal(preview.opened, true, "Moving into the preview keeps it open");
@@ -195,7 +200,7 @@ await act(async () => component.update(React.createElement(GoogleMap, { services
 first = activeMarkers().find(marker => marker.options.title === offers[0].name);
 preview = windows.findLast(info => info.options.headerDisabled);
 first.emit("click"); assert.equal(preview.opened, true, "A click can show a preview when no selection callback is supplied");
-assert.equal(preview.content.children.length, 2, "No nonfunctional details button is shown");
+assert.equal(preview.content.children.length, 4, "No nonfunctional details button is shown; square art and metadata remain");
 const originalConsoleError = console.error;
 try {
   console.error = () => {};

@@ -11,9 +11,12 @@ const closed = () => until(() => !document.querySelector('.search-location-dialo
 const settled = () => until(() => document.querySelector('.search-results')?.getAttribute('aria-busy') === 'false' && !document.querySelector('[data-testid="button-search-services"]').disabled, "search settled");
 const checks = [], matrix = [];
 try {
-  await viewport(1280); await fixture.visit('/search'); await open();
+  await viewport(1280); await fixture.visit('/search'); await settled();
+  assert.equal(await evaluate(() => document.querySelectorAll('.search-service-card').length), 3, 'Empty search browses the catalog');
+  assert.equal(await evaluate(() => !!document.querySelector('.search-location-dialog')), false, 'Location is optional');
+  await click('[data-testid="open-search-location"]'); await open();
   assert.equal(await evaluate(() => document.activeElement.id), 'modal-search-location');
-  assert.equal(await evaluate(() => window.searchFixture.requests.length), 0);
+  assert.equal(await evaluate(() => window.searchFixture.requests.length), 1);
   assert.equal(await evaluate(() => window.searchFixture.locationRequests.length), 0);
   assert.equal(await evaluate(() => document.querySelector('.search-query-form .search-state')), null);
   for (let index = 0; index < 12; index++) {
@@ -36,7 +39,7 @@ try {
   assert.equal(await evaluate(() => document.querySelectorAll('.search-service-card').length), 3);
   assert.equal(await evaluate(() => document.querySelector('#service-query').value), 'Unsubmitted query');
   assert.equal(await evaluate(() => new URL(window.searchFixture.requests.at(-1), location.origin).searchParams.has('searchQuery')), false);
-  checks.push('Initial modal makes no search/GPS request; traps focus; Escape restores trigger; required/denied feedback; address selection closes modal without applying query draft');
+  checks.push('Empty search browses immediately; explicitly opened modal makes no extra search/GPS request; traps focus; Escape restores trigger; required/denied feedback; address selection preserves query draft');
 
   await click('[data-testid="open-search-location"]'); await open();
   assert.equal(await evaluate(() => document.querySelector('#modal-search-location').value), 'Synthetic city');
@@ -55,10 +58,12 @@ try {
 
   const account = '00000000-0000-4000-8000-000000000001';
   await evaluate(id => { window.savedLocationFixture.preferenceError = true; window.setFixtureUser({ id }); }, account);
+  await until(() => !!document.querySelector('.search-query-error[role="alert"]'), 'restoration error is visible without forcing a modal');
+  await click('[data-testid="open-search-location"]');
   await open();
   await until(() => document.querySelector('.search-location-error')?.textContent.includes('could not be restored'), 'restoration error inside modal');
   assert.equal(await evaluate(() => document.querySelector('.search-location-dialog [data-testid="remember-search-location"]').checked), false);
-  await fixture.screenshot('docs/search-location-modal-restore-error.png');
+  await fixture.screenshot('docs/search-redesign-location-restore-error.png');
   await evaluate(id => { window.savedLocationFixture.preferenceError = false; window.savedLocationFixture.preferences[id] = { source: 'device', latitude: 0, longitude: 0 }; }, account);
   await click('.search-location-error button'); await closed(); await settled();
   checks.push('Account restoration failure and retry are contained in modal; successful retry closes it');
@@ -77,7 +82,7 @@ try {
       matrix.push({ language, width });
     }
     await viewport(language === 'en' ? 1280 : 390);
-    await fixture.screenshot(`docs/search-location-modal-${language}.png`);
+    await fixture.screenshot(`docs/search-redesign-location-${language}.png`);
     await viewport(320); await evaluate(() => document.documentElement.style.fontSize = '200%');
     assert.ok(await evaluate(() => { const d = document.querySelector('.search-location-dialog'); return d.scrollWidth <= d.clientWidth + 1; }), '200% text reflows');
     await evaluate(() => document.documentElement.style.fontSize = '');
@@ -86,6 +91,6 @@ try {
   checks.push('en/lv/ru modal fits desktop/tablet/phone and short viewports, 200% text, Russian dark theme');
   assert.deepEqual(await evaluate(() => window.searchFixture.unexpected), []);
   assert.deepEqual(fixture.errors, []); assert.deepEqual(fixture.network, []); assert.deepEqual(fixture.blocked, []);
-  await writeFile('docs/search-location-modal-evidence.json', JSON.stringify({ date: '2026-10-23', checks, matrix, browser: 'Installed headless Chrome', services: 'All APIs, geocoding and geolocation mocked; no connected app/DB', deferred: ['ar/RTL','zh','fr','de','hi','ja','pt','es'], limits: 'No physical device, screen reader or real permission-dialog coverage' }, null, 2) + '\n');
+  await writeFile('docs/search-redesign-location-evidence.json', JSON.stringify({ date: '2026-11-02', checks, matrix, browser: 'Installed headless Chrome', services: 'All APIs, geocoding and geolocation mocked; no connected app/DB', deferred: ['ar/RTL','zh','fr','de','hi','ja','pt','es'], limits: 'No physical device, screen reader or real permission-dialog coverage' }, null, 2) + '\n');
   console.log(`Passed location modal: ${checks.length} groups, ${matrix.length} locale/viewport cases.`);
 } finally { await fixture.close(); }

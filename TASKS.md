@@ -161,11 +161,48 @@ See the [development acceptance record](docs/audit-completion-execution.md).
 
 ## Test scripts
 
-## notifications
+## Notifications
+
+- [ ] **TASK-032 — PRO notifications and appointment reminders.**
+  **Implemented and verified locally, 29 October 2026; activation pending.** User approved the full
+  notification/reminder plan: private customer phone/preferences, Vonage SMS-code
+  verification, customer-language messages, automatic PRO booking updates and
+  service reminders, and manual SMS/email/WhatsApp links without PRO. Reminder
+  defaults: off, Email, 24 hours; 1–168 hours; confirmed appointments only; apply
+  settings to existing future bookings; skip elapsed schedules. Customer preference
+  takes priority. Delivery metadata retention is 30 days.
+  Owners: Frontend `/root/notifications_frontend`, Backend
+  `/root/notifications_backend`, DB `/root/notifications_db`, CI/CD
+  `/root/notifications_delivery`; root coordinates integration and documentation.
+  Each owner accepted local implementation and
+  offline/mocked validation under the user's request and standing cooperation.
+  No connected database migration, private configuration access, provider account
+  setup, real verification/message send, spending or deployment is authorized.
+  Preserve deployment holds. Tests cover en/lv/ru only; ar/RTL, zh, fr, de, hi,
+  ja, pt and es remain deferred while translations are maintained.
+  TypeScript, production build, all five mocked backend runners, offline ORM/SQL
+  parity and frontend checks passed. Chrome/Firefox/WebKit passed nine interaction
+  groups and 36 en/lv/ru viewport cases each; native Chrome 400% zoom and contrast
+  checks passed. **Apply the reviewed schema expansion before running this app
+  version, even with feature flags off.** Task remains open for separately
+  authorized migration/runtime/provider activation and live verification.
+  Evidence, rollout and recovery: [implementation handoff](docs/notifications-handoff.md)
+  and [setup guide](docs/notifications-setup.md).
+  **30 October follow-up implemented and verified locally:** PRO appointment presentation
+  based on the service reminder flag: `Automatic reminders` when enabled,
+  otherwise a usable `Send reminder` composer. Assigned Frontend
+  `/root/reminder_frontend` and Backend `/root/reminder_backend` accepted local
+  UI/preview-route changes and mocked regressions. TypeScript, server bundles,
+  34 bootstrap and 42 route scenarios pass; scoped browser evidence is linked below.
+  Connected-operation holds remain.
+  See [coordination](docs/agent-coordination.md) and
+  [follow-up evidence](docs/pro-appointment-reminder-handoff.md).
 
 ## quick find: I have x time available X date. What could I do? Propose activities near my current location.
 
 ## Subscribe for news. Receive invitations.
+
+## Multiple time slot calendars, whn more than one employee.
 
 ## New tasks
 
@@ -297,6 +334,23 @@ See [business scenarios](docs/payment-business-plan.md),
 [payment processing plan](docs/payment-processing-plan.md) and the
 [monthly subscription brief](docs/monthly-subscription-brief.md).
 
+- [ ] **TASK-033 — Let local development start when Stripe is unavailable.**
+  **Status, 30 October 2026:** Backlog at the user's request; not started.
+  A missing VPN connection caused the local Stripe account check to fail and
+  stopped unrelated appointment/notification development. Limit graceful startup
+  to the explicit development launcher, `npm run billing:dev`; preserve production
+  startup behavior and security checks. Start the local app with billing marked
+  unavailable when Stripe verification fails. Block checkout, portal actions and
+  billing workers until verification succeeds; retain mandatory configuration,
+  database, audit and authentication readiness checks. Show a clear, redacted
+  diagnostic and support an explicit retry without automatic retry loops or
+  fabricated billing/PRO state. Backend owns startup/runtime implementation;
+  coordinate any UI or delivery changes with their owners when selected.
+  **Acceptance:** Mock Stripe connectivity/access failures and recovery; confirm
+  unrelated local features remain usable, billing stays blocked until verified,
+  mandatory readiness failures still stop startup, and production behavior is
+  unchanged. Use isolated tests; language checks only en/lv/ru if UI is affected.
+
 - [ ] **TASK-024 — Deliver monthly workspace Pro subscriptions (Option A).**
   **Latest, 27 October:** Stripe sandbox own-account authentication and configured
   merchant match passed on the fifth separately authorized read. User selected
@@ -381,8 +435,113 @@ See [business scenarios](docs/payment-business-plan.md),
   attributable dormant preparation edits. Delivery rollback must preserve paid-through access, financial/audit
   records and handling for existing subscriptions as described in the brief.
 
+## Mobile apps
+
+- [ ] **TASK-034 — Build the FitsMyTime Android app.**
+  **Status, 30 October 2026:** Added to backlog at the user's request;
+  implementation, owner assignment and verification have not started.
+  **Scope:** Evaluate Capacitor to reuse the existing React/Vite interface,
+  then record the selected approach and build an installable Android app.
+  Reuse the existing hosted Express API and database; a separate mobile backend
+  is not required by this task. Coordinate shared mobile API/authentication work
+  with TASK-035 so both apps use a consistent contract.
+  **Acceptance:** Configure the API endpoint and secure session/origin handling;
+  verify login/logout, supported social sign-in and return links, service search,
+  maps/location permissions, booking and relevant provider flows. Handle Android
+  back navigation, keyboards, safe areas, denied permissions, session expiry and
+  network failure. Verify accessibility and existing web behavior. Produce a
+  reproducible installable test build, emulator and physical-device evidence,
+  and documented signing/release steps; prepare Google Play artifacts if selected.
+  **Owners/dependencies when started:** Front End Developer owns app/client work;
+  Back End Developer owns API/auth changes; CI/CD owns build/signing/release
+  tooling; DB Analyst owns any database dependencies. Confirm app identity,
+  release scope and target environment; review current store requirements,
+  privacy declarations and TASK-024 subscription/payment compatibility before
+  distribution. Keep server secrets out of the app.
+  **Verification/limits:** Test en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es
+  remain deferred while supported translations are maintained. Begin with isolated
+  mocked tests; connected tests that persist sessions/data need scoped authority.
+  This entry records future work only; account spending, credential operations,
+  connected execution, deployment and store publishing need scoped authorization.
+
+- [ ] **TASK-035 — Build the FitsMyTime iOS app for the Apple App Store.**
+  **Status, 30 October 2026:** Added to backlog at the user's request;
+  implementation, owner assignment and verification have not started.
+  **Scope:** Evaluate sharing the React/Vite interface and Capacitor foundation
+  with TASK-034, record the selected approach, and build an iOS app prepared for
+  App Store submission. Reuse the existing hosted Express API and database and
+  coordinate shared API/authentication changes with TASK-034.
+  **Acceptance:** Verify login/logout, supported social sign-in and return links,
+  service search, maps/location permissions, booking and relevant provider flows.
+  Handle iOS navigation, keyboards, safe areas, denied permissions, session expiry
+  and network failure. Verify accessibility and existing web behavior. Produce
+  a reproducible iOS build, simulator and physical-iPhone evidence, and documented
+  signing/release steps. Prepare App Store metadata, screenshots and privacy
+  declarations; use TestFlight and submit only under scoped release authorization.
+  **Owners/dependencies when started:** Front End Developer owns app/client work;
+  Back End Developer owns API/auth changes; CI/CD owns macOS/Xcode build access,
+  signing and delivery; DB Analyst owns any database dependencies. Confirm app
+  identity, supported devices and target environment. Review current Apple
+  requirements for app functionality, sign-in, account deletion, privacy and
+  TASK-024 subscription/payment compatibility; resolve applicable product choices
+  before release. Keep server secrets out of the app.
+  **Verification/limits:** Test en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es
+  remain deferred while supported translations are maintained. Begin with isolated
+  mocked tests; connected tests that persist sessions/data need scoped authority.
+  This entry records future work only; account spending, credential operations,
+  connected execution, deployment and store publishing need scoped authorization.
+
 ## Reports
 
 ## SMS
 ## Terms of Use
-<!-- Add the next task here using TASK-031, or place it in the relevant section. -->
+## AWS hosting
+
+- [ ] **TASK-036 — Deploy a restricted AWS staging site.** User requested AWS
+  publishing on 31 October 2026 and selected restricted staging with High guidance.
+  Root owns infrastructure preparation; Backend and DB owners accepted and
+  completed repository-only compatibility review through live agent tools.
+  AWS MCP read-only connectivity, Free-plan state and Stockholm service/pricing
+  checks pass. User selected Lightsail micro/one node at USD 10/month base,
+  accepted deployment-spec credential storage and approved existing development
+  source/audit projects after owner preflight. Owner preflight passed all four
+  principals/TLS and all 14 current 33-table gates; isolated frontend build and
+  TypeScript, audit tests/bundle and proxy security/concurrent-health tests pass.
+  Supporting private S3/ECR, scoped builder role, encrypted logs/KMS and CodeBuild
+  project exist. Build start failed once because all CodeBuild compute quotas
+  are zero; no build ran and no Lightsail service exists. User approved the
+  one-small-build quota request including a possible Support case. Submitted
+  once for Linux/Small in Stockholm; AWS status CASE_OPENED, Support case
+  179346682900519. Await effective capacity
+  before any build retry; no plan upgrade or additional quota requested.
+  Docker is unavailable; actual Linux image/audit delivery/live acceptance remain.
+  See [deployment preparation and scope](docs/aws-staging-deployment.md).
+  Public release/privacy holds remain; tests cover en/lv/ru when performed,
+  with other supported languages/RTL deferred.
+
+- [ ] **TASK-037 — Group appointments, private messages and reschedule agreements.**
+  User approved the [v2 design](docs/group-appointments-design-v2.md) and
+  [v3 notes/messaging revision](docs/group-appointments-design-v3.md) for local
+  implementation on 2 November 2026. Frontend, Backend and DB owners assigned;
+  [approval/scope and integrated handoff](docs/group-appointments-implementation-handoff.md).
+  One expandable group event; individual/event actions; retained customer/provider
+  messages with private PRO broadcasts; reschedule requests with explicit
+  keep-original/cancel-on-decline outcomes. Independent responses and no automatic
+  cancellation on silence are user-selected. User selected 12-month message history
+  after the later closure/last-message time, with unresolved bookings retained.
+  **Implemented and verified locally:** final Chrome/Firefox/WebKit en/lv/ru UI
+  suites, native 400% customer-flow zoom, type/build and offline backend/schema/
+  retention checks pass. Prepared database migrations/runtime activation are
+  reviewed. User approved execution against development project
+  `hbkooiknruimukkhshrk` and read-only verification; assigned DB owner is executing
+  bounded preflight/activation with stop-on-first-failure. Named-target read-only
+  preflight passed; no DDL/grants ran at that stage. A recoverable backup could
+  not be verified; user explicitly selected
+  applying 0016/0017 without a verified backup for this exact project. DB owner
+  applied both scripts once successfully: six timestamp backfills and private
+  runtime grants/policies. All 20 restricted-role live read-only readiness checks
+  pass on the 35-table schema; root verified the execution receipt. No app startup,
+  live workflow writes, purge or deployment. Remains unchecked for user/live
+  workflow acceptance.
+
+<!-- Add the next task here using TASK-038, or place it in the relevant section. -->

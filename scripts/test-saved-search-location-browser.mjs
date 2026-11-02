@@ -16,14 +16,17 @@ const settle = async () => {
 };
 const count = () => evaluate(() => document.querySelectorAll('.search-service-card').length);
 const submit = async () => { await click(await evaluate(() => document.querySelector('.search-location-dialog[data-state="open"]') ? '[data-testid="confirm-search-location"]' : '[data-testid="button-search-services"]')); await settle(); };
-const setLocation = async value => set(await evaluate(() => document.querySelector('.search-location-dialog[data-state="open"]') ? 'modal-search-location' : 'search-location'), value);
+const openLocation = async () => { if (!await evaluate(() => !!document.querySelector('.search-location-dialog'))) { await click('[data-testid="open-search-location"]'); await until(() => !!document.querySelector('.search-location-dialog[data-state="open"]'), 'location picker opened'); } };
+const setLocation = async value => { await openLocation(); await set('modal-search-location', value); };
 const forget = async () => { if (!await evaluate(() => !!document.querySelector('.search-location-dialog[data-state="open"]'))) await click('[data-testid="open-search-location"]'); await until(() => !!document.querySelector('.search-location-dialog[data-state="open"]'), 'forget modal ready'); await click('[data-testid="forget-search-location"]'); await settle(); };
 try {
   await viewport(1280); await visit('/search'); await settle();
-  assert.equal(await count(), 0);
-  assert.equal(await evaluate(() => window.searchFixture.requests.length), 0, 'No unfiltered initial request');
+  assert.equal(await count(), 3);
+  assert.equal(await evaluate(() => window.searchFixture.requests.length), 1, 'Empty search returns the catalog without selecting location');
   assert.equal(await evaluate(() => window.searchFixture.locationRequests.length), 0, 'No automatic GPS request');
-  assert.equal(await evaluate(() => document.querySelector('.search-desktop-filters [data-testid="input-distance"]').value), '25');
+  await click('.search-mobile-filter-trigger'); await until(() => !!document.querySelector('.search-filter-dialog'), 'filters opened');
+  assert.equal(await evaluate(() => document.querySelector('.search-filter-dialog [data-testid="input-distance"]').value), '25');
+  await fixture.key('Escape'); await until(() => !document.querySelector('.search-filter-dialog'), 'filters closed');
   await setLocation('Synthetic city');
   await click('[data-testid="remember-search-location"]'); await submit();
   assert.equal(await count(), 3);
@@ -36,7 +39,7 @@ try {
   await visit('/search'); await settle();
   assert.equal(await count(), 3); assert.equal(await evaluate(() => window.savedLocationFixture.geocodes), 1);
   assert.equal(await evaluate(() => window.searchFixture.locationRequests.length), 0);
-  checks.push('First visit asks; 25 km/50 cap; explicit remember; typed guest return resolves automatically without persistent Google coordinates or GPS prompt');
+  checks.push('First visit browses without location; 25 km/50 cap; explicit remember; typed guest return resolves automatically without persistent Google coordinates or GPS prompt');
 
   await forget(); assert.equal(await count(), 3);
   assert.equal(await evaluate(() => new URL(window.searchFixture.requests.at(-1), location.origin).searchParams.has("latitude")), false);
@@ -53,25 +56,28 @@ try {
   assert.equal(await count(), 3);
   assert.equal(await evaluate(id => window.savedLocationFixture.preferences[id].source, accountA), 'device');
   assert.equal(await evaluate(() => document.cookie.includes('fmt.search-location.v1=')), false);
-  await evaluate(() => window.setFixtureUser(null)); await settle(); assert.equal(await count(), 0);
+  await evaluate(() => window.setFixtureUser(null)); await settle(); assert.equal(await count(), 3);
+  assert.equal(await evaluate(() => new URL(window.searchFixture.requests.at(-1), location.origin).searchParams.has('latitude')), false, 'Logout never reuses the account location');
   await evaluate(id => window.setFixtureUser({ id }), accountA); await settle(); assert.equal(await count(), 3);
-  await evaluate(id => window.setFixtureUser({ id }), accountB); await settle(); assert.equal(await count(), 0);
+  await evaluate(id => window.setFixtureUser({ id }), accountB); await settle(); assert.equal(await count(), 3);
+  assert.equal(await evaluate(() => new URL(window.searchFixture.requests.at(-1), location.origin).searchParams.has('latitude')), false, 'Another account starts with its own unfiltered catalog');
   checks.push('Guest preference adopted only into empty profile; no cookie survives login; logout and account switching clear private location/results; account return restores');
 
   await evaluate(id => { window.savedLocationFixture.preferenceError = true; window.setFixtureUser({ id }); }, accountA);
   await until(() => !!document.querySelector('[role="alert"]'), 'restore failure');
-  assert.equal(await count(), 0, 'Failed profile read must not show old account results');
+  await settle(); assert.equal(await count(), 3, 'Failed profile read browses a fresh unfiltered catalog');
+  assert.equal(await evaluate(() => new URL(window.searchFixture.requests.at(-1), location.origin).searchParams.has('latitude')), false, 'No stale account location is used');
   assert.equal(await evaluate(() => document.querySelector('[role="alert"]').textContent.includes('could not be restored')), true);
   await evaluate(() => window.savedLocationFixture.preferenceError = false);
-  await click('[role="alert"] button'); await settle(); assert.equal(await count(), 3);
+  await openLocation(); await click('.search-location-error button'); await settle(); assert.equal(await count(), 3);
   await evaluate(() => window.savedLocationFixture.preferenceError = true);
   await forget(); assert.equal(await count(), 3);
   assert.equal(await evaluate(() => new URL(window.searchFixture.requests.at(-1), location.origin).searchParams.has("latitude")), false);
   assert.equal(await evaluate(() => document.querySelector('[role="alert"]').textContent.includes('could not be deleted')), true);
   await evaluate(() => window.savedLocationFixture.preferenceError = false);
-  await click('[role="alert"] button'); await settle();
+  await openLocation(); await click('.search-location-error button'); await settle();
   assert.equal(await evaluate(id => !!window.savedLocationFixture.preferences[id], accountA), false);
-  checks.push('Profile read failure retains error instead of guest fallback; failed forget stops location use while browsing continues, preserves honest feedback and supports retry');
+  checks.push('Profile read failure reports honest feedback while browsing without stale location; failed forget stops location use while browsing continues, preserves honest feedback and supports retry');
 
   await evaluate(() => window.setFixtureUser(null)); await settle();
   await evaluate(id => {
@@ -92,21 +98,22 @@ try {
   assert.equal(await count(), 3, 'A failed save can still search for this visit');
   assert.equal(await evaluate(() => document.querySelector('[role="alert"]').textContent.includes('could not be saved')), true);
   await evaluate(() => window.savedLocationFixture.preferenceError = false);
-  await click('[role="alert"] button'); await settle();
+  await openLocation(); await click('.search-location-error button'); await settle();
   assert.equal(await evaluate(id => window.savedLocationFixture.preferences[id].inputText, accountB), 'New account place');
   checks.push('Failed account save is visible; retry persists the selected place without another location prompt');
 
   await evaluate(() => window.setFixtureUser(null)); await settle();
+  await openLocation();
   for (const language of ['en', 'lv', 'ru']) {
     await set('fixture-language', language); await viewport(language === 'en' ? 1280 : 390);
     assert.ok((await evaluate(() => document.body.textContent)).includes(resources[language].translation.searchLocation.title));
     assert.ok(await evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     assert.equal(await evaluate(() => document.querySelector('[data-testid="remember-search-location"]').checked), false);
   }
-  await fixture.screenshot('docs/google-api-fallback-saved-phone.png');
+  await fixture.screenshot('docs/search-redesign-saved-phone.png');
   checks.push('English/Latvian/Russian location choice, notice and remember control reflow at desktop/phone widths');
   assert.deepEqual(await evaluate(() => window.searchFixture.unexpected), []);
   assert.deepEqual(fixture.errors, []); assert.deepEqual(fixture.blocked, []);
-  await writeFile('docs/google-api-fallback-saved-evidence.json', JSON.stringify({ checks, locales: ['en','lv','ru'], viewports: [1280,390], externalServices: 'mocked', deferred: ['ar/RTL','zh','fr','de','hi','ja','pt','es'] }, null, 2) + '\n');
+  await writeFile('docs/search-redesign-saved-evidence.json', JSON.stringify({ checks, locales: ['en','lv','ru'], viewports: [1280,390], externalServices: 'mocked', deferred: ['ar/RTL','zh','fr','de','hi','ja','pt','es'] }, null, 2) + '\n');
   console.log(`Passed ${checks.length} saved-search-location browser groups. All APIs and device services mocked.`);
 } finally { await fixture.close(); }

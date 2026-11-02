@@ -31,7 +31,10 @@ export default function BookingTimePicker({ serviceId, bookingId, selected, onSe
     enabled: Boolean(dateKey), staleTime: 0,
   });
   useEffect(() => {
-    if (selected && slotsQuery.data && !slotsQuery.data.slots.some(slot => slot.startsAt === selected.startsAt)) onSelect(null);
+    if (!selected || !slotsQuery.data) return;
+    const current = slotsQuery.data.slots.find(slot => slot.startsAt === selected.startsAt);
+    if (!current) onSelect(null);
+    else if (current.availableCapacity !== selected.availableCapacity) onSelect(current);
   }, [slotsQuery.data, selected, onSelect]);
   const available = new Set(monthQuery.data?.days.filter(day => day.availableSlots > 0).map(day => day.date));
   const dateLabel = (value: Date) => new Intl.DateTimeFormat(language, { calendar: "gregory", weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(value);

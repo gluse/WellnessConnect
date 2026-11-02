@@ -1,0 +1,255 @@
+{
+  "date": "2026-10-29",
+  "browser": {
+    "product": "webkit/27.2"
+  },
+  "checks": [
+    "StrictMode account verification, disabled SMS/WhatsApp before verification/permission, invalid phone, failed-save retention, incorrect-code recovery, server-only verification and number-change resets",
+    "duplicate-submit guard and late save response cannot restore previous account private fields",
+    "free accept opens accessible modal, encoded email works, unverified phone channels disabled, text injection escaped, focus containment/Escape and removed-trigger recovery",
+    "reject opens links for verified opted-in contacts; confirmed cancellation, completion and failed saves do not open notification modal",
+    "reschedule saves canonical appointment/timezone then transitions to the notification modal with operable focus",
+    "free confirmed-future reminder; Escape restores existing trigger; permission, workspace and account changes clear private data and pending previews",
+    "PRO has no modal/manual reminder; automatic badge and worker failure stay visible after rejection; entitlement expiry restores manual reminders",
+    "service PRO toggle, 24-hour default, 1–168 validation, dirty-state/save integration, failed-save retention and free disabled automation",
+    "en/lv/ru account, enabled service settings and reminder modal reflow/labels at phone, tablet, desktop and short-height viewports"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "mode": "account",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "en",
+      "mode": "account",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "en",
+      "mode": "account",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "mode": "account",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "mode": "service",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "en",
+      "mode": "service",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "en",
+      "mode": "service",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "mode": "service",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "mode": "appointments",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "en",
+      "mode": "appointments",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "en",
+      "mode": "appointments",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "mode": "appointments",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "mode": "account",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "lv",
+      "mode": "account",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "lv",
+      "mode": "account",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "mode": "account",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "mode": "service",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "lv",
+      "mode": "service",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "lv",
+      "mode": "service",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "mode": "service",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "mode": "appointments",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "lv",
+      "mode": "appointments",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "lv",
+      "mode": "appointments",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "mode": "appointments",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "mode": "account",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "ru",
+      "mode": "account",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "ru",
+      "mode": "account",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "mode": "account",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "mode": "service",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "ru",
+      "mode": "service",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "ru",
+      "mode": "service",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "mode": "service",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "mode": "appointments",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "ru",
+      "mode": "appointments",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "ru",
+      "mode": "appointments",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "mode": "appointments",
+      "width": 1280,
+      "height": 900
+    }
+  ],
+  "screenshots": [],
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "unexpectedRequests": [],
+  "blockedRequests": [],
+  "runtimeErrors": [],
+  "limits": "Synthetic isolated fetch mocks; no database, provider sends or verification service calls. Physical devices, screen readers and native-language review are unverified."
+}

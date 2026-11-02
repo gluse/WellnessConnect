@@ -14,6 +14,326 @@ acceptance checks, recovery and next action. Use requested, accepted, in progres
 blocked or completed; state a concrete reason for blocked work. Owners return
 results and evidence; requesters check integration before closing dependencies.
 
+## Appointment layout redesign — 2 November 2026
+
+**Completed / verified locally.**
+User approved the reviewed image except the duplicate My Services/My Bookings
+labels above Appointments. Specific frontend executor `/root` owns local shared
+agenda/stats, both page layouts, the scoped short-height header adjustment,
+locale resources and mocked checks. One heading, compact summary/filters, dates
+inside white cards and lavender/mint area backgrounds are implemented.
+See [scope, evidence, limits and recovery](appointment-layout-handoff.md).
+TypeScript, provider/customer route regressions, Chrome collaboration checks,
+Chrome/Firefox/WebKit en/lv/ru layout matrices and native Chrome 400% checks pass.
+The updated customer-action Chrome regression passes six behavior groups across
+en/lv/ru, including mutations, permission/error handling and dialog focus.
+New evidence files preserve historical results. No backend/database dependency,
+connected operation, private configuration or deployment is included. Other
+locales and Arabic RTL remain deferred; preserve all pre-existing dirty work.
+
+## Workspace moved into My Services navigation — 2 November 2026
+
+**Completed / verified locally.** User's
+specific frontend redesign request authorizes `/root` for local provider
+navigation/layout, workspace selector, locale resources and mocked frontend
+checks. Show the selector only for personal plus at least one company workspace.
+Preserve mutation/draft safeguards and visible role/company notices. No other
+owner dependency, connected operation or deployment is included. See
+[scope, validation and recovery](workspace-navigation-handoff.md). Check only
+en/lv/ru; other locales and Arabic RTL remain deferred. Recovery preserves all
+pre-existing dirty work.
+TypeScript, provider-navigation regression and isolated esbuild/Tailwind build
+pass. Chrome/Firefox/WebKit each pass five behavior groups and twelve en/lv/ru
+viewport combinations with personal-only, one-company and two-company cases.
+No connected verification or deployment occurred; no remaining local dependency.
+
+## Group appointments, messages and reschedule agreements — 2 November 2026
+
+**Implemented / verified locally; development database activation verified.** User approved implementation of the reviewed v2/v3
+designs. Coordinator `/root`; Frontend `/root/appointments_frontend`, Backend
+`/root/appointments_backend`, DB `/root/appointments_db` assigned through live agent
+tools for their respective local scopes. See [approval, ownership, limits and
+integrated evidence](group-appointments-implementation-handoff.md). Private
+per-booking messaging, PRO private group sending, event actions and consent-based
+rescheduling are included. User selected 12-month message history after the later
+closure/last-message time, retaining unresolved bookings. Initial implementation
+covered local files/offline checks; connected activation was authorized separately
+below. No real message delivery or deployment is included. Checks: isolated/mocked en/lv/ru;
+other supported locales/RTL deferred. Frontend, Backend and DB owner handoffs and
+root integrated checks pass: final browser suites in Chrome/Firefox/WebKit,
+type/build, 43 repository / 22 API / 16 retention / 142 schema checks. Prepared
+0016/0017 migrations and recovery are reviewed. User subsequently approved
+application to development project `hbkooiknruimukkhshrk` and read-only verification.
+The assigned DB owner accepted that named execution through live tools, with
+bounded preflight and stop-on-first-failure. No audit connection, fixture writes,
+purge, messages or deployment is included. TASK-037 remains unchecked while the
+owner performs activation and reports actual results/live acceptance limits.
+The named-target read-only preflight passed (PG17/33 tables/no prior appointment
+objects). No DDL/grants ran during preflight. A recoverable backup was unverified,
+so execution was held for a new recovery decision; a separate billing waiver was
+not reused.
+User then explicitly selected “Apply migrations 0016/0017 without a verified
+backup” for the named development project. The TASK-037 backup hold is resolved;
+assigned DB owner proceeds with the existing stop-on-first-failure and read-only
+verification scope. No backup or successful migration is claimed until reported.
+The assigned DB owner subsequently applied each script once successfully;
+0016 backfilled six terminal timestamps, 0017 activated server-only runtime access.
+All 20 restricted-app-role read-only readiness checks passed against the expanded
+35-table schema. Root checked the sanitized receipt/hashes/verified booleans without
+another DB connection. No backup, app startup, audit connection, fixture writes,
+purge, message sending or deployment is claimed. Next: user functional review of
+the updated application; TASK-037 remains unchecked for that live acceptance.
+
+## Provider booking notes — 31 October 2026
+
+**Completed locally.** User reports notes entered during booking are not
+visible to the provider. Front End Developer/requester `/root` owns the provider
+notes presentation, translations and isolated browser verification. Backend owner
+`/root/booking_notes_backend` accepted a directly delivered scoped dependency to
+trace and verify notes through the existing API/storage using mocked adapters;
+see its [record](booking-notes-backend-handoff.md). Standing cooperation authorizes
+necessary reversible local backend fixes if data loss is found. No schema/ORM,
+connected database/services, private configuration or deployment. Preserve all
+existing changes. Acceptance: submitted notes are clearly labelled on the matching
+provider booking, preserve multiline Unicode text and render safely. Empty notes
+do not create an empty section; customer view/permissions remain as before.
+Provider notes now have a distinct labelled section. The isolated backend trace
+found no data loss in current code. See the [integrated findings, frontend tests
+and limits](provider-booking-notes-handoff.md). Chrome/Firefox/WebKit en/lv/ru
+checks at desktop/tablet/phone widths, TypeScript, frontend build and provider
+completion regression pass. Other supported locales/RTL remain deferred.
+Recovery: remove only this task's additions. No remaining local dependency;
+next: local user review. The user's specific live booking is unverified.
+
+## Duplicate group booking confirmation — 31 October 2026
+
+**Completed locally.** User assigned
+the frontend warning while retaining repeat bookings. Requester/approver: user;
+Front End Developer/executor: `/root`. See the [scope, behavior, checks and
+recovery record](duplicate-group-booking-handoff.md). Existing authenticated
+bookings read supplies the match; no backend/database dependency or connected
+execution. Local frontend tests use en/lv/ru only; other locales/RTL deferred.
+Chrome/Firefox/WebKit, existing capacity/guest regressions, TypeScript and frontend
+build passed. Next: local user review. No deployment included.
+
+## Search group service maximum capacity — 31 October 2026
+
+**Completed locally.** User requested the frontend change; `/root` accepted and
+executed the scoped Front End Developer assignment. Search service details now
+show the maximum group capacity. See the [approval, implementation, verification
+and recovery record](group-service-capacity-handoff.md). Chrome/Firefox/WebKit
+isolated checks pass in en/lv/ru at desktop/tablet/phone widths, along with
+TypeScript and production frontend build. Other supported locales/RTL are deferred
+for testing. No backend/database/service execution or deployment; no dependency
+request remains. Next: local user review.
+
+## TASK-036 — Restricted AWS staging — 31 October 2026
+
+**In progress; Lightsail and development targets selected.** Requester: user. Infrastructure coordinator
+and executor: `/root`. User selected restricted staging and High guidance.
+Backend `/root/aws_staging_backend` and DB `/root/aws_staging_database` accepted
+scoped dependencies via live agent tools and completed their initial repository
+reviews, then resumed within the user's selected connected/preparation scope.
+See [findings, execution choices and recovery](aws-staging-deployment.md).
+
+AWS read-only connectivity, Free plan/credits, regional availability and pricing
+are verified. User selected Lightsail micro/one node, USD 10/month base with a
+staging password, explicitly accepted deployment-spec credential storage, and
+approved source hbkooiknruimukkhshrk/audit ynygqodmtgjrngiudalw after owner preflight,
+including secure runtime provisioning and normal test-session/audit writes.
+DB owner completed named-target preflight: four exact principals/TLS/caps and
+all 14 current 33-table gates pass; zero other connections at individual snapshots.
+Frontend production build/client-shared TypeScript, Backend offline audit worker
+tests/bundle and root proxy security/coalesced-health tests pass. Protected app
+and worker handoffs are separate; only the reviewed public CA enters the image.
+Normal worker delivery covers any eligible shared-development audit backlog;
+no worker claims have been made.
+Supporting S3/ECR/role/encrypted logs/KMS/CodeBuild resources were created under
+the selected staging scope. First build start failed before running because all
+CodeBuild compute quotas are zero. User approved a one-small-Linux-build quota
+request, including a possible Support case. Fresh quota/history checks passed;
+the single request succeeded; latest status CASE_OPENED, case 179346682900519.
+Request ID and execution
+evidence are in the linked deployment record. AWS review/effective capacity is
+the current dependency; no build retry, plan upgrade or Lightsail creation.
+Docker is unavailable, so actual Linux container evidence is still missing.
+Public location/privacy holds remain. Next: supported build capacity/path, then
+image verification and restricted Lightsail deployment.
+No deployment is claimed. No fresh language tests; en/lv/ru only for future
+acceptance, other supported locales/RTL deferred.
+
+## Pending requests and group booking availability — 29 October 2026
+
+**Implemented and verified locally.** User reports that submitting a request
+with Instant booking disabled makes the slot unavailable; the slot must remain
+available until approval. User added a second bug in the same task: a group
+session with capacity six and two confirmed participants must retain four
+bookable places. Requester/integration reviewer: `/root`; assigned
+Back End Developer/executor: `/root/pending_booking_backend`, contacted through
+live collaboration tools after confirming no reachable owner was already working.
+Assignment follows AGENTS.md standing cooperation. Backend records acceptance,
+implementation and evidence in the
+[booking availability handoff](pending-booking-availability-handoff.md).
+
+Scope: necessary reversible local backend scheduling/availability, booking
+creation/rescheduling/approval logic and offline mocked regression tests. Shared
+scheduling application logic follows backend ownership; frontend helpers must
+remain compatible. No private configuration, connected database/service access,
+schema/migration/ORM changes, deployment or spending. Acceptance: pending requests
+do not occupy slots, approved/instant bookings still block conflicts, approval
+rechecks occupancy under the existing serialization lock. Preserve unrelated work,
+including pre-existing TASKS.md edits. Recovery: revert only this fix's changes.
+**Expanded / accepted frontend dependency:** Front End Developer
+`/root/pending_booking_frontend_tests` owns the booking modal's participant limit,
+picker capacity refresh, focused mocked UI checks, and en/lv/ru scope correction
+in the existing cleanup runner. Backend finished that runner's scheduling
+assertions before frontend editing began. Contract: optional
+`BookableSlot.availableCapacity`, populated by the server; group sessions share
+only the same service/start/duration/cleanup interval and confirmed/completed
+participant counts consume capacity. Other resource overlaps remain exclusive.
+Booking creation, rescheduling and approval enforce capacity under the existing
+provider lock; reschedule previews honor the reservation's participant count.
+Frontend caps its participant input at the selected slot's remaining capacity.
+Frontend evidence belongs in the
+[test/UI handoff](pending-booking-test-scope-handoff.md).
+
+Concurrent TASK-032 notification changes are present in the workspace; preserve
+them, re-read mixed files before edits, and do not revert or claim their evidence.
+Those owners are outside this thread's reachable roster; this queue is a durable
+coordination notice, not evidence of live delivery. In particular backend booking
+mutation/route changes must retain each task's behavior.
+**Resolved check dependency:** an intermediate full `npm run check` reported
+TS1378 in the concurrent notification worker. That entrypoint was subsequently
+wrapped by the concurrent task, and the final full typecheck passed without
+shared compiler changes.
+
+**Completed / integrated review:** Backend's isolated capacity/API regression and
+existing customer booking action checks passed against the merged notification
+and availability source. The regression also fails against pre-fix tracked code
+at the pending-availability assertion. Frontend's isolated Chrome regression
+passed in en/lv/ru at desktop/tablet/phone widths, including four remaining places,
+over-capacity rejection, canonical booking payload, capacity refresh, retained
+participant choice, sold-out reset, focus and reflow. Focused fixture typecheck,
+cleanup frontend-only regression and scoped whitespace checks passed. Root
+reviewed shared capacity, serialized mutations, reschedule previews, UI limits,
+test isolation and the final integrated diff; unrelated changes were preserved.
+No connected DB/service check or deployment occurred; live database concurrency
+remains unverified. No local owner dependency remains. Next: user reviews the
+local booking behavior; connected execution remains separately authorized.
+Language-sensitive testing is limited to en/lv/ru; ar/RTL, zh, fr, de, hi, ja, pt
+and es remain deferred.
+
+## TASK-032 — PRO notifications and reminders — 29 October 2026
+
+**PRO appointment reminder follow-up — 30 October 2026, completed locally.** User
+requests `Automatic reminders` when the service automated-reminder flag is enabled,
+otherwise `Send reminder`, including PRO workspaces. Requester/reviewer `/root`
+assigned Front End Developer `/root/reminder_frontend` and Back End Developer
+`/root/reminder_backend` after checking the reachable roster; both accepted through
+live collaboration. Frontend owns appointment presentation, translations and mocked
+UI regressions. Backend owns the preview route and mocked authorization regressions:
+allow PRO manual reminder previews only when service reminders are off; preserve
+automatic status previews, enabled-reminder duplicate protection, workspace access
+and future-confirmed eligibility. Scope: reversible local files and offline/mocked
+checks under this user request and standing cooperation. No private configuration,
+connected app/database/provider access, messages, schema changes or deployment.
+Checks cover en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es are deferred.
+Owners returned evidence; root reviewed the component/route contract and Chrome
+phone screenshots. Application TypeScript, offline server/worker bundles, 34 actual
+bootstrap and 42 API scenarios pass. Frontend records scoped browser/resource and
+fixture type checks in the linked follow-up handoff. Recovery:
+reverse only this follow-up's edits, preserving existing TASK-032 and unrelated work.
+Frontend evidence: [follow-up handoff](pro-appointment-reminder-handoff.md); backend
+evidence: [backend handoff](notifications-backend-handoff.md).
+
+**Guided setup follow-up:** User reports applying notification migrations 0014
+and 0015 to the existing local-development Supabase database, with PostgreSQL
+17.11 and all supplied catalog checks passing. During setup, user-run
+`npm run billing:dev` stops with the generic readiness refusal. Read-only review
+found the application billing guard still pins 27 public tables and excludes the
+six new notification tables from its exact DML list. DB owner
+`/root/notifications_db` accepted the routine local contract update to the exact
+33-table application schema; Backend `/root/notifications_backend` accepted safe
+allowlisted startup diagnostics and offline checks. Preserve historical pinned
+migration/rehearsal profiles and all existing authorization checks. No agent DB,
+private configuration or provider access/startup retry is approved or performed.
+**Completed / locally verified:** both owners froze their changes. Passed 129
+runtime-contract assertions, ORM/SQL/manifest parity, 133 monthly-database checks,
+60 safe diagnostic checks, 16 mocked billing-runtime tests, TypeScript and build.
+Next: root guides a single user retry without rerunning migrations; inspect safe
+stage/code/checks if refused. This fixes a missing local integration dependency,
+not a reason to weaken readiness or change database privileges.
+
+**Second guided startup result:** user reports only `notification_constraints`
+false at `billing_database`; all other readiness flags pass. DB owner accepted
+the local follow-up. Source review of PostgreSQL 17's `ruleutils.c` identifies
+`TRIM(BOTH FROM ...)` deparsing absent from the comparison fixtures/normalizer.
+Reproduce and correct that representation locally, retain integrity checks and
+prepare a bounded read-only catalog query if further live evidence is needed.
+No agent connects, reads private configuration, changes constraints or retries
+startup. **Completed locally:** DB reproduced the default-trim comparison failure
+and narrowly normalized that representation in JavaScript and metadata SQL;
+explicit trim characters/directions remain distinct. Passed 141 contract checks,
+ORM/SQL/manifest parity and 133 monthly-database fixtures. Migration/manifest and
+permissions are unchanged. Next is one user startup retry; if still refused, use
+the prepared catalog-only `migrations/notifications/diagnose-check-constraints.sql`
+to gather evidence before further changes.
+
+**Notification API workspace follow-up:** after enabling the feature during guided
+setup, user reports `/api/bookings/36/notifications` responds with `Choose a
+workspace you belong to.` Root traced a definite bootstrap-order defect:
+`setupNotificationRoutes` mounts before `setupCompanyRoutes`, which installs the
+`/api` workspace middleware. Backend `/root/notifications_backend` receives the
+routine local fix and regression dependency: register notifications after workspace
+loading; preserve authentication, authorization, raw webhook boundaries and
+cross-company isolation. Existing route tests injected workspace in their auth
+stub, masking the integration defect. Scope remains reversible local server/tests
+and mocked checks; no agent private configuration, connected app/DB/provider
+operation or session writes. Root owns integration review/build and next user step.
+**Completed locally:** Backend moved notification registration after company
+workspace middleware. Actual-bootstrap regression reproduces the original 403
+and passes 29 scenarios with real workspace/access logic. Full notification
+suite, TypeScript and scoped diff checks pass; root reviewed integration and built
+the server bundle successfully. Next: one user app restart and appointments refresh;
+no database changes. Evidence/recovery: [handoff](notifications-handoff.md).
+
+**Implemented / locally verified; connected activation pending.** The user's implementation request assigns
+Frontend `/root/notifications_frontend`, Backend `/root/notifications_backend`
+and DB `/root/notifications_db` their respective scopes. Root coordinates shared
+contracts, integration and documentation. Owners accepted necessary reversible
+repository changes and offline/mocked tests under standing cooperation.
+Frontend owns client/UI/translations and isolated browser checks; Backend owns
+APIs, worker/transports and backend tests; DB owns schema/migration files and
+offline database-contract checks. CI/CD `/root/notifications_delivery` accepted
+the opt-in worker/configuration/setup scope and completed offline YAML checks;
+Docker is unavailable, so actual container verification remains a release gate.
+Backend coordinates the shared notification
+types; DB owns shared ORM definitions. No live DB/service access, private config,
+real sending, provider provisioning, spending or deployment is authorized.
+
+**Concurrent booking-availability coordination:** TASK-032 Backend is adding
+narrow notification transaction hooks to `server/storage.ts` and booking routes.
+Preserve the pending/group availability owner's resource/capacity logic in those
+same files. That separate task's owners are outside this thread's reachable live
+roster; this entry records the shared-file coordination requirement without
+claiming delivery. Re-read current files before patches; no broad replacements.
+
+Acceptance: PRO automatically sends qualifying status changes and configured
+confirmed-appointment reminders; free providers receive manual composer links;
+verified phone and opt-ins gate phone channels; customer preference wins; stale
+jobs, expiry, races and ambiguous sends must be handled safely. Existing future
+appointments follow updated settings; elapsed schedules are skipped. Tests only
+en/lv/ru; all other languages/RTL deferred. Integrated TypeScript, production build,
+all five backend mocked runners, offline ORM/SQL parity and frontend checks passed.
+Chrome/Firefox/WebKit each passed nine interaction groups and 36 locale/viewports;
+native Chrome 400% zoom/contrast passed. Root reviewed contracts, privacy, source,
+sample screenshots, duplicate handling and retention. Shared booking-availability
+changes were preserved; their separate owner reports integrated regressions passed.
+Recovery and evidence: [TASK-032 handoff](notifications-handoff.md). No local owner
+dependency remains. Next: DB owner performs separately authorized migration/rights
+rehearsal before running the updated app (new ORM columns require schema-first
+rollout even with flags off), followed by authorized provider/worker activation.
+
 ## Team management redesign — 28 October 2026
 
 **Completed locally.** User assigned Front End Developer `/root`, approved the

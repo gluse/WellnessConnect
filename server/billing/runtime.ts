@@ -53,12 +53,15 @@ export function createLocalBillingRuntime(db: BillingDatabase, config: LocalBill
   }
   return {
     application,
-    async verify() {
+    async verify(onStage?: (stage: "billing_database" | "billing_account" | "billing_portal") => void) {
+      onStage?.("billing_database");
       await deps.verifyDatabase();
       const preparation = { mode: "test" as const, billingEnabled: false as const, newCheckoutsEnabled: false as const,
         apiKey: config.apiKey, accountId: config.accountId };
+      onStage?.("billing_account");
       if (deps.verifyAccount) await deps.verifyAccount();
       else await checkStripeOwnAccount(preparation, createStripeOwnAccountReader(preparation));
+      onStage?.("billing_portal");
       const portal = await stripe.billingPortal.configurations.retrieve(config.portalConfigurationId, {}, { timeout: 10000, maxNetworkRetries: 0 });
       assertSandboxPortalConfiguration(portal, config.portalConfigurationId);
       verified = true;

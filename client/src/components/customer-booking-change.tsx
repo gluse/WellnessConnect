@@ -8,12 +8,21 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import BookingTimePicker from "@/components/booking-time-picker";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RescheduleRequestDialog } from "@/components/booking-collaboration";
 
 export function canCustomerChangeBooking(booking: BookingWithDetails, customerId: string) {
   return booking.seekerId === customerId && (booking.status === "pending" || booking.status === "confirmed") && new Date(booking.scheduledDate).getTime() > Date.now();
 }
 
-export default function CustomerBookingChange({ booking, action, onClose, onSuccess, restoreFocus }: {
+export default function CustomerBookingChange(props: {
+  booking: BookingWithDetails; action: "cancel" | "reschedule"; onClose: () => void;
+  onSuccess: (message: string) => void; restoreFocus: () => void;
+}) {
+  if (props.action === "reschedule") return <RescheduleRequestDialog booking={props.booking} onClose={props.onClose} restoreFocus={props.restoreFocus} />;
+  return <CustomerCancellation {...props} />;
+}
+
+function CustomerCancellation({ booking, action, onClose, onSuccess, restoreFocus }: {
   booking: BookingWithDetails; action: "cancel" | "reschedule"; onClose: () => void;
   onSuccess: (message: string) => void; restoreFocus: () => void;
 }) {

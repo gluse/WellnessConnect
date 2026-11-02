@@ -1,0 +1,204 @@
+{
+  "date": "2026-11-02",
+  "browser": {
+    "product": "firefox/157.0"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "area": "provider",
+      "width": 320,
+      "height": 800,
+      "nativeZoom": 1
+    },
+    {
+      "language": "en",
+      "area": "provider",
+      "width": 390,
+      "height": 844,
+      "nativeZoom": 1
+    },
+    {
+      "language": "en",
+      "area": "provider",
+      "width": 768,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "en",
+      "area": "provider",
+      "width": 1280,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "en",
+      "area": "customer",
+      "width": 320,
+      "height": 800,
+      "nativeZoom": 1
+    },
+    {
+      "language": "en",
+      "area": "customer",
+      "width": 390,
+      "height": 844,
+      "nativeZoom": 1
+    },
+    {
+      "language": "en",
+      "area": "customer",
+      "width": 768,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "en",
+      "area": "customer",
+      "width": 1280,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "lv",
+      "area": "provider",
+      "width": 320,
+      "height": 800,
+      "nativeZoom": 1
+    },
+    {
+      "language": "lv",
+      "area": "provider",
+      "width": 390,
+      "height": 844,
+      "nativeZoom": 1
+    },
+    {
+      "language": "lv",
+      "area": "provider",
+      "width": 768,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "lv",
+      "area": "provider",
+      "width": 1280,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "lv",
+      "area": "customer",
+      "width": 320,
+      "height": 800,
+      "nativeZoom": 1
+    },
+    {
+      "language": "lv",
+      "area": "customer",
+      "width": 390,
+      "height": 844,
+      "nativeZoom": 1
+    },
+    {
+      "language": "lv",
+      "area": "customer",
+      "width": 768,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "lv",
+      "area": "customer",
+      "width": 1280,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "ru",
+      "area": "provider",
+      "width": 320,
+      "height": 800,
+      "nativeZoom": 1
+    },
+    {
+      "language": "ru",
+      "area": "provider",
+      "width": 390,
+      "height": 844,
+      "nativeZoom": 1
+    },
+    {
+      "language": "ru",
+      "area": "provider",
+      "width": 768,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "ru",
+      "area": "provider",
+      "width": 1280,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "ru",
+      "area": "customer",
+      "width": 320,
+      "height": 800,
+      "nativeZoom": 1
+    },
+    {
+      "language": "ru",
+      "area": "customer",
+      "width": 390,
+      "height": 844,
+      "nativeZoom": 1
+    },
+    {
+      "language": "ru",
+      "area": "customer",
+      "width": 768,
+      "height": 900,
+      "nativeZoom": 1
+    },
+    {
+      "language": "ru",
+      "area": "customer",
+      "width": 1280,
+      "height": 900,
+      "nativeZoom": 1
+    }
+  ],
+  "checks": [
+    "en/provider: one heading; no extra area buttons; white dated cards; distinct background; compact gaps/summary; calendar/status/history filters; group disclosure/full context",
+    "en/customer: one heading; no extra area buttons; white dated cards; distinct background; compact gaps/summary; calendar/status/history filters",
+    "lv/provider: one heading; no extra area buttons; white dated cards; distinct background; compact gaps/summary; calendar/status/history filters; group disclosure/full context",
+    "lv/customer: one heading; no extra area buttons; white dated cards; distinct background; compact gaps/summary; calendar/status/history filters",
+    "ru/provider: one heading; no extra area buttons; white dated cards; distinct background; compact gaps/summary; calendar/status/history filters; group disclosure/full context",
+    "ru/customer: one heading; no extra area buttons; white dated cards; distinct background; compact gaps/summary; calendar/status/history filters"
+  ],
+  "screenshots": [
+    "docs/appointment-layout-firefox-provider.png",
+    "docs/appointment-layout-firefox-customer.png"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Actual application header and provider/customer pages. Synthetic GET mocks; unexpected requests rejected; external network blocked. No real services/session/database writes. Physical devices, screen readers and native-language review unverified."
+}

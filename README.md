@@ -97,6 +97,7 @@ Do not create tables with `db:push` before restoring a database dump.
 | `npm run test:invite-ui` | Invitation session expiry and stale password-state regression tests |
 | `npm run test:provider-navigation` | Provider routes, service editing, workspace switching, and permission regression tests |
 | `npm run test:customer-bookings` | Customer booking navigation, authentication, filters, loading, errors, and retry tests |
+| `node --import tsx scripts/test-booking-capacity.mjs` | Offline request availability, group participant capacity, creation/approval/reschedule conflicts, and scheduling/API regression checks; no DB or service configuration loaded |
 | `npm run test:cleanup-time` | Preparation/cleanup editor, validation, slot boundaries, breaks, and booking/rescheduling API tests |
 | `npm run test:cleanup-time-db` | PostgreSQL migration, snapshots, employee conflicts, and rescheduling using temporary tables |
 | `npm run test:search-sorting` | Search sort controls, numeric prices, coordinate distances, missing ratings, stable ordering, and translations |
@@ -253,6 +254,12 @@ Offers without an employee share the administrator's booking schedule. General
 working hours apply to all employees; service-specific schedules can define
 different hours. Employee assignment cannot change while a service has upcoming
 bookings, and employees with booking history are retained.
+
+Booking requests leave the time available until approved. An identical group
+session remains available for its remaining participants: booking 2 of 6 places
+leaves 4 for other customers. Different services or overlapping session times
+still share the employee's conflict rules, including cleanup time. Approval and
+rescheduling recheck availability and participant capacity before saving.
 
 Use **Workspace** to switch between personal offers and companies you belong to.
 Each account can create one company and join other companies by invitation.

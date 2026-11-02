@@ -27,6 +27,7 @@ const { default: Home } = await import("../client/src/pages/home.tsx");
 const { default: ServiceFilters } = await import("../client/src/components/service-filters.tsx");
 const { default: ServiceCard } = await import("../client/src/components/service-card.tsx");
 const { default: ServiceRating } = await import("../client/src/components/service-rating.tsx");
+const { DialogContent } = await import("../client/src/components/ui/dialog.tsx");
 const { act, create } = renderer;
 const service = (id, price, extra = {}) => ({
   id, name: `Service ${id}`, price, duration: 30, category: "education", serviceType: "one_to_one",
@@ -75,6 +76,13 @@ const flushSearch = async () => { await flush(450); await flush(); };
 const dropdown = () => component.root.findByProps({ id: "service-sort" });
 const renderedIds = () => component.root.findAllByType(ServiceCard).map(node => node.props.service.id);
 const changeSort = async value => { await act(async () => dropdown().props.onChange({ target: { value } })); await flush(); };
+// GPS now lives in the explicit location picker. Test its application callback
+// here; browser coverage verifies opening the picker and activating the button.
+const useLocation = () => {
+  const form = component.root.findAllByType(DialogContent).flatMap(node => React.Children.toArray(node.props.children)).find(node => node.props.className === "search-location-form");
+  return React.Children.toArray(form.props.children).find(node => node.props.className === "search-location-gps").props.onClick();
+};
+queryClient.setQueryData(["/api/auth/user"], null);
 await act(async () => {
   component = create(React.createElement(QueryClientProvider, { client: queryClient }, React.createElement(Router, { hook: memoryLocation({ path: "/" }).hook }, React.createElement(Home))));
 });
@@ -92,19 +100,19 @@ for (const [sort, expected] of [["price-asc", [2, 4, 3, 1]], ["price-desc", [1, 
   assert.deepEqual(renderedIds(), expected);
 }
 assert.equal(requests.length, requestCount, "Changing sort must reuse fetched results");
-await act(async () => component.root.findAllByType("button").find(node => node.props["aria-label"] === translation.searchPage.useLocation).props.onClick());
+await act(async () => useLocation());
 await flush();
 assert.equal(dropdown().findAllByType("option").find(node => node.props.value === "distance-asc").props.disabled, false, "Current location immediately enables nearest-first without Search");
 assert.equal(dropdown().findAllByType("option").find(node => node.props.value === "distance-desc").props.disabled, false);
 await changeSort("distance-desc");
 assert.deepEqual(renderedIds(), [3, 1, 2, 4]);
-await act(async () => component.root.findAllByType("button").find(node => node.props["aria-label"] === "Remove Current location · 50 km filter").props.onClick());
+await act(async () => component.root.findAllByType("button").find(node => node.props["aria-label"]?.startsWith("Remove Current location ·")).props.onClick());
 await flush();
 assert.equal(dropdown().props.value, "default");
 assert.deepEqual(renderedIds(), [1, 2, 3, 4]);
 responseRows = coordinates;
 await act(async () => component.root.findAllByType("input").find(node => node.props.name === "search-mode" && node.props.value === "semantic").props.onChange());
-await act(async () => component.root.findAllByType("button").find(node => node.props["aria-label"] === translation.searchPage.useLocation).props.onClick());
+await act(async () => useLocation());
 await submitQuery("fixture");
 await flushSearch();
 await changeSort("distance-asc");

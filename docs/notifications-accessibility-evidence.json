@@ -1,0 +1,869 @@
+{
+  "date": "2026-10-29",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/155.0.8059.85",
+    "revision": "@0e66b94549a8bd85f03fbdf189b752d6e7b63c32",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "jsVersion": "15.5.35.25"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "method": "Native Chrome 400% zoom in a 1280px window (DPR4, CSS zoom1, no pinch); computed contrast and reachable focus for account/service/modal controls in light/dark themes.",
+  "cases": [
+    {
+      "language": "en",
+      "mode": "account",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 6,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "communication-phone",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "communication-method",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "communication-language",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Save communication preferences",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "contrast": [
+        {
+          "theme": "light",
+          "failures": [],
+          "minText": 4.797580078171407,
+          "minControlBorder": 4.741667181590045
+        },
+        {
+          "theme": "dark",
+          "failures": [],
+          "minText": 5.506681400777804,
+          "minControlBorder": 4.1958570466569505
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "mode": "service",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 27,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "Back to services",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "serviceName",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "category",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "duration",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "cleanupTime",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "price",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "advancePayment",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "instantBooking",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-address",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Manage account addresses (open",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Upload image",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "externalUrl",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-reminder-enabled",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-reminder-method",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-reminder-hours",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Cancel",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Save inactive",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Save and publish",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "contrast": [
+        {
+          "theme": "light",
+          "failures": [],
+          "minText": 4.797580078171407,
+          "minControlBorder": 4.741667181590045
+        },
+        {
+          "theme": "dark",
+          "failures": [],
+          "minText": 5.506681400777804,
+          "minControlBorder": 4.1958570466569505
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "mode": "appointments",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 315,
+        "controls": 5,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "Send SMS",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Send email",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Send WhatsApp message",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Done",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Done",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "contrast": [
+        {
+          "theme": "light",
+          "failures": [],
+          "minText": 4.797580078171407,
+          "minControlBorder": null
+        },
+        {
+          "theme": "dark",
+          "failures": [],
+          "minText": 5.506681400777804,
+          "minControlBorder": null
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "mode": "account",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 6,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "communication-phone",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "communication-method",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "communication-language",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Saglabāt saziņas iestatījumus",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "contrast": [
+        {
+          "theme": "light",
+          "failures": [],
+          "minText": 4.797580078171407,
+          "minControlBorder": 4.741667181590045
+        },
+        {
+          "theme": "dark",
+          "failures": [],
+          "minText": 5.506681400777804,
+          "minControlBorder": 4.1958570466569505
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "mode": "service",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 27,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "Atpakaļ uz pakalpojumiem",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "serviceName",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "category",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "duration",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "cleanupTime",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "price",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "advancePayment",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "instantBooking",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-address",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Pārvaldīt konta adreses (atver",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Augšupielādēt attēlu",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "externalUrl",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-reminder-enabled",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-reminder-method",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-reminder-hours",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Atcelt",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Saglabāt kā neaktīvu",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Saglabāt un publicēt",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "contrast": [
+        {
+          "theme": "light",
+          "failures": [],
+          "minText": 4.797580078171407,
+          "minControlBorder": 4.741667181590045
+        },
+        {
+          "theme": "dark",
+          "failures": [],
+          "minText": 5.506681400777804,
+          "minControlBorder": 4.1958570466569505
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "mode": "appointments",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 315,
+        "controls": 5,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "Nosūtīt SMS",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Nosūtīt e-pastu",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Nosūtīt WhatsApp ziņojumu",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Gatavs",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Gatavs",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "contrast": [
+        {
+          "theme": "light",
+          "failures": [],
+          "minText": 4.797580078171407,
+          "minControlBorder": null
+        },
+        {
+          "theme": "dark",
+          "failures": [],
+          "minText": 5.506681400777804,
+          "minControlBorder": null
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "mode": "account",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 6,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "communication-phone",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "communication-method",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "communication-language",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Сохранить настройки связи",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "contrast": [
+        {
+          "theme": "light",
+          "failures": [],
+          "minText": 4.797580078171407,
+          "minControlBorder": 4.741667181590045
+        },
+        {
+          "theme": "dark",
+          "failures": [],
+          "minText": 5.506681400777804,
+          "minControlBorder": 4.1958570466569505
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "mode": "service",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 311,
+        "controls": 27,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "Назад к услугам",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "serviceName",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "category",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "duration",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "cleanupTime",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "price",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "advancePayment",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "instantBooking",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-address",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Управление адресами аккаунта (",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Загрузить изображение",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "externalUrl",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-reminder-enabled",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-reminder-method",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "service-reminder-hours",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Отмена",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Сохранить неактивной",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Сохранить и опубликовать",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "contrast": [
+        {
+          "theme": "light",
+          "failures": [],
+          "minText": 4.797580078171407,
+          "minControlBorder": 4.741667181590045
+        },
+        {
+          "theme": "dark",
+          "failures": [],
+          "minText": 5.506681400777804,
+          "minControlBorder": 4.1958570466569505
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "mode": "appointments",
+      "metrics": {
+        "outerWidth": 1280,
+        "innerWidth": 315,
+        "dpr": 4,
+        "scale": 1,
+        "cssZoom": "1",
+        "scrollWidth": 315,
+        "controls": 5,
+        "clipped": []
+      },
+      "focus": [
+        {
+          "id": "Отправить SMS",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Отправить письмо",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Отправить сообщение WhatsApp",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Готово",
+          "focused": true,
+          "visible": true
+        },
+        {
+          "id": "Готово",
+          "focused": true,
+          "visible": true
+        }
+      ],
+      "contrast": [
+        {
+          "theme": "light",
+          "failures": [],
+          "minText": 4.797580078171407,
+          "minControlBorder": null
+        },
+        {
+          "theme": "dark",
+          "failures": [],
+          "minText": 5.506681400777804,
+          "minControlBorder": null
+        }
+      ]
+    }
+  ],
+  "limits": "Synthetic local fixture; computed contrast does not inspect native checkbox paint; screen readers, native languages and physical devices unverified. No live APIs/database/provider sends."
+}

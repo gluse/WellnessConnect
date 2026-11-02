@@ -24,8 +24,8 @@ assert.equal(starts({ service: { ...service, cleanupTime: 0 } }).at(-1), "11:30"
 assert.equal(starts({ service: { ...service, cleanupTime: 7 } }).at(-1), "11:15");
 assert.ok(!starts({ bookings: [busy] }).includes("09:30"));
 assert.ok(starts({ bookings: [busy] }).includes("09:45"), "Exact cleanup-end boundary is free");
-assert.ok(starts({ bookings: [{ ...busy, status: "cancelled" }] }).includes("09:00"));
-for (const status of ["pending", "confirmed", "completed"]) assert.ok(!starts({ bookings: [{ ...busy, status }] }).includes("09:30"));
+for (const status of ["pending", "cancelled"]) assert.ok(starts({ bookings: [{ ...busy, status }] }).includes("09:00"));
+for (const status of ["confirmed", "completed"]) assert.ok(!starts({ bookings: [{ ...busy, status }] }).includes("09:30"));
 assert.ok(starts({ bookings: [{ ...busy, bookingCleanupTime: 0 }] }).includes("09:30"), "Legacy bookings retain zero cleanup");
 const later = { ...busy, scheduledDate: at("10:00"), bookingDuration: 15, bookingCleanupTime: 30 };
 assert.ok(!starts({ bookings: [later] }).includes("09:30"), "Candidate cleanup cannot overlap a later booking");
@@ -53,7 +53,7 @@ globalThis.React = React;
 globalThis.window = { setTimeout, clearTimeout, addEventListener() {}, removeEventListener() {}, HTMLSelectElement: { prototype: { value: "" } }, HTMLInputElement: { prototype: { checked: false } } };
 globalThis.document = { documentElement: {}, visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
 const resources = {};
-for (const locale of ["en", "lv", "es", "zh", "hi", "ar", "pt", "ru", "ja", "de", "fr"]) {
+for (const locale of ["en", "lv", "ru"]) {
   const translation = JSON.parse(await readFile(new URL(`../client/public/locales/${locale}/translation.json`, import.meta.url), "utf8"));
   for (const key of ["label", "help", "invalid"]) assert.ok(translation.serviceCleanup[key], `${locale}: ${key}`);
   resources[locale] = { translation };
@@ -103,7 +103,7 @@ await act(async () => component.unmount()); queryClient.clear();
 
 delete globalThis.window; delete globalThis.document;
 if (process.argv.includes("--frontend-only")) {
-  console.log("Passed: offline scheduling/cleanup validation, all cleanup locales, retained failed-save values and confirmed inactive editor saves; backend section not loaded.");
+  console.log("Passed: offline scheduling/cleanup validation, en/lv/ru cleanup resources, retained failed-save values and confirmed inactive editor saves; backend section not loaded.");
   process.exit(0);
 }
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";

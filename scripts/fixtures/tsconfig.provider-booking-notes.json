@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["provider-booking-notes.tsx"],
+  "exclude": [],
+  "compilerOptions": { "target": "ES2022", "incremental": false }
+}

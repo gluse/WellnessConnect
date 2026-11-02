@@ -8,14 +8,15 @@ export function previewDescription(description: string | null | undefined): stri
 }
 
 // Use DOM text nodes so service names and descriptions are never interpreted as HTML.
-export function createMapPreview({ name, description, fallback, detailsLabel, closeLabel, onDetails, onClose }: {
+export function createMapPreview({ name, description, fallback, detailsLabel, closeLabel, imageUrl, metadata = [], onDetails, onClose }: {
   name: string; description: string | null | undefined; fallback: string; detailsLabel: string; closeLabel: string;
+  imageUrl?: string | null; metadata?: string[];
   onDetails?: () => void; onClose: () => void;
 }): HTMLElement {
   const card = document.createElement("article");
-  card.className = "w-64 max-w-full space-y-2 p-1 text-neutral-800";
+  card.className = "search-map-preview";
   const header = document.createElement("div");
-  header.className = "flex items-start justify-between gap-3";
+  header.className = "search-map-preview-heading";
   const title = document.createElement("h3");
   title.className = "m-0 text-base font-semibold break-words line-clamp-2";
   title.textContent = name;
@@ -27,16 +28,36 @@ export function createMapPreview({ name, description, fallback, detailsLabel, cl
   close.addEventListener("click", onClose);
   header.append(title, close);
   const summary = document.createElement("p");
-  summary.className = "m-0 text-sm leading-relaxed text-neutral-600 break-words line-clamp-3";
+  summary.className = "search-map-preview-description";
   summary.textContent = previewDescription(description) || fallback;
   card.append(header, summary);
   if (onDetails) {
     const details = document.createElement("button");
     details.type = "button";
-    details.className = "min-h-9 rounded-md px-3 py-2 text-sm font-medium text-primary hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+    details.className = "search-map-preview-details";
     details.textContent = detailsLabel;
     details.addEventListener("click", onDetails);
     card.append(details);
   }
+  const art = document.createElement("div");
+  art.className = "search-service-art";
+  art.setAttribute("aria-hidden", "true");
+  const showPlaceholder = () => { art.textContent = "◇"; };
+  if (imageUrl) {
+    const image = document.createElement("img");
+    image.setAttribute("src", imageUrl);
+    image.setAttribute("alt", "");
+    image.setAttribute("loading", "lazy");
+    image.addEventListener("error", showPlaceholder, { once: true });
+    art.append(image);
+  } else showPlaceholder();
+  const labels = document.createElement("div");
+  labels.className = "search-map-preview-meta";
+  for (const label of metadata) {
+    const item = document.createElement("span");
+    item.textContent = label;
+    labels.append(item);
+  }
+  card.append(art, labels);
   return card;
 }

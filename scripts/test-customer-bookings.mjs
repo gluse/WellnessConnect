@@ -4,6 +4,12 @@ import renderer from "react-test-renderer";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Router, Route, Switch } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
+import { readFile } from "node:fs/promises";
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
+
+const translation = JSON.parse(await readFile(new URL("../client/public/locales/en/translation.json", import.meta.url), "utf8"));
+await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation } } });
 
 globalThis.React = React;
 globalThis.window = { location: { pathname: "/my-bookings", search: "", hash: "" }, addEventListener() {}, removeEventListener() {} };
@@ -22,6 +28,12 @@ const records = [booking(1, "confirmed", 2), booking(2, "pending", 3), booking(3
 let component, location, requests, releaseResponse, response;
 globalThis.fetch = async url => {
   requests.push(url);
+  const bookingRequest = url.match(/^\/api\/bookings\/(\d+)\/reschedule-requests$/);
+  if (bookingRequest) {
+    const ownedBookings = queryClient.getQueryData(["/api/bookings/seeker"]) ?? [];
+    assert.ok(ownedBookings.some(row => row.id === Number(bookingRequest[1]) && row.seekerId === user.id), "Only the owning customer's request state may be fetched");
+    return Response.json({ requests: [] });
+  }
   assert.equal(url, "/api/bookings/seeker", "Customer page must only fetch the customer's bookings");
   return new Promise(resolve => { releaseResponse = () => resolve(response); });
 };

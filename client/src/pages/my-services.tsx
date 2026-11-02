@@ -6,7 +6,7 @@ import { useProviderWorkspace, WORKSPACE_CHANGE_KEY } from "@/hooks/use-provider
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import ProviderNavigation from "@/components/provider/provider-navigation";
-import WorkspaceSwitcher from "@/components/provider/workspace-switcher";
+import { WorkspaceNotice } from "@/components/provider/workspace-switcher";
 import AppointmentsPage from "@/pages/provider/appointments";
 import ServicesPage from "@/pages/provider/services";
 import ServiceEditPage from "@/pages/provider/service-edit";
@@ -24,7 +24,7 @@ export default function MyServices() {
   return <ProviderLayout />;
 }
 
-const workspaceQueries = (key: unknown) => /^\/api\/(addresses|provider|company\/team|services\/provider|bookings\/provider|availability\/provider)/.test(String(key));
+const workspaceQueries = (key: unknown) => /^\/api\/(addresses|provider|company\/team|services\/provider|bookings\/provider|availability\/provider|notifications)/.test(String(key)) || key === "notification-preview";
 
 function ProviderLayout() {
   const workspace = useProviderWorkspace();
@@ -49,12 +49,12 @@ function ProviderLayout() {
   if (workspace.isLoading) return <main className="p-8 text-center" role="status">Loading workspace…</main>;
   if (workspace.isError || !workspace.data) return <main className="p-8" role="alert">Unable to load your workspace. Please refresh to try again.</main>;
   const context = workspace.data;
-  return <div className="min-h-[calc(100dvh-4rem)] bg-neutral-50">
+  return <div className="min-h-[calc(100dvh-4rem)] bg-[#F0EEFF]" data-appointment-area="provider">
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-5">
-      <WorkspaceSwitcher context={context} busy={mutationCount > 0} onChange={companyId => requestServiceEditorExit(() => change.mutateAsync(companyId))} />
       <div className="md:flex md:gap-5 lg:gap-6">
-        <ProviderNavigation context={context} busy={mutationCount > 0} editing={editing} />
+        <ProviderNavigation context={context} busy={mutationCount > 0} editing={editing} onWorkspaceChange={companyId => requestServiceEditorExit(() => change.mutateAsync(companyId))} />
         <main key={context.company?.id ?? "personal"} className={`flex-1 min-w-0 ${editing ? "pb-6" : "pb-24 md:pb-6"}`}>
+          <WorkspaceNotice context={context} />
           {change.isPending && <p role="status" className="mb-4">Switching workspace…</p>}
           <fieldset disabled={change.isPending} className={`min-w-0 ${change.isPending ? "pointer-events-none opacity-50" : ""}`} aria-busy={change.isPending}>
           <Switch>

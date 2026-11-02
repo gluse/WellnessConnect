@@ -14,6 +14,7 @@ import ServiceDetailsFields from "./service-details-fields";
 import ServiceBookingFields, { ServiceAudienceFields, ServiceInstantBookingField } from "./service-booking-fields";
 import ServiceLocationFields from "./service-location-fields";
 import ServiceMediaFields from "./service-media-fields";
+import ServiceReminderFields from "./service-reminder-fields";
 import { serviceControlIds, validateServiceDraft, type ServiceErrors } from "./service-field-feedback";
 import { registerServiceExitBlocker, requestServiceEditorExit } from "./service-navigation-guard";
 
@@ -138,6 +139,7 @@ export default function ServiceEditor({ service, employees, company }: { service
           <ServiceLocationFields newService={newService} setNewService={setNewService} errors={errors} />
         </FormSection>
         <FormSection number={5} title={t("serviceForm.media")}><ServiceMediaFields newService={newService} setNewService={setNewService} errors={errors} /></FormSection>
+        <FormSection number={6} title={t("notifications.reminderSettings")}><ServiceReminderFields draft={newService} setDraft={setNewService} errors={errors} /></FormSection>
       </fieldset>
       <div className="bg-card text-card-foreground border rounded-xl p-4 sm:p-6 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-4">
         <p className="text-sm text-muted-foreground">{t("serviceForm.visibility")}</p>

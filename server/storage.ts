@@ -5,6 +5,7 @@ import {
   services,
   addresses,
   bookings,
+  bookingRescheduleRequests,
   availability,
   serviceEmbeddings,
   serviceReviews,
@@ -31,10 +32,15 @@ import { serviceLocation } from "./addresses";
 import { assertAuditContext, createAuditContext, type AuditContext } from "./audit/context";
 import { createAuditEvent } from "./audit/events";
 import { enqueueDrizzleAudit, AuditCaptureUnavailable } from "./audit/capture";
-import { bookableSlots } from "@shared/scheduling";
+import { availableCapacity, bookableSlots, OCCUPYING_BOOKING_STATUSES } from "@shared/scheduling";
 import { reviewSchema, ReviewError, type ReviewInput, type ServiceReviewPage } from "@shared/reviews";
 import { assertSearchSize, MAX_SEARCH_CANDIDATES, MAX_SEARCH_SCHEDULES, searchFiltersSchema, type SearchFilters } from "./searchInput";
 import { assertCustomerBookingChange } from "./customerBookings";
+import { assertReminderConfiguration, captureStatusEvent, reconcileBookingReminder, reconcileServiceReminders } from "./notifications/repository";
+import { statusAction } from "./notifications/policy";
+import type { NotificationSummary } from "@shared/notifications";
+
+type NotificationBooking = Booking & { notification?: NotificationSummary };
 
 function searchDistance(filters: SearchFilters) {
   if (filters.latitude === undefined || filters.longitude === undefined) return undefined;
@@ -77,6 +83,27 @@ const reviewStats = db.select({
   .groupBy(bookings.serviceId).as("review_stats");
 
 export class BookingConflictError extends Error {}
+
+// All booking mutations take the provider row lock before calling this check.
+// This keeps accepting a request serialized with creation and rescheduling.
+async function assertResourceAvailable(tx: Pick<typeof db, "select">, service: Pick<Service, "id" | "duration" | "cleanupTime" | "serviceType" | "maxCapacity">, candidate: {
+  id?: number; providerId: string; employeeId?: number | null; scheduledDate: Date;
+  bookingDuration: number; bookingCleanupTime: number; participantCount?: number | null;
+}) {
+  const start = candidate.scheduledDate;
+  const end = new Date(start.getTime() + (candidate.bookingDuration + candidate.bookingCleanupTime) * 60_000);
+  const overlapping = await tx.select({ booking: bookings, duration: services.duration }).from(bookings)
+    .leftJoin(services, eq(bookings.serviceId, services.id))
+    .where(and(candidate.id === undefined ? undefined : ne(bookings.id, candidate.id),
+      eq(bookings.providerId, candidate.providerId), inArray(bookings.status, [...OCCUPYING_BOOKING_STATUSES]),
+      candidate.employeeId != null ? eq(bookings.employeeId, candidate.employeeId) : isNull(bookings.employeeId),
+      sql`${bookings.scheduledDate} < ${end.toISOString()}::timestamp`,
+      sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${start.toISOString()}::timestamp`));
+  const count = candidate.participantCount ?? 1;
+  const remaining = availableCapacity({ ...service, duration: candidate.bookingDuration, cleanupTime: candidate.bookingCleanupTime },
+    overlapping.map(row => ({ ...row.booking, bookingDuration: row.booking.bookingDuration ?? row.duration ?? 60 })), start);
+  if (!Number.isInteger(count) || count < 1 || count > remaining) throw new BookingConflictError("This time slot is no longer available.");
+}
 
 // Haversine formula to calculate distance between two points in kilometers
 function calculateDistance(
@@ -127,8 +154,8 @@ export interface IStorage {
   getBookingsBySeeker(seekerId: string): Promise<BookingWithDetails[]>;
   getBookingsByProvider(providerId: string, companyId?: number): Promise<BookingWithDetails[]>;
   getBookingById(id: number): Promise<BookingWithDetails | undefined>;
-  updateBookingStatus(id: number, status: string, seekerId?: string): Promise<Booking>;
-  rescheduleBooking(id: number, date: Date, seekerId?: string): Promise<Booking>;
+  updateBookingStatus(id: number, status: string, seekerId?: string, timeZone?: string): Promise<NotificationBooking>;
+  rescheduleBooking(id: number, date: Date, seekerId?: string, timeZone?: string): Promise<NotificationBooking>;
   updateBookingPayment(id: number, paymentStatus: string): Promise<Booking>;
   getBookingsForServiceOnDate(serviceId: number, date: Date): Promise<Booking[]>;
   getBookingsForProviderOnDate(providerId: string, date: Date): Promise<Booking[]>;
@@ -230,10 +257,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createService(service: InsertService): Promise<Service> {
-    const [newService] = await db
-      .insert(services)
-      .values(service)
-      .returning();
+    const newService = await db.transaction(async tx => {
+      await assertReminderConfiguration(tx, service, service);
+      const [created] = await tx.insert(services).values(service).returning();
+      return created;
+    });
     return serviceLocation(newService, newService.addressId == null ? null : (await db.select().from(addresses).where(eq(addresses.id, newService.addressId)))[0]);
   }
 
@@ -247,6 +275,7 @@ export class DatabaseStorage implements IStorage {
         ...listing,
         name: `${source.name} (copy)`,
         isActive: false,
+        reminderEnabled: false,
       }).returning();
       return copy;
     });
@@ -290,11 +319,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateService(id: number, updates: Partial<InsertService>): Promise<Service> {
-    const [service] = await db
-      .update(services)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(services.id, id))
-      .returning();
+    const service = await db.transaction(async tx => {
+      const [previous] = await tx.select().from(services).where(eq(services.id, id)).for("update");
+      if (!previous) throw new BookingConflictError("Service not found.");
+      await assertReminderConfiguration(tx, previous, updates, previous);
+      const [updated] = await tx.update(services).set({ ...updates, updatedAt: new Date() }).where(eq(services.id, id)).returning();
+      if (updated.reminderEnabled !== previous.reminderEnabled || updated.reminderMethod !== previous.reminderMethod || updated.reminderHours !== previous.reminderHours) await reconcileServiceReminders(tx, id);
+      return updated;
+    });
     return serviceLocation(service, service.addressId == null ? null : (await db.select().from(addresses).where(eq(addresses.id, service.addressId)))[0]);
   }
 
@@ -486,18 +518,9 @@ export class DatabaseStorage implements IStorage {
         service.companyId != null ? eq(availability.companyId, service.companyId) : and(eq(availability.providerId, service.providerId), isNull(availability.companyId)), eq(availability.isActive, true)));
       const offered = bookableSlots({ service, schedules, bookings: [], date: booking.scheduledDate.toISOString().slice(0, 10), timezone: "UTC" });
       if (!offered.some(slot => slot.startsAt === booking.scheduledDate.toISOString())) throw new BookingConflictError("This time is outside the available working hours.");
-      const start = booking.scheduledDate;
-      const end = new Date(start.getTime() + (service.duration + service.cleanupTime) * 60_000);
-      const resource = booking.employeeId != null
-        ? eq(bookings.employeeId, booking.employeeId)
-        : sql`${bookings.employeeId} IS NULL`;
-      const overlapping = await tx.select({ id: bookings.id }).from(bookings)
-        .leftJoin(services, eq(bookings.serviceId, services.id))
-        .where(and(eq(bookings.providerId, booking.providerId), resource, ne(bookings.status, "cancelled"),
-          sql`${bookings.scheduledDate} < ${end.toISOString()}::timestamp`,
-          sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${start.toISOString()}::timestamp`));
-      if (overlapping.length) throw new BookingConflictError("This employee is already booked at that time.");
+      await assertResourceAvailable(tx, service, { ...booking, bookingDuration: service.duration, bookingCleanupTime: service.cleanupTime });
       const [created] = await tx.insert(bookings).values({ ...booking, bookingDuration: service.duration, bookingCleanupTime: service.cleanupTime }).returning();
+      await reconcileBookingReminder(tx, created, new Date(), schedules.find(item => item.serviceId === service.id)?.timezone ?? schedules[0]?.timezone ?? "UTC");
       return created;
     });
   }
@@ -623,7 +646,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateBookingStatus(id: number, status: string, seekerId?: string): Promise<Booking> {
+  async updateBookingStatus(id: number, status: string, seekerId?: string, timeZone = "UTC"): Promise<NotificationBooking> {
     return db.transaction(async tx => {
       const [initial] = await tx.select().from(bookings).where(eq(bookings.id, id));
       if (!initial) throw new BookingConflictError("Reservation not found.");
@@ -634,8 +657,19 @@ export class DatabaseStorage implements IStorage {
         if (status !== "cancelled") throw new BookingConflictError("Customers can only cancel their reservations.");
       }
       if ((booking.status === "cancelled" || booking.status === "completed") && status !== booking.status) throw new BookingConflictError("Closed reservations cannot be changed.");
-      const [updated] = await tx.update(bookings).set({ status: status as Booking["status"], updatedAt: new Date() }).where(eq(bookings.id, id)).returning();
-      return updated;
+      if (OCCUPYING_BOOKING_STATUSES.some(value => value === status) && !OCCUPYING_BOOKING_STATUSES.some(value => value === booking.status)) {
+        const [service] = await tx.select().from(services).where(eq(services.id, booking.serviceId));
+        if (!service) throw new BookingConflictError("The service is no longer available.");
+        await assertResourceAvailable(tx, service, { ...booking, bookingDuration: booking.bookingDuration ?? service.duration, bookingCleanupTime: booking.bookingCleanupTime ?? 0 });
+      }
+      if (booking.status === status) return { ...booking, notification: { mode: "none" as const } };
+      const [updated] = await tx.update(bookings).set({ status: status as Booking["status"], notificationRevision: booking.notificationRevision + 1,
+        closedAt: status === "completed" || status === "cancelled" ? booking.closedAt ?? new Date() : null, updatedAt: new Date() }).where(eq(bookings.id, id)).returning();
+      await tx.update(bookingRescheduleRequests).set({ state: "superseded" }).where(and(eq(bookingRescheduleRequests.bookingId, id), eq(bookingRescheduleRequests.state, "pending")));
+      const action = seekerId === undefined ? statusAction(booking.status, updated.status) : null;
+      const notification = action ? await captureStatusEvent(tx, updated, action, timeZone) : { mode: "none" as const };
+      await reconcileBookingReminder(tx, updated, new Date(), timeZone);
+      return { ...updated, notification };
     });
   }
 
@@ -648,7 +682,7 @@ export class DatabaseStorage implements IStorage {
     return booking;
   }
 
-  async rescheduleBooking(id: number, date: Date, seekerId?: string): Promise<Booking> {
+  async rescheduleBooking(id: number, date: Date, seekerId?: string, timeZone = "UTC"): Promise<NotificationBooking> {
     return db.transaction(async tx => {
       const [initial] = await tx.select().from(bookings).where(eq(bookings.id, id));
       if (!initial) throw new BookingConflictError("Reservation not found.");
@@ -657,20 +691,17 @@ export class DatabaseStorage implements IStorage {
       if (seekerId !== undefined) assertCustomerBookingChange(booking, seekerId);
       if (!(date.getTime() > Date.now())) throw new BookingConflictError("Choose a future appointment time.");
       if (booking.status !== "pending" && booking.status !== "confirmed") throw new BookingConflictError("Only pending or confirmed reservations can be rescheduled.");
+      if (booking.scheduledDate.getTime() === date.getTime()) return { ...booking, notification: { mode: "none" as const } };
       const [service] = await tx.select().from(services).where(eq(services.id, booking.serviceId));
       const schedules = await tx.select().from(availability).where(and(
         booking.companyId != null ? eq(availability.companyId, booking.companyId) : and(eq(availability.providerId, booking.providerId), isNull(availability.companyId)), eq(availability.isActive, true)));
       const offered = bookableSlots({ service: { ...service, duration: booking.bookingDuration ?? service.duration, cleanupTime: booking.bookingCleanupTime ?? 0 }, schedules, bookings: [], date: date.toISOString().slice(0, 10), timezone: "UTC" });
       if (!offered.some(slot => slot.startsAt === date.toISOString())) throw new BookingConflictError("Choose a time within the available working hours.");
-      const end = new Date(date.getTime() + ((booking.bookingDuration ?? service.duration) + (booking.bookingCleanupTime ?? 0)) * 60_000);
-      const overlap = await tx.select({ id: bookings.id }).from(bookings).leftJoin(services, eq(bookings.serviceId, services.id)).where(and(
-        ne(bookings.id, id), eq(bookings.providerId, booking.providerId), ne(bookings.status, "cancelled"),
-        booking.employeeId != null ? eq(bookings.employeeId, booking.employeeId) : isNull(bookings.employeeId),
-        sql`${bookings.scheduledDate} < ${end.toISOString()}::timestamp`,
-        sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${date.toISOString()}::timestamp`));
-      if (overlap.length) throw new BookingConflictError("This time slot is no longer available.");
-      const [updated] = await tx.update(bookings).set({ scheduledDate: date, updatedAt: new Date() }).where(eq(bookings.id, id)).returning();
-      return updated;
+      await assertResourceAvailable(tx, service, { ...booking, scheduledDate: date, bookingDuration: booking.bookingDuration ?? service.duration, bookingCleanupTime: booking.bookingCleanupTime ?? 0 });
+      const [updated] = await tx.update(bookings).set({ scheduledDate: date, notificationRevision: booking.notificationRevision + 1, updatedAt: new Date() }).where(eq(bookings.id, id)).returning();
+      const notification = seekerId === undefined ? await captureStatusEvent(tx, updated, "rescheduled", timeZone, booking.scheduledDate) : { mode: "none" as const };
+      await reconcileBookingReminder(tx, updated, new Date(), timeZone);
+      return { ...updated, notification };
     });
   }
 
@@ -688,7 +719,7 @@ export class DatabaseStorage implements IStorage {
           eq(bookings.serviceId, serviceId),
           gte(bookings.scheduledDate, startOfDay),
           lte(bookings.scheduledDate, endOfDay),
-          ne(bookings.status, "cancelled")
+          inArray(bookings.status, [...OCCUPYING_BOOKING_STATUSES])
         )
       )
       .orderBy(asc(bookings.scheduledDate));
@@ -708,7 +739,7 @@ export class DatabaseStorage implements IStorage {
           eq(bookings.providerId, providerId),
           gte(bookings.scheduledDate, startOfDay),
           lte(bookings.scheduledDate, endOfDay),
-          ne(bookings.status, "cancelled")
+          inArray(bookings.status, [...OCCUPYING_BOOKING_STATUSES])
         )
       )
       .orderBy(asc(bookings.scheduledDate));
@@ -726,7 +757,7 @@ export class DatabaseStorage implements IStorage {
   async getBookingsForResourceRange(service: Service, start: Date, end: Date): Promise<Booking[]> {
     const rows = await db.select({ booking: bookings, duration: services.duration }).from(bookings)
       .leftJoin(services, eq(bookings.serviceId, services.id))
-      .where(and(eq(bookings.providerId, service.providerId), ne(bookings.status, "cancelled"),
+      .where(and(eq(bookings.providerId, service.providerId), inArray(bookings.status, [...OCCUPYING_BOOKING_STATUSES]),
         service.employeeId != null ? eq(bookings.employeeId, service.employeeId) : sql`${bookings.employeeId} IS NULL`,
         sql`${bookings.scheduledDate} < ${end.toISOString()}::timestamp`,
         sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${start.toISOString()}::timestamp`));

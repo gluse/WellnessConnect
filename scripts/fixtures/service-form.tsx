@@ -36,6 +36,8 @@ window.fetch = async (input, options = {}) => {
   }
   if (path === "/api/provider/employees") return Response.json([{ id: 5, name: "Synthetic employee" }]);
   if (path === "/api/company/context") return Response.json({ company: null, permissions, workspaces: [] });
+  if (path === "/api/auth/user") return Response.json({ id: "synthetic-provider", currentRole: "provider" });
+  if (path === "/api/notifications/capabilities") return Response.json({ hasPro: false, automationEnabled: false, channels: { email: false, sms: false, whatsapp: false } });
   if (path === "/api/services/provider") return Response.json([syntheticService]);
   if ((path === "/api/services/7" && options.method === "PATCH") || (path === "/api/services" && options.method === "POST")) {
     const payload = JSON.parse(String(options.body)); fixture.writes.push(payload);

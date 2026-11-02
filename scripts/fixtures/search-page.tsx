@@ -19,6 +19,15 @@ const rows = [
   { id: 2, name: "Deep tissue massage", description: "Focused bodywork for tight muscles and a calmer, lighter feeling.", category: "health_wellness", serviceType: "one_to_one", price: "55", duration: 60, instantBooking: false, rating: 4.8, reviewCount: 42 },
   { id: 3, name: "Personal training", description: "A personal session built around your goals, strength and confidence.", category: "fitness", serviceType: "one_to_one", price: "40", duration: 45, instantBooking: true, rating: 4.9, reviewCount: 16 },
 ].map(row => ({ ...row, provider, providerId: provider.id, isActive: true, latitude: 0, longitude: row.id / 100, address: "Synthetic studio address", ageGroups: ["adults"], targetGender: "both", maxCapacity: 8, availableCapacity: 0 })) as ServiceWithProvider[];
+if (new URLSearchParams(location.search).has("redesign")) {
+  const canvas = document.createElement("canvas"); canvas.width = 320; canvas.height = 180;
+  const context = canvas.getContext("2d")!;
+  context.fillStyle = "#cadfcf"; context.fillRect(0, 0, 320, 180);
+  context.fillStyle = "#537660"; context.fillRect(110, 20, 100, 160);
+  rows[0].imageUrl = canvas.toDataURL();
+  rows[2].imageUrl = "data:image/png;base64,broken";
+  rows.push(...[...rows, ...rows].map((row, index) => ({ ...row, id: index + 4, name: `${row.name} ${index + 2}` })));
+}
 Object.assign(window, { google: { maps: { importLibrary: async (name: string) => {
   if (name === "geocoding") return { Geocoder: class {
     geocode(_request: unknown, callback: (results: unknown[], status: string) => void) {
@@ -43,6 +52,12 @@ Object.defineProperty(navigator, "geolocation", { configurable: true, value: { g
 } } });
 window.fetch = async (input, options = {}) => {
   const path = String(input), method = options.method || "GET";
+  // Service-detail view analytics are simulated locally; never call a server.
+  if (method === "POST" && /^\/api\/services\/\d+\/view$/.test(path)) return new Response(null, { status: 204 });
+  if (new URLSearchParams(location.search).has("redesign")) {
+    if (method === "GET" && path === "/api/admin/access") return Response.json({ isAdmin: false });
+    if (method === "GET" && path === "/api/company/context") return Response.json({ company: null, workspaces: [] });
+  }
   if (path === "/api/account/search-location" || path === "/api/account/search-location/adopt") {
     if (savedFixture.preferenceError) return Response.json({}, { status: 503 });
     const userId = savedFixture.authUser?.id;
@@ -87,11 +102,16 @@ window.fetch = async (input, options = {}) => {
   fixture.unexpected.push(method + " " + path); throw new Error("Unexpected fixture request");
 };
 await i18next.use(initReactI18next).init({ lng: "en", fallbackLng: false, supportedLngs: ["en", "lv", "ru"], resources: __FORM_RESOURCES__, interpolation: { escapeValue: false } });
+let Header: React.ComponentType | null = null;
+if (new URLSearchParams(location.search).has("redesign")) {
+  // Import after installing all network mocks and local translations.
+  Header = (await import("../../client/src/components/app-header")).default;
+}
 queryClient.setQueryData(["/api/auth/user"], null);
 function Fixture() {
   const [dark, setDark] = useState(false);
   useEffect(() => { fixture.ready = true; }, []);
   useEffect(() => { document.documentElement.classList.toggle("dark", dark); }, [dark]);
-  return <><nav aria-label="Fixture controls" className="flex flex-wrap gap-4 p-3"><label>Language <select id="fixture-language" onChange={event => void i18next.changeLanguage(event.target.value)}><option value="en">English</option><option value="lv">Latviešu</option><option value="ru">Русский</option></select></label><button id="fixture-theme" onClick={() => setDark(!dark)}>Toggle fixture theme</button></nav><Home /></>;
+  return <><nav aria-label="Fixture controls" className="flex flex-wrap gap-4 p-3"><label>Language <select id="fixture-language" onChange={event => void i18next.changeLanguage(event.target.value)}><option value="en">English</option><option value="lv">Latviešu</option><option value="ru">Русский</option></select></label><button id="fixture-theme" onClick={() => setDark(!dark)}>Toggle fixture theme</button></nav>{Header && <Header />}<Home /></>;
 }
 createRoot(document.getElementById("root")!).render(<QueryClientProvider client={queryClient}><Router><Fixture /></Router></QueryClientProvider>);

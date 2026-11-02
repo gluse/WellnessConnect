@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';import {spawnSync} from 'node:child_process';
 import {PORTAL_AUDIT_EVENTS,PORTAL_AUDIT_PINS,loadPortalAuditScripts,portalAuditFunctionContracts,portalAuditCheckPlan,verifyPortalAuditRuntime} from '../migrations/audit/billing-portal-package.mjs';
 import {BILLING_AUDIT_PINS} from '../migrations/audit/billing-package.mjs';
-import {EXPECTED_BILLING_PARSERS,BILLING_APPLICATION_READINESS_SQL,billingApplicationReadinessArguments,assertBillingApplicationReadiness} from '../migrations/billing/application-readiness.mjs';
+import {EXPECTED_BILLING_PARSERS,BILLING_APPLICATION_READINESS_SQL,BILLING_APPLICATION_READINESS_KEYS,billingApplicationReadinessArguments,assertBillingApplicationReadiness} from '../migrations/billing/application-readiness.mjs';
 import {verifyBillingDatabaseReadiness} from '../server/billing/database-readiness.ts';
 import {SUPPORTED_AUDIT_EVENTS} from '../server/audit/events.ts';
 import {createHash} from 'node:crypto';
@@ -49,14 +49,13 @@ check(()=>assert.doesNotMatch(BILLING_APPLICATION_READINESS_SQL,/SET ROLE|FROM a
 check(()=>assert.match(BILLING_APPLICATION_READINESS_SQL,/pg_catalog\.pg_proc/));
 check(()=>assert.match(BILLING_APPLICATION_READINESS_SQL,/has_table_privilege/));
 const [rightsJson,parsersJson]=billingApplicationReadinessArguments(),rights=JSON.parse(rightsJson);
-check(()=>assert.equal(rights.length,27));check(()=>assert.equal(JSON.parse(parsersJson).length,3));
-check(()=>assert.equal(new Set(rights.map(r=>r.name)).size,27));
+check(()=>assert.equal(rights.length,33));check(()=>assert.equal(JSON.parse(parsersJson).length,3));
+check(()=>assert.equal(new Set(rights.map(r=>r.name)).size,33));
 check(()=>assert.match(BILLING_APPLICATION_READINESS_SQL,/has_column_privilege/));
 check(()=>assert.deepEqual(rights.find(r=>r.name==='billing_offer_revisions').rights,['SELECT','INSERT']));
 check(()=>assert.deepEqual(rights.find(r=>r.name==='billing_offer_settings').rights,['SELECT','UPDATE']));
 const changed=billingApplicationReadinessArguments();changed[0]='tampered';check(()=>assert.equal(billingApplicationReadinessArguments()[0],rightsJson));
-const good={restricted_principal:true,expected_version:true,expected_table_count:true,required_dml:true,
- no_destructive_billing_access:true,exact_public_dml:true,expected_audit_parsers:true,immutable_guards:true};
+const good=Object.fromEntries(BILLING_APPLICATION_READINESS_KEYS.map(key=>[key,true]));
 check(()=>assert.doesNotThrow(()=>assertBillingApplicationReadiness([good])));
 for(const key of Object.keys(good))for(const value of [false,null,undefined,'true'])check(()=>assert.throws(()=>assertBillingApplicationReadiness([{...good,[key]:value}]),/BILLING_DB_NOT_READY/));
 for(const rows of [[],[good,good],[{...good,raw_driver_detail:'PRIVATE_CANARY'}]])check(()=>assert.throws(()=>assertBillingApplicationReadiness(rows),/BILLING_DB_NOT_READY/));

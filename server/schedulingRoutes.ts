@@ -67,9 +67,9 @@ export function setupSchedulingRoutes(app: Express) {
       const bookings = allBookings.filter(row => row.id !== id), now = new Date();
       if (month) {
         const days = [];
-        for (let date = first; date <= last; date = addDateDays(date, 1)) days.push({ date, availableSlots: bookableSlots({ service, schedules, bookings, date, timezone, now }).length });
+        for (let date = first; date <= last; date = addDateDays(date, 1)) days.push({ date, availableSlots: bookableSlots({ service, schedules, bookings, date, timezone, participantCount: booking!.participantCount ?? 1, now }).length });
         res.json({ month, timezone, days });
-      } else res.json({ slots: bookableSlots({ service, schedules, bookings, date: first, timezone, now }) });
+      } else res.json({ slots: bookableSlots({ service, schedules, bookings, date: first, timezone, participantCount: booking!.participantCount ?? 1, now }) });
     } catch (error) { failure(error, res); }
   });
   app.put("/api/availability/weekly", isAuthenticated, async (req, res) => {

@@ -1,0 +1,50 @@
+# TASK-032: optional overlay; requires the migration/activation gates in
+# docs/notifications-setup.md. All flags remain false unless explicitly supplied.
+# No private env_file is mounted or copied into the image.
+x-notification-environment: &notification-environment
+  NOTIFICATIONS_ENABLED: ${NOTIFICATIONS_ENABLED:-false}
+  NOTIFICATIONS_AUTOMATION_ENABLED: ${NOTIFICATIONS_AUTOMATION_ENABLED:-false}
+  NOTIFICATIONS_VERIFICATION_ENABLED: ${NOTIFICATIONS_VERIFICATION_ENABLED:-false}
+  VONAGE_APPLICATION_ID: ${VONAGE_APPLICATION_ID:-}
+  VONAGE_PRIVATE_KEY: ${VONAGE_PRIVATE_KEY:-}
+  VONAGE_API_KEY: ${VONAGE_API_KEY:-}
+  VONAGE_SIGNATURE_SECRET: ${VONAGE_SIGNATURE_SECRET:-}
+  VONAGE_SMS_FROM: ${VONAGE_SMS_FROM:-}
+  VONAGE_WHATSAPP_FROM: ${VONAGE_WHATSAPP_FROM:-}
+  VONAGE_WHATSAPP_TEMPLATES_JSON: ${VONAGE_WHATSAPP_TEMPLATES_JSON:-}
+  RESEND_API_KEY: ${RESEND_API_KEY:-}
+  NOTIFICATIONS_EMAIL_FROM: ${NOTIFICATIONS_EMAIL_FROM:-}
+  NOTIFICATIONS_RESEND_WEBHOOK_SECRET: ${NOTIFICATIONS_RESEND_WEBHOOK_SECRET:-}
+
+services:
+  app:
+    environment: *notification-environment
+
+  notification-worker:
+    profiles: [notifications]
+    image: ${APP_IMAGE:-fitsmytime:local}
+    command: [node, dist/notification-worker.js]
+    init: true
+    restart: "on-failure:3"
+    environment:
+      <<: *notification-environment
+      NODE_ENV: production
+      # Explicit approved app-runtime login; no fallback to owner/audit credentials.
+      DATABASE_URL: ${NOTIFICATIONS_DATABASE_URL:-}
+    # The app image's HTTP readiness probe is unsuitable for a non-HTTP worker.
+    # Monitor completed tick logs and delivery-state metrics externally instead.
+    healthcheck:
+      disable: true
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 2m
+    networks: [backend]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

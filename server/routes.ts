@@ -31,13 +31,18 @@ import { eq } from "drizzle-orm";
 import { requestAuditContext } from "./audit/http";
 import { AuditCaptureUnavailable } from "./audit/capture";
 import { setupServiceViewRoutes } from "./serviceViewRoutes";
+import { setupNotificationRoutes } from "./notifications/routes";
+import { setupAppointmentRoutes } from "./appointments/routes";
+import { bookingReminderSummaries } from "./notifications/repository";
+import { notificationConfig } from "./notifications/transports";
+import { NotificationError, notificationTimezoneSchema } from "@shared/notifications";
 
 function apiFailure(error: unknown, res: import("express").Response, fallback: string) {
   const pgError = (error as any)?.cause ?? error;
   if ((pgError as any)?.code === "23503" && (pgError as any)?.constraint === "services_category_categories_key_fk") {
     return res.status(400).json({ message: "Choose an existing category." });
   }
-  const known = error instanceof AccessError || error instanceof CustomerBookingError || error instanceof ImageStorageError || error instanceof GeocodingError || error instanceof CategoryError || error instanceof AuditCaptureUnavailable;
+  const known = error instanceof AccessError || error instanceof CustomerBookingError || error instanceof ImageStorageError || error instanceof GeocodingError || error instanceof CategoryError || error instanceof AuditCaptureUnavailable || error instanceof NotificationError;
   res.status(known ? error.status : error instanceof z.ZodError ? 400 : error instanceof BookingConflictError ? 409 : 500)
     .json({ message: known || error instanceof BookingConflictError ? error.message : error instanceof z.ZodError ? error.issues[0].message : fallback });
 }
@@ -90,6 +95,8 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
   setupAdminRoutes(app);
   setupCategoryRoutes(app);
   setupCompanyRoutes(app);
+  setupNotificationRoutes(app);
+  setupAppointmentRoutes(app);
   billing?.mountAuthenticated(app);
   setupSchedulingRoutes(app);
   setupReviewRoutes(app);
@@ -592,7 +599,10 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
       const userId = req.user.claims.sub;
       const current = scope(req);
       const bookings = await storage.getBookingsByProvider(current.providerId, current.companyId);
-      res.json(current.ctx.permissions.readAll ? bookings : bookings.filter(booking => current.employeeId != null && booking.employeeId === current.employeeId));
+      const visible = current.ctx.permissions.readAll ? bookings : bookings.filter(booking => current.employeeId != null && booking.employeeId === current.employeeId);
+      if (!notificationConfig().enabled) return res.json(visible);
+      const reminders = await bookingReminderSummaries(db, visible);
+      res.json(visible.map(booking => ({ ...booking, reminder: reminders.get(booking.id) })));
     } catch (error) {
       console.error("Error fetching provider bookings:", error);
       apiFailure(error, res, "Failed to fetch bookings");
@@ -608,7 +618,8 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
       const seekerId = assertBookingChange(req, booking);
       if (seekerId && status !== "cancelled") throw new AccessError(403, "Customers can only cancel their reservations.");
       
-      const updatedBooking = await storage.updateBookingStatus(bookingId, status, seekerId);
+      const timeZone = notificationTimezoneSchema.parse(req.body.timeZone);
+      const updatedBooking = await storage.updateBookingStatus(bookingId, status, seekerId, timeZone);
       res.json(updatedBooking);
     } catch (error) {
       console.error("Error updating booking status:", error);
@@ -620,10 +631,10 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
   app.patch('/api/bookings/:id/reschedule', isAuthenticated, async (req, res) => {
     try {
       const id = z.coerce.number().int().positive().parse(req.params.id);
-      const date = z.string().datetime().transform(value => new Date(value)).refine(value => value.getTime() > Date.now(), "Choose a future appointment time.").parse(req.body.scheduledDate);
+      z.string().datetime().refine(value => Date.parse(value) > Date.now(), "Choose a future appointment time.").parse(req.body.scheduledDate);
       const booking = await storage.getBookingById(id);
-      const seekerId = assertBookingChange(req, booking);
-      res.json(await storage.rescheduleBooking(id, date, seekerId));
+      assertBookingChange(req, booking);
+      res.status(409).json({ code: "consent_required", message: "Send a reschedule request. The other party must agree before the reservation changes." });
     } catch (error) { apiFailure(error, res, "Unable to reschedule reservation"); }
   });
 

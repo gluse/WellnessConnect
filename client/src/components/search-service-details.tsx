@@ -18,7 +18,16 @@ export default function SearchServiceDetails({ service, open, onClose, onBook, o
       <div className="search-detail-provider">{service.storefrontSlug ? <Link href={`/providers/${service.storefrontSlug}`} onClick={onClose}><bdi>{provider}</bdi></Link> : onViewProvider ? <button type="button" onClick={onViewProvider} data-testid="button-provider-details"><bdi>{provider}</bdi></button> : <bdi>{provider}</bdi>}<ServiceRating service={service} /></div>
       {service.imageUrl && <img src={service.imageUrl} alt="" className="search-detail-image" />}
       {service.description && <section><h3>{t("searchPage.about")}</h3><p data-testid="text-description">{service.description}</p></section>}
-      <dl className="search-detail-grid"><div><dt>{t("searchPage.price")}</dt><dd>{serviceAmount(Number(service.price), i18n.resolvedLanguage || i18n.language)} {service.serviceType === "group" && t("searchPage.perPerson")}</dd></div><div><dt>{t("searchPage.duration")}</dt><dd>{t("searchPage.durationValue", { duration: service.duration })}</dd></div><div><dt>{t("searchPage.sessionType")}</dt><dd>{t(service.serviceType === "group" ? "searchPage.group" : "searchPage.individual")}</dd></div><div><dt>{t("searchPage.bookingType")}</dt><dd>{t(service.instantBooking ? "searchPage.instant" : "searchPage.approval")}</dd></div></dl>
+      <dl className="search-detail-grid">
+        <div><dt>{t("searchPage.price")}</dt><dd>{serviceAmount(Number(service.price), i18n.resolvedLanguage || i18n.language)} {service.serviceType === "group" && t("searchPage.perPerson")}</dd></div>
+        <div><dt>{t("searchPage.duration")}</dt><dd>{t("searchPage.durationValue", { duration: service.duration })}</dd></div>
+        <div><dt>{t("searchPage.sessionType")}</dt><dd>{t(service.serviceType === "group" ? "searchPage.group" : "searchPage.individual")}</dd></div>
+        {service.serviceType === "group" && <div>
+          <dt>{t("searchPage.maxGroupCapacity")}</dt>
+          <dd data-testid="text-max-group-capacity">{new Intl.NumberFormat(i18n.resolvedLanguage || i18n.language).format(service.maxCapacity ?? 1)}</dd>
+        </div>}
+        <div><dt>{t("searchPage.bookingType")}</dt><dd>{t(service.instantBooking ? "searchPage.instant" : "searchPage.approval")}</dd></div>
+      </dl>
       <section><h3>{t("searchPage.audience")}</h3><p>{service.ageGroups?.length ? service.ageGroups.map(age => t(`searchPage.${age}`, { defaultValue: age })).join(", ") : t("searchPage.allAges")}</p><p>{t(service.targetGender === "males" ? "searchPage.gender_male" : service.targetGender === "females" ? "searchPage.gender_female" : "searchPage.gender_both")}</p></section>
       {service.employee?.name && <p>{t("searchPage.withEmployee", { name: service.employee.name })}</p>}
       {!service.instantBooking && Number(service.advancePaymentPercent) > 0 && <p>{t("searchPage.advancePayment", { percent: service.advancePaymentPercent })}</p>}

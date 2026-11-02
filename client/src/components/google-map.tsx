@@ -157,6 +157,8 @@ export default function GoogleMap({ services, userLocation, onServiceSelect, onS
           userInfoWindow?.close();
           const card = createMapPreview({ name: service.name, description: service.description,
             fallback: t("mapPreview.noDescription"), detailsLabel: t("mapPreview.viewDetails"), closeLabel: t("mapPreview.close"),
+            imageUrl: service.imageUrl,
+            metadata: [t("searchPage.durationValue", { duration: service.duration }), t(service.serviceType === "group" ? "searchPage.group" : "searchPage.individual"), t(service.instantBooking ? "searchPage.instant" : "searchPage.approval")],
             onDetails: latestSelect.current ? selectService : undefined, onClose: closePreview });
           card.addEventListener("mouseenter", () => { if (activeCard === card) clearTimers(); });
           card.addEventListener("mouseleave", () => { if (activeCard === card) scheduleClose(); });

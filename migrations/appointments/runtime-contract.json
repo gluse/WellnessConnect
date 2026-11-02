@@ -1,0 +1,392 @@
+{
+  "version": "appointments-runtime-v1",
+  "tables": [
+    "booking_messages",
+    "booking_reschedule_requests"
+  ],
+  "columns": [
+    {
+      "table": "booking_messages",
+      "name": "id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_messages",
+      "name": "booking_id",
+      "type": "integer",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_messages",
+      "name": "author_id",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_messages",
+      "name": "author_role",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_messages",
+      "name": "body",
+      "type": "text",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_messages",
+      "name": "client_request_id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_messages",
+      "name": "broadcast_id",
+      "type": "uuid",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "booking_messages",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "booking_id",
+      "type": "integer",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "requested_by_id",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "requested_by_role",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "original_scheduled_date",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "proposed_scheduled_date",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "fallback",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "state",
+      "type": "character varying",
+      "notNull": true,
+      "default": "'pending'"
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "batch_id",
+      "type": "uuid",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "client_request_id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "note",
+      "type": "text",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "timezone",
+      "type": "character varying(100)",
+      "notNull": true,
+      "default": "'UTC'"
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "base_revision",
+      "type": "integer",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "responded_by_id",
+      "type": "character varying",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "responded_at",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "bookings",
+      "name": "closed_at",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "default": null
+    }
+  ],
+  "constraints": [
+    {
+      "table": "booking_messages",
+      "name": "booking_message_shape",
+      "type": "c",
+      "expression": "author_role=anyarray['provider','customer']andlengthtrimbody>=1andlengthtrimbody<=4000andlengthbody<=4000andbroadcast_idisnullorauthor_role='provider'"
+    },
+    {
+      "table": "booking_messages",
+      "name": "booking_messages_pkey",
+      "type": "p",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table": "booking_messages",
+      "name": "booking_messages_booking_id_bookings_id_fk",
+      "type": "f",
+      "columns": [
+        "booking_id"
+      ],
+      "referenceTable": "bookings",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "booking_messages",
+      "name": "booking_messages_author_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "author_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "a"
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "booking_reschedule_shape",
+      "type": "c",
+      "expression": "requested_by_role=anyarray['provider','customer']andfallback=anyarray['keep_original','cancel_booking']andstate=anyarray['pending','accepted','declined','withdrawn','superseded']andbase_revision>=0andlengthtrimtimezone>=1andlengthtrimtimezone<=100andnoteisnullorlengthnote<=2000andoriginal_scheduled_date<>proposed_scheduled_dateandbatch_idisnullorrequested_by_role='provider'"
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "booking_reschedule_response_shape",
+      "type": "c",
+      "expression": "state<>'pending'orresponded_atisnullandresponded_by_idisnullandstate<>'accepted'andstate<>'declined'orresponded_atisnotnullandresponded_by_idisnotnullandresponded_atisnullorresponded_at>=created_at"
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "booking_reschedule_requests_pkey",
+      "type": "p",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "booking_reschedule_requests_booking_id_bookings_id_fk",
+      "type": "f",
+      "columns": [
+        "booking_id"
+      ],
+      "referenceTable": "bookings",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "booking_reschedule_requests_requested_by_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "requested_by_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "a"
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "booking_reschedule_requests_responded_by_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "responded_by_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "a"
+    },
+    {
+      "table": "bookings",
+      "name": "bookings_closed_at_check",
+      "type": "c",
+      "expression": "closed_atisnullorstatus=anyarray['cancelled','completed']"
+    }
+  ],
+  "indexes": [
+    {
+      "table": "booking_messages",
+      "name": "booking_messages_pkey",
+      "unique": true,
+      "columns": [
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "booking_messages",
+      "name": "booking_message_request_identity",
+      "unique": true,
+      "columns": [
+        "author_id",
+        "client_request_id",
+        "booking_id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "booking_messages",
+      "name": "booking_message_history_idx",
+      "unique": false,
+      "columns": [
+        "booking_id",
+        "created_at",
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "booking_messages",
+      "name": "booking_message_broadcast_idx",
+      "unique": false,
+      "columns": [
+        "broadcast_id"
+      ],
+      "predicate": "broadcast_idisnotnull"
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "booking_reschedule_requests_pkey",
+      "unique": true,
+      "columns": [
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "booking_reschedule_pending_identity",
+      "unique": true,
+      "columns": [
+        "booking_id"
+      ],
+      "predicate": "state='pending'"
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "booking_reschedule_request_identity",
+      "unique": true,
+      "columns": [
+        "requested_by_id",
+        "client_request_id",
+        "booking_id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "booking_reschedule_history_idx",
+      "unique": false,
+      "columns": [
+        "booking_id",
+        "created_at",
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "booking_reschedule_requests",
+      "name": "booking_reschedule_batch_idx",
+      "unique": false,
+      "columns": [
+        "batch_id"
+      ],
+      "predicate": "batch_idisnotnull"
+    },
+    {
+      "table": "bookings",
+      "name": "bookings_message_retention_idx",
+      "unique": false,
+      "columns": [
+        "closed_at",
+        "id"
+      ],
+      "predicate": "closed_atisnotnullandstatus=anyarray['cancelled','completed']"
+    }
+  ]
+}

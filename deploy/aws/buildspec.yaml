@@ -1,0 +1,19 @@
+version: 0.2
+phases:
+  pre_build:
+    on-failure: ABORT
+    commands:
+      - docker info >/dev/null 2>&1 || (nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock >/tmp/dockerd.log 2>&1 &)
+      - timeout 30 sh -c 'until docker info >/dev/null 2>&1; do sleep 1; done'
+      - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+  build:
+    on-failure: ABORT
+    commands:
+      - docker build --platform linux/amd64 --target runtime -t "$ECR_REPO_URI:$IMAGE_TAG" .
+      - docker run --rm --network none -v "$PWD/deploy/aws/test-staging-proxy.mjs:/app/test-staging-proxy.mjs:ro" "$ECR_REPO_URI:$IMAGE_TAG" node test-staging-proxy.mjs
+      - docker run --rm --network none "$ECR_REPO_URI:$IMAGE_TAG" node -e 'const fs=require("node:fs"); for(const f of ["dist/index.js","dist/audit-worker.js","dist/notification-worker.js","dist/public/index.html","certs/supabase-ca.crt"]) if(!fs.existsSync(f)) process.exit(1); console.log("Production artifacts present")'
+  post_build:
+    on-failure: ABORT
+    commands:
+      - test "$CODEBUILD_BUILD_SUCCEEDING" = "1"
+      - docker push "$ECR_REPO_URI:$IMAGE_TAG"

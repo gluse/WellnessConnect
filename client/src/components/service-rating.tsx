@@ -5,8 +5,8 @@ import type { ServiceWithProvider } from "@shared/schema";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import ServiceReviews from "@/components/service-reviews";
 
-export default function ServiceRating({ service }: { service: ServiceWithProvider }) {
-  const { t } = useTranslation();
+export default function ServiceRating({ service, compact = false }: { service: ServiceWithProvider; compact?: boolean }) {
+  const { t, i18n } = useTranslation();
   const rating = serviceRating(service);
   if (rating !== undefined) return <Dialog>
     <DialogTrigger asChild>
@@ -14,8 +14,8 @@ export default function ServiceRating({ service }: { service: ServiceWithProvide
         aria-label={t("reviews.view", { name: service.name })} data-testid={`button-reviews-${service.id}`}>
         <Star className="w-4 h-4 text-amber-400 fill-current" aria-hidden="true" />
         <span className="font-medium">{rating.toFixed(1)}</span>
-        <span>{t("service.ratingOutOfFive")}</span>
-        {typeof service.reviewCount === "number" && service.reviewCount > 0 && <span>· {t("reviews.count", { count: service.reviewCount })}</span>}
+        <span className={compact ? "sr-only" : undefined}>{t("service.ratingOutOfFive")}</span>
+        {typeof service.reviewCount === "number" && service.reviewCount > 0 && <span>{compact ? `(${new Intl.NumberFormat(i18n.resolvedLanguage).format(service.reviewCount)})` : <>· {t("reviews.count", { count: service.reviewCount })}</>}</span>}
       </button>
     </DialogTrigger>
     <DialogContent className="max-w-2xl max-h-[85dvh] overflow-y-auto" data-testid="dialog-service-reviews">

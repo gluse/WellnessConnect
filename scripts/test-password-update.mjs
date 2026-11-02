@@ -22,6 +22,7 @@ let status = 200, requiresSignIn = false, hold = false, resolveWrite, component,
 globalThis.fetch = async (url, options = {}) => {
   if (url === "/api/auth/user") return new Response(JSON.stringify(requiresSignIn ? null : user));
   if (url === "/api/company/context") return new Response('{"company":null,"workspaces":[]}');
+  if (url === "/api/account/communication") return Response.json({ phone: null, phoneVerified: false, preferredMethod: null, language: "en", smsOptIn: false, whatsappOptIn: false, verificationAvailable: false });
   assert.equal(url, "/api/auth/password");
   assert.equal(options.method, "POST");
   writes.push(JSON.parse(options.body));
@@ -43,7 +44,8 @@ const flush = async () => act(async () => { await new Promise(resolve => setTime
 const submit = async () => { await act(async () => component.root.findByProps({ id: "account-password-form" }).props.onSubmit({ preventDefault() {} })); await flush(); };
 const fill = async (current = "OriginalPassword1!", next = "NewPassword2!") => { await edit("current", current); await edit("new", next); await edit("confirm", next); };
 await mount();
-assert.equal(component.root.findAllByType("form").length, 2);
+await flush();
+assert.deepEqual(component.root.findAllByType("form").map(node => node.props.id).sort(), ["account-details-form", "account-password-form", "communication-form"].sort());
 assert.equal(input("current").props.type, "password");
 assert.equal(input("new").props.autoComplete, "new-password");
 await submit();

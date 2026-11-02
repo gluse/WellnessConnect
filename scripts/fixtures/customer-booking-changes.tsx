@@ -21,6 +21,7 @@ const booking = (id: number, status: string, date: string, seekerId = user.id) =
   service: { name: `Synthetic service ${id}`, duration: 45 }, provider: { firstName: "Synthetic", lastName: "Provider" },
 });
 let records = [booking(1,"confirmed","2030-01-16T09:00:00Z"), booking(2,"pending","2030-01-17T09:00:00Z"), booking(3,"completed","2030-01-14T09:00:00Z"), booking(4,"cancelled","2030-01-18T09:00:00Z"), booking(5,"confirmed","2030-01-14T09:00:00Z"), booking(6,"confirmed","2030-01-19T09:00:00Z","someone-else")];
+const rescheduleRequests: Record<number, object[]> = {};
 const fixture = { ready: false, result: "success", refreshError: false, writes: [] as {path: string; body: Record<string, unknown>}[], unexpected: [] as string[], reads: [] as string[], resolve: null as (() => void) | null, slotVersion: 0, switchUser: () => queryClient.setQueryData(["/api/auth/user"], { ...user, id: "other-customer" }), logout: () => queryClient.setQueryData(["/api/auth/user"], null), cache: () => queryClient.getQueryData(["/api/bookings/seeker"]), providerInvalidated: () => queryClient.getQueryState(["/api/bookings/provider"])?.isInvalidated };
 Object.assign(window, { phase2Fixture: fixture });
 window.fetch = async (input, options = {}) => {
@@ -30,6 +31,24 @@ window.fetch = async (input, options = {}) => {
   if (path === "/api/auth/user") return Response.json(user);
   if (path === "/api/bookings/seeker") return fixture.refreshError ? Response.json({}, {status:503}) : Response.json(records);
   if (path === "/api/company/context") return Response.json({ company: null, workspaces: [], permissions: {} });
+  const requestPath = path.match(/^\/api\/bookings\/(\d+)\/reschedule-requests$/);
+  if (requestPath) {
+    const bookingId = Number(requestPath[1]);
+    if (method === "GET") return Response.json({ requests: rescheduleRequests[bookingId] ?? [] });
+    if (method === "POST") {
+      if (fixture.result === "pending") await new Promise<void>(resolve => { fixture.resolve = resolve; });
+      if (fixture.result === "unauthorized") return Response.json({}, { status: 401 });
+      if (fixture.result === "denied") return Response.json({}, { status: 403 });
+      if (fixture.result === "conflict") { fixture.slotVersion++; return Response.json({ code: "time_unavailable" }, { status: 409 }); }
+      if (fixture.result === "error") return Response.json({ message: "<img src=x onerror=alert(1)>" }, { status: 503 });
+      const body = JSON.parse(String(options.body)), current = records.find(row => row.id === bookingId)!;
+      const request = { id: body.clientRequestId, bookingId, requestedById: user.id, requestedByRole: "customer", originalScheduledDate: current.scheduledDate,
+        proposedScheduledDate: body.scheduledDate, fallback: body.fallback, state: "pending", note: body.note || null, timezone: body.timeZone,
+        createdAt: new Date(now).toISOString(), respondedAt: null, canRespond: false, canWithdraw: true, batchId: null };
+      rescheduleRequests[bookingId] = [request];
+      return Response.json({ requests: [request] });
+    }
+  }
   const available = path.match(/^\/api\/bookings\/(\d+)\/available-times\?/);
   if (available) {
     const url = new URL(path, location.origin), month = url.searchParams.get("month"), date = url.searchParams.get("date"), timezone = url.searchParams.get("timezone");

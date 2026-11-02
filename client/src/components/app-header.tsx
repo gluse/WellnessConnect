@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AccountMenu from "@/components/account-menu";
@@ -10,9 +10,12 @@ import { useTranslation } from "react-i18next";
 export default function AppHeader() {
   const { isAuthenticated, isLoading } = useAuth();
   const { t } = useTranslation();
+  const [location] = useLocation();
+  const appointmentArea = location === "/my-bookings" || location === "/my-services" || location.startsWith("/my-services/");
+  const searchArea = location === "/search" || (location === "/" && isAuthenticated);
 
   return (
-    <header className="sticky top-0 z-40 bg-header text-white border-b border-white/15 pt-[env(safe-area-inset-top)] [--accent:#343c53] [--accent-foreground:#fff] [--ring:#fff] [--background:var(--header-background)]">
+    <header className={`sticky top-0 z-40 bg-header text-white border-b border-white/15 pt-[env(safe-area-inset-top)] [--accent:#343c53] [--accent-foreground:#fff] [--ring:#fff] [--background:var(--header-background)] ${appointmentArea || searchArea ? "[@media(max-height:30rem)]:static" : ""}`}>
       <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-3 rounded-md font-semibold text-lg text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
           <span className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">

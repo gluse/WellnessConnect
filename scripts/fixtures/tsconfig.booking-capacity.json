@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["booking-capacity.tsx"],
+  "exclude": [],
+  "compilerOptions": { "target": "ES2022", "incremental": false }
+}

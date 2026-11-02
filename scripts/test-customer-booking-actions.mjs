@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { build } from "esbuild";
+import { getTableName } from "drizzle-orm";
 import { assertCustomerBookingChange } from "../server/customerBookings.ts";
 
 const chain = result => new Proxy({}, { get(_target, name) {
@@ -17,7 +18,7 @@ const fakeDb = {
     const tx = {
       select: () => chain(() => { assert.ok(rows.length, "Unexpected DB read"); return rows.shift(); }),
       async execute() { locks++; },
-      update: () => ({ set(value) { writes.push(value); return chain(() => [{ ...current, ...value }]); } }),
+      update: table => ({ set(value) { if (getTableName(table) === "bookings") writes.push(value); return chain(() => [{ ...current, ...value }]); } }),
     };
     return callback(tx);
   },
@@ -85,12 +86,13 @@ const move = { scheduledDate: at("11:00").toISOString(), seekerId: "attacker", t
 const oldError = console.error; console.error = () => {};
 try {
   assert.equal((await request(statusPath, { status: "cancelled" })).code, 200);
-  assert.deepEqual(writes.pop(), [7, "cancelled", "customer"]);
-  assert.equal((await request(movePath, move)).code, 200);
-  assert.deepEqual(writes.pop(), [7, at("11:00"), "customer"]);
+  assert.deepEqual(writes.pop(), [7, "cancelled", "customer", "UTC"]);
+  const consent = await request(movePath, move);
+  assert.equal(consent.code, 409); assert.equal(consent.data.code, "consent_required");
+  assert.equal(writes.length, 0, "Legacy reschedule cannot bypass agreement");
   current = { ...baseline, status: "pending" };
   assert.equal((await request(statusPath, { status: "cancelled" })).code, 200); writes.pop();
-  assert.equal((await request(movePath, move)).code, 200); writes.pop();
+  assert.equal((await request(movePath, move)).code, 409); assert.equal(writes.length, 0);
   current = baseline;
   // Customer access stays valid even with a provider workspace selected.
   assert.equal((await request(statusPath, { status: "cancelled" }, { workspace: { invalid: true } })).code, 200); writes.pop();
@@ -122,12 +124,14 @@ try {
   assert.equal((await request(movePath, move, { user: { claims: { sub: "provider" } }, workspace: { company: null, permissions: { manageBookings: false } } })).code, 403);
   const employee = { user: { claims: { sub: "employee" } }, workspace: { company: { id: 3, providerId: "provider" }, membership: { employeeId: 4 }, permissions: { manageBookings: true, readAll: false } } };
   current = { ...baseline, companyId: 3, employeeId: 5 }; assert.equal((await request(movePath, move, employee)).code, 403);
-  current = { ...current, employeeId: 4 }; assert.equal((await request(movePath, move, employee)).code, 200); writes.pop();
+  current = { ...current, employeeId: 4 }; const employeeConsent = await request(movePath, move, employee);
+  assert.equal(employeeConsent.code, 409); assert.equal(employeeConsent.data.code, "consent_required"); assert.equal(writes.length, 0);
   current = baseline;
   fixtures.storage.rescheduleBooking = async () => { throw new BookingConflictError("This time slot is no longer available."); };
   assert.equal((await request(movePath, move)).code, 409);
   fixtures.storage.rescheduleBooking = async () => { throw new Error("PRIVATE_canary"); };
-  const failure = await request(movePath, move); assert.equal(failure.code, 500); assert.ok(!JSON.stringify(failure.data).includes("PRIVATE_canary"));
+  const failure = await request(movePath, move); assert.equal(failure.code, 409); assert.equal(failure.data.code, "consent_required");
+  assert.ok(!JSON.stringify(failure.data).includes("PRIVATE_canary"), "Obsolete direct storage path is never called");
   // Real transaction methods use locked state, before any update.
   const reset = locked => { current = baseline; rows = [[baseline], [locked]]; writes = []; locks = 0; };
   for (const method of ["cancel", "reschedule"]) {
@@ -142,7 +146,7 @@ try {
   }
   reset(baseline); await assert.rejects(actualStorage.updateBookingStatus(7, "completed", "customer")); assert.equal(writes.length, 0);
   reset(baseline); rows.push([service], [schedule]); await assert.rejects(actualStorage.rescheduleBooking(7, at("08:00"), "customer")); assert.equal(writes.length, 0);
-  reset(baseline); rows.push([service], [schedule], [{ id: 8 }]); await assert.rejects(actualStorage.rescheduleBooking(7, at("11:00"), "customer")); assert.equal(writes.length, 0);
+  reset(baseline); rows.push([service], [schedule], [{ booking: { ...baseline, id: 8, scheduledDate: at("11:00") }, duration: service.duration }]); await assert.rejects(actualStorage.rescheduleBooking(7, at("11:00"), "customer")); assert.equal(writes.length, 0);
   assert.throws(() => assertCustomerBookingChange(baseline, "customer", baseline.scheduledDate), /future/, "Exact start time is no longer changeable");
 } finally { console.error = oldError; delete globalThis.__bookingDependencies; }
 console.log("Passed: customer booking authorization, future/state/input boundaries, provider permissions, saved availability and self-exclusion, safe failures, transactional rechecks, schedule/overlap conflict enforcement. Offline mocked adapters only.");

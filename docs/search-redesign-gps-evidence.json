@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-02",
+  "checks": [
+    "Location icon immediately applies coordinates and enables both distance sorts; nearest-first orders results; unapplied query/filter drafts stay intact; removing location disables distance sorting",
+    "en: permission denial without retry; unavailable/timeout recovery; exceptions; invalid coordinates; retained drafts/results; localized focus/feedback/reflow",
+    "lv: permission denial without retry; unavailable/timeout recovery; exceptions; invalid coordinates; retained drafts/results; localized focus/feedback/reflow",
+    "ru: permission denial without retry; unavailable/timeout recovery; exceptions; invalid coordinates; retained drafts/results; localized focus/feedback/reflow",
+    "Unsupported and insecure contexts give actionable feedback without locking the form",
+    "A silent native request unlocks after 35 seconds; duplicate requests and late callbacks cannot change newer input",
+    "Successful location follows language changes, immediately searches with detected coordinates/radius, and enables distance sorting"
+  ],
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "viewports": [
+    390,
+    1280
+  ],
+  "browser": "Installed headless Chrome",
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Synthetic geolocation and API responses; real application timer. No real location, external requests, database/session writes, paid services or deployment. Device/browser permission settings and live location provider remain unverified."
+}

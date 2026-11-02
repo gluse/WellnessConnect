@@ -1,0 +1,162 @@
+{
+  "date": "2026-11-02",
+  "browser": {
+    "product": "firefox/157.0"
+  },
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "view": "list"
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "view": "grid"
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "view": "list"
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "view": "grid"
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "view": "list"
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "view": "grid"
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "view": "list"
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "view": "grid"
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "view": "list"
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "view": "grid"
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "view": "list"
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "view": "grid"
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "view": "list"
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "view": "grid"
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "view": "list"
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "view": "grid"
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "view": "list"
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "view": "grid"
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "view": "list"
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "view": "grid"
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "view": "list"
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "view": "grid"
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "view": "list"
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "view": "grid"
+    }
+  ],
+  "checks": [
+    "List/Grid share the Search result component and 1:1 media/fallbacks; unpublished services are visible; status/view switches preserve selections and perform no requests or writes; hostile text stays literal",
+    "en/lv/ru responsive List/Grid retain every service, publication label and editing/copy action",
+    "phone list is denser than grid; light/dark text contrast; text/native-zoom reflow; fixed square geometry",
+    "keyboard view switching; correct editor routes; pending/failed copy recovery and duplicate prevention across views; successful copy still opens existing editor",
+    "read-only permissions retain previews and remove management actions; company uses business name; load error/retry, empty and loading states recover"
+  ],
+  "screenshots": [
+    "docs/provider-service-views-firefox-desktop-grid.png",
+    "docs/provider-service-views-firefox-phone-grid.png",
+    "docs/provider-service-views-firefox-phone-list.png",
+    "docs/provider-service-views-firefox-phone-dark.png"
+  ],
+  "light": {
+    "failures": [],
+    "minText": 5.659498607641199,
+    "minControlBorder": null
+  },
+  "dark": {
+    "failures": [],
+    "minText": 5.659498607641199,
+    "minControlBorder": null
+  },
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Synthetic services and data-URI images; mocked APIs/auth/workspaces/copy and blocked external network. No live server, database, publishing, paid service or deployment. Physical devices, screen readers and native-language review unverified."
+}

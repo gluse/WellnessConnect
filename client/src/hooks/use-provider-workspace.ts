@@ -14,8 +14,8 @@ export function useProviderEmployees() {
   return useQuery<Employee[]>({ queryKey: ["/api/provider/employees"], retry: false });
 }
 
-export function useProviderBookings() {
-  return useQuery<BookingWithDetails[]>({ queryKey: ["/api/bookings/provider"], staleTime: 30_000, retry: false });
+export function useProviderBookings(scope: string) {
+  return useQuery<BookingWithDetails[]>({ queryKey: ["/api/bookings/provider", scope], staleTime: 30_000, gcTime: 0, retry: false });
 }
 
 export function useProviderAvailability() {

@@ -1,75 +1,78 @@
-import { useState } from "react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { CalendarDays, Clock } from "lucide-react";
+import { CalendarDays, ChevronDown, ChevronUp, Clock, MessageSquare } from "lucide-react";
 import type { BookingWithDetails, Employee } from "@shared/schema";
+import { appointmentEventKey } from "@shared/appointment-collaboration";
 import { getProviderName } from "@shared/provider";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { BookingReviewSummary } from "@/components/booking-review";
+import { BookingControls, EventControls, type ProviderControls } from "@/components/provider/booking-controls";
 
-export default function AppointmentAgenda({ bookings, employees = [], provider = false, loading = false, updating = false, onStatusChange, onReschedule, renderCustomerActions }: {
+const prefix = "appointmentCollaboration.";
+type Props = ProviderControls & {
   bookings: BookingWithDetails[]; employees?: Employee[]; provider?: boolean; loading?: boolean;
-  updating?: boolean;
-  onStatusChange?: (id: number, status: "confirmed" | "cancelled" | "completed") => void;
-  onReschedule?: (booking: BookingWithDetails) => void;
   renderCustomerActions?: (booking: BookingWithDetails) => ReactNode;
-}) {
-  const [view, setView] = useState<"upcoming" | "date" | "past">("upcoming");
-  const [date, setDate] = useState(new Date());
-  const [employeeId, setEmployeeId] = useState("all");
-  const [status, setStatus] = useState("all");
-  const now = Date.now();
-  const selectedDay = format(date, "yyyy-MM-dd");
-  const filtered = bookings.filter(booking => (employeeId === "all" || String(booking.employeeId) === employeeId) && (status === "all" || booking.status === status));
-  const displayed = filtered.filter(booking => {
-    const start = new Date(booking.scheduledDate);
+  renderBookingDetails?: (booking: BookingWithDetails) => ReactNode;
+  renderEventDetails?: (booking: BookingWithDetails) => ReactNode;
+};
+export default function AppointmentAgenda({ bookings, employees = [], provider = false, loading = false, renderCustomerActions, renderBookingDetails, renderEventDetails, ...controls }: Props) {
+  const { t, i18n } = useTranslation();
+  const [view, setView] = useState<"upcoming" | "date" | "past">("upcoming"), [date, setDate] = useState(new Date());
+  const [employeeId, setEmployeeId] = useState("all"), [status, setStatus] = useState("all"), [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const now = Date.now(), selectedDay = format(date, "yyyy-MM-dd");
+  const filtered = bookings.filter(row => employeeId === "all" || String(row.employeeId) === employeeId);
+  const matches = (row: BookingWithDetails) => {
+    if (status !== "all" && row.status !== status) return false;
+    const start = new Date(row.scheduledDate);
     if (view === "date") return format(start, "yyyy-MM-dd") === selectedDay;
-    if (view === "past") return start.getTime() < now || booking.status === "cancelled" || booking.status === "completed";
-    return start.getTime() >= now && (booking.status === "pending" || booking.status === "confirmed");
-  }).sort((a, b) => view === "past" ? new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime() : new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
-  const groups = new Map<string, BookingWithDetails[]>();
-    for (const booking of displayed) {
-    const key = format(new Date(booking.scheduledDate), "yyyy-MM-dd");
-    groups.set(key, [...(groups.get(key) || []), booking]);
-  }
-  return <section className="border rounded-xl bg-white p-3 sm:p-6 space-y-5">
-    <div className="flex flex-wrap gap-3 justify-between items-center">
-      <h2 className="text-lg font-semibold flex items-center gap-2"><CalendarDays className="w-5 h-5" />Appointments</h2>
-      <div className="flex flex-wrap gap-1 bg-neutral-100 p-1 rounded-lg" aria-label="Appointment view">{(["upcoming", "date", "past"] as const).map(item => <Button key={item} size="sm" variant={view === item ? "default" : "ghost"} aria-pressed={view === item} onClick={() => setView(item)}>{item === "upcoming" ? "Upcoming" : item === "date" ? "By date" : "Past & cancelled"}</Button>)}</div>
+    if (view === "past") return start.getTime() < now || row.status === "cancelled" || row.status === "completed";
+    return start.getTime() >= now && (row.status === "pending" || row.status === "confirmed");
+  };
+  const events = new Map<string, BookingWithDetails[]>();
+  for (const row of filtered) { const key = provider ? appointmentEventKey(row) : `booking:${row.id}`; events.set(key, [...(events.get(key) ?? []), row]); }
+  const displayed = Array.from(events).filter(([, rows]) => rows.some(matches)).sort((a, b) => (view === "past" ? -1 : 1) * (new Date(a[1][0].scheduledDate).getTime() - new Date(b[1][0].scheduledDate).getTime()));
+  const toggle = (key: string) => setExpanded(current => { const next = new Set(current); next.has(key) ? next.delete(key) : next.add(key); return next; });
+  const time = (row: BookingWithDetails) => `${format(new Date(row.scheduledDate), "HH:mm")}–${format(new Date(new Date(row.scheduledDate).getTime() + (row.bookingDuration ?? row.service.duration) * 60_000), "HH:mm")}`;
+  const dateLabel = (value: Date) => new Intl.DateTimeFormat(i18n.language, { weekday: "short", day: "numeric", month: "short", year: "numeric" }).format(value);
+  const dateAndTime = (row: BookingWithDetails) => <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm font-medium text-neutral-700" data-testid="appointment-date-time">
+    <span className="inline-flex min-w-0 items-center gap-2"><CalendarDays className="w-4 h-4 shrink-0" aria-hidden="true" /><time dateTime={new Date(row.scheduledDate).toISOString()}>{dateLabel(new Date(row.scheduledDate))}</time></span>
+    <span className="inline-flex items-center gap-2 whitespace-nowrap"><Clock className="w-4 h-4 shrink-0" aria-hidden="true" />{time(row)}</span>
+  </div>;
+  const employee = (row: BookingWithDetails) => provider ? employees.find(item => item.id === row.employeeId)?.name : row.employee?.name;
+  const name = (row: BookingWithDetails) => [row.seeker.firstName, row.seeker.lastName].filter(Boolean).join(" ") || row.seeker.email || t(prefix + "customer");
+  const badge = (row: BookingWithDetails) => <Badge className={row.status === "pending" ? "bg-amber-50 text-amber-800 border-amber-200" : row.status === "confirmed" ? "bg-green-50 text-green-800 border-green-200" : "bg-neutral-100 text-neutral-600 border-neutral-200"}>{row.status ? t(prefix + "status" + row.status[0].toUpperCase() + row.status.slice(1)) : "—"}</Badge>;
+  return <section className="space-y-3" aria-label={t("notifications.appointments")}>
+    <div className="grid grid-cols-3 gap-1 bg-white border p-1 rounded-xl" role="group" aria-label={t("appointmentAgenda.view")}>
+      {(["upcoming", "date", "past"] as const).map(item => <Button key={item} size="sm" className="h-auto min-h-11 whitespace-normal px-2 py-2 text-xs sm:text-sm leading-tight" variant={view === item ? "default" : "ghost"} aria-pressed={view === item} onClick={() => setView(item)}>{t(`appointmentAgenda.${item}`)}</Button>)}
     </div>
-    <div className="flex flex-wrap gap-3 text-sm">
-      <div className="flex items-center gap-2"><Label htmlFor={provider ? "provider-appointment-status" : "seeker-appointment-status"}>Status</Label><select id={provider ? "provider-appointment-status" : "seeker-appointment-status"} className="border rounded-md p-2 bg-white" value={status} onChange={event => setStatus(event.target.value)}><option value="all">All statuses</option>{["pending", "confirmed", "completed", "cancelled"].map(item => <option key={item} value={item}>{item[0].toUpperCase() + item.slice(1)}</option>)}</select></div>
-      {provider && employees.length > 0 && <div className="flex items-center gap-2 min-w-0 max-w-full"><Label htmlFor="appointment-employee">Employee</Label><select id="appointment-employee" className="border rounded-md p-2 bg-white min-w-0" value={employeeId} onChange={event => setEmployeeId(event.target.value)}><option value="all">All employees</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.name}</option>)}</select></div>}
-      <p className="text-xs text-neutral-500 self-center">Times shown in {Intl.DateTimeFormat().resolvedOptions().timeZone}</p>
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+      <div className="flex items-center gap-2 min-w-0 max-w-full"><Label htmlFor={provider ? "provider-appointment-status" : "seeker-appointment-status"}>{t("appointmentAgenda.status")}</Label><select id={provider ? "provider-appointment-status" : "seeker-appointment-status"} className="min-h-11 min-w-0 max-w-full border border-neutral-500 rounded-md p-2 bg-white" value={status} onChange={event => setStatus(event.target.value)}><option value="all">{t("appointmentAgenda.allStatuses")}</option>{["pending", "confirmed", "completed", "cancelled"].map(item => <option key={item} value={item}>{t(prefix + "status" + item[0].toUpperCase() + item.slice(1))}</option>)}</select></div>
+      {provider && employees.length > 0 && <div className="flex items-center gap-2 min-w-0 max-w-full"><Label htmlFor="appointment-employee">{t("appointmentAgenda.employee")}</Label><select id="appointment-employee" className="min-h-11 border border-neutral-500 rounded-md p-2 bg-white min-w-0 max-w-full" value={employeeId} onChange={event => setEmployeeId(event.target.value)}><option value="all">{t("appointmentAgenda.allEmployees")}</option>{employees.map(row => <option key={row.id} value={row.id}>{row.name}</option>)}</select></div>}
+      <p className="text-xs text-neutral-600 sm:ms-auto">{t("appointmentAgenda.timezone", { timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}</p>
     </div>
-    <div className={view === "date" ? "grid md:grid-cols-[auto_1fr] gap-6" : ""}>
-      {view === "date" && <Calendar mode="single" weekStartsOn={1} selected={date} onSelect={value => { if (value) setDate(value); }} modifiers={{ booked: filtered.map(booking => new Date(booking.scheduledDate)) }} modifiersClassNames={{ booked: "font-bold underline decoration-primary underline-offset-4" }} className="border rounded-xl h-fit w-fit mx-auto p-1 sm:p-3" />}
-      <div className="min-w-0 space-y-5">
-        {loading ? <p role="status" className="text-sm text-neutral-500">Loading appointments…</p> : !displayed.length ? <p className="text-sm text-neutral-500 py-6">{view === "date" ? `No appointments on ${format(date, "d MMMM yyyy")}.` : "No appointments in this view."}</p> : Array.from(groups).map(([day, dayBookings]) => <div key={day} className="space-y-2">
-          <h3 className="text-sm font-semibold text-neutral-700">{format(new Date(`${day}T12:00:00`), "EEEE, d MMMM yyyy")}</h3>
-          {dayBookings.map(booking => <article key={booking.id} className="border rounded-lg p-4 space-y-3">
-            <div className="flex flex-wrap justify-between items-start gap-3">
-              <div className="min-w-0"><p className="font-medium break-words">{booking.service.name}</p><p className="text-sm text-neutral-600">{provider ? [booking.seeker.firstName, booking.seeker.lastName].filter(Boolean).join(" ") || booking.seeker.email || "Customer" : getProviderName(booking.provider)}</p>
-                {(provider ? employees.find(employee => employee.id === booking.employeeId)?.name : booking.employee?.name) && <p className="text-xs text-neutral-500">With {provider ? employees.find(employee => employee.id === booking.employeeId)?.name : booking.employee?.name}</p>}
-              </div>
-              <Badge className={booking.status === "pending" ? "bg-amber-50 text-amber-800 border-amber-200" : booking.status === "confirmed" ? "bg-green-50 text-green-800 border-green-200" : "bg-neutral-100 text-neutral-600 border-neutral-200"}>{booking.status}</Badge>
+    <div className={view === "date" ? "grid lg:grid-cols-[auto_1fr] gap-3 items-start" : ""}>{view === "date" && <Calendar mode="single" weekStartsOn={1} selected={date} onSelect={value => { if (value) setDate(value); }} modifiers={{ booked: filtered.map(row => new Date(row.scheduledDate)) }} modifiersClassNames={{ booked: "font-bold underline decoration-primary underline-offset-4" }} className="border bg-white rounded-xl h-fit w-fit max-w-full mx-auto p-1 sm:p-3" />}
+      <div className="min-w-0 space-y-3">{loading ? <p role="status" className="text-sm text-neutral-600 rounded-xl border bg-white p-4">{t("appointmentAgenda.loading")}</p> : !displayed.length ? <p className="text-sm text-neutral-600 rounded-xl border bg-white p-4">{view === "date" ? t("appointmentAgenda.emptyDate", { date: dateLabel(date) }) : t("appointmentAgenda.empty")}</p> : displayed.map(([key, rows]) => {
+          const row = rows[0], group = provider && row.service.serviceType === "group", open = expanded.has(key);
+          if (group) {
+            const confirmed = rows.filter(item => item.status === "confirmed" || item.status === "completed").reduce((sum, item) => sum + (item.participantCount ?? 1), 0), pending = rows.filter(item => item.status === "pending").reduce((sum, item) => sum + (item.participantCount ?? 1), 0);
+            return <article key={key} className="border border-indigo-200 bg-white rounded-xl overflow-hidden" data-testid={`group-event-${row.id}`}><header className="p-4 space-y-3">{dateAndTime(row)}<div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0 space-y-1"><h2 className="font-semibold break-words">{row.service.name}</h2>{employee(row) && <p className="text-sm text-neutral-600">{employee(row)}</p>}<p className="text-sm">{t(prefix + "bookings", { count: rows.length })}</p></div><div className="flex flex-wrap gap-2 items-center"><EventControls {...controls} booking={row} rows={rows} /><Button size="sm" variant="ghost" aria-expanded={open} aria-controls={`event-bookings-${row.id}`} onClick={() => toggle(key)} data-testid={`event-toggle-${row.id}`}>{t(prefix + (open ? "hideBookings" : "viewBookings"), { count: rows.length })}{open ? <ChevronUp className="ms-1 h-4 w-4" aria-hidden="true" /> : <ChevronDown className="ms-1 h-4 w-4" aria-hidden="true" />}</Button></div></div><div className="flex flex-wrap gap-2 text-sm"><Badge className="bg-green-50 text-green-800 border-green-200">{t(prefix + "confirmedPlaces", { count: confirmed, capacity: row.service.maxCapacity ?? 1 })}</Badge>{pending > 0 && <Badge className="bg-amber-50 text-amber-800 border-amber-200">{t(prefix + "pendingPlaces", { count: pending })}</Badge>}{!open && rows.some(item => item.notes?.trim()) && <span className="inline-flex gap-1 items-center"><MessageSquare className="h-4 w-4" aria-hidden="true" />{t(prefix + "notesAvailable")}</span>}</div></header>
+              {open && renderEventDetails?.(row)}{open && <div id={`event-bookings-${row.id}`} className="divide-y p-3 sm:p-4">{rows.map(item => <section key={item.id} data-testid={`event-booking-${item.id}`} className="py-3 first:pt-0 last:pb-0 space-y-2 min-w-0"><div className="flex flex-wrap gap-3 justify-between"><div className="min-w-0"><p className="font-semibold break-words">{name(item)}</p><p className="text-sm text-neutral-600">{t("booking.participants")}: {item.participantCount ?? 1} · ${item.totalAmount}</p></div>{badge(item)}</div>{status !== "all" && item.status === status && <p className="text-xs font-medium">{t(prefix + "matching")}</p>}<BookingControls {...controls} booking={item} group />{renderBookingDetails?.(item)}</section>)}</div>}
+            </article>;
+          }
+          return <article key={key} className="border bg-white rounded-xl p-4 space-y-3" data-testid={`appointment-${row.id}`}>
+            {dateAndTime(row)}
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 items-start">
+              <div className="min-w-0"><p className="font-semibold break-words">{row.service.name}</p><p className="text-sm text-neutral-600 break-words">{provider ? name(row) : getProviderName(row.provider)}</p>{employee(row) && <p className="text-xs text-neutral-600">{employee(row)}</p>}</div>
+              <div className="flex flex-col items-end gap-1">{badge(row)}<p className="font-semibold text-neutral-900">${row.totalAmount}</p></div>
             </div>
-            <div className="flex flex-wrap gap-3 text-sm text-neutral-600"><span className="flex items-center gap-1"><Clock className="w-4 h-4" />{format(new Date(booking.scheduledDate), "HH:mm")}–{format(new Date(new Date(booking.scheduledDate).getTime() + (booking.bookingDuration ?? booking.service.duration) * 60_000), "HH:mm")}</span><span>${booking.totalAmount}</span>{(booking.participantCount ?? 1) > 1 && <span>{booking.participantCount} participants</span>}</div>
-            {provider && booking.notes && <p className="text-sm text-neutral-500 whitespace-pre-wrap break-words">{booking.notes}</p>}
-            {!provider && booking.review && <BookingReviewSummary key={booking.review.id} booking={booking} />}
-            {!provider && renderCustomerActions?.(booking)}
-            {provider && (booking.status === "pending" || booking.status === "confirmed") && (onStatusChange || onReschedule) && <div className="flex flex-wrap gap-2">
-              {booking.status === "pending" && onStatusChange && <Button size="sm" disabled={updating} onClick={() => onStatusChange(booking.id, "confirmed")}>Approve</Button>}
-              {booking.status === "confirmed" && onStatusChange && <Button size="sm" disabled={updating} onClick={() => onStatusChange(booking.id, "completed")}>Mark complete</Button>}
-              {onReschedule && <Button variant="outline" size="sm" disabled={updating} onClick={() => onReschedule(booking)}>Reschedule</Button>}
-              {onStatusChange && <Button variant="outline" size="sm" disabled={updating} onClick={() => onStatusChange(booking.id, "cancelled")}>{booking.status === "pending" ? "Decline" : "Cancel booking"}</Button>}
-            </div>}
-          </article>)}
-        </div>)}
-      </div>
+            {(row.participantCount ?? 1) > 1 && <p className="text-sm text-neutral-700">{row.participantCount} participants</p>}
+            {provider && <BookingControls {...controls} booking={row} />}{!provider && row.review && <BookingReviewSummary key={row.review.id} booking={row} />}{!provider && renderCustomerActions?.(row)}{renderBookingDetails?.(row)}
+          </article>;
+        })}</div>
     </div>
   </section>;
 }

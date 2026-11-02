@@ -1,0 +1,38 @@
+# Revised group appointments — exact image prompts
+
+Generated with the built-in image generation tool on 2 November 2026.
+
+Visual correction applied to the rescheduling draft: Edit only one incorrect time label in this rescheduling UI design board. In the RIGHT column's SECOND recipient card, labelled 'Option B • Cancel if declined', the gray 'Current time' box currently reads 'Monday, 2 November' followed by '09:00 – 12:00'. Replace that time range with exactly '09:00 – 10:00'. This makes the current time identical across all scenario examples. Preserve all other text, panels, layout, colors, dimensions, icons, buttons, labels, names and proposed new time 11:00–12:00 unchanged. No other alterations.
+
+## Group appointments
+
+Use case: ui-mockup
+Asset: revised FitsMyTime provider group appointments approval board, crisp high fidelity English UI.
+Canvas landscape 1800x1250 approximate. White background pale gray panels thin neutral borders 12px corners, indigo #4f46e5 buttons, dark sans serif, green confirmed amber pending badges. Elegant plain front-on product design, highly legible. Heading "Group appointments • Revised proposal", small "FOR APPROVAL". Subtitle "One event. Visible notes. Clear action scope."
+Three sections, large main event panel upper left 65 percent width; two compact vertically stacked menu detail panels upper right 35 percent; lower strip full width for private group messaging composer.
+MAIN PANEL: Appointments, Upcoming tab selected, By date, Past & cancelled. Heading "Monday, 2 November 2026". ONE expanded event card with Group Pilates, 09:00–10:00 • With Emma, 3 customer bookings, "4 / 8 confirmed places" green, "1 pending place" amber. Event header has primary "Mark complete", outlined "Event actions" dropdown button, "Hide bookings" upward chevron. Label above actions "Whole event". Inside single event container: Ana K. confirmed, 2 places • $40, direct outlined "Send reminder", outlined "More actions". Beneath Ana details visible labeled shaded notes block "Customer notes" and text "Please reserve a mat near the entrance." Mark D. confirmed, 2 places • $40, direct "Send reminder", "More actions", no blank notes block. Lina P. pending, 1 place • $20, direct indigo "Approve", "More actions", visible notes "Customer notes" and "First visit." NO Mark complete next to any customer. Each child row comfortably spaced and visually inside parent event.
+RIGHT DETAIL PANELS: title "Customer menu • one booking". Open dropdown with "Reschedule this booking", red "Cancel this booking", "Send message". Small note "Pending booking: Decline request replaces Cancel." Below title "Event menu • whole group". Open dropdown "Reschedule event", red "Cancel event", "Message group" with small PRO badge. Hint "Shows affected bookings before confirmation." Keep customer scope vs event scope unmistakable.
+LOWER FULL WIDTH composer panel: title "Message group" PRO badge. Booking context "Group Pilates • 2 November • 09:00". To "3 customers • private individual messages". Mode radio "General message" selected and "Custom message". Editable message field with realistic text "Please arrive 10 minutes early. Mats are provided." Channel row "Email" selected, "SMS", "WhatsApp". Footer privacy notice with simple lock icon "Each customer receives a separate message. Other recipients are never shown." Small "Delivery depends on available contact details and preferences." Buttons "Cancel", indigo "Review recipients". Caption "Preview recipients and message before sending."
+Constraints: no shared group chat, no recipient list inside recipient-facing message. Provider can see customer list. Synthetic sample data only, no real contact details. No image of customers. Primary Mark complete ONLY at event level. Customer actions compact. Generic composer is proposed UI not established functionality. No reschedule flow shown on this image; separate board will show that. Preserve consistent counts. Text accuracy and readability prioritized.
+
+## Rescheduling
+
+Use case: ui-mockup
+Asset: FitsMyTime rescheduling redesign approval board. Clean high fidelity web application modals, crisp legible exact English, white/light-gray, indigo #4f46e5, neutral text, amber warnings, green confirmations, red only for cancellation consequences. Landscape 1800x1400 approx, no photos.
+Title "Rescheduling • Agreement before change", badge "FOR APPROVAL". Subtitle "Provider or customer can request a change. Original reservation stays until a response."
+Three-panel layout: top left 47% width request form, top right 53% width recipient review with two smaller scenarios stacked; full width bottom a compact group outcome illustration.
+LEFT PANEL titled "1  Request a new time". Context "Group Pilates • Ana K. • 2 places". Radio scope "This booking" selected, "Whole event" unselected. Small helper "Whole event is available to the provider only." Current "Monday, 2 November • 09:00–10:00", Proposed "Tuesday, 3 November • 11:00–12:00", zone "Europe/Riga". Heading "If the other person declines". Two equal radio option cards:
+"Keep original booking" with helper "I would like to change the time." and summary "Approve → move to the new time. Decline → keep the original time."
+"Cancel booking" with helper "I cannot keep the original time." and summary "Approve → move to the new time. Decline → cancel this booking."
+Show original-keep selected as example. Text "No response: original booking remains reserved." Small informational text "New time is subject to availability until confirmed." Optional note field "Reason / message" and sample "Could we move this session to Tuesday?" Footer outlined "Back" primary "Send reschedule request".
+RIGHT PANEL title "2  Recipient reviews consequences". Two clearly separate preview cards (not concurrent requests).
+First labelled "Option A • Keep original if declined". Title "Reschedule request". Current Mon 2 Nov 09:00–10:00 → Proposed Tue 3 Nov 11:00–12:00 • Europe/Riga. Plain prominent explanation "Approve: move your booking to the new time." "Decline: keep Monday at 09:00." Buttons primary "Approve new time", outline "Decline & keep original". Status helper "No reply keeps the original reservation."
+Second labelled "Option B • Cancel if declined". Same current → proposed details. Clear amber warning box "Declining will cancel this booking. The original reservation will not be kept." Buttons primary "Approve new time", red outlined "Decline & cancel booking". Small helper "A second confirmation explains the cancellation before it is applied." Status helper "No reply keeps the original reservation."
+No implication clicking approve is guaranteed when capacity changed: add subtle shared helper below both "If the new time is unavailable, nothing changes. Ask for another time."
+BOTTOM FULL-WIDTH section labelled "3  Whole-group request • each booking responds independently". Three simple synthetic booking outcome tiles inside provider-only result:
+"Ana K. • Accepted" green "Moves to Tuesday, 11:00"
+"Mark D. • Awaiting response" amber "Keeps Monday, 09:00"
+"Lina P. • Declined" neutral "Option A: keeps Monday / Option B: cancelled".
+Footer readable note "No response is not a rejection. Customers see only their own booking and decision."
+Constraints: strong focus on exact decision consequences. Keep both alternatives visible and clearly differentiated. No bulk all-or-nothing approval. No hidden automatic cancellation on silence. Avoid identical generic Reject buttons; use explicit outcome labels. No customer sees other group members: bottom outcome view is explicitly provider-only. No implementation or technical labels. Realistic compact but readable UI, no confusing overlapping windows.
+
