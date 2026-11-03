@@ -33,6 +33,7 @@ export async function playwrightFixture(served, engine) {
       animation.effect?.target?.closest('[aria-hidden="true"], [inert]')), "transitions finish");
     const frame = () => evaluate(() => new Promise(requestAnimationFrame));
     const click = async selector => { await page.locator(selector).first().click(); await frame(); };
+    const hover = async selector => { await page.locator(selector).first().hover(); await frame(); };
     const button = async text => {
       const dialog = page.locator('[role="alertdialog"][data-state="open"], [role="dialog"][data-state="open"]');
       const scope = await dialog.count() ? dialog.first() : page;
@@ -63,6 +64,6 @@ export async function playwrightFixture(served, engine) {
       throw Error("Unsupported forms browser command: " + method);
     };
     const close = async () => { try { await context.close(); } finally { try { await browser.close(); } finally { await served.close(); } } };
-    return { ...served, api, evaluate, until, settle, click, button, set, visit, viewport, key, screenshot, close };
+    return { ...served, api, evaluate, until, settle, click, hover, button, set, visit, viewport, key, screenshot, close };
   } catch (error) { await context?.close(); await browser.close(); throw error; }
 }

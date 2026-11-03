@@ -328,6 +328,6 @@ function SearchPage({ userId }: { userId: string | null }) {
     {showBookingModal && selectedService && <BookingModal service={selectedService} onClose={() => setShowBookingModal(false)} />}
     <ProviderServicesDialog source={providerSource} open={providerSource !== null && !showDetailModal && !showBookingModal} onClose={() => setProviderSource(null)} onBook={book} onViewDetails={details} />
     <ServiceDetailModal service={selectedService} searchLayout open={showDetailModal} onViewProvider={() => { if (selectedService) setProviderSource(selectedService); setShowDetailModal(false); }} onClose={() => { setShowDetailModal(false); setSelectedService(null); }} onBook={() => { setShowDetailModal(false); setShowBookingModal(true); }} />
-    <div className="search-bottom-navigation"><BottomNavigation /></div>
+    {!userId && <div className="search-bottom-navigation"><BottomNavigation /></div>}
   </div>;
 }

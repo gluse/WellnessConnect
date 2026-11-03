@@ -198,3 +198,121 @@ and mocked public-search route tests also pass there. Previous screenshots remai
 historical evidence from the working-tree integration; this additional check
 establishes that the focused commits build and function independently. No connected
 application/database access, private environment loading, publishing or deployment.
+
+## Toolbar alignment follow-up — 3 November 2026
+
+Completed / verified locally. User specifically requested the full date beside
+Today and the status/employee dropdowns on the same row on all device sizes.
+Approver: user; frontend executor: `/root`; scope: local calendar toolbar, shared
+filter rendering and isolated mocked checks under the existing frontend approval.
+No backend, database/service operations, private configuration or deployment.
+
+Today and the complete localized date share a nonwrapping flex row. The date may
+wrap within its own remaining space at narrow widths or enlarged text; it is not
+truncated or moved below Today. Navigation arrows, Day/Week and the date input
+occupy the following row, wrapping as needed. Filters stay paired horizontally,
+with visible labels above on phones and inline at larger widths. Their native
+selects size from the selected text using an inaccessible sizing span, avoiding
+excess width from longer unselected options. Calendar filters use compact text
+and padding; list/customer filters retain their existing styling. At enlarged
+text or with unusually long selected values, the filter row scrolls locally to
+preserve full labels without page overflow. Normal default filters fit at every
+tested width. Existing accessible labels, keyboard behavior and routes remain.
+
+Validation:
+
+- `scripts/test-appointment-calendar-toolbar-browser.mjs` passes **96 cases per
+  engine** in Chrome 156, Firefox 157 and WebKit 27.2: en/lv/ru, 320/360/390/545/
+  640/768/1024/1440px, Day/Week and normal/200% root font size. Checks date/Today
+  alignment, readable full date and selected filter text, same-row dropdowns,
+  labeled controls, targets and page reflow. Uses September 30 for long dates.
+- The existing calendar regression passes in Chrome: 12 en/lv/ru viewport cases,
+  calendar navigation, keyboard/details/focus, combined filters, actions and
+  privacy checks. Existing provider/customer filter styling/keyboard regression
+  passes 24 en/lv/ru cases in Chrome.
+- `npm run check` and `node scripts/build-appointment-calendar-check.mjs` pass.
+  Existing Browserslist-age and bundle-size warnings remain. The build loads no
+  private environment files. Whitespace checks pass.
+- English 545px and Latvian 360px Chrome screenshots were visually inspected.
+  Evidence: [Chrome](appointment-calendar-toolbar-chrome-evidence.json),
+  [Firefox](appointment-calendar-toolbar-firefox-evidence.json),
+  [WebKit](appointment-calendar-toolbar-webkit-evidence.json),
+  [calendar regression](appointment-calendar-toolbar-regression-chrome-evidence.json),
+  [shared filter regression](appointment-calendar-toolbar-filter-regression-chrome-evidence.json).
+
+Browser checks use the existing synthetic fixtures and block external requests.
+CSS viewports and root-font enlargement do not certify physical devices, native
+browser zoom or screen readers. Only en/lv/ru tested; **ar/RTL, zh, fr, de, hi,
+ja, pt, es** remain deferred. No fresh coverage is claimed for those languages.
+No new security boundary or persistence is introduced. No deployment occurred.
+Recovery: reverse only this follow-up's toolbar grouping, calendar filter sizing,
+new toolbar runner and evidence/docs, preserving unrelated dirty work and prior
+calendar/navigation changes. Next: user review of the local calendar.
+
+## Simplified toolbar reference follow-up — 3 November 2026
+
+User supplied a revised screenshot, superseding the visible long-date layout
+above. Specific frontend executor `/root` implements the local calendar toolbar
+and filter presentation, with isolated mocked verification. Existing local-only
+authority and recovery limits apply; no connected operations or deployment.
+
+The first row contains Today, Day/Week and a flexible date picker. The second
+contains the status and employee dropdowns, followed by the status legend.
+The long date announcement and filter labels remain screen-reader-only. Previous/
+next arrows and the calendar timezone line are removed. Date selection, Today,
+calendar heading selection and touch swipe navigation remain available. Native
+controls and focus restoration are retained. At normal text size the first row
+fits at 320–1440px in en/lv/ru; enlarged controls can wrap to preserve readability.
+Compact spacing below 360px accommodates longer Russian control labels.
+
+Verification:
+
+- Chrome 156, Firefox 157 and WebKit 27.2 each pass the revised toolbar runner's
+  96 en/lv/ru cases: eight widths, Day/Week and normal/200% root font size.
+  It checks three top controls in one row at normal size, removal of visible
+  labels/arrows/long date/timezone, accessible labels, paired readable filters,
+  touch targets and page reflow. Evidence preserves the earlier layout under
+  its original filenames:
+  [Chrome](appointment-calendar-toolbar-v2-chrome-evidence.json),
+  [Firefox](appointment-calendar-toolbar-v2-firefox-evidence.json),
+  [WebKit](appointment-calendar-toolbar-v2-webkit-evidence.json).
+- The existing full calendar regression passes 12 en/lv/ru cases and interactions
+  in Chrome. Its date/year navigation assertions now use the date picker in
+  place of the removed arrow controls; Today, filters, keyboard/details/focus,
+  mutations and privacy regressions remain. Evidence:
+  [calendar regression](appointment-calendar-toolbar-v2-regression-chrome-evidence.json).
+- `npm run check` and `node scripts/build-appointment-calendar-check.mjs` pass.
+  Existing Browserslist-age and chunk-size warnings remain. The build loads no
+  private environment files. Chrome English and WebKit Russian 360px previews
+  were visually inspected against the supplied layout. Whitespace checks pass.
+
+Native Chrome swipe verification passes six en/lv/ru phone/tablet cases, covering
+day/week/year navigation, weekly panning/edge navigation, gesture exclusions and
+tap preservation. [Swipe evidence](appointment-calendar-toolbar-v2-swipe-chrome-evidence.json).
+The runner now accepts an evidence prefix to preserve prior results.
+Only en/lv/ru are tested;
+ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred. Browser fixtures use
+synthetic fetch mocks and block external traffic. Physical devices, screen
+readers and native zoom are not newly verified. No security/persistence contract
+changed. Recovery: reverse this follow-up's calendar toolbar and calendar-only
+filter-label/timezone changes and runner updates, preserving prior work and
+historical evidence. Next: user review of the local calendar.
+
+## Navigation/toolbar commit isolation — 3 November 2026
+
+At the user's request to commit, the navigation prerequisites, Calendar labels,
+final compact toolbar, associated routes/locales, regressions and historical
+evidence were selected together. Unrelated time-formatting, rating, account/form,
+notification-policy, generated output, Latvian wording and proposal edits remain
+outside this commit. Existing owner acceptance covers the exact return-route
+allowlist dependency; no connected operation or deployment is included.
+
+A snapshot exported from the Git index, without copying other working-tree
+changes, passes TypeScript with incremental caching disabled, the isolated
+frontend build, 96 Chrome toolbar cases, the full Chrome navigation regression
+(six behavior groups, eighteen en/lv/ru viewport cases), and offline provider,
+customer and exact authentication-return route regressions. Existing build
+warnings remain. Verification uses ancestor-installed dependencies and synthetic
+mocks; no private environment files or connected services are loaded. The earlier
+Firefox/WebKit layout and native Chrome swipe evidence remains applicable to
+the selected frontend source. Other languages/RTL remain deferred.

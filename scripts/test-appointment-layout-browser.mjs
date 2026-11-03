@@ -13,8 +13,10 @@ const zoom = Boolean(process.env.APPOINTMENT_LAYOUT_ZOOM);
 const fixture = await browserFixture({ entry: "scripts/fixtures/appointment-layout.tsx", resources, ...(zoom ? { nativeZoom: 4 } : {}) });
 const { evaluate, until, viewport, visit, button, click, set } = fixture;
 const engine = process.env.FORMS_BROWSER || "chrome", matrix = [], checks = [], screenshots = [];
-const open = async (area, language, state = "success") => {
-  await visit(`${area === "provider" ? "/my-services/appointments" : "/my-bookings"}?lang=${language}&state=${state}`);
+const artifactPrefix = process.env.APPOINTMENT_LAYOUT_ARTIFACT_PREFIX || "appointment-layout";
+assert.match(artifactPrefix, /^[a-z0-9-]+$/);
+const open = async (area, language, state = "success", path = "/my-services/upcoming-appointments") => {
+  await visit(`${area === "provider" ? path : "/my-bookings"}?lang=${language}&state=${state}`);
   await until(() => !!document.querySelector("main h1"), "page loaded");
   await evaluate(labels => { window.phase2Fixture.labels = labels; }, resources[language].translation.appointmentAgenda);
   if (state === "success") await until(() => document.querySelectorAll("main article[data-testid]").length > 0, "appointment cards loaded");
@@ -29,7 +31,8 @@ try {
         await open(area, language);
         await reflow();
         assert.equal(await evaluate(() => document.querySelectorAll("main h1").length), 1);
-        assert.equal(await evaluate(() => document.querySelector("main h1").textContent), resources[language].translation.notifications.appointments);
+        assert.equal(await evaluate(() => document.querySelector("main h1").textContent), area === "provider" ? resources[language].translation.providerNavigation.upcomingAppointments : resources[language].translation.notifications.appointments);
+        assert.equal(await evaluate(label => !!document.querySelector(`main [role="group"][aria-label="${label}"]`), labels.view), area !== "provider");
         assert.equal(await evaluate(() => [...document.querySelectorAll("main h2,main h3,main h4")].some(node => node.textContent === document.querySelector("main h1").textContent)), false, "no duplicated appointment heading");
         assert.equal(await evaluate(() => [...document.querySelectorAll("main button,main a")].some(node => ["My Services", "My Bookings"].includes(node.textContent.trim()))), false, "no extra area buttons above heading");
         assert.equal(await evaluate(() => getComputedStyle(document.querySelector("[data-appointment-area]")).backgroundColor), area === "provider" ? "rgb(240, 238, 255)" : "rgb(234, 247, 243)");
@@ -46,16 +49,18 @@ try {
         const gap = await evaluate(() => { const cards = [...document.querySelectorAll("main article[data-testid]")]; return cards[1].getBoundingClientRect().top - cards[0].getBoundingClientRect().bottom; });
         assert.ok(Math.abs(gap - 12) < 1, "consecutive cards use compact gaps");
         const summary = await evaluate(() => document.querySelector('[data-testid="appointment-summary"]') ? [...document.querySelectorAll('[data-testid="appointment-summary"] dd')].map(node => node.textContent) : null);
-        assert.deepEqual(summary, area === "provider" ? ["5", "2", "$230"] : null);
+        assert.deepEqual(summary, null);
         matrix.push({ language, area, width: await evaluate(() => innerWidth), height: await evaluate(() => innerHeight), nativeZoom: zoom ? 4 : 1 });
         if ((width === 390 && language === "en") || (zoom && language === "ru")) {
-          const file = `docs/appointment-layout-${engine}-${area}${zoom ? "-zoom400" : ""}.png`;
+          const file = `docs/${artifactPrefix}-${engine}-${area}${zoom ? "-zoom400" : ""}.png`;
           await fixture.screenshot(file); screenshots.push(file);
         }
         assert.deepEqual(await evaluate(() => window.phase2Fixture.unexpected), []);
       }
-      await button(labels.past);
+      if (area === "provider") await open(area, language, "success", "/my-services/past-appointments");
+      else await button(labels.past);
       await until(() => document.querySelectorAll("main article[data-testid]").length === 1, "past filter shows cancelled booking");
+      if (area === "customer") {
       await button(labels.date);
       await until(() => !!document.querySelector("main table"), "calendar appears");
       await evaluate(() => { const day = [...document.querySelectorAll('button[name="day"]')].find(node => node.textContent === "16" && !node.disabled); if (!day) throw Error("Calendar day missing"); day.id = "layout-calendar-day"; });
@@ -64,6 +69,7 @@ try {
       assert.equal(await evaluate(() => document.querySelector("main article time").getAttribute("datetime")), "2030-01-16T10:30:00.000Z");
       await reflow();
       await button(labels.upcoming);
+      } else await open(area, language);
       await set(area === "provider" ? "provider-appointment-status" : "seeker-appointment-status", "pending");
       await until(() => document.querySelectorAll("main article[data-testid]").length === 2, "status filter matches standalone and group");
       if (area === "provider") {
@@ -73,7 +79,7 @@ try {
         assert.equal(await evaluate(() => document.querySelectorAll('[data-testid="group-event-3"] [data-testid="appointment-date-time"]').length), 1, "group date appears once");
         await reflow();
       }
-      checks.push(`${language}/${area}: one heading; no extra area buttons; white dated cards; distinct background; compact gaps/summary; calendar/status/history filters${area === "provider" ? "; group disclosure/full context" : ""}`);
+      checks.push(`${language}/${area}: localized page heading; no extra area buttons; white dated cards; distinct background; compact gaps; no summary; status/history${area === "provider" ? "; separate pages without view tabs; group disclosure/full context" : "; date picker"}`);
       await open(area, language, "empty");
       await until(() => document.body.textContent.includes(window.phase2Fixture.labels.empty), "empty state localized");
       await open(area, language, "loading");
@@ -90,6 +96,6 @@ try {
   }
   if (zoom) assert.ok(await evaluate(() => devicePixelRatio >= 3.9 && innerWidth <= 320), "native 400% zoom is active");
   assert.deepEqual(fixture.errors, []); assert.deepEqual(fixture.network, []); assert.deepEqual(fixture.blocked, []);
-  await writeFile(new URL(`../docs/appointment-layout-${engine}${zoom ? "-zoom400" : ""}-evidence.json`, import.meta.url), JSON.stringify({ date: "2026-11-02", browser: await fixture.api("Browser.getVersion"), languages, matrix, checks, screenshots, deferredLanguages: ["ar", "zh", "fr", "de", "hi", "ja", "pt", "es"], limits: "Actual application header and provider/customer pages. Synthetic GET mocks; unexpected requests rejected; external network blocked. No real services/session/database writes. Physical devices, screen readers and native-language review unverified." }, null, 2) + "\n");
+  await writeFile(new URL(`../docs/${artifactPrefix}-${engine}${zoom ? "-zoom400" : ""}-evidence.json`, import.meta.url), JSON.stringify({ date: "2026-11-03", browser: await fixture.api("Browser.getVersion"), languages, matrix, checks, screenshots, deferredLanguages: ["ar", "zh", "fr", "de", "hi", "ja", "pt", "es"], limits: "Actual application header and provider/customer pages. Synthetic GET mocks; unexpected requests rejected; external network blocked. No real services/session/database writes. Physical devices, screen readers and native-language review unverified." }, null, 2) + "\n");
   console.log(`Passed appointment layout ${engine}${zoom ? " 400%" : ""}: ${checks.length} behavior groups, ${matrix.length} en/lv/ru viewport cases.`);
 } finally { await fixture.close(); }

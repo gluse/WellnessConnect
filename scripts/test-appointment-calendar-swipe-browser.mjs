@@ -7,6 +7,8 @@ const resources = Object.fromEntries(await Promise.all(languages.map(async langu
 const fixture = await browserFixture({ entry: "scripts/fixtures/appointment-calendar.tsx", resources });
 const { evaluate, until, visit, viewport, set } = fixture;
 const engine = process.env.FORMS_BROWSER || "chrome", checks = [];
+const artifactPrefix = process.env.APPOINTMENT_CALENDAR_SWIPE_ARTIFACT_PREFIX || "appointment-calendar-swipe";
+assert.match(artifactPrefix, /^[a-z0-9-]+$/);
 const grid = '[data-testid="calendar-scroll"]';
 const headings = `${grid} > div > div:first-child`;
 const currentDate = () => evaluate(() => document.querySelector('#appointment-calendar-date').value);
@@ -55,7 +57,6 @@ try {
   for (const language of languages) for (const width of [360, 768]) {
     await viewport(width, 900); await visit(`/my-services/appointments?lang=${language}`);
     await until(() => !!document.querySelector('[data-testid="appointment-filters"]'), "appointments ready");
-    await fixture.button(resources[language].translation.appointmentAgenda.calendar);
     await until(() => !!document.querySelector('[data-testid="appointment-calendar"]'), "calendar ready");
     await set("appointment-calendar-mode", "day");
     await set("provider-appointment-status", "pending");
@@ -125,7 +126,7 @@ try {
   }
   await until(() => !!document.querySelector('[role="dialog"] [data-testid="appointment-2"]'), "Tap following swipe still opens details");
   assert.deepEqual(fixture.errors, []); assert.deepEqual(fixture.network, []); assert.deepEqual(fixture.blocked, []);
-  await writeFile(new URL(`../docs/appointment-calendar-swipe-${engine}-evidence.json`, import.meta.url), JSON.stringify({ date: "2026-11-03", browser: await fixture.api("Browser.getVersion"), languages, checks, input: engine === "chrome" ? "Native CDP touch input plus DOM multitouch/cancel guards" : "DOM touch-event injection; layout/details via browser input", limits: "Offline synthetic fixture only. No connected app/database. Physical mobile devices and OS gestures not verified; other locales/RTL deferred." }, null, 2) + "\n");
+  await writeFile(new URL(`../docs/${artifactPrefix}-${engine}-evidence.json`, import.meta.url), JSON.stringify({ date: "2026-11-03", browser: await fixture.api("Browser.getVersion"), languages, checks, input: engine === "chrome" ? "Native CDP touch input plus DOM multitouch/cancel guards" : "DOM touch-event injection; layout/details via browser input", limits: "Offline synthetic fixture only. No connected app/database. Physical mobile devices and OS gestures not verified; other locales/RTL deferred." }, null, 2) + "\n");
   console.log(`Passed ${engine}: six en/lv/ru phone/tablet swipe cases, day/week/edge navigation, gesture exclusions and tap preservation.`);
 } catch (error) {
   console.error(await evaluate(() => ({ date: document.querySelector('#appointment-calendar-date')?.value, mode: document.querySelector('#appointment-calendar-mode')?.value, scroll: document.querySelector('[data-testid="calendar-scroll"]')?.scrollLeft, unexpected: window.phase2Fixture?.unexpected })));

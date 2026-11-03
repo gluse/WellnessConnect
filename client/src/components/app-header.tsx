@@ -23,7 +23,7 @@ export default function AppHeader() {
           </span>
           <span>FitsMyTime</span>
         </Link>
-        {isAuthenticated && <div className="w-full sm:w-auto sm:order-none order-last">
+        {isAuthenticated && <div className="hidden lg:block">
           <RoleSwitcher />
         </div>}
         <div className="flex max-w-full flex-wrap items-center gap-2">

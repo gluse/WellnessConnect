@@ -14,6 +14,7 @@ import MyServices from "@/pages/my-services";
 import MyBookings from "@/pages/my-bookings";
 import Administration from "@/pages/administration";
 import AppHeader from "@/components/app-header";
+import MobileNavigationLayout from "@/components/mobile-navigation";
 import StorefrontPage from "@/pages/storefront";
 import { BillingRuntimeProvider } from "@/components/billing-runtime";
 import type { ReactNode } from "react";
@@ -49,8 +50,10 @@ function App() {
       <AuthenticatedBillingRuntime>
       <TooltipProvider>
         <Toaster />
-        <AppHeader />
-        <Router />
+        <MobileNavigationLayout>
+          <AppHeader />
+          <Router />
+        </MobileNavigationLayout>
       </TooltipProvider>
       </AuthenticatedBillingRuntime>
     </QueryClientProvider>

@@ -6,6 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../../client/src/lib/queryClient";
 import MyServices from "../../client/src/pages/my-services";
 import MyBookings from "../../client/src/pages/my-bookings";
+import MobileNavigationLayout from "../../client/src/components/mobile-navigation";
 import { Toaster } from "../../client/src/components/ui/toaster";
 import type { BookingWithDetails, WorkspaceContext } from "../../shared/schema";
 
@@ -20,7 +21,7 @@ const params = new URLSearchParams(location.search), customerMode = location.pat
 const user = { id: "synthetic-actor", firstName: "Anna", lastName: "Kalnina", currentRole: customerMode ? "seeker" : "provider" };
 const context: WorkspaceContext = { company: null, membership: null, workspaces: [], invalid: false, permissions: { manageCompany: true, manageTeam: true, manageServices: true, manageSchedules: true, manageBookings: true, readAll: true, isOwner: true } };
 const booking = (id: number, date: string, status: string, group = false): BookingWithDetails => ({
-  id, seekerId: user.id, serviceId: group ? 3 : id, providerId: user.id, companyId: null, employeeId: null,
+  id, seekerId: user.id, serviceId: group ? 3 : id, providerId: user.id, companyId: null, employeeId: params.has("employees") ? (id === 2 ? 2 : 1) : null,
   scheduledDate: date, status, totalAmount: group ? "20" : id === 1 ? "210" : "80", participantCount: 1, bookingDuration: group ? 60 : 180,
   service: { id: group ? 3 : id, name: group ? "Morning yoga" : id === 1 ? "Sauna ritual" : "Wellness massage", duration: group ? 60 : 180, serviceType: group ? "group" : "one_to_one", maxCapacity: 8, reminderEnabled: false },
   provider: { id: "synthetic-provider", firstName: "Amber", lastName: "Wellness" }, seeker: user,
@@ -43,7 +44,7 @@ window.fetch = async (input, options = {}) => {
       if (fixture.state === "error") return Response.json({}, { status: 503 });
       return Response.json(fixture.state === "empty" ? [] : records);
     }
-    if (path === "/api/provider/employees") return Response.json([]);
+    if (path === "/api/provider/employees") return Response.json(params.has("employees") ? [{ id: 1, name: "Anna Kalniņa" }, { id: 2, name: "Mikhail Ivanov" }] : []);
     if (path === "/api/notifications/capabilities") return Response.json({ hasPro: true, automationEnabled: false, channels: { email: false, sms: false, whatsapp: false } });
     if (/^\/api\/bookings\/\d+\/notifications$/.test(path)) return Response.json({ notification: { mode: "none" }, reminder: { state: "off" } });
     if (/^\/api\/bookings\/\d+\/(event\/)?reschedule-requests$/.test(path)) return Response.json({ requests: [] });
@@ -60,7 +61,9 @@ document.documentElement.lang = i18next.language;
 queryClient.setQueryData(["/api/auth/user"], user);
 queryClient.setQueryData(["/api/company/context"], context);
 createRoot(document.getElementById("root")!).render(<QueryClientProvider client={queryClient}>
-  <AppHeader />
-  {customerMode ? <MyBookings /> : <MyServices />}<Toaster />
+  <MobileNavigationLayout>
+    <AppHeader />
+    {customerMode ? <MyBookings /> : <MyServices />}
+  </MobileNavigationLayout><Toaster />
 </QueryClientProvider>);
 fixture.ready = true;

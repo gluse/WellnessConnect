@@ -1,0 +1,367 @@
+{
+  "date": "2026-11-03",
+  "browser": {
+    "product": "firefox/157.0"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "area": "provider",
+      "width": 320,
+      "height": 800,
+      "fields": [
+        {
+          "id": "provider-appointment-status",
+          "height": "36px"
+        },
+        {
+          "id": "appointment-employee",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "area": "provider",
+      "width": 360,
+      "height": 800,
+      "fields": [
+        {
+          "id": "provider-appointment-status",
+          "height": "36px"
+        },
+        {
+          "id": "appointment-employee",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "area": "provider",
+      "width": 768,
+      "height": 800,
+      "fields": [
+        {
+          "id": "provider-appointment-status",
+          "height": "36px"
+        },
+        {
+          "id": "appointment-employee",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "area": "provider",
+      "width": 1280,
+      "height": 800,
+      "fields": [
+        {
+          "id": "provider-appointment-status",
+          "height": "36px"
+        },
+        {
+          "id": "appointment-employee",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "area": "customer",
+      "width": 320,
+      "height": 800,
+      "fields": [
+        {
+          "id": "seeker-appointment-status",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "area": "customer",
+      "width": 360,
+      "height": 800,
+      "fields": [
+        {
+          "id": "seeker-appointment-status",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "area": "customer",
+      "width": 768,
+      "height": 800,
+      "fields": [
+        {
+          "id": "seeker-appointment-status",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "area": "customer",
+      "width": 1280,
+      "height": 800,
+      "fields": [
+        {
+          "id": "seeker-appointment-status",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "area": "provider",
+      "width": 320,
+      "height": 800,
+      "fields": [
+        {
+          "id": "provider-appointment-status",
+          "height": "36px"
+        },
+        {
+          "id": "appointment-employee",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "area": "provider",
+      "width": 360,
+      "height": 800,
+      "fields": [
+        {
+          "id": "provider-appointment-status",
+          "height": "36px"
+        },
+        {
+          "id": "appointment-employee",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "area": "provider",
+      "width": 768,
+      "height": 800,
+      "fields": [
+        {
+          "id": "provider-appointment-status",
+          "height": "36px"
+        },
+        {
+          "id": "appointment-employee",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "area": "provider",
+      "width": 1280,
+      "height": 800,
+      "fields": [
+        {
+          "id": "provider-appointment-status",
+          "height": "36px"
+        },
+        {
+          "id": "appointment-employee",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "area": "customer",
+      "width": 320,
+      "height": 800,
+      "fields": [
+        {
+          "id": "seeker-appointment-status",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "area": "customer",
+      "width": 360,
+      "height": 800,
+      "fields": [
+        {
+          "id": "seeker-appointment-status",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "area": "customer",
+      "width": 768,
+      "height": 800,
+      "fields": [
+        {
+          "id": "seeker-appointment-status",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "area": "customer",
+      "width": 1280,
+      "height": 800,
+      "fields": [
+        {
+          "id": "seeker-appointment-status",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "area": "provider",
+      "width": 320,
+      "height": 800,
+      "fields": [
+        {
+          "id": "provider-appointment-status",
+          "height": "36px"
+        },
+        {
+          "id": "appointment-employee",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "area": "provider",
+      "width": 360,
+      "height": 800,
+      "fields": [
+        {
+          "id": "provider-appointment-status",
+          "height": "36px"
+        },
+        {
+          "id": "appointment-employee",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "area": "provider",
+      "width": 768,
+      "height": 800,
+      "fields": [
+        {
+          "id": "provider-appointment-status",
+          "height": "36px"
+        },
+        {
+          "id": "appointment-employee",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "area": "provider",
+      "width": 1280,
+      "height": 800,
+      "fields": [
+        {
+          "id": "provider-appointment-status",
+          "height": "36px"
+        },
+        {
+          "id": "appointment-employee",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "area": "customer",
+      "width": 320,
+      "height": 800,
+      "fields": [
+        {
+          "id": "seeker-appointment-status",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "area": "customer",
+      "width": 360,
+      "height": 800,
+      "fields": [
+        {
+          "id": "seeker-appointment-status",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "area": "customer",
+      "width": 768,
+      "height": 800,
+      "fields": [
+        {
+          "id": "seeker-appointment-status",
+          "height": "36px"
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "area": "customer",
+      "width": 1280,
+      "height": 800,
+      "fields": [
+        {
+          "id": "seeker-appointment-status",
+          "height": "36px"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "Filter border, radius, font, height, background and start padding match More actions",
+    "Compact row gaps; native controls, labels and single chevrons",
+    "Real pointer hover keeps controls and options neutral; native popup dismissal preserves selection",
+    "Keyboard status selection, combined employee filtering and resets",
+    "360px enlarged text stays within viewport; no unexpected API or external traffic"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Actual provider/customer pages and mobile shell with synthetic fetch mocks; no connected services/database writes. Emulation, not physical devices; native OS option highlighting remains browser-controlled."
+}

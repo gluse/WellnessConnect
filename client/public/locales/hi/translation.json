@@ -1,4 +1,15 @@
 {
+  "mobileNavigation": {
+    "services": "सेवाएँ",
+    "explore": "खोजें",
+    "appointments": "अपॉइंटमेंट",
+    "availability": "उपलब्धता",
+    "settings": "सेटिंग्स",
+    "menu": "मेन्यू",
+    "navigation": "मुख्य नेविगेशन",
+    "workspaceLoading": "कार्यस्थान की अनुमतियाँ लोड हो रही हैं…",
+    "workspaceError": "कार्यस्थान की अनुमतियाँ उपलब्ध नहीं हैं।"
+  },
   "appointmentAgenda": {
     "view": "अपॉइंटमेंट दृश्य",
     "upcoming": "आगामी",
@@ -18,6 +29,8 @@
     "calendar": "कैलेंडर"
   },
   "providerNavigation": {
+    "upcomingAppointments": "आगामी अपॉइंटमेंट",
+    "pastAppointments": "पिछले और रद्द किए गए अपॉइंटमेंट",
     "workspace": "कार्यक्षेत्र",
     "personalWorkspace": "व्यक्तिगत कार्यक्षेत्र",
     "sections": "मेरी सेवाओं के अनुभाग"

@@ -1,4 +1,15 @@
 {
+  "mobileNavigation": {
+    "services": "Services",
+    "explore": "Explore",
+    "appointments": "Appointments",
+    "availability": "Availability",
+    "settings": "Settings",
+    "menu": "Menu",
+    "navigation": "Main navigation",
+    "workspaceLoading": "Loading workspace permissions…",
+    "workspaceError": "Workspace permissions are unavailable."
+  },
   "appointmentAgenda": {
     "view": "Appointment view",
     "upcoming": "Upcoming",
@@ -18,6 +29,8 @@
     "calendar": "Calendar"
   },
   "providerNavigation": {
+    "upcomingAppointments": "Upcoming Appointments",
+    "pastAppointments": "Past & Cancelled Appointments",
     "workspace": "Workspace",
     "personalWorkspace": "Personal workspace",
     "sections": "My Services sections"

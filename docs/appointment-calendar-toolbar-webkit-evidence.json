@@ -1,0 +1,2904 @@
+{
+  "date": "2026-11-03",
+  "browser": {
+    "product": "webkit/27.2"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 878,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 878,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 798,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 798,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 360,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 360,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 838,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 838,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 360,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 360,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 758,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 758,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 798,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 798,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 726,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 726,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 545,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 545,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 545,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 545,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 640,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 640,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 640,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 640,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 530,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 530,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 1024,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1024,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 418,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 418,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1024,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1024,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 418,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 418,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1440,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 218,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 218,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1440,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Wednesday, September 30, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1440,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 218,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 218,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1440,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "Sep 28 – Oct 4, 2026",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 958,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 958,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 878,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 878,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 360,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 360,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 838,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 838,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 360,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 360,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 798,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 798,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 838,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 838,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 798,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 798,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 545,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 545,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 545,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 545,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 640,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 640,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 640,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 640,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 530,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 530,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 1024,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1024,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 418,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 418,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1024,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1024,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 418,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 418,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1440,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 218,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 218,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1440,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "trešdiena, 2026. gada 30. septembris",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1440,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 218,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 218,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1440,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "2026. gada 28. sept. – 4. okt.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 958,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 958,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 918,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 918,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 360,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 360,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 838,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 838,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 360,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 360,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 798,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 798,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 798,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 798,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 268,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 758,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 758,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 545,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 545,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 545,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 545,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 640,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 640,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 640,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 216,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 640,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 534,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 1024,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1024,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 418,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 418,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1024,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 210,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1024,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 418,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 418,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1440,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 218,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 218,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1440,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "среда, 30 сентября 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1440,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 218,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 218,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1440,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "date": {
+        "text": "28 сент. – 4 окт. 2026 г.",
+        "visible": true,
+        "sameRow": true,
+        "followsButtons": true
+      },
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    }
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Synthetic mocked APIs, isolated loopback. CSS viewports and 200% root font size; no physical-device, native zoom or screen-reader certification. Full date may wrap inside its row; enlarged filters can scroll locally without clipping text."
+}

@@ -1,4 +1,15 @@
 {
+  "mobileNavigation": {
+    "services": "Services",
+    "explore": "Explorer",
+    "appointments": "Rendez-vous",
+    "availability": "Disponibilités",
+    "settings": "Paramètres",
+    "menu": "Menu",
+    "navigation": "Navigation principale",
+    "workspaceLoading": "Chargement des autorisations de l’espace de travail…",
+    "workspaceError": "Les autorisations de l’espace de travail sont indisponibles."
+  },
   "appointmentAgenda": {
     "view": "Vue des rendez-vous",
     "upcoming": "À venir",
@@ -18,6 +29,8 @@
     "calendar": "Calendrier"
   },
   "providerNavigation": {
+    "upcomingAppointments": "Rendez-vous à venir",
+    "pastAppointments": "Rendez-vous passés et annulés",
     "workspace": "Espace de travail",
     "personalWorkspace": "Espace personnel",
     "sections": "Rubriques de mes services"

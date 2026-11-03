@@ -1,0 +1,144 @@
+{
+  "date": "2026-11-03",
+  "browser": {
+    "product": "webkit/27.2"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    "en/lv/ru: six widths, breakpoint behavior, four labels, targets, workspace position, safe menu bounds, focus restoration and bar clearance",
+    "all tabs and menu destinations, active and nested routes, Account coverage and sole top account control",
+    "personal-only, company/personal/viewer switching, role notices, failure retention and pending/duplicate/navigation protection",
+    "loading and failed permission reads withhold restricted links and show localized status",
+    "dirty editor menu/tab/workspace exits, confirmation focus, cancellation preserves drafts and confirmed exits happen once",
+    "200% text, desktop resize dismisses menu, logout removes signed-in bar, guest navigation unchanged"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "windowWidth": 324,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 545,
+      "windowWidth": 549,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "windowWidth": 772,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 1023,
+      "windowWidth": 1027,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 1024,
+      "windowWidth": 1028,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "windowWidth": 1284,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "windowWidth": 324,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 545,
+      "windowWidth": 549,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "windowWidth": 772,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 1023,
+      "windowWidth": 1027,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 1024,
+      "windowWidth": 1028,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "windowWidth": 1284,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "windowWidth": 324,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 545,
+      "windowWidth": 549,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "windowWidth": 772,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 1023,
+      "windowWidth": 1027,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 1024,
+      "windowWidth": 1028,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "windowWidth": 1284,
+      "height": 900
+    }
+  ],
+  "screenshots": [
+    "docs/mobile-navigation-webkit-search.png",
+    "docs/mobile-navigation-webkit-phone.png"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Actual App with synthetic fetch mocks; no connected services/database/session writes. Physical devices, native-language review and screen readers unverified."
+}

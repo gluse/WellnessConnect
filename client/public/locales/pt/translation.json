@@ -1,4 +1,15 @@
 {
+  "mobileNavigation": {
+    "services": "Serviços",
+    "explore": "Explorar",
+    "appointments": "Agendamentos",
+    "availability": "Disponibilidade",
+    "settings": "Configurações",
+    "menu": "Menu",
+    "navigation": "Navegação principal",
+    "workspaceLoading": "A carregar as permissões do espaço de trabalho…",
+    "workspaceError": "As permissões do espaço de trabalho estão indisponíveis."
+  },
   "appointmentAgenda": {
     "view": "Vista de marcações",
     "upcoming": "Próximas",
@@ -18,6 +29,8 @@
     "calendar": "Calendário"
   },
   "providerNavigation": {
+    "upcomingAppointments": "Próximos agendamentos",
+    "pastAppointments": "Agendamentos passados e cancelados",
     "workspace": "Espaço de trabalho",
     "personalWorkspace": "Espaço de trabalho pessoal",
     "sections": "Secções dos meus serviços"

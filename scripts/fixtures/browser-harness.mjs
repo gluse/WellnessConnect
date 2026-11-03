@@ -114,7 +114,7 @@ export async function browserFixture(options) {
       await api("Input.dispatchMouseEvent", { type: "mouseReleased", x: position.x, y: position.y, button: "left", buttons: 0, clickCount: 1 });
       await evaluate(() => new Promise(requestAnimationFrame));
     };
-    const click = async selector => pointer(await evaluate(async selector => {
+    const pointerPosition = selector => evaluate(async selector => {
       const element = document.querySelector(selector); if (!element) throw Error("Missing " + selector);
       // Let queued focus restoration finish before establishing pointer coordinates.
       for (let index = 0; index < 3; index++) await new Promise(requestAnimationFrame);
@@ -124,7 +124,12 @@ export async function browserFixture(options) {
       const hit = document.elementFromPoint(x, y);
       if (hit !== element && !element.contains(hit)) throw Error("Pointer target obscured: " + selector + " by " + hit?.outerHTML.slice(0, 180) + " at " + x + "," + y);
       return { x, y };
-    }, selector));
+    }, selector);
+    const click = async selector => pointer(await pointerPosition(selector));
+    const hover = async selector => {
+      await api("Input.dispatchMouseEvent", { type: "mouseMoved", ...await pointerPosition(selector), buttons: 0 });
+      await evaluate(() => new Promise(requestAnimationFrame));
+    };
     const button = async text => pointer(await evaluate(async text => {
       const dialog = document.querySelector('[role="alertdialog"][data-state="open"]') || document.querySelector('[role="dialog"][data-state="open"]');
       const element = [...(dialog || document).querySelectorAll("button")].find(button => button.textContent.trim() === text && button.getClientRects().length);
@@ -149,7 +154,7 @@ export async function browserFixture(options) {
     const viewport = async (width, height = 900) => { await api("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false }); await evaluate(() => new Promise(requestAnimationFrame)); };
     const key = async value => { const codes = { Tab: 9, Escape: 27, Enter: 13, ArrowLeft: 37, ArrowRight: 39, ArrowUp: 38, ArrowDown: 40 }; await api("Input.dispatchKeyEvent", { type: "keyDown", key: value, code: value, windowsVirtualKeyCode: codes[value] || 13, ...(value === "Enter" ? { text: "\r", unmodifiedText: "\r" } : {}) }); await api("Input.dispatchKeyEvent", { type: "keyUp", key: value, code: value, windowsVirtualKeyCode: codes[value] || 13 }); };
     const screenshot = async (file, fullPage = true) => { await settle(); const result = await api("Page.captureScreenshot", { format: "png", captureBeyondViewport: fullPage }); await writeFile(path.join(root, file), Buffer.from(result.data, "base64")); };
-    return { root, origin, api, evaluate, until, settle, click, button, set, visit, viewport, key, screenshot, close, network, blocked, errors };
+    return { root, origin, api, evaluate, until, settle, click, hover, button, set, visit, viewport, key, screenshot, close, network, blocked, errors };
   } catch (error) { await close(); throw error; }
 }
 

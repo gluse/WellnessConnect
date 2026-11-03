@@ -1,4 +1,15 @@
 {
+  "mobileNavigation": {
+    "services": "Servicios",
+    "explore": "Explorar",
+    "appointments": "Citas",
+    "availability": "Disponibilidad",
+    "settings": "Configuración",
+    "menu": "Menú",
+    "navigation": "Navegación principal",
+    "workspaceLoading": "Cargando los permisos del espacio de trabajo…",
+    "workspaceError": "Los permisos del espacio de trabajo no están disponibles."
+  },
   "appointmentAgenda": {
     "view": "Vista de citas",
     "upcoming": "Próximas",
@@ -18,6 +29,8 @@
     "calendar": "Calendario"
   },
   "providerNavigation": {
+    "upcomingAppointments": "Próximas citas",
+    "pastAppointments": "Citas pasadas y canceladas",
     "workspace": "Espacio de trabajo",
     "personalWorkspace": "Espacio de trabajo personal",
     "sections": "Secciones de mis servicios"

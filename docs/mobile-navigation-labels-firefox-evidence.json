@@ -1,0 +1,445 @@
+{
+  "date": "2026-11-03",
+  "browser": {
+    "product": "firefox/157.0"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "height": 700,
+      "labels": [
+        {
+          "text": "Explore",
+          "lines": 1,
+          "width": 63.600006103515625,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Bookings",
+          "lines": 1,
+          "width": 73.38333129882812,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Appointments",
+          "lines": 1,
+          "width": 99.7833251953125,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Menu",
+          "lines": 1,
+          "width": 55.23333740234375,
+          "height": 56,
+          "fits": true
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "width": 360,
+      "height": 800,
+      "labels": [
+        {
+          "text": "Explore",
+          "lines": 1,
+          "width": 73.60000610351562,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Bookings",
+          "lines": 1,
+          "width": 83.38333129882812,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Appointments",
+          "lines": 1,
+          "width": 109.7833251953125,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Menu",
+          "lines": 1,
+          "width": 65.23333740234375,
+          "height": 56,
+          "fits": true
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "height": 844,
+      "labels": [
+        {
+          "text": "Explore",
+          "lines": 1,
+          "width": 81.10000610351562,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Bookings",
+          "lines": 1,
+          "width": 90.88333129882812,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Appointments",
+          "lines": 1,
+          "width": 117.2833251953125,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Menu",
+          "lines": 1,
+          "width": 72.73333740234375,
+          "height": 56,
+          "fits": true
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "width": 545,
+      "height": 900,
+      "labels": [
+        {
+          "text": "Explore",
+          "lines": 1,
+          "width": 119.85000610351562,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Bookings",
+          "lines": 1,
+          "width": 129.63333129882812,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Appointments",
+          "lines": 1,
+          "width": 156.0333251953125,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Menu",
+          "lines": 1,
+          "width": 111.48333740234375,
+          "height": 56,
+          "fits": true
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "height": 700,
+      "labels": [
+        {
+          "text": "Izpētīt",
+          "lines": 1,
+          "width": 61.68333435058594,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Rezervācijas",
+          "lines": 1,
+          "width": 92.10000610351562,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Pieraksti",
+          "lines": 1,
+          "width": 72.88333129882812,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Izvēlne",
+          "lines": 1,
+          "width": 65.33332824707031,
+          "height": 56,
+          "fits": true
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "width": 360,
+      "height": 800,
+      "labels": [
+        {
+          "text": "Izpētīt",
+          "lines": 1,
+          "width": 71.68333435058594,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Rezervācijas",
+          "lines": 1,
+          "width": 102.10000610351562,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Pieraksti",
+          "lines": 1,
+          "width": 82.88333129882812,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Izvēlne",
+          "lines": 1,
+          "width": 75.33332824707031,
+          "height": 56,
+          "fits": true
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "height": 844,
+      "labels": [
+        {
+          "text": "Izpētīt",
+          "lines": 1,
+          "width": 79.18333435058594,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Rezervācijas",
+          "lines": 1,
+          "width": 109.60000610351562,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Pieraksti",
+          "lines": 1,
+          "width": 90.38333129882812,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Izvēlne",
+          "lines": 1,
+          "width": 82.83332824707031,
+          "height": 56,
+          "fits": true
+        }
+      ]
+    },
+    {
+      "language": "lv",
+      "width": 545,
+      "height": 900,
+      "labels": [
+        {
+          "text": "Izpētīt",
+          "lines": 1,
+          "width": 117.93333435058594,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Rezervācijas",
+          "lines": 1,
+          "width": 148.35000610351562,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Pieraksti",
+          "lines": 1,
+          "width": 129.13333129882812,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Izvēlne",
+          "lines": 1,
+          "width": 121.58332824707031,
+          "height": 56,
+          "fits": true
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "height": 700,
+      "labels": [
+        {
+          "text": "Обзор",
+          "lines": 1,
+          "width": 59.350006103515625,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Бронирования",
+          "lines": 1,
+          "width": 105.25,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Приёмы",
+          "lines": 1,
+          "width": 69.71665954589844,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Меню",
+          "lines": 1,
+          "width": 57.68333435058594,
+          "height": 56,
+          "fits": true
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "width": 360,
+      "height": 800,
+      "labels": [
+        {
+          "text": "Обзор",
+          "lines": 1,
+          "width": 69.35000610351562,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Бронирования",
+          "lines": 1,
+          "width": 115.25,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Приёмы",
+          "lines": 1,
+          "width": 79.71665954589844,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Меню",
+          "lines": 1,
+          "width": 67.68333435058594,
+          "height": 56,
+          "fits": true
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "height": 844,
+      "labels": [
+        {
+          "text": "Обзор",
+          "lines": 1,
+          "width": 76.85000610351562,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Бронирования",
+          "lines": 1,
+          "width": 122.75,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Приёмы",
+          "lines": 1,
+          "width": 87.21665954589844,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Меню",
+          "lines": 1,
+          "width": 75.18333435058594,
+          "height": 56,
+          "fits": true
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "width": 545,
+      "height": 900,
+      "labels": [
+        {
+          "text": "Обзор",
+          "lines": 1,
+          "width": 115.60000610351562,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Бронирования",
+          "lines": 1,
+          "width": 161.5,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Приёмы",
+          "lines": 1,
+          "width": 125.96665954589844,
+          "height": 56,
+          "fits": true
+        },
+        {
+          "text": "Меню",
+          "lines": 1,
+          "width": 113.93333435058594,
+          "height": 56,
+          "fits": true
+        }
+      ]
+    }
+  ],
+  "enlargedText": "200% root font size: wrapping permitted, no clipped controls, reserved bar clearance",
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Isolated real App, synthetic fetch mocks; emulated CSS viewports, no physical Galaxy A55 or connected service/database operations."
+}

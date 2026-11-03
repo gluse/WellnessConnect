@@ -1,4 +1,15 @@
 {
+  "mobileNavigation": {
+    "services": "Dienstleistungen",
+    "explore": "Entdecken",
+    "appointments": "Termine",
+    "availability": "Verfügbarkeit",
+    "settings": "Einstellungen",
+    "menu": "Menü",
+    "navigation": "Hauptnavigation",
+    "workspaceLoading": "Arbeitsbereichsberechtigungen werden geladen…",
+    "workspaceError": "Arbeitsbereichsberechtigungen sind nicht verfügbar."
+  },
   "appointmentAgenda": {
     "view": "Terminansicht",
     "upcoming": "Anstehend",
@@ -18,6 +29,8 @@
     "calendar": "Kalender"
   },
   "providerNavigation": {
+    "upcomingAppointments": "Bevorstehende Termine",
+    "pastAppointments": "Vergangene und stornierte Termine",
     "workspace": "Arbeitsbereich",
     "personalWorkspace": "Persönlicher Arbeitsbereich",
     "sections": "Bereiche meiner Dienstleistungen"

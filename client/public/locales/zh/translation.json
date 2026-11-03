@@ -1,4 +1,15 @@
 {
+  "mobileNavigation": {
+    "services": "服务",
+    "explore": "探索",
+    "appointments": "预约",
+    "availability": "可用时间",
+    "settings": "设置",
+    "menu": "菜单",
+    "navigation": "主导航",
+    "workspaceLoading": "正在加载工作区权限…",
+    "workspaceError": "工作区权限不可用。"
+  },
   "appointmentAgenda": {
     "view": "预约视图",
     "upcoming": "即将开始",
@@ -18,6 +29,8 @@
     "calendar": "日历"
   },
   "providerNavigation": {
+    "upcomingAppointments": "即将到来的预约",
+    "pastAppointments": "过去和已取消的预约",
     "workspace": "工作空间",
     "personalWorkspace": "个人工作空间",
     "sections": "我的服务分区"

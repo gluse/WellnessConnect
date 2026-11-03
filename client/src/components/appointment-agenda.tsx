@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, type SelectHTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { CalendarDays, ChevronDown, ChevronUp, Clock, MessageSquare } from "lucide-react";
@@ -6,7 +6,7 @@ import type { BookingWithDetails, Employee } from "@shared/schema";
 import { appointmentEventKey } from "@shared/appointment-collaboration";
 import { getProviderName } from "@shared/provider";
 import { Calendar } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { BookingReviewSummary } from "@/components/booking-review";
@@ -16,15 +16,26 @@ import AppointmentCalendar from "@/components/provider/appointment-calendar";
 
 const prefix = "appointmentCollaboration.";
 
+function AgendaFilterSelect({ selectedLabel, ...props }: SelectHTMLAttributes<HTMLSelectElement> & { selectedLabel?: string }) {
+  const style = cn(buttonVariants({ variant: "outline", size: "sm" }), "min-w-0 max-w-full appearance-none pe-9 text-start hover:bg-background hover:text-foreground [&_option]:bg-background [&_option]:text-foreground", props.className);
+  return <div className="relative min-w-0 max-w-full">
+    {/* Size compact calendar filters from the selected text, rather than the longest native option. */}
+    {selectedLabel !== undefined && <span aria-hidden="true" className={cn(style, "invisible")}>{selectedLabel}</span>}
+    <select {...props} className={cn(style, selectedLabel !== undefined && "absolute inset-0 w-full")} />
+    <ChevronDown className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2" aria-hidden="true" />
+  </div>;
+}
 type Props = ProviderControls & {
   bookings: BookingWithDetails[]; employees?: Employee[]; provider?: boolean; loading?: boolean;
+  fixedView?: "upcoming" | "past" | "calendar";
   renderCustomerActions?: (booking: BookingWithDetails) => ReactNode;
   renderBookingDetails?: (booking: BookingWithDetails) => ReactNode;
   renderEventDetails?: (booking: BookingWithDetails) => ReactNode;
 };
-export default function AppointmentAgenda({ bookings, employees = [], provider = false, loading = false, renderCustomerActions, renderBookingDetails, renderEventDetails, ...controls }: Props) {
+export default function AppointmentAgenda({ bookings, employees = [], provider = false, loading = false, fixedView, renderCustomerActions, renderBookingDetails, renderEventDetails, ...controls }: Props) {
   const { t, i18n } = useTranslation();
-  const [view, setView] = useState<"upcoming" | "date" | "past" | "calendar">("upcoming"), [date, setDate] = useState(new Date());
+  const [selectedView, setView] = useState<"upcoming" | "date" | "past" | "calendar">("upcoming"), [date, setDate] = useState(new Date());
+  const view = fixedView ?? selectedView;
   const [employeeId, setEmployeeId] = useState("all"), [status, setStatus] = useState("all"), [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const now = Date.now(), selectedDay = format(date, "yyyy-MM-dd");
   const filtered = bookings.filter(row => employeeId === "all" || String(row.employeeId) === employeeId);
@@ -67,15 +78,22 @@ export default function AppointmentAgenda({ bookings, employees = [], provider =
           </article>;
 
   };
-  const filterControls = <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm" data-testid="appointment-filters">
-      <div className="flex items-center gap-2 min-w-0 max-w-full"><Label htmlFor={provider ? "provider-appointment-status" : "seeker-appointment-status"}>{t("appointmentAgenda.status")}</Label><select id={provider ? "provider-appointment-status" : "seeker-appointment-status"} className="min-h-11 min-w-0 max-w-full border border-neutral-500 rounded-md p-2 bg-white" value={status} onChange={event => setStatus(event.target.value)}><option value="all">{t("appointmentAgenda.allStatuses")}</option>{["pending", "confirmed", "completed", "cancelled"].map(item => <option key={item} value={item}>{t(prefix + "status" + item[0].toUpperCase() + item.slice(1))}</option>)}</select></div>
-      {provider && employees.length > 0 && <div className="flex items-center gap-2 min-w-0 max-w-full"><Label htmlFor="appointment-employee">{t("appointmentAgenda.employee")}</Label><select id="appointment-employee" className="min-h-11 border border-neutral-500 rounded-md p-2 bg-white min-w-0 max-w-full" value={employeeId} onChange={event => setEmployeeId(event.target.value)}><option value="all">{t("appointmentAgenda.allEmployees")}</option>{employees.map(row => <option key={row.id} value={row.id}>{row.name}</option>)}</select></div>}
-      <p className="text-xs text-neutral-600 sm:ms-auto">{t("appointmentAgenda.timezone", { timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}</p>
+  const calendarFilters = provider && view === "calendar";
+  const filterGroupClass = calendarFilters ? "flex shrink-0 items-center" : "flex items-center gap-1 min-w-0 max-w-full";
+  const filterSelectClass = calendarFilters ? "text-xs sm:text-sm px-2 pe-7" : undefined;
+  const selectedStatus = status === "all" ? t("appointmentAgenda.allStatuses") : t(prefix + "status" + status[0].toUpperCase() + status.slice(1));
+  const selectedEmployee = employeeId === "all" ? t("appointmentAgenda.allEmployees") : employees.find(row => String(row.id) === employeeId)?.name;
+  const filterControls = <div className={calendarFilters ? "min-w-0 space-y-1" : "flex flex-wrap items-center gap-x-2 gap-y-1 text-sm"} data-testid="appointment-filters">
+      <div className={calendarFilters ? "flex items-end gap-2 overflow-x-auto pb-1 sm:items-center" : "contents"}>
+        <div className={filterGroupClass}><Label className={calendarFilters ? "sr-only" : undefined} htmlFor={provider ? "provider-appointment-status" : "seeker-appointment-status"}>{t("appointmentAgenda.status")}</Label><AgendaFilterSelect selectedLabel={calendarFilters ? selectedStatus : undefined} className={filterSelectClass} id={provider ? "provider-appointment-status" : "seeker-appointment-status"} value={status} onChange={event => setStatus(event.target.value)}><option value="all">{t("appointmentAgenda.allStatuses")}</option>{["pending", "confirmed", "completed", "cancelled"].map(item => <option key={item} value={item}>{t(prefix + "status" + item[0].toUpperCase() + item.slice(1))}</option>)}</AgendaFilterSelect></div>
+        {provider && employees.length > 0 && <div className={filterGroupClass}><Label className={calendarFilters ? "sr-only" : undefined} htmlFor="appointment-employee">{t("appointmentAgenda.employee")}</Label><AgendaFilterSelect selectedLabel={calendarFilters ? selectedEmployee : undefined} className={filterSelectClass} id="appointment-employee" value={employeeId} onChange={event => setEmployeeId(event.target.value)}><option value="all">{t("appointmentAgenda.allEmployees")}</option>{employees.map(row => <option key={row.id} value={row.id}>{row.name}</option>)}</AgendaFilterSelect></div>}
+      </div>
+      {!calendarFilters && <p className="text-xs text-neutral-600 sm:ms-auto">{t("appointmentAgenda.timezone", { timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}</p>}
     </div>;
-  return <section className="space-y-3" aria-label={t("notifications.appointments")}>
-    <div className={cn("grid gap-1 bg-white border p-1 rounded-xl", provider ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3")} role="group" aria-label={t("appointmentAgenda.view")}>
+  return <section className="space-y-2 sm:space-y-3" aria-label={t("notifications.appointments")}>
+    {!fixedView && <div className={cn("grid gap-1 bg-white border p-1 rounded-xl", provider ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3")} role="group" aria-label={t("appointmentAgenda.view")}>
       {((provider ? ["upcoming", "date", "past", "calendar"] : ["upcoming", "date", "past"]) as ("upcoming" | "date" | "past" | "calendar")[]).map(item => <Button key={item} size="sm" className="h-auto min-h-11 whitespace-normal px-2 py-2 text-xs sm:text-sm leading-tight" variant={view === item ? "default" : "ghost"} aria-pressed={view === item} onClick={() => setView(item)}>{t(`appointmentAgenda.${item}`)}</Button>)}
-    </div>
+    </div>}
     {view !== "calendar" && filterControls}
     {view === "calendar" && provider ? <AppointmentCalendar date={date} onDateChange={setDate} loading={loading} employees={employees} filters={filterControls} updating={controls.updating}
       events={Array.from(events).filter(([, rows]) => status === "all" || rows.some(row => row.status === status)).map(([key, rows]) => ({ key, rows }))}

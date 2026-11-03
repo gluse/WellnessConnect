@@ -18,11 +18,11 @@ export default function WorkspaceSwitcher({ context, busy, onChange }: {
   return <Popover open={open} onOpenChange={setOpen}>
     <PopoverTrigger asChild>
       <button ref={trigger} type="button" disabled={busy} title={context.company?.name ?? t("providerNavigation.personalWorkspace")}
-        className="min-h-12 min-w-0 flex-1 flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-3 px-0 sm:px-1 lg:px-3 py-2 rounded-lg text-[10px] sm:text-[11px] lg:text-sm font-medium text-neutral-600 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
+        className="min-h-12 min-w-0 flex-1 flex items-center justify-start gap-3 px-3 py-2 rounded-lg text-sm font-medium text-neutral-600 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
         <Building2 className="w-5 h-5 shrink-0" aria-hidden="true" />
-        <span className="min-w-0 max-w-full text-center lg:text-start leading-tight">
+        <span className="min-w-0 max-w-full text-start leading-tight">
           <span className="block break-words">{t("providerNavigation.workspace")}</span>
-          <span className="hidden lg:block truncate text-xs font-normal">{context.company?.name ?? t("providerNavigation.personalWorkspace")}</span>
+          <span className="block break-words lg:truncate text-xs font-normal">{context.company?.name ?? t("providerNavigation.personalWorkspace")}</span>
         </span>
       </button>
     </PopoverTrigger>
@@ -43,11 +43,8 @@ export default function WorkspaceSwitcher({ context, busy, onChange }: {
 }
 
 export function WorkspaceNotice({ context }: { context: WorkspaceContext }) {
-  if (!context.membership && (!context.company || context.company.isActive)) return null;
+  if (!context.company || context.company.isActive) return null;
   return <div className="mb-4 text-sm text-neutral-600">
-      {context.membership && <p>{roleLabels[context.membership.role]}</p>}
-      {context.company && !context.company.isActive && <p>Company closed. Published offers are hidden.</p>}
-      {context.membership?.role === "viewer" && <p>You can view appointments assigned to you.</p>}
-      {context.membership?.role === "provider" && <p>You can manage appointments assigned to you.</p>}
+      <p>Company closed. Published offers are hidden.</p>
   </div>;
 }

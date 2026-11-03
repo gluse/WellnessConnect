@@ -1,4 +1,15 @@
 {
+  "mobileNavigation": {
+    "services": "الخدمات",
+    "explore": "استكشاف",
+    "appointments": "المواعيد",
+    "availability": "التوفر",
+    "settings": "الإعدادات",
+    "menu": "القائمة",
+    "navigation": "التنقل الرئيسي",
+    "workspaceLoading": "جارٍ تحميل أذونات مساحة العمل…",
+    "workspaceError": "أذونات مساحة العمل غير متاحة."
+  },
   "appointmentAgenda": {
     "view": "عرض المواعيد",
     "upcoming": "القادمة",
@@ -18,6 +29,8 @@
     "calendar": "التقويم"
   },
   "providerNavigation": {
+    "upcomingAppointments": "المواعيد القادمة",
+    "pastAppointments": "المواعيد السابقة والملغاة",
     "workspace": "مساحة العمل",
     "personalWorkspace": "مساحة العمل الشخصية",
     "sections": "أقسام خدماتي"

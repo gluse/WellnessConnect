@@ -1,4 +1,15 @@
 {
+  "mobileNavigation": {
+    "services": "Услуги",
+    "explore": "Обзор",
+    "appointments": "Приёмы",
+    "availability": "Доступность",
+    "settings": "Настройки",
+    "menu": "Меню",
+    "navigation": "Основная навигация",
+    "workspaceLoading": "Загрузка прав рабочего пространства…",
+    "workspaceError": "Права рабочего пространства недоступны."
+  },
   "appointmentAgenda": {
     "view": "Вид записей",
     "upcoming": "Предстоящие",
@@ -18,6 +29,8 @@
     "calendar": "Календарь"
   },
   "providerNavigation": {
+    "upcomingAppointments": "Предстоящие записи",
+    "pastAppointments": "Прошедшие и отменённые записи",
     "workspace": "Рабочая область",
     "personalWorkspace": "Личная рабочая область",
     "sections": "Разделы моих услуг"

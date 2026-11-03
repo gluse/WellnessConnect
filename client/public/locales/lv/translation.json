@@ -1,4 +1,15 @@
 {
+  "mobileNavigation": {
+    "services": "Pakalpojumi",
+    "explore": "Izpētīt",
+    "appointments": "Pieraksti",
+    "availability": "Pieejamība",
+    "settings": "Iestatījumi",
+    "menu": "Izvēlne",
+    "navigation": "Galvenā navigācija",
+    "workspaceLoading": "Ielādē darbvietas atļaujas…",
+    "workspaceError": "Darbvietas atļaujas nav pieejamas."
+  },
   "appointmentAgenda": {
     "view": "Pierakstu skats",
     "upcoming": "Gaidāmie",
@@ -18,6 +29,8 @@
     "calendar": "Kalendārs"
   },
   "providerNavigation": {
+    "upcomingAppointments": "Gaidāmie pieraksti",
+    "pastAppointments": "Iepriekšējie un atceltie pieraksti",
     "workspace": "Darbvieta",
     "personalWorkspace": "Personīgā darbvieta",
     "sections": "Manu pakalpojumu sadaļas"

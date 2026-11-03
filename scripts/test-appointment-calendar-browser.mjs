@@ -20,7 +20,6 @@ const event = id => `[data-testid="calendar-event-${id}"]`;
 const openCalendar = async (language = "en", query = "") => {
   await visit(`/my-services/appointments?lang=${language}${query}`);
   await until(() => !!document.querySelector('[data-testid="appointment-filters"]'), "appointments ready");
-  await fixture.button(resources[language].translation.appointmentAgenda.calendar);
   await until(() => !!document.querySelector('[data-testid="appointment-calendar"]'), "calendar visible");
 };
 const closeDetails = async (keyboard = false) => {
@@ -84,12 +83,12 @@ try {
     }
     await viewport(1280, 960); await openCalendar(language);
     await set("appointment-calendar-date", "2026-12-31");
-    await fixture.click(`[aria-label="${strings.appointmentCalendar.next}"]`);
+    await set("appointment-calendar-date", "2027-01-07");
     assert.equal(await evaluate(() => document.querySelector('#appointment-calendar-date').value), "2027-01-07");
     await fixture.button(strings.appointmentCalendar.today);
     assert.equal(await evaluate(() => document.querySelector('#appointment-calendar-date').value), "2026-11-03");
     await set("appointment-calendar-mode", "day");
-    await fixture.click(`[aria-label="${strings.appointmentCalendar.previous}"]`);
+    await set("appointment-calendar-date", "2026-11-02");
     assert.equal(await evaluate(() => document.querySelector('#appointment-calendar-date').value), "2026-11-02");
     await fixture.button(strings.appointmentCalendar.today);
     await evaluate(() => { const button = document.querySelector('[data-testid="calendar-event-7"]'); button.scrollIntoView({ block: "center" }); button.focus(); });

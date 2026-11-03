@@ -1,0 +1,76 @@
+{
+  "date": "2026-11-03",
+  "browser": {
+    "product": "webkit/27.2"
+  },
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "height": 800
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "height": 800
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "height": 800
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "height": 800
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "height": 800
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "height": 800
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "height": 800
+    }
+  ],
+  "states": [
+    "loading",
+    "empty",
+    "error"
+  ],
+  "checks": [
+    "Calendar default without view switcher, summary or h1",
+    "Calendar date/detail/focus retained",
+    "Menu and desktop links reach separate localized lists",
+    "Upcoming/status/history filtering and Back navigation",
+    "Calendar loading/empty/error states"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Actual frontend with fixed synthetic dates and mocked GET APIs; external traffic blocked. No connected sessions/database writes. Physical devices, screen readers and native language review unverified."
+}

@@ -16,7 +16,8 @@ globalThis.React = React;
 globalThis.window = {
   location: { pathname: "/my-services", search: "", hash: "", assign() {} },
   HTMLSelectElement: { prototype: { value: "" } }, HTMLInputElement: { prototype: { checked: false } },
-  setTimeout, clearTimeout, addEventListener() {}, removeEventListener() {}, confirm: () => true,
+  setTimeout, clearTimeout, setInterval, clearInterval, addEventListener() {}, removeEventListener() {}, confirm: () => true,
+  matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
   history: { state: null, replaceState() {} },
 };
 globalThis.document = { documentElement: {}, activeElement: null, visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
@@ -73,6 +74,7 @@ const input = id => component.root.findAllByType("input").find(node => node.prop
 const click = async id => { await act(async () => component.root.findAllByType("button").find(node => node.props["data-testid"] === id).props.onClick()); await flush(); };
 const visit = async path => { await act(async () => location.navigate(path)); await flush(); };
 const headings = () => component.root.findAllByType("h1").flatMap(node => node.children).filter(value => typeof value === "string");
+const textContent = node => typeof node === "string" ? node : node.children.map(textContent).join("");
 // The renderer has no DOM portal. Chrome verifies the real modal and focus.
 const confirmExit = async () => {
   const dialog = component.root.findAllByType(AlertDialog).find(node => node.props.open);
@@ -95,15 +97,21 @@ async function mount(path, workspace = personal, signedIn = true) {
 
 await mount("/my-services");
 assert.equal(location.history.at(-1), "/my-services/appointments");
-assert.deepEqual(headings(), ["Appointments"]);
+assert.deepEqual(headings(), []);
+assert.equal(component.root.findAllByProps({ "data-testid": "appointment-calendar" }).length, 1, "Appointments opens directly as a calendar");
+assert.equal(component.root.findAllByProps({ "data-testid": "appointment-summary" }).length, 0);
+await visit("/my-services/upcoming-appointments");
+assert.deepEqual(headings(), [translation.providerNavigation.upcomingAppointments]);
+await visit("/my-services/past-appointments");
+assert.deepEqual(headings(), [translation.providerNavigation.pastAppointments]);
 assert.ok(!requests.some(request => request.url === "/api/services/provider" || request.url === "/api/company/team"), "Appointments load only their own feature data");
 await act(async () => component.root.findAllByType("a").find(node => node.props.href === "/my-services/services").props.onClick({ button: 0, preventDefault() {} }));
 await flush();
-assert.deepEqual(headings(), ["Services"]);
+assert.deepEqual(headings(), [translation.provider.myServices]);
 assert.equal(component.root.findAllByType("a").find(node => node.props.href === "/my-services").props["aria-current"], "page");
 assert.equal(queryClient.getQueryCache().find({ queryKey: ["/api/bookings/provider"] })?.getObserversCount() ?? 0, 0, "Leaving appointments removes its observers, including when gcTime: 0 removes the query");
 await act(async () => component.root.findAllByType("button").find(node => node.children.includes("Inactive")).props.onClick());
-assert.equal(component.root.findAllByType("h2").some(node => node.children.includes("Personal published offer")), false);
+assert.equal(component.root.findAllByType("h3").some(node => textContent(node) === "Personal published offer"), false);
 await act(async () => component.root.findAllByType("button").find(node => node.children.includes("All")).props.onClick());
 await click("button-copy-service-1");
 assert.equal(location.history.at(-1), "/my-services/services/101/edit");
@@ -156,8 +164,8 @@ await act(async () => component.root.findByType(WorkspaceSwitcher).props.onChang
 await confirmExit();
 await flush();
 assert.equal(location.history.at(-1), "/my-services/services");
-assert.equal(component.root.findAllByType("h2").some(node => node.children.includes("Company offer")), true);
-assert.equal(component.root.findAllByType("h2").some(node => node.children.includes("Personal published offer")), false);
+assert.equal(component.root.findAllByType("h3").some(node => textContent(node) === "Company offer"), true);
+assert.equal(component.root.findAllByType("h3").some(node => textContent(node) === "Personal published offer"), false);
 await visit("/my-services/settings/team");
 assert.equal(component.root.findAllByType("button").filter(node => node.props.title === "Company workspace").length, 1);
 await visit("/my-services/availability");
@@ -170,7 +178,7 @@ for (const path of ["/my-services/services/new", "/my-services/services/2/edit",
   await mount(path, viewer);
   assert.equal(component.root.findAllByType("input").some(node => node.props.id === "serviceName"), false);
   const navigation = component.root.findAllByType("nav").find(node => node.props["aria-label"] === "My Services sections");
-  assert.deepEqual(navigation.findAllByType("a").map(node => node.props.href), ["/my-services/appointments", "/my-services/services"]);
+  assert.deepEqual(navigation.findAllByType("a").map(node => node.props.href), ["/my-services/appointments", "/my-services/upcoming-appointments", "/my-services/past-appointments", "/my-services/services"]);
   assert.ok(component.root.findAllByProps({ role: "alert" }).length > 0);
 }
 await mount("/my-services/services/999/edit");
@@ -183,6 +191,10 @@ await mount("/my-services/settings/unknown");
 assert.ok(component.root.findAllByProps({ role: "alert" }).some(node => node.children.includes("Settings page not found.")));
 await mount("/my-services/availability", personal, false);
 assert.equal(location.history.at(-1), "/login?returnTo=%2Fmy-services%2Favailability");
+for (const path of ["/my-services/upcoming-appointments", "/my-services/past-appointments"]) {
+  await mount(path, personal, false);
+  assert.equal(location.history.at(-1), `/login?returnTo=${encodeURIComponent(path)}`);
+}
 const destinations = [];
 window.location.assign = url => destinations.push(url);
 window.location.search = "?returnTo=%2Fmy-services%2Fservices%2F2%2Fedit";

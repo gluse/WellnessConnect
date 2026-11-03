@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Employee } from "@shared/schema";
 import { calendarDayMinutes, calendarDays, calendarSegments, localDateKey, shiftCalendarDay, type CalendarEvent } from "@/lib/appointment-calendar";
 import { Button } from "@/components/ui/button";
@@ -58,17 +57,15 @@ export default function AppointmentCalendar({ events, date, onDateChange, loadin
     }) : [row.seeker.firstName, row.seeker.lastName].filter(Boolean).join(" ") || t("appointmentCollaboration.customer");
   };
   return <div ref={swipeSurface} className="min-w-0 rounded-xl border bg-white p-2 sm:p-3 space-y-3" data-testid="appointment-calendar">
-    <div className="flex flex-wrap items-center gap-2" data-calendar-swipe-navigation>
-      <Button ref={navigation} variant="outline" size="sm" className="min-h-11" onClick={() => onDateChange(new Date())}>{t("appointmentCalendar.today")}</Button>
-      <Button variant="ghost" size="icon" className="min-h-11 shrink-0" aria-label={t("appointmentCalendar.previous")} onClick={() => onDateChange(shiftCalendarDay(date, mode === "week" ? -7 : -1))}><ChevronLeft className="h-4 w-4 rtl:rotate-180" /></Button>
-      <Button variant="ghost" size="icon" className="min-h-11 shrink-0" aria-label={t("appointmentCalendar.next")} onClick={() => onDateChange(shiftCalendarDay(date, mode === "week" ? 7 : 1))}><ChevronRight className="h-4 w-4 rtl:rotate-180" /></Button>
-      <p className="font-semibold min-w-0 grow break-words" aria-live="polite" data-testid="calendar-range">{rangeLabel}</p>
+    <p className="sr-only" aria-live="polite" data-testid="calendar-range">{rangeLabel}</p>
+    <div className="flex min-w-0 flex-wrap items-center gap-0.5 min-[360px]:gap-2" data-testid="calendar-toolbar">
+      <Button ref={navigation} variant="outline" size="sm" className="min-h-11 min-w-11 shrink-0 px-1 sm:px-3" onClick={() => onDateChange(new Date())}>{t("appointmentCalendar.today")}</Button>
       <label className="sr-only" htmlFor="appointment-calendar-mode">{t("appointmentCalendar.period")}</label>
-      <select id="appointment-calendar-mode" className="min-h-11 rounded-md border border-neutral-500 bg-white px-2 max-w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" value={mode} onChange={event => { explicitMode.current = true; setMode(event.target.value as "day" | "week"); }}>
+      <select id="appointment-calendar-mode" className="min-h-11 rounded-md border border-neutral-500 bg-white px-1 sm:px-2 text-sm max-w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" value={mode} onChange={event => { explicitMode.current = true; setMode(event.target.value as "day" | "week"); }}>
         <option value="day">{t("appointmentCalendar.day")}</option><option value="week">{t("appointmentCalendar.week")}</option>
       </select>
       <label className="sr-only" htmlFor="appointment-calendar-date">{t("appointmentCalendar.chooseDate")}</label>
-      <input id="appointment-calendar-date" aria-label={t("appointmentCalendar.chooseDate")} type="date" className="min-h-11 min-w-0 max-w-full rounded-md border border-neutral-500 bg-white px-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" value={localDateKey(date)} onChange={event => {
+      <input id="appointment-calendar-date" aria-label={t("appointmentCalendar.chooseDate")} type="date" className="min-h-11 min-w-[7rem] flex-1 max-w-full rounded-md border border-neutral-500 bg-white px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" value={localDateKey(date)} onChange={event => {
         const [year, month, day] = event.target.value.split("-").map(Number);
         if (year > 0 && month > 0 && day > 0) { const next = new Date(year, month - 1, day); if (Number.isFinite(next.getTime())) onDateChange(next); }
       }} />

@@ -6,7 +6,6 @@ import type { BookingWithDetails } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import AppointmentAgenda from "@/components/appointment-agenda";
-import BottomNavigation from "@/components/bottom-navigation";
 import { Button } from "@/components/ui/button";
 import PendingReviews from "@/components/booking-review";
 import CustomerBookingChange, { canCustomerChangeBooking } from "@/components/customer-booking-change";
@@ -38,7 +37,7 @@ function CustomerBookings() {
   if (bookings.error && isUnauthorizedError(bookings.error)) return <Redirect to={signInUrl} />;
 
   return <div className="min-h-[calc(100dvh-4rem)] bg-[#EAF7F3]" data-appointment-area="customer">
-    <main className="max-w-7xl mx-auto p-4 sm:p-6 pb-24 lg:pb-6 space-y-3">
+    <main className="max-w-7xl mx-auto p-4 sm:p-6 space-y-3">
       <h1 ref={heading} tabIndex={-1} className="text-2xl font-semibold focus:outline focus:outline-2 focus:outline-offset-2">{t("notifications.appointments")}</h1>
       {message && <p role="status" className="rounded-lg border bg-white p-3">{message}</p>}
       {bookings.isError ? <div role="alert" className="border rounded-xl bg-white p-6 space-y-3">
@@ -60,6 +59,5 @@ function CustomerBookings() {
       if (trigger.current?.isConnected) trigger.current.focus(); else heading.current?.focus();
     }} />}
     {conversation && <BookingConversationDialog viewer="customer" key={conversation.id} booking={conversation} scope={`customer:${user?.id}`} onClose={() => setConversation(null)} restoreFocus={() => { if (trigger.current?.isConnected) trigger.current.focus(); else heading.current?.focus(); }} />}
-    <div className="lg:hidden"><BottomNavigation /></div>
   </div>;
 }

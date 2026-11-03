@@ -9,7 +9,6 @@ try {
   for (const language of languages) {
     await fixture.visit(`/my-services/appointments?lang=${language}`);
     await fixture.until(() => !!document.querySelector('[data-testid="appointment-filters"]'), "page ready");
-    await fixture.button(resources[language].translation.appointmentAgenda.calendar);
     await fixture.until(() => !!document.querySelector('[data-testid="appointment-calendar"]'), "calendar ready");
     const state = await fixture.evaluate(() => ({ width: innerWidth, fits: document.documentElement.scrollWidth <= innerWidth + 1, mode: document.querySelector('#appointment-calendar-mode').value }));
     assert.ok(state.width <= 320); assert.equal(state.fits, true); assert.equal(state.mode, "day");
