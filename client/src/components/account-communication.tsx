@@ -47,18 +47,55 @@ export default function AccountCommunication({ actorId }: { actorId: string }) {
   return <Card id="communication" aria-labelledby="communication-heading"><CardHeader><h2 id="communication-heading" className="text-lg font-semibold">{t("notifications.settingsTitle")}</h2><p className="text-sm text-muted-foreground">{t("notifications.settingsHelp")}</p></CardHeader><CardContent className="space-y-5">
     {query.isPending ? <p role="status">{t("notifications.loading")}</p> : query.isError ? <div role="alert"><p>{t("notifications.loadError")}</p><Button onClick={() => void query.refetch()}>{t("notifications.retry")}</Button></div> : settings && <>
       <form id="communication-form" onSubmit={submit} noValidate className="space-y-5" aria-busy={busy}>
-        <fieldset disabled={busy} className="space-y-5 min-w-0">
-          <div className="space-y-2"><Label htmlFor="communication-phone">{t("notifications.phone")}</Label><Input id="communication-phone" type="tel" autoComplete="tel" dir="ltr" maxLength={16} value={settings.phone ?? ""} aria-describedby={error === "notifications.phoneInvalid" ? "communication-phone-help communication-error" : "communication-phone-help"} aria-invalid={error === "notifications.phoneInvalid" || undefined} onChange={event => { edit({ phone: event.target.value, phoneVerified: false, smsOptIn: false, whatsappOptIn: false, preferredMethod: settings.preferredMethod === "email" ? "email" : null }); setChallenge(null); setCode(""); }} /><p id="communication-phone-help" className="text-sm text-muted-foreground">{t("notifications.phoneHelp")}</p><p role="status" className="text-sm">{t(verified ? "notifications.verified" : "notifications.notVerified")}</p></div>
-          <div className="space-y-3">{(["sms", "whatsapp"] as const).map(method => <label key={method} className="flex gap-3 items-start min-h-11"><input type="checkbox" className="mt-1 h-5 w-5 shrink-0" disabled={!verified} checked={method === "sms" ? settings.smsOptIn : settings.whatsappOptIn} onChange={event => { const checked = event.target.checked; edit({ [method === "sms" ? "smsOptIn" : "whatsappOptIn"]: checked, ...(!checked && settings.preferredMethod === method ? { preferredMethod: "email" as const } : {}) }); }} /><span>{t(`notifications.optIn.${method}`)}</span></label>)}<p className="text-sm text-muted-foreground">{t("notifications.verificationHelp")}</p></div>
-          <div className="space-y-2"><Label htmlFor="communication-method">{t("notifications.preferred")}</Label><select id="communication-method" className="min-h-11 border rounded-md p-2 bg-background w-full" value={settings.preferredMethod ?? ""} onChange={event => edit({ preferredMethod: (event.target.value || null) as CommunicationSettings["preferredMethod"] })}><option value="">{t("notifications.serviceDefault")}</option><option value="email">{t("notifications.method.email")}</option><option value="sms" disabled={!verified || !settings.smsOptIn}>{t("notifications.method.sms")}</option><option value="whatsapp" disabled={!verified || !settings.whatsappOptIn}>{t("notifications.method.whatsapp")}</option></select></div>
-          <div className="space-y-2"><Label htmlFor="communication-language">{t("notifications.language")}</Label><select id="communication-language" className="min-h-11 border rounded-md p-2 bg-background w-full" value={settings.language} onChange={event => edit({ language: event.target.value as CommunicationSettings["language"] })}>{notificationLanguages.map(language => <option key={language} value={language} lang={language}>{languageNames[language]}</option>)}</select></div>
-        </fieldset>
+        <CommunicationFields settings={settings} busy={busy} verified={verified} error={error} edit={edit} onPhoneChange={() => { setChallenge(null); setCode(""); }} />
         <Button disabled={busy} type="submit" className="min-h-11 h-auto whitespace-normal">{t(busy ? "notifications.saving" : "notifications.save")}</Button>
       </form>
-      {!verified && settings.phone && <div className="border rounded-lg p-4 space-y-3"><p className="text-sm">{t(dirty ? "notifications.saveBeforeVerify" : !settings.verificationAvailable ? "notifications.verificationUnavailable" : "notifications.verifyHelp")}</p><Button type="button" variant="outline" className="min-h-11 h-auto whitespace-normal" disabled={busy || dirty || !settings.verificationAvailable || coolingDown} onClick={() => verifyPhone("start")}>{t("notifications.sendCode")}</Button>
-        {challenge?.status === "pending" && <form className="space-y-3" onSubmit={event => { event.preventDefault(); if (!expired && /^\d{6}$/.test(code)) verifyPhone("check"); }}><Label htmlFor="communication-code">{t("notifications.code")}</Label><Input id="communication-code" autoComplete="one-time-code" inputMode="numeric" dir="ltr" maxLength={6} value={code} onChange={event => setCode(event.target.value)} disabled={busy || expired} aria-invalid={error === "notifications.verifyError" || undefined} aria-describedby={error === "notifications.verifyError" ? "communication-error" : undefined} /><Button type="submit" disabled={busy || expired || !/^\d{6}$/.test(code)}>{t("notifications.verify")}</Button>{expired && <p role="status">{t("notifications.codeExpired")}</p>}</form>}
-      </div>}
+      {!verified && settings.phone && <PhoneVerification
+        settings={settings} busy={busy} dirty={dirty} coolingDown={coolingDown}
+        challenge={challenge} expired={expired} code={code} error={error}
+        setCode={setCode} verifyPhone={verifyPhone}
+      />}
     </>}
     {error && <p id="communication-error" role="alert" className="text-sm text-red-700 dark:text-red-300">{t(error)}</p>}{message && <p role="status" className="text-sm">{t(message)}</p>}
   </CardContent></Card>;
+}
+
+
+type CommunicationFieldsProps = {
+  settings: CommunicationSettings;
+  busy: boolean;
+  verified: boolean;
+  error: string;
+  edit: (patch: Partial<CommunicationSettings>) => void;
+  onPhoneChange: () => void;
+};
+
+function CommunicationFields({ settings, busy, verified, error, edit, onPhoneChange }: CommunicationFieldsProps) {
+  const { t } = useTranslation();
+  return <fieldset disabled={busy} className="space-y-5 min-w-0">
+          <div className="space-y-2"><Label htmlFor="communication-phone">{t("notifications.phone")}</Label><Input id="communication-phone" type="tel" autoComplete="tel" dir="ltr" maxLength={16} value={settings.phone ?? ""} aria-describedby={error === "notifications.phoneInvalid" ? "communication-phone-help communication-error" : "communication-phone-help"} aria-invalid={error === "notifications.phoneInvalid" || undefined} onChange={event => { edit({ phone: event.target.value, phoneVerified: false, smsOptIn: false, whatsappOptIn: false, preferredMethod: settings.preferredMethod === "email" ? "email" : null }); onPhoneChange(); }} /><p id="communication-phone-help" className="text-sm text-muted-foreground">{t("notifications.phoneHelp")}</p><p role="status" className="text-sm">{t(verified ? "notifications.verified" : "notifications.notVerified")}</p></div>
+          <div className="space-y-3">{(["sms", "whatsapp"] as const).map(method => <label key={method} className="flex gap-3 items-start min-h-11"><input type="checkbox" className="mt-1 h-5 w-5 shrink-0" disabled={!verified} checked={method === "sms" ? settings.smsOptIn : settings.whatsappOptIn} onChange={event => { const checked = event.target.checked; edit({ [method === "sms" ? "smsOptIn" : "whatsappOptIn"]: checked, ...(!checked && settings.preferredMethod === method ? { preferredMethod: "email" as const } : {}) }); }} /><span>{t(`notifications.optIn.${method}`)}</span></label>)}<p className="text-sm text-muted-foreground">{t("notifications.verificationHelp")}</p></div>
+          <div className="space-y-2"><Label htmlFor="communication-method">{t("notifications.preferred")}</Label><select id="communication-method" className="min-h-11 border rounded-md p-2 bg-background w-full" value={settings.preferredMethod ?? ""} onChange={event => edit({ preferredMethod: (event.target.value || null) as CommunicationSettings["preferredMethod"] })}><option value="">{t("notifications.serviceDefault")}</option><option value="email">{t("notifications.method.email")}</option><option value="sms" disabled={!verified || !settings.smsOptIn}>{t("notifications.method.sms")}</option><option value="whatsapp" disabled={!verified || !settings.whatsappOptIn}>{t("notifications.method.whatsapp")}</option></select></div>
+          <div className="space-y-2"><Label htmlFor="communication-language">{t("notifications.language")}</Label><select id="communication-language" className="min-h-11 border rounded-md p-2 bg-background w-full" value={settings.language} onChange={event => edit({ language: event.target.value as CommunicationSettings["language"] })}>{notificationLanguages.map(language => <option key={language} value={language} lang={language}>{languageNames[language]}</option>)}</select></div>
+        </fieldset>;
+}
+
+type PhoneVerificationProps = {
+  settings: CommunicationSettings;
+  busy: boolean;
+  dirty: boolean;
+  coolingDown: boolean;
+  challenge: VerificationResult | null;
+  expired: boolean;
+  code: string;
+  error: string;
+  setCode: (code: string) => void;
+  verifyPhone: (action: "start" | "check") => void;
+};
+
+function PhoneVerification({ settings, busy, dirty, coolingDown, challenge, expired, code, error, setCode, verifyPhone }: PhoneVerificationProps) {
+  const { t } = useTranslation();
+  return <div className="border rounded-lg p-4 space-y-3"><p className="text-sm">{t(dirty ? "notifications.saveBeforeVerify" : !settings.verificationAvailable ? "notifications.verificationUnavailable" : "notifications.verifyHelp")}</p><Button type="button" variant="outline" className="min-h-11 h-auto whitespace-normal" disabled={busy || dirty || !settings.verificationAvailable || coolingDown} onClick={() => verifyPhone("start")}>{t("notifications.sendCode")}</Button>
+        {challenge?.status === "pending" && <form className="space-y-3" onSubmit={event => { event.preventDefault(); if (!expired && /^\d{6}$/.test(code)) verifyPhone("check"); }}><Label htmlFor="communication-code">{t("notifications.code")}</Label><Input id="communication-code" autoComplete="one-time-code" inputMode="numeric" dir="ltr" maxLength={6} value={code} onChange={event => setCode(event.target.value)} disabled={busy || expired} aria-invalid={error === "notifications.verifyError" || undefined} aria-describedby={error === "notifications.verifyError" ? "communication-error" : undefined} /><Button type="submit" disabled={busy || expired || !/^\d{6}$/.test(code)}>{t("notifications.verify")}</Button>{expired && <p role="status">{t("notifications.codeExpired")}</p>}</form>}
+      </div>;
 }

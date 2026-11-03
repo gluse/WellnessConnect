@@ -21,7 +21,7 @@ export default function AppHeader() {
           <span className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <Heart className="w-4 h-4 text-white" aria-hidden="true" />
           </span>
-          FitsMyTime
+          <span>FitsMyTime</span>
         </Link>
         {isAuthenticated && <div className="w-full sm:w-auto sm:order-none order-last">
           <RoleSwitcher />
