@@ -42,6 +42,13 @@ import type { NotificationSummary } from "@shared/notifications";
 
 type NotificationBooking = Booking & { notification?: NotificationSummary };
 
+function searchDurationLimit(filters: SearchFilters) {
+  if (!filters.time && !filters.timeEnd) return undefined;
+  const minutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
+  // Search applies the same daily time window throughout the selected dates.
+  return minutes(filters.timeEnd ?? "23:59") - minutes(filters.time ?? "00:00");
+}
+
 function searchDistance(filters: SearchFilters) {
   if (filters.latitude === undefined || filters.longitude === undefined) return undefined;
   const radians = sql`pi() / 180`;
@@ -56,6 +63,8 @@ function searchDistance(filters: SearchFilters) {
 
 function publicSearchConditions(filters: SearchFilters) {
   const conditions = [eq(services.isActive, true), sql`(${companies.id} IS NULL OR ${companies.isActive} = true)`];
+  const durationLimit = searchDurationLimit(filters);
+  if (durationLimit !== undefined) conditions.push(lte(services.duration, durationLimit));
   if (filters.companyId !== undefined) conditions.push(eq(services.companyId, filters.companyId));
   if (filters.providerId !== undefined) conditions.push(eq(services.providerId, filters.providerId), isNull(services.companyId));
   if (filters.serviceIds) conditions.push(inArray(services.id, filters.serviceIds));
@@ -369,6 +378,11 @@ export class DatabaseStorage implements IStorage {
       companyActive: result.companies?.isActive ?? true,
       employee: result.employees ? { id: result.employees.id, name: result.employees.showName ? result.employees.name : null } : null,
     }));
+
+    // Retain the time-window constraint on hydrated results as well as the SQL
+    // query, independently of the optional provider-availability filter.
+    const durationLimit = searchDurationLimit(filters);
+    if (durationLimit !== undefined) servicesWithProviders = servicesWithProviders.filter(service => service.duration <= durationLimit);
 
     // Filter by age groups if specified
     if (filters.ageGroups && filters.ageGroups.length > 0) {

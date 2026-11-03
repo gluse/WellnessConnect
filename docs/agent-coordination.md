@@ -14,6 +14,29 @@ acceptance checks, recovery and next action. Use requested, accepted, in progres
 blocked or completed; state a concrete reason for blocked work. Owners return
 results and evidence; requesters check integration before closing dependencies.
 
+## Search duration must fit the selected time window — 3 November 2026
+
+**Completed / verified locally.** User reports 13 November 2026, 08:00–09:00
+returning a 180-minute service and requires services no longer than 60 minutes.
+Requester/coordinator: `/root`; assigned Backend owner/executor:
+`/root/search_duration_backend`, contacted through live agent tools and accepted.
+Scope: local backend search filtering and offline/mocked regressions; approval:
+user bug request plus standing owner acceptance under AGENTS.md. No database
+connection, schema/migration, private configuration, external services or deployment.
+Preserve existing dirty work and daily-window/date-validation semantics.
+Acceptance: durations 30/60 fit, 61/180 do not; enforce selected time bounds with
+and without available-only filtering, before result limits, and retain the filter
+through exact, semantic and fallback paths. Only en/lv/ru testing is permitted;
+ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred. Backend evidence:
+[owner handoff](search-duration-backend-handoff.md). Root reviewed the integrated
+contract and final diff: shared parameterized duration filtering precedes ordinary
+and semantic candidate limits; hydrated results preserve the same bound. Regression
+first reproduced the failure, then passed with the fix. Storage and public-search
+route regressions plus TypeScript pass; the route test used approved isolated
+loopback execution with synthetic dependencies. No connected verification or
+deployment occurred. No remaining local dependency; next: user review.
+Recovery: revert only attributable changes.
+
 ## Appointment layout redesign — 2 November 2026
 
 **Completed / verified locally.**

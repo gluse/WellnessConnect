@@ -53,7 +53,12 @@ try {
     const response = await ordinary.request(url); assert.equal(response.status, 400); assert.equal((await response.json()).code, "INVALID_SEARCH");
   }
   assert.equal(ordinary.calls.searches.length, 0, "Invalid ranges/objects must be rejected before data access");
-  const successful = await ordinary.request("semantic-search?query=fixture&category=health_wellness&latitude=0&longitude=0&radius=10");
+  const timeWindow = "date=2026-11-13&dateEnd=2026-11-13&time=08%3A00&timeEnd=09%3A00";
+  const expectedWindow = { date: "2026-11-13", dateEnd: "2026-11-13", time: "08:00", timeEnd: "09:00" };
+  const assertWindow = filters => {
+    for (const [key, value] of Object.entries(expectedWindow)) assert.equal(filters[key], value, `Preserve ${key} through search paths`);
+  };
+  const successful = await ordinary.request(`semantic-search?query=fixture&category=health_wellness&latitude=0&longitude=0&radius=10&${timeWindow}`);
   assert.equal(successful.status, 200);
   assert.deepEqual(await successful.json(), [service(1)]);
   assert.equal(ordinary.calls.searches.length, 2, "One exact query and one batch hydration; no per-service fetches");
@@ -62,6 +67,11 @@ try {
   assert.equal(ordinary.calls.embeddings[0].options.maxRetries, 0);
   assert.ok(ordinary.calls.embeddings[0].options.signal instanceof AbortSignal);
   assert.equal(successful.headers.get("cache-control"), "no-store");
+  ordinary.calls.searches.forEach(assertWindow);
+  ordinary.calls.candidates.forEach(assertWindow);
+  assert.equal((await ordinary.request(`search?${timeWindow}&availableOnly=false`)).status, 200);
+  assertWindow(ordinary.calls.searches.at(-1));
+  assert.equal(ordinary.calls.searches.at(-1).availableOnly, false);
 
   const text = await harness({ searchServices: async () => [service(7)] });
   const fifty = await harness({ searchServices: async filters => {
@@ -95,10 +105,11 @@ try {
     searchServices: async filters => { fallbackCalls.push(filters); return fallbackCalls.length === 1 ? [] : [service(3)]; },
     generateEmbedding: async () => { throw new Error("private provider response"); },
   });
-  const fallbackResponse = await fallback.request("semantic-search?query=fixture&category=education&latitude=0&longitude=0&radius=10&date=2026-01-01&availableOnly=true");
+  const fallbackResponse = await fallback.request(`semantic-search?query=fixture&category=education&latitude=0&longitude=0&radius=10&${timeWindow}&availableOnly=true`);
   assert.equal(fallbackResponse.status, 200); assert.equal(fallbackResponse.headers.get("x-search-fallback"), "true");
   assert.deepEqual(await fallbackResponse.json(), [service(3)]);
   assert.deepEqual(fallbackCalls[0], fallbackCalls[1], "Fallback retains every location/category/date filter");
+  fallbackCalls.forEach(assertWindow);
   const broken = await harness({ searchServices: async () => { throw new Error("private database details"); } });
   const unavailable = await broken.request("semantic-search?query=fixture");
   assert.equal(unavailable.status, 503);

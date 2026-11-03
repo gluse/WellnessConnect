@@ -42,6 +42,9 @@ const dependencies = {
   "./addresses": { serviceLocation: (service, address) => ({ ...service, latitude: address?.latitude ?? null, longitude: address?.longitude ?? null }) },
   "@shared/scheduling": scheduling, "@shared/reviews": reviews, "./searchInput": searchInput,
   "./audit/context": auditContext, "./audit/events": auditEvents, "./audit/capture": auditCapture,
+  "./customerBookings": { assertCustomerBookingChange() { throw new Error("Unexpected booking mutation"); } },
+  "./notifications/repository": new Proxy({}, { get() { return () => { throw new Error("Unexpected notification operation"); }; } }),
+  "./notifications/policy": { statusAction() { throw new Error("Unexpected booking status action"); } },
 };
 const source = await readFile(new URL("../server/storage.ts", import.meta.url), "utf8");
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
@@ -51,7 +54,7 @@ vm.runInNewContext(`(function(require,module,exports){${compiled}\n})`, { Date, 
 );
 const storage = new module.exports.DatabaseStorage();
 const result = (id, companyId = null) => ({
-  services: { id, providerId: "fixture-provider", companyId, employeeId: null, name: "Fixture", isActive: true, ageGroups: ["adults"], createdAt: new Date("2026-01-01") },
+  services: { id, providerId: "fixture-provider", companyId, employeeId: null, name: "Fixture", duration: 60, isActive: true, ageGroups: ["adults"], createdAt: new Date("2026-01-01") },
   users: { id: "fixture-provider", providerType: "individual", firstName: "Fixture" },
   addresses: { latitude: 0, longitude: 0 }, companies: companyId == null ? null : { id: companyId, name: "Fixture company", isActive: true },
   employees: null, review_stats: null,
@@ -87,6 +90,31 @@ const priorQueries = executed.length;
 assert.deepEqual(Array.from(await storage.searchServices({ serviceIds: [] })), []);
 assert.equal(executed.length, priorQueries);
 
+// A time window limits service duration independently of the availability toggle.
+const durationResult = (id, duration) => {
+  const row = result(id); row.services.duration = duration; return row;
+};
+fixtures.set("services", [durationResult(1, 30), durationResult(2, 60), durationResult(3, 61), durationResult(4, 180)]);
+const hourWindow = { date: "2026-11-13", dateEnd: "2026-11-13", time: "08:00", timeEnd: "09:00" };
+for (const availabilityFilter of [{}, { availableOnly: false }, { availableOnly: true }]) {
+  fixtures.set("availability", [{ id: 1, providerId: "fixture-provider", companyId: null, serviceId: null,
+    isActive: true, scheduleType: "specific", specificDate: new Date("2026-11-13"), startTime: "08:00", endTime: "18:00", breaks: [] }]);
+  const matches = await storage.searchServices({ ...hourWindow, ...availabilityFilter });
+  assert.deepEqual(Array.from(matches, row => row.id), [1, 2], "08:00–09:00 includes 60 minutes and excludes 61/180, regardless of availability toggle");
+  const serviceQuery = executed.findLast(query => query.table === "services");
+  assert.match(serviceQuery.where.sql, /"services"\."duration" <= \$/);
+  assert.ok(serviceQuery.where.params.includes(60), "Duration cap is parameterized before SQL result limiting");
+}
+assert.deepEqual(Array.from(await storage.searchServices({ ...hourWindow, dateEnd: "2026-11-14" }), row => row.id), [1, 2], "Multiple dates retain the existing daily time-window contract");
+assert.deepEqual(Array.from(await storage.searchServices({ date: hourWindow.date }), row => row.id), [1, 2, 3, 4], "No time filter preserves longer services");
+assert.deepEqual(Array.from(await storage.searchServices({ date: hourWindow.date, timeEnd: "01:00" }), row => row.id), [1, 2], "End-only time starts at 00:00");
+assert.deepEqual(Array.from(await storage.searchServices({ date: hourWindow.date, time: "23:00" }), row => row.id), [1], "Start-only time ends at the existing 23:59 bound");
+assert.deepEqual(Array.from(await storage.searchServices({ ...hourWindow, timeEnd: "08:30", serviceIds: [1, 2, 3, 4] }), row => row.id), [1], "Semantic hydration retains the duration limit");
+fixtures.set("service_embeddings", [{ serviceId: 1, embedding: [1, 0] }]);
+await storage.getPublicServiceEmbeddings(hourWindow);
+assert.match(executed.at(-1).where.sql, /"services"\."duration" <= \$/);
+assert.ok(executed.at(-1).where.params.includes(60), "Semantic candidates use the same duration constraint before their cap");
+
 // Public result caps are applied in SQL without the legacy 500-match failure.
 fixtures.set("services", Array.from({ length: 501 }, (_, id) => result(id + 1)));
 assert.equal((await storage.searchServices({ latitude: 0, longitude: 0, radius: 25, limit: 50 })).length, 50);
@@ -121,4 +149,4 @@ fixtures.set("services", [result(1, 7), result(2)]);
 fixtures.set("availability", [{ id: 1, providerId: "fixture-provider", companyId: 7, serviceId: null,
   isActive: true, scheduleType: "specific", specificDate: new Date("2099-06-04"), startTime: "09:00", endTime: "10:00", breaks: [] }]);
 assert.deepEqual(Array.from(await storage.searchServices({ date: "2099-06-04", availableOnly: true }), row => row.id), [1]);
-console.log("Passed: actual storage query/result bounds, scoped catalog compatibility, SQL-bound filters/expiry, date rejection, bounded schedules, and company/personal availability isolation. No DB client loaded or SQL executed.");
+console.log("Passed: inclusive service-duration limits and toggle/partial-time/multi-date/semantic regressions, actual storage query/result bounds, scoped catalog compatibility, SQL-bound filters/expiry, date rejection, bounded schedules, and company/personal availability isolation. No DB client loaded or SQL executed.");
