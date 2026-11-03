@@ -83,10 +83,10 @@ function AppointmentsContent({ scope }: { scope: string }) {
     {bookings.isError ? <p role="alert">Unable to load appointments. Please refresh to try again.</p> : <>
       {!bookings.isLoading && <AppointmentStats bookings={bookings.data ?? []} />}
       <AppointmentAgenda bookings={bookings.data ?? []} employees={employees.data ?? []} provider loading={bookings.isLoading} updating={update.isPending}
-        onStatusChange={canManage ? (bookingId, status) => { if (!update.isPending) { rememberTrigger(); setAutomatic(null); if (status === "cancelled") setCancelling(bookings.data?.find(row => row.id === bookingId) ?? null); else update.mutate({ bookingId, status }); } } : undefined}
-        onReschedule={canManage ? booking => { trigger.current = document.activeElement as HTMLElement | null; triggerLabel.current = trigger.current?.textContent ?? null; setAutomatic(null); setRescheduling(booking); } : undefined}
+        onStatusChange={canManage ? (bookingId, status, element) => { if (!update.isPending) { rememberTrigger(element); setAutomatic(null); if (status === "cancelled") setCancelling(bookings.data?.find(row => row.id === bookingId) ?? null); else update.mutate({ bookingId, status }); } } : undefined}
+        onReschedule={canManage ? (booking, element) => { rememberTrigger(element); setAutomatic(null); setRescheduling(booking); } : undefined}
         onMessage={canManage ? (booking, element) => { rememberTrigger(element); setConversation(booking); } : undefined}
-        onEventAction={canManage ? (booking, action) => { rememberTrigger(); setEventAction({ booking, action }); } : undefined}
+        onEventAction={canManage ? (booking, action, element) => { rememberTrigger(element); setEventAction({ booking, action }); } : undefined}
         renderBookingDetails={canManage ? booking => <BookingRescheduleRequests booking={booking} scope={scope} /> : undefined}
         renderEventDetails={canManage ? booking => <EventRescheduleOutcomes booking={booking} scope={scope} bookings={bookings.data ?? []} /> : undefined}
         renderProviderNotifications={booking => <AppointmentReminder booking={booking} scope={scope} pro={capabilities.isError ? undefined : capabilities.data?.hasPro} canManage={canManage} onManual={element => setNotification({ bookingId: booking.id, kind: "reminder", trigger: element, triggerLabel: element.textContent })} />} />

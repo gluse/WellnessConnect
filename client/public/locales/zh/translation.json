@@ -14,7 +14,8 @@
     "emptyDate": "{{date}}没有预约。",
     "totalBookings": "总预约数",
     "awaitingApproval": "待确认",
-    "revenue": "收入"
+    "revenue": "收入",
+    "calendar": "日历"
   },
   "providerNavigation": {
     "workspace": "工作空间",
@@ -1148,5 +1149,22 @@
     "statusConfirmed": "已确认",
     "statusCompleted": "已完成",
     "statusCancelled": "已取消"
+  },
+  "appointmentCalendar": {
+    "today": "今天",
+    "previous": "上一时段",
+    "next": "下一时段",
+    "period": "日历时段",
+    "day": "日",
+    "week": "周",
+    "chooseDate": "选择日期",
+    "dstNote": "此时段内存在时钟调整。每天显示当地时间及 UTC 偏移量；预约高度按实际时长显示。",
+    "empty": "此时段内没有符合筛选条件的预约。",
+    "schedule": "预约日历",
+    "currentTime": "当前时间：{{time}}",
+    "hint": "选择预约以查看详情。也可使用现有的列表视图。",
+    "close": "关闭",
+    "details": "预约详情",
+    "detailsHelp": "查看预订详情和可用操作。"
   }
 }

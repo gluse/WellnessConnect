@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-03",
+  "browser": {
+    "product": "firefox/157.0"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    {
+      "language": "en",
+      "width": 360,
+      "day": true,
+      "week": true,
+      "filters": true,
+      "smallVerticalCancelledMultiTouch": true
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "day": true,
+      "week": true,
+      "filters": true,
+      "smallVerticalCancelledMultiTouch": true
+    },
+    {
+      "language": "lv",
+      "width": 360,
+      "day": true,
+      "week": true,
+      "filters": true,
+      "smallVerticalCancelledMultiTouch": true
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "day": true,
+      "week": true,
+      "filters": true,
+      "smallVerticalCancelledMultiTouch": true
+    },
+    {
+      "language": "ru",
+      "width": 360,
+      "day": true,
+      "week": true,
+      "filters": true,
+      "smallVerticalCancelledMultiTouch": true
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "day": true,
+      "week": true,
+      "filters": true,
+      "smallVerticalCancelledMultiTouch": true
+    }
+  ],
+  "input": "DOM touch-event injection; layout/details via browser input",
+  "limits": "Offline synthetic fixture only. No connected app/database. Physical mobile devices and OS gestures not verified; other locales/RTL deferred."
+}

@@ -14,6 +14,36 @@ acceptance checks, recovery and next action. Use requested, accepted, in progres
 blocked or completed; state a concrete reason for blocked work. Owners return
 results and evidence; requesters check integration before closing dependencies.
 
+## Provider appointment calendar — 3 November 2026
+
+**Completed / verified locally.** User approved the calendar plan/mockup and requested
+implementation. Specific Frontend owner/executor `/root` owns local provider
+calendar UI/helpers, shared-agenda integration, translations and mocked checks.
+See [scope, approval, evidence and recovery](appointment-calendar-handoff.md).
+No connected operations, backend/database changes or deployment. Preserve prior
+dirty work. Day/Week geometry, grouped details, filters and existing actions are
+implemented. Chrome/Firefox/WebKit each pass 12 en/lv/ru viewport cases and action,
+privacy and focus regressions. Native Chrome 400%/Riga DST checks, offline helper
+and existing component/collaboration regressions, TypeScript and isolated frontend
+build pass. Other locales/RTL deferred. No remaining local dependency; next:
+user review on `/my-services/appointments`. No deployment occurred.
+
+**Compact rows follow-up:** user requested smaller hour cells. `/root` reduced
+hour height from 96px to 64px and compacted event text while retaining exact time
+geometry and full detail access. Chrome/Firefox/WebKit each pass 12 en/lv/ru
+viewport cases and interaction regressions; TypeScript passes. New
+`appointment-calendar-compact-*` evidence preserves the original results.
+See the follow-up in the handoff. Completed locally; other locales/RTL deferred.
+
+**Mobile swipe follow-up:** user requested day/week touch navigation. `/root`
+implemented scoped swipe handling on Day grids and period/day headings; Week
+grids keep native horizontal panning with period navigation at their edges.
+Chrome native touch plus Firefox/WebKit DOM-touch checks each pass six en/lv/ru
+phone/tablet cases, including tap preservation and gesture exclusions. Existing
+Chrome calendar regression, TypeScript and isolated frontend build pass. See
+the handoff for evidence and physical-device limits. Completed locally; no
+connected operations/deployment, other locales/RTL deferred.
+
 ## Search duration must fit the selected time window — 3 November 2026
 
 **Completed / verified locally.** User reports 13 November 2026, 08:00–09:00

@@ -14,7 +14,8 @@
     "emptyDate": "{{date}}の予約はありません。",
     "totalBookings": "予約総数",
     "awaitingApproval": "承認待ち",
-    "revenue": "売上"
+    "revenue": "売上",
+    "calendar": "カレンダー"
   },
   "providerNavigation": {
     "workspace": "ワークスペース",
@@ -1148,5 +1149,22 @@
     "statusConfirmed": "確定済み",
     "statusCompleted": "完了",
     "statusCancelled": "キャンセル済み"
+  },
+  "appointmentCalendar": {
+    "today": "今日",
+    "previous": "前の期間",
+    "next": "次の期間",
+    "period": "カレンダーの期間",
+    "day": "日",
+    "week": "週",
+    "chooseDate": "日付を選択",
+    "dstNote": "この期間中に時計が変更されます。各日に UTC オフセット付きの現地時刻を表示し、予約の高さは実際の経過時間に対応します。",
+    "empty": "この期間にフィルターに一致する予約はありません。",
+    "schedule": "予約カレンダー",
+    "currentTime": "現在時刻：{{time}}",
+    "hint": "予約を選択して詳細を表示します。別の表示には既存のリスト表示をご利用ください。",
+    "close": "閉じる",
+    "details": "予約の詳細",
+    "detailsHelp": "予約の詳細と利用可能な操作を確認します。"
   }
 }

@@ -14,7 +14,8 @@
     "emptyDate": "No hay citas el {{date}}.",
     "totalBookings": "Total de reservas",
     "awaitingApproval": "Pendientes de aprobación",
-    "revenue": "Ingresos"
+    "revenue": "Ingresos",
+    "calendar": "Calendario"
   },
   "providerNavigation": {
     "workspace": "Espacio de trabajo",
@@ -1163,5 +1164,22 @@
     "statusConfirmed": "Confirmada",
     "statusCompleted": "Completada",
     "statusCancelled": "Cancelada"
+  },
+  "appointmentCalendar": {
+    "today": "Hoy",
+    "previous": "Período anterior",
+    "next": "Período siguiente",
+    "period": "Período del calendario",
+    "day": "Día",
+    "week": "Semana",
+    "chooseDate": "Elegir fecha",
+    "dstNote": "En este período cambia la hora. Cada día muestra las horas locales con el desfase UTC; la altura de las citas refleja su duración real.",
+    "empty": "No hay citas que coincidan con los filtros en este período.",
+    "schedule": "Calendario de citas",
+    "currentTime": "Hora actual: {{time}}",
+    "hint": "Selecciona una cita para ver los detalles. Las vistas de lista existentes ofrecen otra presentación.",
+    "close": "Cerrar",
+    "details": "Detalles de la cita",
+    "detailsHelp": "Consulta los detalles de la reserva y las acciones disponibles."
   }
 }

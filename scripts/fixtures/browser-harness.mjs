@@ -10,7 +10,7 @@ import postcss from "postcss";
 import tailwindcss from "tailwindcss";
 import loadConfig from "tailwindcss/loadConfig.js";
 
-export async function serveBrowserFixture({ entry, resources, html: previewHtml }) {
+export async function serveBrowserFixture({ entry, resources, html: previewHtml, timezoneId = "UTC" }) {
   const root = path.resolve(import.meta.dirname, "../..");
   const config = loadConfig(path.join(root, "tailwind.config.ts"));
   const javascript = previewHtml ? "" : (await build({
@@ -32,7 +32,7 @@ export async function serveBrowserFixture({ entry, resources, html: previewHtml 
   await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
   const origin = "http://127.0.0.1:" + server.address().port;
   const close = () => new Promise(resolve => { server.close(resolve); server.closeAllConnections(); });
-  return { root, origin, network, blocked, errors, close };
+  return { root, origin, network, blocked, errors, close, timezoneId };
 }
 
 export async function browserFixture(options) {
@@ -96,7 +96,7 @@ export async function browserFixture(options) {
       if (message.method === "Page.javascriptDialogOpening") await api("Page.handleJavaScriptDialog", { accept: true });
     });
     await api("Page.enable"); await api("Runtime.enable"); await api("Fetch.enable", { patterns: [{ urlPattern: "*" }] });
-    await api("Emulation.setTimezoneOverride", { timezoneId: "UTC" });
+    await api("Emulation.setTimezoneOverride", { timezoneId: served.timezoneId });
     const evaluate = async (fn, arg) => {
       const result = await api("Runtime.evaluate", { expression: "(" + fn.toString() + ")(" + JSON.stringify(arg) + ")", awaitPromise: true, returnByValue: true, userGesture: true, timeout: 8000 }).catch(error => { throw Error(error.message + " in " + fn.toString().slice(0, 300)); });
       if (result.exceptionDetails) throw Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);

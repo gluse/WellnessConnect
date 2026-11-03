@@ -14,7 +14,8 @@
     "emptyDate": "Keine Termine am {{date}}.",
     "totalBookings": "Buchungen gesamt",
     "awaitingApproval": "Warten auf Bestätigung",
-    "revenue": "Umsatz"
+    "revenue": "Umsatz",
+    "calendar": "Kalender"
   },
   "providerNavigation": {
     "workspace": "Arbeitsbereich",
@@ -1158,5 +1159,22 @@
     "statusConfirmed": "Bestätigt",
     "statusCompleted": "Abgeschlossen",
     "statusCancelled": "Storniert"
+  },
+  "appointmentCalendar": {
+    "today": "Heute",
+    "previous": "Vorheriger Zeitraum",
+    "next": "Nächster Zeitraum",
+    "period": "Kalenderzeitraum",
+    "day": "Tag",
+    "week": "Woche",
+    "chooseDate": "Datum auswählen",
+    "dstNote": "In diesem Zeitraum wird die Uhr umgestellt. Jeder Tag zeigt Ortszeiten mit UTC-Abstand; die Terminhöhe entspricht der tatsächlichen Dauer.",
+    "empty": "In diesem Zeitraum entsprechen keine Termine Ihren Filtern.",
+    "schedule": "Terminkalender",
+    "currentTime": "Aktuelle Uhrzeit: {{time}}",
+    "hint": "Wählen Sie einen Termin für Details. Als Alternative stehen die vorhandenen Listenansichten zur Verfügung.",
+    "close": "Schließen",
+    "details": "Termindetails",
+    "detailsHelp": "Buchungsdetails und verfügbare Aktionen anzeigen."
   }
 }

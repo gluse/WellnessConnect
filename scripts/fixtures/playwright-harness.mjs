@@ -14,7 +14,7 @@ export async function playwrightFixture(served, engine) {
   const browser = await playwright[engine].launch({ headless: true });
   let context;
   try {
-    context = await browser.newContext({ timezoneId: "UTC", serviceWorkers: "block" });
+    context = await browser.newContext({ timezoneId: served.timezoneId ?? "UTC", serviceWorkers: "block" });
     const page = await context.newPage();
     page.setDefaultTimeout(8000);
     page.on("pageerror", error => served.errors.push(error.message));

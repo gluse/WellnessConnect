@@ -14,7 +14,8 @@
     "emptyDate": "No appointments on {{date}}.",
     "totalBookings": "Total bookings",
     "awaitingApproval": "Awaiting approval",
-    "revenue": "Revenue"
+    "revenue": "Revenue",
+    "calendar": "Calendar"
   },
   "providerNavigation": {
     "workspace": "Workspace",
@@ -1154,5 +1155,22 @@
     "statusConfirmed": "Confirmed",
     "statusCompleted": "Completed",
     "statusCancelled": "Cancelled"
+  },
+  "appointmentCalendar": {
+    "today": "Today",
+    "previous": "Previous period",
+    "next": "Next period",
+    "period": "Calendar period",
+    "day": "Day",
+    "week": "Week",
+    "chooseDate": "Choose date",
+    "dstNote": "The clocks change during this period. Each day shows local times with UTC offsets; appointment heights follow actual elapsed time.",
+    "empty": "No appointments in this period match your filters.",
+    "schedule": "Appointment calendar",
+    "currentTime": "Current time: {{time}}",
+    "hint": "Select an appointment to view details. Use the existing list views for an alternative layout.",
+    "close": "Close",
+    "details": "Appointment details",
+    "detailsHelp": "View booking details and available actions."
   }
 }

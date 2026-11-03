@@ -14,7 +14,8 @@
     "emptyDate": "Aucun rendez-vous le {{date}}.",
     "totalBookings": "Total des réservations",
     "awaitingApproval": "En attente d’approbation",
-    "revenue": "Revenus"
+    "revenue": "Revenus",
+    "calendar": "Calendrier"
   },
   "providerNavigation": {
     "workspace": "Espace de travail",
@@ -1163,5 +1164,22 @@
     "statusConfirmed": "Confirmée",
     "statusCompleted": "Terminée",
     "statusCancelled": "Annulée"
+  },
+  "appointmentCalendar": {
+    "today": "Aujourd’hui",
+    "previous": "Période précédente",
+    "next": "Période suivante",
+    "period": "Période du calendrier",
+    "day": "Jour",
+    "week": "Semaine",
+    "chooseDate": "Choisir une date",
+    "dstNote": "Un changement d’heure a lieu pendant cette période. Chaque jour affiche les heures locales avec le décalage UTC ; la hauteur des rendez-vous correspond à leur durée réelle.",
+    "empty": "Aucun rendez-vous ne correspond à vos filtres pendant cette période.",
+    "schedule": "Calendrier des rendez-vous",
+    "currentTime": "Heure actuelle : {{time}}",
+    "hint": "Sélectionnez un rendez-vous pour voir les détails. Les vues de liste existantes offrent une autre présentation.",
+    "close": "Fermer",
+    "details": "Détails du rendez-vous",
+    "detailsHelp": "Consultez les détails de la réservation et les actions disponibles."
   }
 }

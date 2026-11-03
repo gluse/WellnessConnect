@@ -14,7 +14,8 @@
     "emptyDate": "Datumā {{date}} nav pierakstu.",
     "totalBookings": "Pieraksti kopā",
     "awaitingApproval": "Gaida apstiprinājumu",
-    "revenue": "Ieņēmumi"
+    "revenue": "Ieņēmumi",
+    "calendar": "Kalendārs"
   },
   "providerNavigation": {
     "workspace": "Darbvieta",
@@ -1160,5 +1161,22 @@
     "statusConfirmed": "Apstiprināts",
     "statusCompleted": "Pabeigts",
     "statusCancelled": "Atcelts"
+  },
+  "appointmentCalendar": {
+    "today": "Šodien",
+    "previous": "Iepriekšējais periods",
+    "next": "Nākamais periods",
+    "period": "Kalendāra periods",
+    "day": "Diena",
+    "week": "Nedēļa",
+    "chooseDate": "Izvēlēties datumu",
+    "dstNote": "Šajā periodā mainās pulksteņa laiks. Katrai dienai norādīts vietējais laiks ar UTC nobīdi; apmeklējumu augstums atbilst faktiskajam ilgumam.",
+    "empty": "Šajā periodā nav apmeklējumu, kas atbilst filtriem.",
+    "schedule": "Apmeklējumu kalendārs",
+    "currentTime": "Pašreizējais laiks: {{time}}",
+    "hint": "Izvēlieties apmeklējumu, lai skatītu informāciju. Alternatīvam izkārtojumam izmantojiet esošos saraksta skatus.",
+    "close": "Aizvērt",
+    "details": "Apmeklējuma informācija",
+    "detailsHelp": "Skatiet rezervācijas informāciju un pieejamās darbības."
   }
 }

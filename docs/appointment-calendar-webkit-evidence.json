@@ -1,0 +1,354 @@
+{
+  "date": "2026-11-03",
+  "browser": {
+    "product": "webkit/27.2"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "fits": true,
+      "mode": "day",
+      "groupCount": 1,
+      "controls": [
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        }
+      ],
+      "range": "Tuesday, November 3, 2026",
+      "shortHeight": 24
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "fits": true,
+      "mode": "day",
+      "groupCount": 1,
+      "controls": [
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        }
+      ],
+      "range": "Tuesday, November 3, 2026",
+      "shortHeight": 24
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "fits": true,
+      "mode": "week",
+      "groupCount": 1,
+      "controls": [
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        }
+      ],
+      "range": "Nov 2 – 8, 2026",
+      "shortHeight": 24
+    },
+    {
+      "language": "en",
+      "width": 1440,
+      "fits": true,
+      "mode": "week",
+      "groupCount": 1,
+      "controls": [
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        }
+      ],
+      "range": "Nov 2 – 8, 2026",
+      "shortHeight": 24
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "fits": true,
+      "mode": "day",
+      "groupCount": 1,
+      "controls": [
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        }
+      ],
+      "range": "otrdiena, 2026. gada 3. novembris",
+      "shortHeight": 24
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "fits": true,
+      "mode": "day",
+      "groupCount": 1,
+      "controls": [
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        }
+      ],
+      "range": "otrdiena, 2026. gada 3. novembris",
+      "shortHeight": 24
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "fits": true,
+      "mode": "week",
+      "groupCount": 1,
+      "controls": [
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        }
+      ],
+      "range": "2026. gada 2.–8. nov.",
+      "shortHeight": 24
+    },
+    {
+      "language": "lv",
+      "width": 1440,
+      "fits": true,
+      "mode": "week",
+      "groupCount": 1,
+      "controls": [
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        }
+      ],
+      "range": "2026. gada 2.–8. nov.",
+      "shortHeight": 24
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "fits": true,
+      "mode": "day",
+      "groupCount": 1,
+      "controls": [
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        }
+      ],
+      "range": "вторник, 3 ноября 2026 г.",
+      "shortHeight": 24
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "fits": true,
+      "mode": "day",
+      "groupCount": 1,
+      "controls": [
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        }
+      ],
+      "range": "вторник, 3 ноября 2026 г.",
+      "shortHeight": 24
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "fits": true,
+      "mode": "week",
+      "groupCount": 1,
+      "controls": [
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        }
+      ],
+      "range": "2–8 нояб. 2026 г.",
+      "shortHeight": 24
+    },
+    {
+      "language": "ru",
+      "width": 1440,
+      "fits": true,
+      "mode": "week",
+      "groupCount": 1,
+      "controls": [
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        },
+        {
+          "label": true,
+          "fits": true
+        }
+      ],
+      "range": "2–8 нояб. 2026 г.",
+      "shortHeight": 24
+    }
+  ],
+  "checks": [
+    "en: date/year navigation, Today, Day/Week, filters/group attendees, keyboard, notes escaping, nested messages and focus",
+    "lv: date/year navigation, Today, Day/Week, filters/group attendees, keyboard, notes escaping, nested messages and focus",
+    "ru: date/year navigation, Today, Day/Week, filters/group attendees, keyboard, notes escaping, nested messages and focus",
+    "Three-way overlap/midnight rendering; pending duplicate prevention; success/failure handling; workspace privacy; view-only permissions; loading/empty/error; customer regression"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Actual provider/customer pages with synthetic mocks; isolated loopback only. No connected services/database/session writes; no physical-device or screen-reader certification."
+}

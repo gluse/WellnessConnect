@@ -57,14 +57,14 @@ await act(async () => {
       React.createElement(React.Fragment, null, React.createElement(AppointmentsPage), React.createElement(ToastProbe)))));
 });
 const buttons = label => component.root.findAllByType("button").filter(node => node.children.includes(label));
-const click = async label => act(async () => buttons(label)[0].props.onClick());
+const click = async label => act(async () => buttons(label)[0].props.onClick({ currentTarget: { textContent: label, isConnected: false } }));
 const flush = async () => act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
 await flush();
 assert.equal(buttons("Mark complete").length, 1, "Only confirmed appointments can be completed");
 assert.equal(buttons("Approve").length, 1, "Pending appointments still require approval");
 await click("Past & cancelled");
 assert.equal(buttons("Mark complete").length, 1, "Providers can complete past confirmed appointments");
-const revenueIsPreserved = () => component.root.findAllByType("div").some(node => node.children.filter(child => typeof child === "string").join("") === "$120");
+const revenueIsPreserved = () => component.root.findAllByType("dd").some(node => node.children.filter(child => typeof child === "string").join("") === "$120");
 assert.equal(revenueIsPreserved(), true);
 await click("Mark complete");
 await flush();
