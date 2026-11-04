@@ -4,6 +4,7 @@ import { addMonths, format, startOfMonth } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Clock, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { formatDateTime24 } from "@/lib/date-time";
 import { dateInZone, type BookableSlot } from "@shared/scheduling";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,7 @@ export default function BookingTimePicker({ serviceId, bookingId, selected, onSe
           <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pe-1">
             {!slotsQuery.isFetching && !slotsQuery.isError && slotsQuery.data?.slots.map(slot => <Button type="button" className="min-h-11 h-auto whitespace-normal" key={slot.startsAt} variant={selected?.startsAt === slot.startsAt ? "default" : "outline"} aria-pressed={selected?.startsAt === slot.startsAt} onClick={() => onSelect(slot)}>
               <Clock className="w-3 h-3 shrink-0" aria-hidden="true" /><bdi>{slot.startTime}</bdi>
-              {slotsQuery.data.slots.filter(other => other.startTime === slot.startTime).length > 1 && <span className="text-xs"><bdi>{new Intl.DateTimeFormat(language, { timeZone: timezone, timeZoneName: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(slot.startsAt))}</bdi></span>}
+              {slotsQuery.data.slots.filter(other => other.startTime === slot.startTime).length > 1 && <span className="text-xs"><bdi>{formatDateTime24(slot.startsAt, language, { timeZone: timezone, timeZoneName: "short", hour: "2-digit", minute: "2-digit" })}</bdi></span>}
             </Button>)}
           </div>
         </>}

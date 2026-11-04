@@ -14,7 +14,7 @@ function AvailabilityContent() {
   const services = useProviderServices();
   const schedules = useProviderAvailability();
   return <div className="space-y-6">
-    <div><h1 className="text-2xl font-semibold">{t("operationsForm.availability")}</h1><p className="mt-1 text-muted-foreground">{t("operationsForm.availabilityHelp")}</p></div>
+    <div><h1 className="text-2xl font-semibold break-words">{t("operationsForm.availability")}</h1><p className="mt-1 text-muted-foreground">{t("operationsForm.availabilityHelp")}</p></div>
     {services.isLoading || schedules.isLoading ? <p role="status">{t("operationsForm.loadingAvailability")}</p> : services.isError || schedules.isError ? <p role="alert">{t("operationsForm.loadAvailabilityError")}</p>
       : <AvailabilityEditor services={services.data ?? []} schedules={schedules.data ?? []} />}
   </div>;

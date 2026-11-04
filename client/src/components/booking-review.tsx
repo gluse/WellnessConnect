@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
+import { formatDateTime24 } from "@/lib/date-time";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { reviewSchema, type ReviewInput } from "@shared/reviews";
 import type { BookingWithDetails, ServiceReview } from "@shared/schema";
@@ -115,7 +116,7 @@ function BookingReviewForm({ booking, onReviewed }: { booking: BookingWithDetail
   // Keep a deferred draft mounted, so Later does not discard its values.
   return <div className="border rounded-lg p-4 space-y-3" data-testid={`review-prompt-${booking.id}`}>
     <p className="font-medium break-words">{booking.service.name}</p>
-    <p className="text-sm text-neutral-500">{new Date(booking.scheduledDate).toLocaleString(i18n.resolvedLanguage)}</p>
+    <p className="text-sm text-neutral-500">{formatDateTime24(booking.scheduledDate, i18n.resolvedLanguage)}</p>
     <p className="text-sm text-neutral-600">{t("reviews.prompt")}</p>
     {!open && <Button variant="outline" onClick={() => setOpen(true)}>{t("reviews.write")}</Button>}
     <div hidden={!open}>

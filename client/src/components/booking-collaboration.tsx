@@ -6,6 +6,7 @@ import type { BookingConversation, EventAction, EventPreview, RescheduleRequest,
 import type { BookableSlot } from "@shared/scheduling";
 import { getProviderName } from "@shared/provider";
 import { apiRequest } from "@/lib/queryClient";
+import { formatDateTime24 } from "@/lib/date-time";
 import BookingTimePicker from "@/components/booking-time-picker";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -34,7 +35,7 @@ function errorKey(error: Error) {
   return root + (error.message.startsWith("401:") || error.message.startsWith("403:") ? "denied" : error.message.includes("time_unavailable") ? "slotUnavailable" : error.message.startsWith("409:") ? "conflict" : "failed");
 }
 export function appointmentTime(value: string | Date, language: string, zone = timezone()) {
-  return new Intl.DateTimeFormat(language, { dateStyle: "medium", timeStyle: "short", timeZone: zone }).format(new Date(value)) + ` (${zone})`;
+  return formatDateTime24(value, language, { dateStyle: "medium", timeStyle: "short", timeZone: zone }) + ` (${zone})`;
 }
 function CollaborationDialog({ title, description, pending, onClose, restoreFocus, children }: {
   title: string; description: string; pending: boolean; onClose: () => void; restoreFocus?: () => void; children: React.ReactNode;

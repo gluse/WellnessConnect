@@ -6,6 +6,7 @@ import { storefrontSchema, type StorefrontInput, type StorefrontSettings } from 
 import type { ServiceWithProvider, WorkspaceContext } from "@shared/schema";
 import { providerCatalogQuery } from "@shared/provider-catalog";
 import { apiRequest } from "@/lib/queryClient";
+import { formatDateTime24 } from "@/lib/date-time";
 import { useAuth } from "@/hooks/useAuth";
 import { StorefrontView } from "@/pages/storefront";
 import { ImageUploader } from "@/components/ImageUploader";
@@ -68,7 +69,7 @@ function StorefrontForm({ settings, context }: { settings: StorefrontSettings; c
     <div><h2 className="text-xl font-semibold">{t("storefront.title")}</h2><p className="text-muted-foreground mt-1">{t("storefront.editorDescription")}</p></div>
     <div className="rounded-xl bg-primary/5 p-4 space-y-2">
       <p className="font-medium">{t(pro ? "storefront.proActive" : "storefront.proRequired")}</p>
-      {pro && <p className="text-sm">{t("storefront.validUntil", { date: new Date(settings.subscription!.proUntil!).toLocaleString(language) })}</p>}
+      {pro && <p className="text-sm">{t("storefront.validUntil", { date: formatDateTime24(settings.subscription!.proUntil!, language) })}</p>}
       {!pro && <p className="text-sm">{t("storefront.contactSupport")}</p>}
       {settings.storefront && <p className="text-sm">{t(pro && settings.storefront.isPublished ? "storefront.published" : "storefront.hidden")}</p>}
     </div>

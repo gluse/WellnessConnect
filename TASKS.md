@@ -493,6 +493,18 @@ See [business scenarios](docs/payment-business-plan.md),
 
 ## Reports
 
+- [ ] **TASK-038 — Add workspace appointment reports.**
+  **Status, 3 November 2026:** Placeholder requested with the appointment-page
+  redesign; reporting implementation has not started.
+  **Scope:** Provide a Reports destination for the information removed from
+  `/my-services/appointments`: Total bookings, Awaiting approval and Revenue.
+  Define reporting periods, revenue/status calculation rules and role visibility
+  when this task starts. Keep results scoped to the selected workspace and use
+  localized labels, numbers and currency. Coordinate backend/database work with
+  the respective owners if needed. Validate en/lv/ru with isolated mocks first;
+  ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred. This placeholder does not
+  authorize connected execution, deployment or reporting-policy changes.
+
 ## SMS
 ## Terms of Use
 ## AWS hosting
@@ -544,4 +556,21 @@ See [business scenarios](docs/payment-business-plan.md),
   live workflow writes, purge or deployment. Remains unchecked for user/live
   workflow acceptance.
 
-<!-- Add the next task here using TASK-038, or place it in the relevant section. -->
+## Service currencies
+
+- [ ] **TASK-039 — Store and display service and booking currencies.**
+  **Status, 3 November 2026:** Plan prepared at the user's request; implementation
+  not started. User selected service-currency display with customer-currency
+  estimates deferred, and confirmed all existing service/booking amounts are EUR
+  with an incorrect dollar symbol. Preserve numeric amounts during EUR backfill.
+  See [currency rules, contract, owners, migration and acceptance](docs/currency-management-plan.md).
+  Service-country suggestions with provider confirmation, booking currency
+  snapshots, exact arithmetic and currency-aware summaries/sorting are proposed.
+  Frontend, Backend and DB owners must implement their respective scopes when
+  assigned; connected migration/execution and deployment need exact-target scope.
+  Validate en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred.
+  Planning is documentation/repository review only; no application tests or
+  database/service operations performed. Next action: review/accept implementation
+  plan and assign owners. Preserve existing EUR platform-subscription contracts.
+
+<!-- Add the next task here using TASK-040, or place it in the relevant section. -->

@@ -6,13 +6,14 @@ import SubscriptionTargetPicker from "@/components/subscription-target-picker";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TimeInput, isTime24 } from "@/components/ui/time-input";
 import { Label } from "@/components/ui/label";
 
 function localDate(value: Date) { return new Date(value.getTime() - value.getTimezoneOffset() * 60_000).toISOString().slice(0, 16); }
 
 export default function AdminSubscriptions({ onAccessError }: { onAccessError: (error: Error) => void }) {
   const { t } = useFormLocale();
-  const locked = useRef(false), expiryRef = useRef<HTMLInputElement>(null);
+  const locked = useRef(false), expiryRef = useRef<HTMLInputElement>(null), expiryTimeRef = useRef<HTMLInputElement>(null);
   const [expiryError, setExpiryError] = useState(false);
   const queryClient = useQueryClient();
   const [kind, setKind] = useState<"user" | "company">("user");
@@ -36,7 +37,8 @@ export default function AdminSubscriptions({ onAccessError }: { onAccessError: (
     onSuccess: async data => { setRecord(data); setError(""); setMessage(t("storefront.subscriptionSaved"));
       await queryClient.invalidateQueries({ predicate: query => /^\/api\/(provider\/storefront|services|storefronts|admin\/users)/.test(String(query.queryKey[0])) }); }, onError: fail, onSettled: () => { locked.current = false; } });
   const busy = load.isPending || update.isPending;
-  const validExpiry = plan === "free" || (until && Number.isFinite(Date.parse(until)) && Date.parse(until) > Date.now());
+  const [expiryDate = "", expiryTime = ""] = until.split("T");
+  const validExpiry = plan === "free" || (/^\d{4}-\d{2}-\d{2}$/.test(expiryDate) && isTime24(expiryTime) && Number.isFinite(Date.parse(until)) && Date.parse(until) > Date.now());
   return <section className="phase3-form rounded-xl border bg-card text-card-foreground p-4 sm:p-6 space-y-5">
     <div><h2 className="text-lg font-semibold">{t("storefront.subscriptions")}</h2><p className="text-muted-foreground mt-1">{t("storefront.adminDescription")}</p></div>
     <form className="flex flex-wrap items-end gap-3" onSubmit={event => { event.preventDefault(); if (locked.current || !selection) return; locked.current = true; setRecord(null); setMessage(""); setError(""); if (selection) load.mutate(selection.target); }}>
@@ -54,11 +56,15 @@ export default function AdminSubscriptions({ onAccessError }: { onAccessError: (
       </fieldset>
     </form>
     {load.isPending && <p role="status">{t("storefront.loading")}</p>}
-    {record && <form noValidate className="space-y-4 border-t pt-4" onSubmit={event => { event.preventDefault(); if (locked.current) return; setMessage(""); setError(""); if (!validExpiry) { setExpiryError(true); expiryRef.current?.focus(); return; } setExpiryError(false); locked.current = true; update.mutate(); }}>
+    {record && <form noValidate className="space-y-4 border-t pt-4" onSubmit={event => { event.preventDefault(); if (locked.current) return; setMessage(""); setError(""); if (!validExpiry) { setExpiryError(true); (expiryDate && !isTime24(expiryTime) ? expiryTimeRef : expiryRef).current?.focus(); return; } setExpiryError(false); locked.current = true; update.mutate(); }}>
       <p className="font-medium break-words">{record.name}</p><p>{t(hasPro(record.subscription) ? "storefront.proActive" : "storefront.noPro")}</p>
       <fieldset disabled={busy} className="space-y-4">
         <div><Label htmlFor="subscription-plan">{t("storefront.plan")}</Label><select id="subscription-plan" className="h-10 border rounded-md px-3 block bg-white" value={plan} onChange={event => setPlan(event.target.value as typeof plan)}><option value="free">{t("storefront.free")}</option><option value="pro">Pro</option></select></div>
-        {plan === "pro" && <div><Label htmlFor="subscription-until">{t("storefront.expires")}</Label><Input ref={expiryRef} aria-invalid={expiryError} aria-describedby="subscription-expiry-help" id="subscription-until" type="datetime-local" value={until} required onChange={event => setUntil(event.target.value)} /><p id="subscription-expiry-help" className="text-sm text-muted-foreground mt-1">{expiryError && <span className="text-destructive">{t("operationsForm.expiryError")} </span>}{t("storefront.timezone", { timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}</p></div>}
+        {plan === "pro" && <fieldset className="space-y-2 min-w-0"><legend className="text-sm font-medium">{t("storefront.expires")}</legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="min-w-0"><Label htmlFor="subscription-until">{t("operationsForm.date")}</Label><Input ref={expiryRef} aria-invalid={expiryError} aria-describedby="subscription-expiry-help" id="subscription-until" type="date" value={expiryDate} required onChange={event => setUntil(`${event.target.value}T${expiryTime}`)} /></div>
+            <div className="min-w-0"><Label htmlFor="subscription-until-time">HH:mm</Label><TimeInput ref={expiryTimeRef} aria-invalid={expiryError} aria-describedby="subscription-expiry-help" id="subscription-until-time" value={expiryTime} required onChange={event => setUntil(`${expiryDate}T${event.target.value}`)} /></div>
+          </div><p id="subscription-expiry-help" className="text-sm text-muted-foreground mt-1">{expiryError && <span className="text-destructive">{t("operationsForm.expiryError")} </span>}{t("storefront.timezone", { timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}</p></fieldset>}
         <Button disabled={busy}>{t(update.isPending ? "storefront.saving" : "storefront.saveSubscription")}</Button>
       </fieldset>
     </form>}

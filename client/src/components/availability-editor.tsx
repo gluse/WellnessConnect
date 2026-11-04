@@ -7,6 +7,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useFormLocale } from "@/components/forms-locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TimeInput } from "@/components/ui/time-input";
 import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 
@@ -20,9 +21,9 @@ function RangeInputs({ ranges, onChange, label, errorId }: { ranges: TimeRange[]
   const { t } = useFormLocale();
   return <div className="space-y-2 w-full sm:w-auto min-w-0">
     {ranges.map((range, index) => <div key={index} className="grid sm:flex items-center gap-2">
-      <Input type="time" aria-label={t("operationsForm.rangeStart", { label, number: index + 1 })} aria-invalid={Boolean(errorId)} aria-describedby={errorId} value={range.startTime} onChange={event => onChange(ranges.map((item, i) => i === index ? { ...item, startTime: event.target.value } : item))} className="w-full sm:w-24 min-w-0 sm:flex-1" />
+      <TimeInput aria-label={t("operationsForm.rangeStart", { label, number: index + 1 })} aria-invalid={Boolean(errorId)} aria-describedby={errorId} value={range.startTime} onChange={event => onChange(ranges.map((item, i) => i === index ? { ...item, startTime: event.target.value } : item))} className="w-full sm:w-24 min-w-0 sm:flex-1" />
       <span aria-hidden="true" className="text-center">–</span>
-      <Input type="time" aria-label={t("operationsForm.rangeEnd", { label, number: index + 1 })} aria-invalid={Boolean(errorId)} aria-describedby={errorId} value={range.endTime} onChange={event => onChange(ranges.map((item, i) => i === index ? { ...item, endTime: event.target.value } : item))} className="w-full sm:w-24 min-w-0 sm:flex-1" />
+      <TimeInput aria-label={t("operationsForm.rangeEnd", { label, number: index + 1 })} aria-invalid={Boolean(errorId)} aria-describedby={errorId} value={range.endTime} onChange={event => onChange(ranges.map((item, i) => i === index ? { ...item, endTime: event.target.value } : item))} className="w-full sm:w-24 min-w-0 sm:flex-1" />
       <Button type="button" size="icon" variant="ghost" aria-label={t("operationsForm.rangeRemove", { label, number: index + 1 })} onClick={() => onChange(ranges.filter((_, i) => i !== index))}><X className="w-4 h-4" /></Button>
     </div>)}
     <Button type="button" size="sm" variant="ghost" disabled={ranges.length >= 8} onClick={() => onChange([...ranges, defaultRange()])}><Plus className="w-3 h-3 me-1" />{t("operationsForm.addHours")}</Button>
@@ -81,7 +82,7 @@ export default function AvailabilityEditor({ services, schedules }: { services: 
   const scoped = schedules.filter(item => item.serviceId === serviceId && item.isActive !== false), ownWeekly = scoped.filter(item => item.scheduleType === "recurring");
   const weeklyBody = { serviceId, timezone, days: week.map((intervals, day) => ({ day, intervals })) };
   const exceptions = Array.from(new Set(scoped.filter(item => item.scheduleType === "specific").map(scheduleDate).filter((date): date is string => Boolean(date)))).sort();
-  const receipt = (key: string) => <>{feedback[key]?.message && <p role="status">{feedback[key].message}</p>}{feedback[key]?.error && <p id={`availability-feedback-${key}`} tabIndex={-1} role="alert" className="text-destructive">{feedback[key].error}{timezoneError && <> <a href="#availability-timezone">{t("operationsForm.timezone")}</a></>}{key === "weekly" && rangeErrors.map(day => <a key={day} href={`#availability-day-${day}`} className="block" onClick={event => { event.preventDefault(); document.querySelector<HTMLInputElement>(`#availability-day-${day} input[type=time]`)?.focus(); }}>{dayName(day)}</a>)}{key === "exception" && exceptionError && <> <a href="#availability-exception-date">{t("operationsForm.date")}</a></>}</p>}</>;
+  const receipt = (key: string) => <>{feedback[key]?.message && <p role="status">{feedback[key].message}</p>}{feedback[key]?.error && <p id={`availability-feedback-${key}`} tabIndex={-1} role="alert" className="text-destructive">{feedback[key].error}{timezoneError && <> <a href="#availability-timezone">{t("operationsForm.timezone")}</a></>}{key === "weekly" && rangeErrors.map(day => <a key={day} href={`#availability-day-${day}`} className="block" onClick={event => { event.preventDefault(); document.querySelector<HTMLInputElement>(`#availability-day-${day} [data-time-input]`)?.focus(); }}>{dayName(day)}</a>)}{key === "exception" && exceptionError && <> <a href="#availability-exception-date">{t("operationsForm.date")}</a></>}</p>}</>;
   const dayName = (day: number) => new Intl.DateTimeFormat(language, { weekday: "long", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 0, 4 + day)));
   return <div className="phase3-form border rounded-xl bg-card text-card-foreground p-4 sm:p-6 space-y-6">
     <fieldset disabled={save.isPending} className="space-y-6 min-w-0">

@@ -128,7 +128,10 @@ assert.equal(dropdown().props.value, "distance-asc", "Filter changes preserve th
 await act(async () => component.unmount());
 queryClient.clear();
 await act(async () => { component = create(React.createElement(ServiceRating, { service: unrated[0] })); });
-assert.equal(component.toJSON().children.join(""), translation.service.notRated);
+assert.equal(component.toJSON().props.role, "img");
+assert.equal(component.toJSON().props["aria-label"], translation.service.notRated);
+assert.equal(component.root.findAllByType("button").length, 0, "Unrated services do not imply an available review score");
+assert.equal(component.root.findByType("svg").props.fill, "none", "Unrated star is an outline");
 await act(async () => component.update(React.createElement(ServiceRating, { service: rows[0] })));
 assert.ok(JSON.stringify(component.toJSON()).includes("4.0"));
 assert.ok(!JSON.stringify(component.toJSON()).includes("127"));

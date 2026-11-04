@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { BookingWithDetails } from "@shared/schema";
 import type { BookingNotificationState } from "@shared/notifications";
 import { apiRequest } from "@/lib/queryClient";
+import { formatDateTime24 } from "@/lib/date-time";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -22,7 +23,7 @@ export default function AppointmentReminder({ booking, scope, pro, canManage, on
   return <div className="space-y-2" aria-live="polite">
     {automatic && <Badge variant="outline" className="whitespace-normal break-words">{t("notifications.automaticReminders")}</Badge>}
     {automationConfigured && reminder && reminder.state !== "off" && <div className="space-y-1"><p className="text-xs text-muted-foreground">{t(`notifications.reminderState.${reminder.state}`)}</p>
-      {reminder.dueAt && <p className="text-xs text-muted-foreground">{new Intl.DateTimeFormat(i18n.language, { dateStyle: "medium", timeStyle: "short", timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }).format(new Date(reminder.dueAt))} ({Intl.DateTimeFormat().resolvedOptions().timeZone}){reminder.channel ? ` · ${t(`notifications.method.${reminder.channel}`)}` : ""}</p>}
+      {reminder.dueAt && <p className="text-xs text-muted-foreground">{formatDateTime24(reminder.dueAt, i18n.language, { dateStyle: "medium", timeStyle: "short" })} ({Intl.DateTimeFormat().resolvedOptions().timeZone}){reminder.channel ? ` · ${t(`notifications.method.${reminder.channel}`)}` : ""}</p>}
       {reminder.reasonCode && <p className="text-xs text-muted-foreground">{t(`notifications.reasons.${reminder.reasonCode}`, { defaultValue: t("notifications.unavailable") })}</p>}
     </div>}
     {automationConfigured && state.isError && <p className="text-sm" role="status">{t("notifications.statusUnavailable")}</p>}

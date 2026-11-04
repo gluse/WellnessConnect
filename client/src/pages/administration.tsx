@@ -5,6 +5,7 @@ import { defaultAdminUserFilters, type AdminUsersPage, type AdminProSubscription
 import { useAuth } from "@/hooks/useAuth";
 import { useAppAdmin } from "@/hooks/use-app-admin";
 import { apiRequest } from "@/lib/queryClient";
+import { formatDateTime24 } from "@/lib/date-time";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,20 +20,20 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCap
 
 const signInUrl = "/login?returnTo=%2Fadministration";
 
-function dateLabel(value: string | null): string {
+function dateLabel(value: string | null, language?: string): string {
   if (!value) return "Never";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Unknown" : date.toLocaleString();
+  return Number.isNaN(date.getTime()) ? "Unknown" : formatDateTime24(date, language);
 }
 
 function ProSubscriptionStatus({ subscription, company = false }: { subscription: AdminProSubscription; company?: boolean }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const enabled = subscription.enabled;
   return <div className="space-y-1">
     <Badge variant="outline" className={enabled ? "bg-primary/10 text-primary border-primary/20" : "text-neutral-500"}>
       {t(company ? enabled ? "storefront.companyProEnabled" : "storefront.companyProDisabled" : enabled ? "storefront.proEnabled" : "storefront.proDisabled")}
     </Badge>
-    {enabled && <p className="text-xs text-neutral-500">{t("storefront.validUntil", { date: dateLabel(subscription.proUntil) })}</p>}
+    {enabled && <p className="text-xs text-neutral-500">{t("storefront.validUntil", { date: dateLabel(subscription.proUntil, i18n.resolvedLanguage) })}</p>}
   </div>;
 }
 
@@ -44,7 +45,7 @@ export default function Administration() {
 }
 
 function AdministrationContent() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { adminPricingTransport } = useBillingRuntime();
   const access = useAppAdmin();
@@ -112,8 +113,8 @@ function AdministrationContent() {
                   <p className="font-medium break-words">{company.name} <span className="text-neutral-500 font-normal">#{company.id}</span></p><p className="text-xs text-neutral-500">{{ owner: "Owner", admin: "Administrator", provider: "Service provider", viewer: "Read-only" }[company.role]}{!company.isActive && " · Closed"}</p>
                   <div className="mt-1" data-testid={`company-pro-${user.id}-${company.id}`}><ProSubscriptionStatus subscription={company.proSubscription} company /></div>
                 </li>)}</ul>}</TableCell>
-                <TableCell className="whitespace-nowrap">{dateLabel(user.createdAt)}</TableCell>
-                <TableCell className="whitespace-nowrap">{dateLabel(user.lastSignInAt)}</TableCell>
+                <TableCell className="whitespace-nowrap">{dateLabel(user.createdAt, i18n.resolvedLanguage)}</TableCell>
+                <TableCell className="whitespace-nowrap">{dateLabel(user.lastSignInAt, i18n.resolvedLanguage)}</TableCell>
               </TableRow>)}</TableBody>
             </Table>}
             <nav aria-label="User directory pages" className="flex flex-wrap items-center justify-between gap-3">

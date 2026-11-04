@@ -27,53 +27,6 @@ Reports is [TASK-038](../TASKS.md#reports); no reporting UI was implemented.
 Chrome/Firefox/WebKit en/lv/ru navigation suites and local type/build checks pass.
 Other supported languages/RTL remain deferred. No connected writes or deployment.
 
-## Compact appointment dropdown consistency — 3 November 2026
-
-**Completed / verified locally.** User requested matching status/employee dropdowns
-to More actions with minimal spacing. Requester: user; assigned frontend executor:
-`/root` for the local agenda styles, fixture and mocked checks. Outline/small
-button styles now also render native filters with one chevron, compact 36px height
-and reduced gaps. Chrome/Firefox/WebKit each pass 24 en/lv/ru provider/customer
-cases, keyboard/filter regressions and enlarged-text reflow; TypeScript passes.
-See [scope, evidence, limits and recovery](appointment-filter-style-handoff.md).
-No connected operation, other owner dependency or deployment is included. Other
-locales/RTL remain deferred; next action is user review.
-
-**Orange-background follow-up, 3 November:** user reported an inherited orange
-accent on hover/native options. `/root` reproduced it and applied neutral hover
-and option colors within the existing local frontend scope. Actual-pointer hover,
-native popup dismissal, styles and filtering pass 24 en/lv/ru cases in each of
-Chrome/Firefox/WebKit; TypeScript passes. Prior evidence is preserved under its
-original prefix. See the follow-up in the handoff above. Completed locally.
-
-## Mobile navigation redesign — 3 November 2026
-
-**Calendar label follow-up:** completed locally by the specifically authorized
-frontend executor `/root` at the user's request. Mobile and desktop provider
-navigation reuse the existing translated Calendar label. TypeScript, provider
-navigation regression and Chrome's six behavior groups/eighteen en/lv/ru cases
-pass. [Scope, evidence and recovery](mobile-navigation-handoff.md#follow-up-calendar-navigation-label--3-november-2026).
-Other locales/RTL remain deferred; no connected operations or deployment.
-
-**Completed / verified locally.** User approved the reviewed plan and explicitly assigned
-`/root` the local frontend navigation/layout, translations and mocked checks.
-Requester: user; owner/executor: `/root` under specific frontend approval.
-Below 1024px, signed-in pages share Explore, Bookings, Appointments and Menu;
-workspace selection stays above provider content. No cross-role dependency,
-connected operation, private configuration or deployment is included.
-See [scope, verification, limits and recovery](mobile-navigation-handoff.md).
-Chrome/Firefox/WebKit each pass six behavior groups and eighteen en/lv/ru viewport
-cases; TypeScript, isolated production build and affected offline regressions pass.
-Other locales/RTL remain deferred. No remaining local dependency; next action is
-user review. Recovery preserves unrelated work and historical evidence.
-
-**Galaxy A55 follow-up, 3 November:** user reported the Appointments label wrapping
-at 360×800. `/root` corrected control sizing within the same local frontend scope.
-Focused Chrome/Firefox/WebKit checks pass at 320/360/390/545px in en/lv/ru, with
-single-line normal labels and unclipped 200% text. TypeScript and the full Chrome
-navigation regression pass. Follow-up completed locally; see the handoff above.
-
-
 ## Provider appointment calendar — 3 November 2026
 
 **Simplified toolbar reference follow-up:** completed locally by specifically
@@ -144,6 +97,82 @@ route regressions plus TypeScript pass; the route test used approved isolated
 loopback execution with synthetic dependencies. No connected verification or
 deployment occurred. No remaining local dependency; next: user review.
 Recovery: revert only attributable changes.
+
+## App-wide 24-hour time — 3 November 2026
+
+**Completed / verified locally.** User specifically requested 24-hour time across the
+app. Approver/requester: user; frontend owner/executor: `/root`. Scope: local
+frontend time formatting, scheduling/time-entry controls, subscription expiry,
+and offline/mocked checks. Preserve existing dates, timezones, API values and
+unrelated dirty work. Backend owner `/root/time_format_backend` accepted the
+generated-notification dependency under standing cooperation and delivered the
+local policy change and offline tests; root reviewed the integrated contract.
+No connected services/database operations or deployment.
+Acceptance: 00:00–23:59 displays and entry without AM/PM, with en/lv/ru checks,
+TypeScript and an isolated frontend build. Other locales and Arabic RTL deferred.
+Chrome/Firefox/WebKit each pass 18 en/lv/ru form/viewport cases, validation,
+payload/focus/keyboard and 200% text checks. TypeScript, fixture types, isolated
+frontend build and affected offline regressions pass. No remaining dependency;
+next action is user review. Recovery: revert only attributable changes.
+Results: [handoff](time-format-handoff.md).
+
+## Unrated service star — 3 November 2026
+
+**Completed / verified locally.** User requested replacing the visible
+“Not rated yet” label with an empty/grey star. Specific frontend executor `/root`
+implemented a grey outline icon in the shared rating component, keeping the
+localized accessible name and rated-review behavior. Search regression and
+TypeScript pass; Chrome/Firefox/WebKit pass list/grid/details checks in en/lv/ru,
+with translated accessible names and existing rated-review behavior. Scope is local frontend
+only; no connected operations or other owner dependency. See
+[scope, evidence, limits and recovery](unrated-service-star-handoff.md).
+Only en/lv/ru are tested; other locales/RTL remain deferred.
+
+## Compact appointment dropdown consistency — 3 November 2026
+
+**Completed / verified locally.** User requested matching status/employee dropdowns
+to More actions with minimal spacing. Requester: user; assigned frontend executor:
+`/root` for the local agenda styles, fixture and mocked checks. Outline/small
+button styles now also render native filters with one chevron, compact 36px height
+and reduced gaps. Chrome/Firefox/WebKit each pass 24 en/lv/ru provider/customer
+cases, keyboard/filter regressions and enlarged-text reflow; TypeScript passes.
+See [scope, evidence, limits and recovery](appointment-filter-style-handoff.md).
+No connected operation, other owner dependency or deployment is included. Other
+locales/RTL remain deferred; next action is user review.
+
+**Orange-background follow-up, 3 November:** user reported an inherited orange
+accent on hover/native options. `/root` reproduced it and applied neutral hover
+and option colors within the existing local frontend scope. Actual-pointer hover,
+native popup dismissal, styles and filtering pass 24 en/lv/ru cases in each of
+Chrome/Firefox/WebKit; TypeScript passes. Prior evidence is preserved under its
+original prefix. See the follow-up in the handoff above. Completed locally.
+
+## Mobile navigation redesign — 3 November 2026
+
+**Calendar label follow-up:** completed locally by the specifically authorized
+frontend executor `/root` at the user's request. Mobile and desktop provider
+navigation reuse the existing translated Calendar label. TypeScript, provider
+navigation regression and Chrome's six behavior groups/eighteen en/lv/ru cases
+pass. [Scope, evidence and recovery](mobile-navigation-handoff.md#follow-up-calendar-navigation-label--3-november-2026).
+Other locales/RTL remain deferred; no connected operations or deployment.
+
+**Completed / verified locally.** User approved the reviewed plan and explicitly assigned
+`/root` the local frontend navigation/layout, translations and mocked checks.
+Requester: user; owner/executor: `/root` under specific frontend approval.
+Below 1024px, signed-in pages share Explore, Bookings, Appointments and Menu;
+workspace selection stays above provider content. No cross-role dependency,
+connected operation, private configuration or deployment is included.
+See [scope, verification, limits and recovery](mobile-navigation-handoff.md).
+Chrome/Firefox/WebKit each pass six behavior groups and eighteen en/lv/ru viewport
+cases; TypeScript, isolated production build and affected offline regressions pass.
+Other locales/RTL remain deferred. No remaining local dependency; next action is
+user review. Recovery preserves unrelated work and historical evidence.
+
+**Galaxy A55 follow-up, 3 November:** user reported the Appointments label wrapping
+at 360×800. `/root` corrected control sizing within the same local frontend scope.
+Focused Chrome/Firefox/WebKit checks pass at 320/360/390/545px in en/lv/ru, with
+single-line normal labels and unclipped 200% text. TypeScript and the full Chrome
+navigation regression pass. Follow-up completed locally; see the handoff above.
 
 ## Appointment layout redesign — 2 November 2026
 

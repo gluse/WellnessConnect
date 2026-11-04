@@ -19,6 +19,7 @@ const rows = [
   { id: 2, name: "Deep tissue massage", description: "Focused bodywork for tight muscles and a calmer, lighter feeling.", category: "health_wellness", serviceType: "one_to_one", price: "55", duration: 60, instantBooking: false, rating: 4.8, reviewCount: 42 },
   { id: 3, name: "Personal training", description: "A personal session built around your goals, strength and confidence.", category: "fitness", serviceType: "one_to_one", price: "40", duration: 45, instantBooking: true, rating: 4.9, reviewCount: 16 },
 ].map(row => ({ ...row, provider, providerId: provider.id, isActive: true, latitude: 0, longitude: row.id / 100, address: "Synthetic studio address", ageGroups: ["adults"], targetGender: "both", maxCapacity: 8, availableCapacity: 0 })) as ServiceWithProvider[];
+if (new URLSearchParams(location.search).has("unrated")) rows[0] = { ...rows[0], rating: undefined, reviewCount: 0 };
 if (new URLSearchParams(location.search).has("redesign")) {
   const canvas = document.createElement("canvas"); canvas.width = 320; canvas.height = 180;
   const context = canvas.getContext("2d")!;

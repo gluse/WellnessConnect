@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useFormLocale } from "@/components/forms-locale";
+import { formatDateTime24 } from "@/lib/date-time";
 import { Button } from "@/components/ui/button";
 import { BillingClientError, parseBillingStatus, parseHostedResult, type BillingScope, type MonthlyBillingStatus, type MonthlyBillingTransport } from "@/lib/monthly-billing";
 
@@ -20,7 +21,7 @@ function ScopedBillingPanel({ actorId, target, transport, returned = false, navi
   const readsForPending = useRef(0), latestRead = useRef<() => Promise<void>>();
   const activeTransport = useRef(transport);
   const scope = { actorId, target };
-  const date = (value: string) => new Intl.DateTimeFormat(language, { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(new Date(value));
+  const date = (value: string) => formatDateTime24(value, language, { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" });
   function message(err: unknown) {
     return err instanceof BillingClientError ? `monthlyBilling.${err.code}` : "monthlyBilling.loadError";
   }

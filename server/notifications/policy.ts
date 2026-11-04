@@ -30,7 +30,7 @@ const copy: Record<string, { subject: string; accepted: string; rejected: string
 };
 export function renderMessage(input: { kind: "accepted" | "rejected" | "rescheduled" | "reminder"; service: string; date: Date; oldDate?: Date | null; language: string; timeZone: string }) {
   const language = copy[input.language] ? input.language : "en", words = copy[language];
-  const format = (value: Date) => `${new Intl.DateTimeFormat(language, { dateStyle: "medium", timeStyle: "short", timeZone: input.timeZone }).format(value)} (${input.timeZone})`;
+  const format = (value: Date) => `${new Intl.DateTimeFormat(language, { dateStyle: "medium", timeStyle: "short", hourCycle: "h23", timeZone: input.timeZone }).format(value)} (${input.timeZone})`;
   const replacements = { service: input.service.slice(0, 250), date: format(input.date), old: input.oldDate ? format(input.oldDate) : "" };
   const text = words[input.kind].replace(/\{(service|date|old)\}/g, (_match, key: keyof typeof replacements) => replacements[key]);
   return { subject: words.subject, message: `${text}\n${words.from}`, date: format(input.date), oldDate: input.oldDate ? format(input.oldDate) : "" };

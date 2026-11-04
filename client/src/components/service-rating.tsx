@@ -27,8 +27,8 @@ export default function ServiceRating({ service, compact = false }: { service: S
     </DialogContent>
   </Dialog>;
   return (
-    <div className="flex items-center gap-1 text-sm text-neutral-500" data-testid={`text-rating-${service.id}`}>
-      {t("service.notRated")}
-    </div>
+    <span role="img" aria-label={t("service.notRated")} className="inline-flex items-center text-neutral-500" data-testid={`text-rating-${service.id}`}>
+      <Star className="w-4 h-4" aria-hidden="true" />
+    </span>
   );
 }

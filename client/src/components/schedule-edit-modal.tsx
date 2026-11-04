@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TimeInput } from "@/components/ui/time-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
@@ -96,7 +97,11 @@ export default function ScheduleEditModal({
     }));
   };
 
+  const timeFields = useRef<HTMLDivElement>(null);
   const handleSave = () => {
+    for (const input of Array.from(timeFields.current?.querySelectorAll<HTMLInputElement>("[data-time-input]") || [])) {
+      if (!input.reportValidity()) return;
+    }
     if (isRecurring && editMode === "this_occurrence") {
       onSave({
         mode: "this_occurrence",
@@ -162,7 +167,7 @@ export default function ScheduleEditModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-end sm:items-center justify-center">
+    <div ref={timeFields} className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-end sm:items-center justify-center">
       <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto shadow-xl">
         <div className="sticky top-0 bg-white p-4 border-b flex items-center justify-between rounded-t-3xl sm:rounded-t-2xl z-10">
           <div>
@@ -301,17 +306,15 @@ export default function ScheduleEditModal({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-sm">Start Time</Label>
-                  <Input
-                    type="time"
+                  <Label htmlFor="schedule-start-time" className="text-sm">Start Time</Label>
+                  <TimeInput id="schedule-start-time" required
                     value={formData.startTime}
                     onChange={(e) => setFormData((prev) => ({ ...prev, startTime: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <Label className="text-sm">End Time</Label>
-                  <Input
-                    type="time"
+                  <Label htmlFor="schedule-end-time" className="text-sm">End Time</Label>
+                  <TimeInput id="schedule-end-time" required
                     value={formData.endTime}
                     onChange={(e) => setFormData((prev) => ({ ...prev, endTime: e.target.value }))}
                   />
@@ -407,15 +410,13 @@ export default function ScheduleEditModal({
                   <div className="space-y-2">
                     {formData.breaks.map((brk, idx) => (
                       <div key={idx} className="flex items-center gap-2">
-                        <Input
-                          type="time"
+                        <TimeInput aria-label={`Break ${idx + 1} start time`} required
                           value={brk.startTime}
                           onChange={(e) => handleUpdateBreak(idx, "startTime", e.target.value)}
                           className="flex-1"
                         />
                         <span className="text-xs text-neutral-400">to</span>
-                        <Input
-                          type="time"
+                        <TimeInput aria-label={`Break ${idx + 1} end time`} required
                           value={brk.endTime}
                           onChange={(e) => handleUpdateBreak(idx, "endTime", e.target.value)}
                           className="flex-1"
