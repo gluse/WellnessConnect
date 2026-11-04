@@ -53,7 +53,7 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
   const [reviewing, setReviewing] = useState(false);
   const [participantCount, setParticipantCount] = useState(1);
   const [participantTouched, setParticipantTouched] = useState(false);
-  const [notes, setNotes] = useState("");
+  const [initialMessage, setInitialMessage] = useState("");
   const [error, setError] = useState("");
   const [succeeded, setSucceeded] = useState(false);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
@@ -78,16 +78,17 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
     if (heading.current && content.current && heading.current.getBoundingClientRect().bottom > content.current.getBoundingClientRect().bottom) heading.current.scrollIntoView({ block: "nearest" });
   }, [reviewing, succeeded]);
   const booking = useMutation({
+    retry: false,
     mutationFn: async () => {
       if (!selectedSlot) throw new Error("No selected appointment");
-      return (await apiRequest("POST", "/api/bookings", { serviceId: service.id, scheduledDate: selectedSlot.startsAt, participantCount, notes: notes.trim() || null })).json();
+      return (await apiRequest("POST", "/api/bookings", { serviceId: service.id, scheduledDate: selectedSlot.startsAt, participantCount, initialMessage: initialMessage.trim() || null })).json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bookings/seeker"] });
       queryClient.invalidateQueries({ queryKey: ["/api/bookings/provider"] });
       queryClient.invalidateQueries({ predicate: query => String(query.queryKey[0]).startsWith("/api/availability/") });
       toast({ title: t(service.instantBooking ? "bookingForm.confirmed" : "bookingForm.requestSent"), description: t("bookingForm.successHelp") });
-      setNotes(""); setSucceeded(true);
+      setInitialMessage(""); setSucceeded(true);
     },
     onError: error => {
       if (isUnauthorizedError(error)) { window.location.assign(`/login?returnTo=${encodeURIComponent(returnTo)}`); return; }
@@ -172,7 +173,7 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
                 <p id="booking-participants-help" className="text-sm text-muted-foreground">{t("bookingForm.participantHelp", { maximum: new Intl.NumberFormat(language).format(maximum) })}</p>
                 {participantTouched && !participantValid && <p id="booking-participants-error" role="alert" className="text-sm text-red-700 dark:text-red-300">{t("bookingForm.participantError", { maximum: new Intl.NumberFormat(language).format(maximum) })}</p>}
               </div>}
-              <div className="space-y-2"><Label htmlFor="booking-notes">{t("bookingForm.notes")}</Label><Textarea id="booking-notes" dir="auto" maxLength={2000} disabled={busy} value={notes} onChange={event => setNotes(event.target.value)} /></div>
+              <div className="space-y-2"><Label htmlFor="booking-initial-message">{t("bookingForm.initialMessage")}</Label><Textarea id="booking-initial-message" aria-describedby="booking-initial-message-help" dir="auto" maxLength={4000} disabled={busy} value={initialMessage} onChange={event => setInitialMessage(event.target.value)} /><p id="booking-initial-message-help" className="text-sm text-muted-foreground">{t("bookingForm.initialMessageHelp")}</p></div>
               <dl className="flex flex-wrap justify-between gap-3 font-medium"><dt>{t("bookingForm.total")}</dt><dd><bdi>{participantValid ? amount(total) : "—"}</bdi></dd></dl>
               {participantValid && advance > 0 && <p className="text-sm text-muted-foreground">{t("bookingForm.advanceNotice", { amount: amount(advance) })}</p>}
             </>}

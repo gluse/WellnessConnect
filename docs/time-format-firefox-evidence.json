@@ -1,0 +1,111 @@
+{
+  "date": "2026-11-03",
+  "browser": {
+    "product": "firefox/157.0"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "area": "availability"
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "area": "availability"
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "area": "availability"
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "area": "subscription"
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "area": "subscription"
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "area": "subscription"
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "area": "availability"
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "area": "availability"
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "area": "availability"
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "area": "subscription"
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "area": "subscription"
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "area": "subscription"
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "area": "availability"
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "area": "availability"
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "area": "availability"
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "area": "subscription"
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "area": "subscription"
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "area": "subscription"
+    }
+  ],
+  "checks": [
+    "weekly HH:mm display, invalid rejection, error link focus and canonical save",
+    "subscription expiry rejection, focus and unchanged UTC payload",
+    "320px 200% text reflow of availability and expiry",
+    "midnight/noon/afternoon displays, language changes",
+    "legacy schedule validation and keyboard entry"
+  ],
+  "limits": "Isolated synthetic fixtures; no connected database/services or deployment. Physical devices and assistive technology untested. ar/zh/fr/de/hi/ja/pt/es and Arabic RTL deferred."
+}

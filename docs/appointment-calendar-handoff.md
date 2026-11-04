@@ -298,6 +298,33 @@ changed. Recovery: reverse this follow-up's calendar toolbar and calendar-only
 filter-label/timezone changes and runner updates, preserving prior work and
 historical evidence. Next: user review of the local calendar.
 
+## Compact date picker follow-up — 4 November 2026
+
+User specifically authorized frontend executor `/root` to fix the stretching date
+picker on `/my-services/appointments`. Scope: the local calendar input's width,
+isolated toolbar checks and this record. The picker now caps at 9rem (144px at the
+default font size), while retaining the existing 7rem minimum and small-screen
+flexibility. Date selection, native control semantics and labels are preserved.
+No new security boundary, data access or persistence is introduced.
+
+The toolbar runner checks the width cap and desktop width in addition to its
+existing Day/Week, reflow, labels and touch-target assertions. Evidence uses the
+`appointment-calendar-fixed-date` prefix, preserving earlier evidence. Checks
+cover en/lv/ru, eight widths from 320–1440px and normal/200% root text size.
+Chrome, Firefox and WebKit each pass all 96 layout cases.
+Chrome desktop English and 360px Russian screenshots were visually inspected.
+TypeScript (`npm run check`) and the isolated frontend build pass; existing
+Browserslist-age and bundle-size warnings remain. Browser evidence:
+[Chrome](appointment-calendar-fixed-date-chrome-evidence.json),
+[Firefox](appointment-calendar-fixed-date-firefox-evidence.json),
+[WebKit](appointment-calendar-fixed-date-webkit-evidence.json).
+
+Only mocked local fixtures are exercised; no connected services, database writes
+or deployment. Physical devices, screen readers and native zoom are not newly
+verified. ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred. Recovery: revert
+only the date-input width cap and attributable runner/docs/evidence additions,
+preserving unrelated dirty work. Next: user review of the local calendar.
+
 ## Navigation/toolbar commit isolation — 3 November 2026
 
 At the user's request to commit, the navigation prerequisites, Calendar labels,

@@ -84,5 +84,5 @@ queryClient.setQueryData(["/api/auth/user"], customerMode ? customer : provider)
 queryClient.setQueryData(["/api/company/context"], context);
 await i18next.use(initReactI18next).init({ lng: params.get("lang") || "en", fallbackLng: false, resources: __FORM_RESOURCES__, interpolation: { escapeValue: false } });
 document.documentElement.lang = i18next.language;
-createRoot(document.getElementById("root")!).render(<QueryClientProvider client={queryClient}>{customerMode ? <MyBookings /> : <main className="max-w-5xl mx-auto p-4"><AppointmentsPage /></main>}</QueryClientProvider>);
+createRoot(document.getElementById("root")!).render(<QueryClientProvider client={queryClient}>{customerMode ? <MyBookings /> : <main className="max-w-5xl mx-auto p-4"><AppointmentsPage view="upcoming" /></main>}</QueryClientProvider>);
 fixture.ready = true;

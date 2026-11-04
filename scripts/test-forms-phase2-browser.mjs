@@ -8,7 +8,8 @@ assert.equal(serviceAmount(0, "en"), "$0.00");
 assert.equal(serviceAmount(1.005, "en"), "$1.00", "Preserve existing toFixed display rounding");
 assert.equal(serviceAmount(2.675, "en"), "$2.67");
 const root = path.resolve(import.meta.dirname, "..");
-const prefix = evidencePrefix("phase2");
+const prefix = process.env.FORMS_EVIDENCE_PREFIX || evidencePrefix("phase2");
+assert.match(prefix, /^[a-z0-9-]+$/);
 const resources = {};
 for (const language of languages) resources[language] = { translation: JSON.parse(await readFile(path.join(root, "client/public/locales", language, "translation.json"), "utf8")) };
 let messageCount = 0;
@@ -41,7 +42,7 @@ try {
     await until(() => [...document.querySelectorAll('[aria-pressed]')].some(button => button.textContent.includes("10:00")), "available times");
     await click('button[aria-pressed="false"]');
     await button(resources[language].translation.bookingForm.continue);
-    await until(() => !!document.getElementById("booking-notes"), "booking review");
+    await until(() => !!document.getElementById("booking-initial-message"), "booking review");
   };
   const confirm = () => button("Request booking");
   const dialog = () => until(() => !!document.querySelector('[role="alertdialog"][data-state="open"]'), "confirmation");
@@ -227,20 +228,20 @@ try {
   assert.equal((await writes("/api/bookings")).length, 0);
   assert.equal(await evaluate(() => document.activeElement.id), "booking-participants");
   assert.equal(await evaluate(() => document.getElementById("booking-participants").getAttribute("aria-invalid")), "true");
-  await set("booking-participants", "2"); await set("booking-notes", "Synthetic note");
+  await set("booking-participants", "2"); await set("booking-initial-message", "Synthetic note");
   await button("Back"); await button("Continue");
-  assert.equal(await value("booking-participants"), "2"); assert.equal(await value("booking-notes"), "Synthetic note");
+  assert.equal(await value("booking-participants"), "2"); assert.equal(await value("booking-initial-message"), "Synthetic note");
   assert.ok(await evaluate(() => document.querySelector('[role="dialog"]').textContent.includes("Payment collection is not available")));
   await configure({ bookingResult: "error" }); await confirm();
   await until(() => [...document.querySelectorAll('[role="alert"]')].some(element => element.textContent.includes("Unable to book")), "booking rejection");
-  assert.equal(await value("booking-notes"), "Synthetic note");
+  assert.equal(await value("booking-initial-message"), "Synthetic note");
   assert.equal(await evaluate(() => document.querySelectorAll('[role="alert"] img').length), 0);
   await configure({ bookingResult: "forbidden" }); await confirm();
   await until(() => [...document.querySelectorAll('[role="alert"]')].some(element => element.textContent.includes("permission")), "booking permission rejection");
   await configure({ bookingResult: "conflict" }); await confirm();
-  await until(() => !document.getElementById("booking-notes") && [...document.querySelectorAll('[role="alert"]')].some(element => element.textContent.includes("no longer available")), "slot conflict returns to selection");
+  await until(() => !document.getElementById("booking-initial-message") && [...document.querySelectorAll('[role="alert"]')].some(element => element.textContent.includes("no longer available")), "slot conflict returns to selection");
   await choose();
-  assert.equal(await value("booking-participants"), "2"); assert.equal(await value("booking-notes"), "Synthetic note");
+  assert.equal(await value("booking-participants"), "2"); assert.equal(await value("booking-initial-message"), "Synthetic note");
   await configure({ bookingResult: "pending" }); await confirm();
   await until(() => document.querySelector('[role="dialog"] button:last-child').disabled, "pending booking close disabled");
   const pendingBooking = (await writes("/api/bookings")).length;
@@ -250,7 +251,7 @@ try {
   await until(() => [...document.querySelectorAll('[role="dialog"] h2')].some(element => element.textContent === "Request sent"), "request success");
   assert.equal(await evaluate(() => document.activeElement.textContent), "Request sent");
   assert.ok(await evaluate(() => !document.querySelector('[role="dialog"]').textContent.includes("Booking confirmed")));
-  assert.deepEqual((await writes("/api/bookings")).at(-1).body, { serviceId: 7, scheduledDate: "2030-01-16T10:00:00.000Z", participantCount: 2, notes: "Synthetic note" });
+  assert.deepEqual((await writes("/api/bookings")).at(-1).body, { serviceId: 7, scheduledDate: "2030-01-16T10:00:00.000Z", participantCount: 2, initialMessage: "Synthetic note" });
   await button("Close"); await until(() => !document.querySelector('[role="dialog"]'), "booking success close");
   assert.ok(await evaluate(() => document.activeElement === document.querySelector("#open-booking button")));
   checks.push("Booking participant errors, Back retention, safe rejected/denied feedback, slot-conflict recovery, pending duplicate/Escape guards, request-specific confirmation and unchanged payload.");
@@ -273,12 +274,12 @@ try {
     await until(() => !!document.querySelector('button[name="day"]:not([disabled])'), "localized available dates");
     for (const width of [320, 390, 639, 640, 641, 768, 1280]) { await viewport(width); await reflow(); matrix.push("booking-selection:" + language + ":" + width); }
     await choose(language);
-    await set("booking-notes", "Synthetic العربية notes");
+    await set("booking-initial-message", "Synthetic العربية notes");
     for (const width of [320, 390, 639, 640, 641, 768, 1280]) { await viewport(width); await reflow(); matrix.push("booking:" + language + ":" + width); }
     assert.equal(await evaluate(() => document.documentElement.dir), "ltr");
     await set("fixture-language", "en");
     await until(() => document.documentElement.lang === "en", "booking language switch");
-    assert.equal(await value("booking-notes"), "Synthetic العربية notes");
+    assert.equal(await value("booking-initial-message"), "Synthetic العربية notes");
   }
   checks.push("en/lv/ru and breakpoint edges: profile/address and booking review reflow; live language switching retains edits.");
 

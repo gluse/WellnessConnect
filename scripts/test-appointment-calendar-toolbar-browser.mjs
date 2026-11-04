@@ -7,6 +7,8 @@ const resources = Object.fromEntries(await Promise.all(languages.map(async langu
 const fixture = await browserFixture({ entry: "scripts/fixtures/appointment-calendar.tsx", resources });
 const { evaluate, until, viewport, visit, set } = fixture;
 const engine = process.env.FORMS_BROWSER || "chrome", matrix = [];
+const artifactPrefix = process.env.APPOINTMENT_CALENDAR_ARTIFACT_PREFIX || "appointment-calendar-toolbar-v2";
+assert.match(artifactPrefix, /^[a-z0-9-]+$/);
 async function layout() {
   return evaluate(() => {
     const range = document.querySelector('[data-testid="calendar-range"]');
@@ -23,6 +25,8 @@ async function layout() {
       visibleFilterLabels: filters.some(field => getComputedStyle(field.labels[0]).position !== "absolute" || field.labels[0].getBoundingClientRect().width > 1),
       visibleTimezone: [...document.querySelectorAll('[data-testid="appointment-filters"] p')].some(element => element.getBoundingClientRect().height > 1),
       dateValue: date.value,
+      dateWidth: date.getBoundingClientRect().width,
+      datePreferredWidth: 9 * parseFloat(getComputedStyle(document.documentElement).fontSize),
       filters: filters.map(field => {
         const style = getComputedStyle(field), box = field.getBoundingClientRect();
         context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
@@ -50,6 +54,8 @@ try {
           assert.equal(state.visibleFilterLabels, false, label + ": dropdown labels are screen-reader-only");
           assert.equal(state.visibleTimezone, false, label + ": timezone line removed");
           assert.equal(state.dateValue, "2026-09-30");
+          assert.ok(state.dateWidth <= state.datePreferredWidth + 1, label + ": date picker never stretches beyond its compact width");
+          if (width === 1440) assert.ok(Math.abs(state.dateWidth - state.datePreferredWidth) < 1, label + ": date picker uses its fixed width when space permits");
           assert.ok(state.toolbar.every(control => control.left >= 0 && control.right <= width + 1 && control.height >= 44), label + ": toolbar controls remain visible");
           if (!enlarged) assert.ok(state.toolbar.every(control => Math.abs(control.top - state.toolbar[0].top) < 1), label + ": Today, Day/Week and date share a row");
           assert.equal(state.filters.length, 2);
@@ -63,18 +69,18 @@ try {
       if ([360, 545, 1440].includes(width)) {
         await set("appointment-calendar-mode", "day");
         await set("appointment-calendar-date", "2026-11-03");
-        await fixture.screenshot(`docs/appointment-calendar-toolbar-v2-${engine}-${language}-${width}.png`, false);
+        await fixture.screenshot(`docs/${artifactPrefix}-${engine}-${language}-${width}.png`, false);
       }
       assert.deepEqual(await evaluate(() => window.phase2Fixture.unexpected), []);
     }
   }
   assert.deepEqual(fixture.errors, []); assert.deepEqual(fixture.network, []); assert.deepEqual(fixture.blocked, []);
-  await writeFile(new URL(`../docs/appointment-calendar-toolbar-v2-${engine}-evidence.json`, import.meta.url), JSON.stringify({ date: "2026-11-03", browser: await fixture.api("Browser.getVersion"), languages, matrix,
+  await writeFile(new URL(`../docs/${artifactPrefix}-${engine}-evidence.json`, import.meta.url), JSON.stringify({ date: "2026-11-04", browser: await fixture.api("Browser.getVersion"), languages, matrix,
     deferredLanguages: ["ar", "zh", "fr", "de", "hi", "ja", "pt", "es"],
     limits: "Synthetic mocked APIs, isolated loopback. CSS viewports and 200% root font size; no physical-device, native zoom or screen-reader certification. Enlarged toolbar controls may wrap; enlarged filters can scroll locally without clipping text." }, null, 2) + "\n");
   console.log(`Passed ${engine}: ${matrix.length} localized toolbar layout cases, Day/Week, 320–1440px and 200% text.`);
 } catch (error) {
   console.error(await layout());
-  await fixture.screenshot(`docs/appointment-calendar-toolbar-v2-${engine}-failure.png`, false).catch(() => {});
+  await fixture.screenshot(`docs/${artifactPrefix}-${engine}-failure.png`, false).catch(() => {});
   throw error;
 } finally { await fixture.close(); }

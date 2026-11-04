@@ -65,7 +65,7 @@ export default function AppointmentCalendar({ events, date, onDateChange, loadin
         <option value="day">{t("appointmentCalendar.day")}</option><option value="week">{t("appointmentCalendar.week")}</option>
       </select>
       <label className="sr-only" htmlFor="appointment-calendar-date">{t("appointmentCalendar.chooseDate")}</label>
-      <input id="appointment-calendar-date" aria-label={t("appointmentCalendar.chooseDate")} type="date" className="min-h-11 min-w-[7rem] flex-1 max-w-full rounded-md border border-neutral-500 bg-white px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" value={localDateKey(date)} onChange={event => {
+      <input id="appointment-calendar-date" aria-label={t("appointmentCalendar.chooseDate")} type="date" className="min-h-11 min-w-[7rem] flex-1 max-w-36 rounded-md border border-neutral-500 bg-white px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" value={localDateKey(date)} onChange={event => {
         const [year, month, day] = event.target.value.split("-").map(Number);
         if (year > 0 && month > 0 && day > 0) { const next = new Date(year, month - 1, day); if (Number.isFinite(next.getTime())) onDateChange(next); }
       }} />

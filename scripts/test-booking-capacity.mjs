@@ -114,6 +114,7 @@ const db = { select,
   async transaction(work) { const before = rows.map(row => ({ ...row })); lock = false; transactionActive = true; try { return await work(db); } catch (error) { rows = before; throw error; } finally { lock = false; transactionActive = false; } },
 };
 const dependencies = {
+  "node:crypto": await import("node:crypto"),
   "@shared/schema": schema, "./db": { db }, "drizzle-orm": drizzle, "@shared/provider": provider,
   "./storefronts": {}, "./addresses": { serviceLocation: value => value }, "@shared/scheduling": scheduling,
   "@shared/reviews": reviews, "./searchInput": searchInput, "./customerBookings": customerBookings,

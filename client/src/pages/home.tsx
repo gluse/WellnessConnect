@@ -185,7 +185,7 @@ function SearchPage({ userId }: { userId: string | null }) {
   }
   function resetDraft() { setDraft({ ...defaults, searchQuery: filters.searchQuery, searchMode: filters.searchMode }); setFilterError(undefined); }
   function openWhen() {
-    setWhenDraft(filters); setWhenError(undefined); setWhenOpen(true);
+    setWhenDraft({ ...filters, availableOnly: true }); setWhenError(undefined); setWhenOpen(true);
   }
   function applyWhen(event: FormEvent) {
     event.preventDefault();

@@ -23,7 +23,7 @@ try {
     const t = resources[language].translation, submit = t.bookingForm.requestBooking;
     for (const width of [1280, 768, 375, 320]) {
       await viewport(width, 900); await prepare(language); await existing([duplicate]);
-      await set("booking-participants", "2"); await set("booking-notes", "Keep this note");
+      await set("booking-participants", "2"); await set("booking-initial-message", "Keep this note");
       await button(submit); await warning();
       assert.deepEqual(await writes(), [], "Warning never creates a booking");
       assert.equal(await evaluate(() => document.querySelector('[role="alertdialog"] h2').textContent), t.bookingForm.duplicateTitle);
@@ -37,7 +37,7 @@ try {
       await click('[data-testid="button-cancel-duplicate-booking"]');
       await until(() => !document.querySelector('[role="alertdialog"]'), "warning cancelled");
       assert.deepEqual(await writes(), []);
-      assert.equal(await evaluate(() => document.getElementById("booking-notes").value), "Keep this note");
+      assert.equal(await evaluate(() => document.getElementById("booking-initial-message").value), "Keep this note");
       assert.equal(await evaluate(() => document.getElementById("booking-participants").value), "2");
       await until(() => document.activeElement.tagName === "BUTTON" && !!document.activeElement.closest('[role="dialog"]'), "focus restored after warning closes");
       assert.equal(await evaluate(() => document.activeElement.textContent), submit, "Cancel returns focus to booking submit");
@@ -47,7 +47,7 @@ try {
       assert.deepEqual(await writes(), []);
       await button(submit); await warning(); await click('[data-testid="button-confirm-duplicate-booking"]');
       await until(() => window.phase2Fixture.writes.length === 1, "approved repeat booking");
-      assert.deepEqual(await writes(), [{ path: "/api/bookings", body: { serviceId: 7, scheduledDate: "2030-01-16T09:00:00.000Z", participantCount: 2, notes: "Keep this note" } }]);
+      assert.deepEqual(await writes(), [{ path: "/api/bookings", body: { serviceId: 7, scheduledDate: "2030-01-16T09:00:00.000Z", participantCount: 2, initialMessage: "Keep this note" } }]);
       assert.deepEqual(await evaluate(() => window.phase2Fixture.unexpected), []);
     }
   }
@@ -89,7 +89,9 @@ try {
 
   await prepare(); await existing([duplicate]); await button(t.bookingForm.requestBooking); await warning(); await click('[data-testid="button-cancel-duplicate-booking"]');
   await until(() => !document.querySelector('[role="alertdialog"]'), "warning closes before changing time");
-  await button(t.bookingForm.changeTime); await click('button[aria-pressed="false"]'); await button(t.bookingForm.continue); await button(t.bookingForm.requestBooking);
+  await button(t.bookingForm.changeTime);
+  await until(() => !!document.querySelector('button[aria-pressed="false"]'), "alternative time reloads after changing review");
+  await click('button[aria-pressed="false"]'); await button(t.bookingForm.continue); await button(t.bookingForm.requestBooking);
   await until(() => window.phase2Fixture.writes.length === 1, "different time proceeds without old warning");
   assert.equal((await writes())[0].body.scheduledDate, "2030-01-16T10:00:00.000Z");
 

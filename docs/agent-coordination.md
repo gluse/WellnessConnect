@@ -14,6 +14,38 @@ acceptance checks, recovery and next action. Use requested, accepted, in progres
 blocked or completed; state a concrete reason for blocked work. Owners return
 results and evidence; requesters check integration before closing dependencies.
 
+## Reservation initial message — 4 November 2026
+
+**Completed / verified locally.** User approved implementation of
+[the plan](reservation-initial-message-plan.md) and then chose: "you can delete /
+ignore current notes." Selected scope ignores historical notes, removing their
+separate controls without any backfill/deletion or retention change. Requester and
+integration executor: `/root`. Live-assigned owners accepted local dependencies:
+`/root/initial_message_frontend` owns form/provider presentation, translations and
+mocked browser checks; `/root/initial_message_backend` owns creation validation,
+atomic message insertion and offline regressions; `/root/initial_message_database`
+owns database compatibility review. Existing schema supports this flow; no schema
+change is required. Root owns TASK-040, plan and queue records. Frontend and Backend
+explicitly delegated accepted local changes/tests to root after usage-limit
+failures; both returned final review with no functional blocker. DB reviewed the
+existing contract without schema changes. Frontend additionally accepted read-only
+conversation support to preserve existing authorized note-read access.
+
+Acceptance: optional creation text becomes one private customer message in the
+same transaction as the reservation; blank text creates none; new notes are null;
+Messages is the only UI entry and old notes are ignored. Preserve authorization,
+capacity/reminders, multiline plain text, draft/error behavior and duplicate-submit
+guards. Tests cover en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt, es deferred.
+Environment/limits: local repository and injected/mocked APIs/databases only;
+no connected sessions, credentials/private config, live services, database writes,
+publishing or deployment. Recovery: revert only attributable task changes while
+preserving prior dirty work and all existing database rows. Root integrated owner
+evidence in [the handoff](reservation-initial-message-handoff.md): 21 initial-message
+backend scenarios, existing capacity/collaboration/API/retention checks, three-browser
+en/lv/ru creation/conversation suites, Chrome duplicate/capacity/calendar/form
+regressions, TypeScript and isolated frontend build pass. Authorized viewers can
+read history with no composer; write policy is unchanged. Next: local user review.
+
 ## Appointment pages and mobile Workspace redesign — 3 November 2026
 
 **Completed / verified locally.** User requested removal of provider appointment

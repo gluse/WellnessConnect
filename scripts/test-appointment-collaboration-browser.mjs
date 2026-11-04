@@ -19,16 +19,13 @@ try {
     await expand();
     assert.equal(await evaluate(text => document.querySelector('[data-testid="event-booking-1"]').textContent.includes(text), resources[language].translation.booking.participants), true, "Participant count has a localized label");
     assert.equal(await evaluate(() => document.querySelectorAll('[data-testid="group-event-1"] [data-testid^="event-booking-"]').length), 3);
-    assert.equal(await evaluate(() => !!document.querySelector('[data-testid="text-booking-notes-1"]')), false, "Notes start collapsed");
-    await click('[data-testid="booking-notes-toggle-1"]');
-    await until(() => !!document.querySelector('[data-testid="text-booking-notes-1"]'), "notes shown");
     for (const width of [1280, 768, 375, 320]) {
       await viewport(width, 900);
-      assert.deepEqual(await evaluate(() => ({ fits: document.documentElement.scrollWidth <= innerWidth + 1, plain: !document.querySelector('[data-testid="text-booking-notes-1"] img'), executed: !!window.noteExecuted, notes: document.querySelector('[data-testid="booking-notes-toggle-1"]').getAttribute("aria-expanded"), otherNotes: !!document.querySelector('[data-testid="text-booking-notes-3"]'), markControls: document.querySelector('[data-testid="event-booking-1"]').textContent.includes(window.phase2Fixture.markText) })), { fits: true, plain: true, executed: false, notes: "true", otherNotes: false, markControls: false });
+      assert.deepEqual(await evaluate(() => ({ fits: document.documentElement.scrollWidth <= innerWidth + 1,
+        legacyControls: !!document.querySelector('[data-testid^="booking-notes-"], [data-testid^="text-booking-notes-"]'),
+        executed: !!window.noteExecuted, markControls: document.querySelector('[data-testid="event-booking-1"]').textContent.includes(window.phase2Fixture.markText) })),
+        { fits: true, legacyControls: false, executed: false, markControls: false });
     }
-    await click('[data-testid="booking-notes-toggle-1"]');
-    assert.equal(await evaluate(() => !!document.querySelector('[data-testid="text-booking-notes-1"]')), false);
-    assert.equal(await evaluate(() => !!document.querySelector('[data-testid="booking-notes-toggle-2"]')), false, "No notes control when no notes");
     await set("provider-appointment-status", "pending");
     assert.equal(await evaluate(() => document.querySelectorAll('[data-testid^="group-event-"]').length), 1);
     assert.equal(await evaluate(() => document.querySelectorAll('[data-testid="group-event-1"] [data-testid^="event-booking-"]').length), 3, "Status filter keeps full event context");
@@ -46,11 +43,9 @@ try {
     await closeDialog();
     await until(() => document.activeElement?.getAttribute("data-testid") === "booking-messages-1", "message trigger focus restores");
     if (language === "en" && process.env.APPOINTMENTS_SCREENSHOT) {
-      await click('[data-testid="booking-notes-toggle-1"]');
       await fixture.api("Input.dispatchMouseEvent", { type: "mouseMoved", x: 0, y: 0, buttons: 0 });
       await fixture.screenshot(process.env.APPOINTMENTS_SCREENSHOT);
       await viewport(1280, 900); await fixture.screenshot("docs/group-appointments-implemented-desktop-chrome.png");
-      await click('[data-testid="booking-notes-toggle-1"]');
     }
     assert.deepEqual(await evaluate(() => window.phase2Fixture.unexpected), []);
   }
@@ -123,10 +118,12 @@ try {
   await until(() => !!document.querySelector('[role="dialog"] [role="alert"]'), "denied refresh");
   assert.equal(await evaluate(() => document.querySelector('[role="dialog"]').textContent.includes("Please arrive early.")), false, "Denied refresh suppresses retained cache data");
   assert.equal(await evaluate(() => document.getElementById("booking-message-body").disabled), true); await closeDialog();
-  await open("viewer=true"); await expand(); assert.equal(await evaluate(() => !!document.querySelector('[data-testid="event-actions-1"]') || !!document.querySelector('[data-testid="booking-messages-1"]')), false);
+  await open("viewer=true"); await expand(); assert.equal(await evaluate(() => !!document.querySelector('[data-testid="event-actions-1"]')), false);
+  await click('[data-testid="booking-messages-1"]'); await until(() => document.querySelector('[role="dialog"]')?.textContent.includes("Please arrive early."), "Read-only provider can read history");
+  assert.equal(await evaluate(() => !!document.querySelector('[role="dialog"] form, #booking-message-body')), false, "Read-only provider cannot compose"); await closeDialog();
   await open(); await expand(); await click('[data-testid="booking-messages-1"]'); await until(() => !!document.getElementById("booking-message-body"), "composer before scope change"); await evaluate(() => window.phase2Fixture.revoke()); await until(() => !document.querySelector('[role="dialog"]'), "permission scope clears private conversation");
   assert.deepEqual(await evaluate(() => window.phase2Fixture.unexpected), []);
   assert.deepEqual(fixture.errors, []); assert.deepEqual(fixture.network, []); assert.deepEqual(fixture.blocked, []);
   console.log((await fixture.api("Browser.getVersion")).product);
-  console.log("Passed: group session identity/disclosure/full-context filter; independent notes/safe text; en/lv/ru reflow 1280/768/375/320; provider/customer retained messages, retries, focus, private PRO broadcast review and free limit; both reschedule declines/approval/no-response, request consent and permission-scope cleanup. Mocked APIs only, no app server/database.");
+  console.log("Passed: group session identity/disclosure/full-context filter; ignored historical notes/safe messages; en/lv/ru reflow 1280/768/375/320; provider/customer retained messages, retries, focus, private PRO broadcast review and free limit; both reschedule declines/approval/no-response, request consent and permission-scope cleanup. Mocked APIs only, no app server/database.");
 } finally { await fixture.close(); }

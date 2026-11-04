@@ -97,8 +97,7 @@ try {
     await closeDetails(true);
     await until(() => document.activeElement?.dataset.testid === "calendar-event-7", "Short event regains keyboard focus");
     await fixture.click(event(2));
-    await fixture.click('[data-testid="booking-notes-toggle-2"]');
-    assert.ok((await evaluate(() => document.querySelector('[data-testid="text-booking-notes-2"]').textContent)).includes("<script>"));
+    assert.equal(await evaluate(() => !!document.querySelector('[data-testid^="booking-notes-"], [data-testid^="text-booking-notes-"]')), false, "Legacy notes ignored in calendar details");
     assert.equal(await evaluate(() => !!window.untrustedExecuted), false);
     await closeDetails();
     await evaluate(() => { const button = document.querySelector('[data-testid="calendar-event-2"]'); button.scrollIntoView({ block: "center" }); button.focus(); });
@@ -114,7 +113,7 @@ try {
     await key("Escape"); await until(() => !document.querySelector('#booking-timezone'), "rescheduling dialog closes");
     await until(() => document.activeElement?.dataset.testid === "booking-actions-2", "Rescheduling returns focus to its action menu");
     await closeDetails();
-    checks.push(`${language}: date/year navigation, Today, Day/Week, filters/group attendees, keyboard, notes escaping, nested messages and focus`);
+    checks.push(`${language}: date/year navigation, Today, Day/Week, filters/group attendees, keyboard, ignored historical notes, nested messages and focus`);
   }
 
   await viewport(1280, 960); await openCalendar();
@@ -142,7 +141,11 @@ try {
   await until(() => !document.querySelector('[role="dialog"][data-state="open"]'), "workspace switch clears private details");
 
   await openCalendar("en", "&readonly=1"); await fixture.click(event(2));
-  assert.equal(await evaluate(() => document.querySelectorAll('[role="dialog"] [data-testid^="booking-actions-"], [role="dialog"] [data-testid^="booking-messages-"]').length), 0);
+  assert.equal(await evaluate(() => document.querySelectorAll('[role="dialog"] [data-testid^="booking-messages-"]').length), 1, "Authorized viewer can open conversation");
+  await fixture.click('[data-testid="booking-messages-2"]');
+  await until(() => document.querySelectorAll('[role="dialog"][data-state="open"]').length === 2, "Read-only nested conversation");
+  assert.equal(await evaluate(() => !!document.querySelector('#booking-message-body')), false, "Read-only viewer cannot compose");
+  await key("Escape"); await until(() => document.querySelectorAll('[role="dialog"][data-state="open"]').length === 1, "Read-only conversation closes");
   assert.equal(await evaluate(() => window.phase2Fixture.mutations.length), 0);
   await closeDetails();
   await openCalendar("en", "&state=empty");

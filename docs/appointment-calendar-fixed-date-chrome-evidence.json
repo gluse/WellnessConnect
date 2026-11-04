@@ -1,0 +1,4924 @@
+{
+  "date": "2026-11-04",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/156.0.8078.79",
+    "revision": "@a21ce95c24ce3964416f09ae1862f53f319eb4d0",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "jsVersion": "15.6.75.27"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 72.59375,
+          "height": 44
+        },
+        {
+          "left": 74.59375,
+          "top": 98,
+          "right": 139.59375,
+          "height": 44
+        },
+        {
+          "left": 141.59375,
+          "top": 98,
+          "right": 285.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 142.171875,
+          "height": 88
+        },
+        {
+          "left": 146.171875,
+          "top": 282,
+          "right": 253.171875,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 374,
+          "right": 273,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 224,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 486,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 486,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 72.59375,
+          "height": 44
+        },
+        {
+          "left": 74.59375,
+          "top": 98,
+          "right": 139.59375,
+          "height": 44
+        },
+        {
+          "left": 141.59375,
+          "top": 98,
+          "right": 285.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 142.171875,
+          "height": 88
+        },
+        {
+          "left": 146.171875,
+          "top": 282,
+          "right": 253.171875,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 374,
+          "right": 273,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 224,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 486,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 486,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 360,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 72.59375,
+          "height": 44
+        },
+        {
+          "left": 80.59375,
+          "top": 98,
+          "right": 145.59375,
+          "height": 44
+        },
+        {
+          "left": 153.59375,
+          "top": 98,
+          "right": 297.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 360,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 142.171875,
+          "height": 88
+        },
+        {
+          "left": 158.171875,
+          "top": 282,
+          "right": 265.171875,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 386,
+          "right": 307,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 258,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 360,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 72.59375,
+          "height": 44
+        },
+        {
+          "left": 80.59375,
+          "top": 98,
+          "right": 145.59375,
+          "height": 44
+        },
+        {
+          "left": 153.59375,
+          "top": 98,
+          "right": 297.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 360,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 142.171875,
+          "height": 88
+        },
+        {
+          "left": 158.171875,
+          "top": 282,
+          "right": 265.171875,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 386,
+          "right": 307,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 258,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 72.59375,
+          "height": 44
+        },
+        {
+          "left": 80.59375,
+          "top": 98,
+          "right": 145.59375,
+          "height": 44
+        },
+        {
+          "left": 153.59375,
+          "top": 98,
+          "right": 297.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 142.171875,
+          "height": 88
+        },
+        {
+          "left": 158.171875,
+          "top": 282,
+          "right": 265.171875,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 386,
+          "right": 337,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 72.59375,
+          "height": 44
+        },
+        {
+          "left": 80.59375,
+          "top": 98,
+          "right": 145.59375,
+          "height": 44
+        },
+        {
+          "left": 153.59375,
+          "top": 98,
+          "right": 297.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 142.171875,
+          "height": 88
+        },
+        {
+          "left": 158.171875,
+          "top": 282,
+          "right": 265.171875,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 386,
+          "right": 337,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 545,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 72.59375,
+          "height": 44
+        },
+        {
+          "left": 80.59375,
+          "top": 98,
+          "right": 145.59375,
+          "height": 44
+        },
+        {
+          "left": 153.59375,
+          "top": 98,
+          "right": 297.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 545,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 194,
+          "right": 142.171875,
+          "height": 88
+        },
+        {
+          "left": 158.171875,
+          "top": 194,
+          "right": 265.171875,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 298,
+          "right": 337,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 410,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 410,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 545,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 72.59375,
+          "height": 44
+        },
+        {
+          "left": 80.59375,
+          "top": 98,
+          "right": 145.59375,
+          "height": 44
+        },
+        {
+          "left": 153.59375,
+          "top": 98,
+          "right": 297.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 545,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 194,
+          "right": 142.171875,
+          "height": 88
+        },
+        {
+          "left": 158.171875,
+          "top": 194,
+          "right": 265.171875,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 298,
+          "right": 337,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 410,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 410,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 640,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 37,
+          "top": 110,
+          "right": 100.59375,
+          "height": 44
+        },
+        {
+          "left": 108.59375,
+          "top": 110,
+          "right": 181.59375,
+          "height": 44
+        },
+        {
+          "left": 189.59375,
+          "top": 110,
+          "right": 333.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 640,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 73,
+          "top": 218,
+          "right": 198.171875,
+          "height": 88
+        },
+        {
+          "left": 214.171875,
+          "top": 218,
+          "right": 337.171875,
+          "height": 88
+        },
+        {
+          "left": 73,
+          "top": 322,
+          "right": 361,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 640,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 37,
+          "top": 110,
+          "right": 100.59375,
+          "height": 44
+        },
+        {
+          "left": 108.59375,
+          "top": 110,
+          "right": 181.59375,
+          "height": 44
+        },
+        {
+          "left": 189.59375,
+          "top": 110,
+          "right": 333.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 640,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 73,
+          "top": 218,
+          "right": 198.171875,
+          "height": 88
+        },
+        {
+          "left": 214.171875,
+          "top": 218,
+          "right": 337.171875,
+          "height": 88
+        },
+        {
+          "left": 73,
+          "top": 322,
+          "right": 361,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 434,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 37,
+          "top": 110,
+          "right": 100.59375,
+          "height": 44
+        },
+        {
+          "left": 108.59375,
+          "top": 110,
+          "right": 181.59375,
+          "height": 44
+        },
+        {
+          "left": 189.59375,
+          "top": 110,
+          "right": 333.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 73,
+          "top": 218,
+          "right": 198.171875,
+          "height": 88
+        },
+        {
+          "left": 214.171875,
+          "top": 218,
+          "right": 337.171875,
+          "height": 88
+        },
+        {
+          "left": 353.171875,
+          "top": 218,
+          "right": 641.171875,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 330,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 330,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 37,
+          "top": 110,
+          "right": 100.59375,
+          "height": 44
+        },
+        {
+          "left": 108.59375,
+          "top": 110,
+          "right": 181.59375,
+          "height": 44
+        },
+        {
+          "left": 189.59375,
+          "top": 110,
+          "right": 333.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 73,
+          "top": 218,
+          "right": 198.171875,
+          "height": 88
+        },
+        {
+          "left": 214.171875,
+          "top": 218,
+          "right": 337.171875,
+          "height": 88
+        },
+        {
+          "left": 353.171875,
+          "top": 218,
+          "right": 641.171875,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 330,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 330,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1024,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 269,
+          "top": 118,
+          "right": 332.59375,
+          "height": 44
+        },
+        {
+          "left": 340.59375,
+          "top": 118,
+          "right": 413.59375,
+          "height": 44
+        },
+        {
+          "left": 421.59375,
+          "top": 118,
+          "right": 565.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1024,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 537,
+          "top": 330,
+          "right": 662.171875,
+          "height": 88
+        },
+        {
+          "left": 678.171875,
+          "top": 330,
+          "right": 801.171875,
+          "height": 88
+        },
+        {
+          "left": 537,
+          "top": 434,
+          "right": 825,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 546,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 546,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 1024,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 269,
+          "top": 118,
+          "right": 332.59375,
+          "height": 44
+        },
+        {
+          "left": 340.59375,
+          "top": 118,
+          "right": 413.59375,
+          "height": 44
+        },
+        {
+          "left": 421.59375,
+          "top": 118,
+          "right": 565.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1024,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 537,
+          "top": 330,
+          "right": 662.171875,
+          "height": 88
+        },
+        {
+          "left": 678.171875,
+          "top": 330,
+          "right": 801.171875,
+          "height": 88
+        },
+        {
+          "left": 537,
+          "top": 434,
+          "right": 825,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 546,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 546,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "en",
+      "width": 1440,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 347,
+          "top": 118,
+          "right": 410.59375,
+          "height": 44
+        },
+        {
+          "left": 418.59375,
+          "top": 118,
+          "right": 491.59375,
+          "height": 44
+        },
+        {
+          "left": 499.59375,
+          "top": 118,
+          "right": 643.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1440,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 537,
+          "top": 234,
+          "right": 662.171875,
+          "height": 88
+        },
+        {
+          "left": 678.171875,
+          "top": 234,
+          "right": 801.171875,
+          "height": 88
+        },
+        {
+          "left": 817.171875,
+          "top": 234,
+          "right": 1105.171875,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 346,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 346,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1440,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 347,
+          "top": 118,
+          "right": 410.59375,
+          "height": 44
+        },
+        {
+          "left": 418.59375,
+          "top": 118,
+          "right": 491.59375,
+          "height": 44
+        },
+        {
+          "left": 499.59375,
+          "top": 118,
+          "right": 643.59375,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "en",
+      "width": 1440,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 537,
+          "top": 234,
+          "right": 662.171875,
+          "height": 88
+        },
+        {
+          "left": 678.171875,
+          "top": 234,
+          "right": 801.171875,
+          "height": 88
+        },
+        {
+          "left": 817.171875,
+          "top": 234,
+          "right": 1105.171875,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 346,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 346,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 78.6875,
+          "height": 44
+        },
+        {
+          "left": 80.6875,
+          "top": 98,
+          "right": 154.6875,
+          "height": 44
+        },
+        {
+          "left": 156.6875,
+          "top": 98,
+          "right": 291,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 134.3125,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 154.375,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 374,
+          "right": 175,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 466,
+          "right": 273,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 224,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 578,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 578,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 78.6875,
+          "height": 44
+        },
+        {
+          "left": 80.6875,
+          "top": 98,
+          "right": 154.6875,
+          "height": 44
+        },
+        {
+          "left": 156.6875,
+          "top": 98,
+          "right": 291,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 134.3125,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 154.375,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 374,
+          "right": 175,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 466,
+          "right": 273,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 224,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 578,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 578,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 360,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 78.6875,
+          "height": 44
+        },
+        {
+          "left": 86.6875,
+          "top": 98,
+          "right": 160.6875,
+          "height": 44
+        },
+        {
+          "left": 168.6875,
+          "top": 98,
+          "right": 312.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 360,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 154.375,
+          "height": 88
+        },
+        {
+          "left": 170.375,
+          "top": 282,
+          "right": 296.375,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 386,
+          "right": 307,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 258,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 360,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 78.6875,
+          "height": 44
+        },
+        {
+          "left": 86.6875,
+          "top": 98,
+          "right": 160.6875,
+          "height": 44
+        },
+        {
+          "left": 168.6875,
+          "top": 98,
+          "right": 312.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 360,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 154.375,
+          "height": 88
+        },
+        {
+          "left": 170.375,
+          "top": 282,
+          "right": 296.375,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 386,
+          "right": 307,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 258,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 78.6875,
+          "height": 44
+        },
+        {
+          "left": 86.6875,
+          "top": 98,
+          "right": 160.6875,
+          "height": 44
+        },
+        {
+          "left": 168.6875,
+          "top": 98,
+          "right": 312.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 154.375,
+          "height": 88
+        },
+        {
+          "left": 170.375,
+          "top": 282,
+          "right": 296.375,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 386,
+          "right": 337,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 78.6875,
+          "height": 44
+        },
+        {
+          "left": 86.6875,
+          "top": 98,
+          "right": 160.6875,
+          "height": 44
+        },
+        {
+          "left": 168.6875,
+          "top": 98,
+          "right": 312.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 154.375,
+          "height": 88
+        },
+        {
+          "left": 170.375,
+          "top": 282,
+          "right": 296.375,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 386,
+          "right": 337,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 545,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 78.6875,
+          "height": 44
+        },
+        {
+          "left": 86.6875,
+          "top": 98,
+          "right": 160.6875,
+          "height": 44
+        },
+        {
+          "left": 168.6875,
+          "top": 98,
+          "right": 312.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 545,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 194,
+          "right": 154.375,
+          "height": 88
+        },
+        {
+          "left": 170.375,
+          "top": 194,
+          "right": 296.375,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 298,
+          "right": 337,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 410,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 410,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 545,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 78.6875,
+          "height": 44
+        },
+        {
+          "left": 86.6875,
+          "top": 98,
+          "right": 160.6875,
+          "height": 44
+        },
+        {
+          "left": 168.6875,
+          "top": 98,
+          "right": 312.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 545,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 194,
+          "right": 154.375,
+          "height": 88
+        },
+        {
+          "left": 170.375,
+          "top": 194,
+          "right": 296.375,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 298,
+          "right": 337,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 410,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 410,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 640,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 37,
+          "top": 110,
+          "right": 106.6875,
+          "height": 44
+        },
+        {
+          "left": 114.6875,
+          "top": 110,
+          "right": 196.6875,
+          "height": 44
+        },
+        {
+          "left": 204.6875,
+          "top": 110,
+          "right": 348.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 640,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 73,
+          "top": 306,
+          "right": 210.375,
+          "height": 88
+        },
+        {
+          "left": 226.375,
+          "top": 306,
+          "right": 368.375,
+          "height": 88
+        },
+        {
+          "left": 73,
+          "top": 410,
+          "right": 361,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 640,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 37,
+          "top": 110,
+          "right": 106.6875,
+          "height": 44
+        },
+        {
+          "left": 114.6875,
+          "top": 110,
+          "right": 196.6875,
+          "height": 44
+        },
+        {
+          "left": 204.6875,
+          "top": 110,
+          "right": 348.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 640,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 73,
+          "top": 306,
+          "right": 210.375,
+          "height": 88
+        },
+        {
+          "left": 226.375,
+          "top": 306,
+          "right": 368.375,
+          "height": 88
+        },
+        {
+          "left": 73,
+          "top": 410,
+          "right": 361,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 37,
+          "top": 110,
+          "right": 106.6875,
+          "height": 44
+        },
+        {
+          "left": 114.6875,
+          "top": 110,
+          "right": 196.6875,
+          "height": 44
+        },
+        {
+          "left": 204.6875,
+          "top": 110,
+          "right": 348.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 73,
+          "top": 218,
+          "right": 210.375,
+          "height": 88
+        },
+        {
+          "left": 226.375,
+          "top": 218,
+          "right": 368.375,
+          "height": 88
+        },
+        {
+          "left": 384.375,
+          "top": 218,
+          "right": 672.375,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 330,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 330,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 37,
+          "top": 110,
+          "right": 106.6875,
+          "height": 44
+        },
+        {
+          "left": 114.6875,
+          "top": 110,
+          "right": 196.6875,
+          "height": 44
+        },
+        {
+          "left": 204.6875,
+          "top": 110,
+          "right": 348.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 73,
+          "top": 218,
+          "right": 210.375,
+          "height": 88
+        },
+        {
+          "left": 226.375,
+          "top": 218,
+          "right": 368.375,
+          "height": 88
+        },
+        {
+          "left": 384.375,
+          "top": 218,
+          "right": 672.375,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 330,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 330,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1024,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 269,
+          "top": 118,
+          "right": 338.6875,
+          "height": 44
+        },
+        {
+          "left": 346.6875,
+          "top": 118,
+          "right": 428.6875,
+          "height": 44
+        },
+        {
+          "left": 436.6875,
+          "top": 118,
+          "right": 580.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1024,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 537,
+          "top": 330,
+          "right": 674.375,
+          "height": 88
+        },
+        {
+          "left": 690.375,
+          "top": 330,
+          "right": 832.375,
+          "height": 88
+        },
+        {
+          "left": 537,
+          "top": 434,
+          "right": 825,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 546,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 546,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 1024,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 269,
+          "top": 118,
+          "right": 338.6875,
+          "height": 44
+        },
+        {
+          "left": 346.6875,
+          "top": 118,
+          "right": 428.6875,
+          "height": 44
+        },
+        {
+          "left": 436.6875,
+          "top": 118,
+          "right": 580.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1024,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 537,
+          "top": 330,
+          "right": 674.375,
+          "height": 88
+        },
+        {
+          "left": 690.375,
+          "top": 330,
+          "right": 832.375,
+          "height": 88
+        },
+        {
+          "left": 537,
+          "top": 434,
+          "right": 825,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 546,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 546,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "lv",
+      "width": 1440,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 347,
+          "top": 118,
+          "right": 416.6875,
+          "height": 44
+        },
+        {
+          "left": 424.6875,
+          "top": 118,
+          "right": 506.6875,
+          "height": 44
+        },
+        {
+          "left": 514.6875,
+          "top": 118,
+          "right": 658.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1440,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 537,
+          "top": 234,
+          "right": 674.375,
+          "height": 88
+        },
+        {
+          "left": 690.375,
+          "top": 234,
+          "right": 832.375,
+          "height": 88
+        },
+        {
+          "left": 848.375,
+          "top": 234,
+          "right": 1136.375,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 346,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 346,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1440,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 347,
+          "top": 118,
+          "right": 416.6875,
+          "height": 44
+        },
+        {
+          "left": 424.6875,
+          "top": 118,
+          "right": 506.6875,
+          "height": 44
+        },
+        {
+          "left": 514.6875,
+          "top": 118,
+          "right": 658.6875,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "lv",
+      "width": 1440,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 537,
+          "top": 234,
+          "right": 674.375,
+          "height": 88
+        },
+        {
+          "left": 690.375,
+          "top": 234,
+          "right": 832.375,
+          "height": 88
+        },
+        {
+          "left": 848.375,
+          "top": 234,
+          "right": 1136.375,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 346,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 346,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 88.515625,
+          "height": 44
+        },
+        {
+          "left": 90.515625,
+          "top": 98,
+          "right": 167.515625,
+          "height": 44
+        },
+        {
+          "left": 169.515625,
+          "top": 98,
+          "right": 291,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 121.484375,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 174.03125,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 374,
+          "right": 181,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 466,
+          "right": 273,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 224,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 578,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 578,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 88.515625,
+          "height": 44
+        },
+        {
+          "left": 90.515625,
+          "top": 98,
+          "right": 167.515625,
+          "height": 44
+        },
+        {
+          "left": 169.515625,
+          "top": 98,
+          "right": 291,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 121.484375,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 174.03125,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 374,
+          "right": 181,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 466,
+          "right": 273,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 224,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 578,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 578,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 360,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 88.515625,
+          "height": 44
+        },
+        {
+          "left": 96.515625,
+          "top": 98,
+          "right": 173.515625,
+          "height": 44
+        },
+        {
+          "left": 181.515625,
+          "top": 98,
+          "right": 325.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 360,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 174.03125,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 386,
+          "right": 181,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 490,
+          "right": 307,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 258,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 602,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 602,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 360,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 88.515625,
+          "height": 44
+        },
+        {
+          "left": 96.515625,
+          "top": 98,
+          "right": 173.515625,
+          "height": 44
+        },
+        {
+          "left": 181.515625,
+          "top": 98,
+          "right": 325.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 360,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 174.03125,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 386,
+          "right": 181,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 490,
+          "right": 307,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 258,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 602,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 602,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 88.515625,
+          "height": 44
+        },
+        {
+          "left": 96.515625,
+          "top": 98,
+          "right": 173.515625,
+          "height": 44
+        },
+        {
+          "left": 181.515625,
+          "top": 98,
+          "right": 325.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 174.03125,
+          "height": 88
+        },
+        {
+          "left": 190.03125,
+          "top": 282,
+          "right": 322.03125,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 386,
+          "right": 337,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 88.515625,
+          "height": 44
+        },
+        {
+          "left": 96.515625,
+          "top": 98,
+          "right": 173.515625,
+          "height": 44
+        },
+        {
+          "left": 181.515625,
+          "top": 98,
+          "right": 325.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 282,
+          "right": 174.03125,
+          "height": 88
+        },
+        {
+          "left": 190.03125,
+          "top": 282,
+          "right": 322.03125,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 386,
+          "right": 337,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 498,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 545,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 88.515625,
+          "height": 44
+        },
+        {
+          "left": 96.515625,
+          "top": 98,
+          "right": 173.515625,
+          "height": 44
+        },
+        {
+          "left": 181.515625,
+          "top": 98,
+          "right": 325.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 545,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 194,
+          "right": 174.03125,
+          "height": 88
+        },
+        {
+          "left": 190.03125,
+          "top": 194,
+          "right": 322.03125,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 298,
+          "right": 337,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 410,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 410,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 545,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 25,
+          "top": 98,
+          "right": 88.515625,
+          "height": 44
+        },
+        {
+          "left": 96.515625,
+          "top": 98,
+          "right": 173.515625,
+          "height": 44
+        },
+        {
+          "left": 181.515625,
+          "top": 98,
+          "right": 325.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 154,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 545,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 49,
+          "top": 194,
+          "right": 174.03125,
+          "height": 88
+        },
+        {
+          "left": 190.03125,
+          "top": 194,
+          "right": 322.03125,
+          "height": 88
+        },
+        {
+          "left": 49,
+          "top": 298,
+          "right": 337,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 410,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 410,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 640,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 37,
+          "top": 110,
+          "right": 116.515625,
+          "height": 44
+        },
+        {
+          "left": 124.515625,
+          "top": 110,
+          "right": 209.515625,
+          "height": 44
+        },
+        {
+          "left": 217.515625,
+          "top": 110,
+          "right": 361.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 640,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 73,
+          "top": 306,
+          "right": 230.03125,
+          "height": 88
+        },
+        {
+          "left": 246.03125,
+          "top": 306,
+          "right": 394.03125,
+          "height": 88
+        },
+        {
+          "left": 73,
+          "top": 410,
+          "right": 361,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 640,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 37,
+          "top": 110,
+          "right": 116.515625,
+          "height": 44
+        },
+        {
+          "left": 124.515625,
+          "top": 110,
+          "right": 209.515625,
+          "height": 44
+        },
+        {
+          "left": 217.515625,
+          "top": 110,
+          "right": 361.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 640,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 73,
+          "top": 306,
+          "right": 230.03125,
+          "height": 88
+        },
+        {
+          "left": 246.03125,
+          "top": 306,
+          "right": 394.03125,
+          "height": 88
+        },
+        {
+          "left": 73,
+          "top": 410,
+          "right": 361,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 522,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 37,
+          "top": 110,
+          "right": 116.515625,
+          "height": 44
+        },
+        {
+          "left": 124.515625,
+          "top": 110,
+          "right": 209.515625,
+          "height": 44
+        },
+        {
+          "left": 217.515625,
+          "top": 110,
+          "right": 361.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 73,
+          "top": 218,
+          "right": 230.03125,
+          "height": 88
+        },
+        {
+          "left": 246.03125,
+          "top": 218,
+          "right": 394.03125,
+          "height": 88
+        },
+        {
+          "left": 410.03125,
+          "top": 218,
+          "right": 691,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 280.96875,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 330,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 330,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 37,
+          "top": 110,
+          "right": 116.515625,
+          "height": 44
+        },
+        {
+          "left": 124.515625,
+          "top": 110,
+          "right": 209.515625,
+          "height": 44
+        },
+        {
+          "left": 217.515625,
+          "top": 110,
+          "right": 361.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 166,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 73,
+          "top": 218,
+          "right": 230.03125,
+          "height": 88
+        },
+        {
+          "left": 246.03125,
+          "top": 218,
+          "right": 394.03125,
+          "height": 88
+        },
+        {
+          "left": 410.03125,
+          "top": 218,
+          "right": 691,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 280.96875,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 330,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 330,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1024,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 269,
+          "top": 118,
+          "right": 348.515625,
+          "height": 44
+        },
+        {
+          "left": 356.515625,
+          "top": 118,
+          "right": 441.515625,
+          "height": 44
+        },
+        {
+          "left": 449.515625,
+          "top": 118,
+          "right": 593.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1024,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 537,
+          "top": 330,
+          "right": 694.03125,
+          "height": 88
+        },
+        {
+          "left": 710.03125,
+          "top": 330,
+          "right": 858.03125,
+          "height": 88
+        },
+        {
+          "left": 537,
+          "top": 434,
+          "right": 825,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 546,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 546,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 1024,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 269,
+          "top": 118,
+          "right": 348.515625,
+          "height": 44
+        },
+        {
+          "left": 356.515625,
+          "top": 118,
+          "right": 441.515625,
+          "height": 44
+        },
+        {
+          "left": 449.515625,
+          "top": 118,
+          "right": 593.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1024,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 537,
+          "top": 330,
+          "right": 694.03125,
+          "height": 88
+        },
+        {
+          "left": 710.03125,
+          "top": 330,
+          "right": 858.03125,
+          "height": 88
+        },
+        {
+          "left": 537,
+          "top": 434,
+          "right": 825,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 546,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 546,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": true
+    },
+    {
+      "language": "ru",
+      "width": 1440,
+      "mode": "day",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 347,
+          "top": 118,
+          "right": 426.515625,
+          "height": 44
+        },
+        {
+          "left": 434.515625,
+          "top": 118,
+          "right": 519.515625,
+          "height": 44
+        },
+        {
+          "left": 527.515625,
+          "top": 118,
+          "right": 671.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1440,
+      "mode": "day",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 537,
+          "top": 234,
+          "right": 694.03125,
+          "height": 88
+        },
+        {
+          "left": 710.03125,
+          "top": 234,
+          "right": 858.03125,
+          "height": 88
+        },
+        {
+          "left": 874.03125,
+          "top": 234,
+          "right": 1162.03125,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 346,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 346,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1440,
+      "mode": "week",
+      "enlarged": false,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 347,
+          "top": 118,
+          "right": 426.515625,
+          "height": 44
+        },
+        {
+          "left": 434.515625,
+          "top": 118,
+          "right": 519.515625,
+          "height": 44
+        },
+        {
+          "left": 527.515625,
+          "top": 118,
+          "right": 671.515625,
+          "height": 44
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 144,
+      "datePreferredWidth": 144,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 174,
+          "height": 36,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    },
+    {
+      "language": "ru",
+      "width": 1440,
+      "mode": "week",
+      "enlarged": true,
+      "fits": true,
+      "toolbar": [
+        {
+          "left": 537,
+          "top": 234,
+          "right": 694.03125,
+          "height": 88
+        },
+        {
+          "left": 710.03125,
+          "top": 234,
+          "right": 858.03125,
+          "height": 88
+        },
+        {
+          "left": 874.03125,
+          "top": 234,
+          "right": 1162.03125,
+          "height": 88
+        }
+      ],
+      "visibleDateHeading": false,
+      "toolbarButtons": 1,
+      "visibleFilterLabels": false,
+      "visibleTimezone": false,
+      "dateValue": "2026-09-30",
+      "dateWidth": 288,
+      "datePreferredWidth": 288,
+      "filters": [
+        {
+          "id": "provider-appointment-status",
+          "top": 346,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        },
+        {
+          "id": "appointment-employee",
+          "top": 346,
+          "height": 72,
+          "labelled": true,
+          "fullText": true
+        }
+      ],
+      "filterScroll": false
+    }
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Synthetic mocked APIs, isolated loopback. CSS viewports and 200% root font size; no physical-device, native zoom or screen-reader certification. Enlarged toolbar controls may wrap; enlarged filters can scroll locally without clipping text."
+}

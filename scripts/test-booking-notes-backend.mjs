@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 import ts from "typescript";
+import { randomUUID } from "node:crypto";
+import { createAppointmentRepository } from "../server/appointments/repository.ts";
+import { memoryDatabase } from "./fixtures/notification-database.mjs";
 import { z } from "zod";
 import * as drizzle from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
@@ -21,7 +24,7 @@ async function load(file, dependencies) {
   const source = await readFile(new URL(`../${file}`, import.meta.url), "utf8");
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const module = { exports: {} };
-  vm.runInNewContext(`(function(require,module,exports){${compiled}\n})`, { Date, Map, Set, console: { error() {} } }, { filename: file })(name => {
+  vm.runInNewContext(`(function(require,module,exports){${compiled}\n})`, { Date, Map, Set, console: { error(...args) { logs.push(args); } } }, { filename: file })(name => {
     assert.ok(Object.hasOwn(dependencies, name), `Blocked external import: ${file} -> ${name}`);
     return dependencies[name];
   }, module, module.exports);
@@ -33,7 +36,7 @@ const service = { id: 7, providerId: "provider", companyId: null, employeeId: nu
   duration: 30, cleanupTime: 0, isActive: true, companyActive: true, instantBooking: false, price: "10", advancePaymentPercent: 0 };
 const schedule = { id: 1, providerId: "provider", companyId: null, serviceId: null, scheduleType: "specific", specificDate: at("00:00"), startTime: "09:00", endTime: "12:00", timezone: "UTC", breaks: [], isActive: true };
 const dialect = new PgDialect();
-let rows = [], id = 1, notificationsEnabled = false;
+let rows = [], messages = [], reminders = [], logs = [], id = 1, notificationsEnabled = false, failMessage = false, failReminder = false;
 const camel = name => name.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
 function matches(row, table, predicate) {
   if (!predicate) return true;
@@ -70,17 +73,29 @@ const db = {
   },
   async execute() {},
   insert(table) {
-    assert.equal(drizzle.getTableName(table), "bookings");
-    return { values(input) { return { returning: async () => { const row = { ...input, id: id++ }; rows.push(row); return [{ ...row }]; } }; } };
+    const name = drizzle.getTableName(table);
+    assert.ok(["bookings", "booking_messages"].includes(name));
+    return { values(input) {
+      const persist = () => {
+        if (name === "booking_messages" && failMessage) throw new Error(`PRIVATE query parameters: ${input.body}`);
+        const row = { ...input, id: input.id ?? id++ };
+        (name === "bookings" ? rows : messages).push(row);
+        return [{ ...row }];
+      };
+      return { returning: async () => persist(), then: (yes, no) => Promise.resolve().then(persist).then(yes, no) };
+    } };
   },
-  async transaction(work) { return work(db); },
+  async transaction(work) {
+    const previous = [rows.slice(), messages.slice(), reminders.slice()];
+    try { return await work(db); } catch (error) { [rows, messages, reminders] = previous; throw error; }
+  },
 };
 const dependencies = {
-  "@shared/schema": schema, "./db": { db }, "drizzle-orm": drizzle, "@shared/provider": provider,
+  "@shared/schema": schema, "./db": { db }, "drizzle-orm": drizzle, "@shared/provider": provider, "node:crypto": { randomUUID },
   "./storefronts": {}, "./addresses": { serviceLocation: value => value }, "@shared/scheduling": scheduling,
   "@shared/reviews": reviews, "./searchInput": searchInput, "./customerBookings": customerBookings,
   "./audit/context": auditContext, "./audit/events": auditEvents, "./audit/capture": auditCapture,
-  "./notifications/repository": { assertReminderConfiguration() {}, async captureStatusEvent() {}, async reconcileBookingReminder() {}, async reconcileServiceReminders() {},
+  "./notifications/repository": { assertReminderConfiguration() {}, async captureStatusEvent() {}, async reconcileBookingReminder(_tx, booking) { reminders.push(booking.id); if (failReminder) throw Error("PRIVATE reminder failure"); }, async reconcileServiceReminders() {},
     async bookingReminderSummaries(_db, visible) { return new Map(visible.map(row => [row.id, { state: "off" }])); } },
   "./notifications/policy": { statusAction: () => null },
 };
@@ -114,22 +129,67 @@ async function request(method, path, options = {}) {
   if (allowed) await route.handlers.at(-1)(req, res);
   return { code, data };
 }
-for (const notes of ["Bring a mat.\nLūdzu, zvaniet pie durvīm.\nПожалуйста, без звонка. <img src=x onerror=alert(1)>", null]) {
-  rows = [];
-  const created = await request("post", "/api/bookings", { user: { claims: { sub: "customer" } }, body: {
-    serviceId: 7, scheduledDate: at("09:00").toISOString(), participantCount: 1, notes, seekerId: "spoofed", providerId: "spoofed", status: "confirmed",
-  } });
-  assert.equal(created.code, 200);
-  assert.equal(created.data.notes, notes, "Real booking creation preserves supplied notes");
-  assert.equal(rows[0].notes, notes, "Insert adapter receives exact notes");
-  assert.equal(created.data.seekerId, "customer"); assert.equal(created.data.providerId, "provider"); assert.equal(created.data.status, "pending");
-  const stored = await storage.getBookingsByProvider("provider");
-  assert.equal(stored[0].notes, notes, "Real provider mapping retains persisted notes");
-  for (notificationsEnabled of [false, true]) {
-    const listed = await request("get", "/api/bookings/provider");
-    assert.equal(listed.code, 200); assert.equal(listed.data.length, 1); assert.equal(listed.data[0].notes, notes, "Provider API retains notes with notifications on/off");
+const text = "Bring a mat.\nLūdzu, zvaniet pie durvīm.\nПожалуйста, без звонка. <img src=x onerror=alert(1)>";
+const reset = () => { rows = []; messages = []; reminders = []; logs = []; failMessage = failReminder = false; };
+const createBooking = input => request("post", "/api/bookings", { user: { claims: { sub: "customer" } }, body: {
+  serviceId: 7, scheduledDate: at("09:00").toISOString(), participantCount: 1,
+  seekerId: "spoofed", providerId: "spoofed", status: "completed", authorRole: "provider", authorId: "intruder", createdAt: "1900-01-01Z", ...input,
+} });
+let cases = 0;
+for (const instantBooking of [false, true]) {
+  service.instantBooking = instantBooking;
+  for (const input of [{ initialMessage: `  ${text}\n ` }, { notes: text }, { initialMessage: text, notes: ` ${text} ` }]) {
+    reset(); const created = await createBooking(input);
+    assert.equal(created.code, 200); assert.equal(created.data.notes, null);
+    assert.equal(created.data.seekerId, "customer"); assert.equal(created.data.providerId, "provider");
+    assert.equal(created.data.status, instantBooking ? "confirmed" : "pending");
+    assert.equal(messages.length, 1); assert.equal(messages[0].body, text);
+    assert.equal(messages[0].bookingId, created.data.id); assert.equal(messages[0].authorId, "customer");
+    assert.equal(messages[0].authorRole, "customer"); assert.equal(messages[0].broadcastId, null);
+    assert.equal(messages[0].createdAt.getTime(), created.data.createdAt.getTime());
+    assert.ok(created.data.createdAt.getFullYear() > 2020);
+    assert.match(messages[0].clientRequestId, /^[0-9a-f-]{36}$/); assert.match(messages[0].id, /^[0-9a-f-]{36}$/);
+    assert.deepEqual(reminders, [created.data.id]);
+    for (notificationsEnabled of [false, true]) {
+      const listed = await request("get", "/api/bookings/provider");
+      assert.equal(listed.code, 200); assert.equal(listed.data[0].notes, null);
+    }
+    // Read the actual inserted rows through real conversation authorization/query
+    // logic, using the existing relational boundary rather than a fake message API.
+    const memory = memoryDatabase({ bookings: rows, booking_messages: messages, services: [service],
+      users: [{ id: "customer", firstName: "Synthetic" }, { id: "provider", firstName: "Provider" }] });
+    const conversations = createAppointmentRepository(memory.database);
+    for (const actor of [{ id: "customer", role: "customer" }, { id: "provider", role: "provider" }]) {
+      const history = await conversations.conversation(actor, created.data.id);
+      assert.equal(history.messages.length, 1); assert.equal(history.messages[0].body, text);
+      assert.equal(history.messages[0].authorRole, "customer");
+    }
+    await assert.rejects(() => conversations.conversation({ id: "other-customer", role: "customer" }, created.data.id), error => error.code === "forbidden");
+    await assert.rejects(() => conversations.conversation({ id: "provider", role: "provider", companyId: 9 }, created.data.id), error => error.code === "forbidden");
+    cases++;
   }
 }
+service.instantBooking = false;
+for (const input of [{}, { initialMessage: null }, { initialMessage: " \n " }, { notes: null }, { notes: "  " }]) {
+  reset(); assert.equal((await createBooking(input)).code, 200); assert.equal(messages.length, 0); assert.equal(rows[0].notes, null); cases++;
+}
+reset(); assert.equal((await createBooking({ initialMessage: "x".repeat(4000) })).code, 200); assert.equal(messages[0].body.length, 4000); cases++;
+for (const input of [{ initialMessage: "x".repeat(4001) }, { notes: "x".repeat(4001) }, { initialMessage: 7 }, { initialMessage: {} }, { initialMessage: "one", notes: "two" }]) {
+  reset(); assert.equal((await createBooking(input)).code, 400); assert.equal(rows.length, 0); assert.equal(messages.length, 0); cases++;
+}
+for (const failure of ["message", "reminder"]) {
+  reset(); failMessage = failure === "message"; failReminder = failure === "reminder";
+  const failed = await createBooking({ initialMessage: text });
+  assert.equal(failed.code, 500); assert.equal(rows.length, 0); assert.equal(messages.length, 0); assert.equal(reminders.length, 0);
+  assert.equal(JSON.stringify(logs).includes(text), false); assert.equal(JSON.stringify(logs).includes("PRIVATE"), false);
+  assert.equal(JSON.stringify(failed.data).includes(text), false); cases++;
+}
+reset(); const first = await createBooking({ initialMessage: text, participantCount: 6 }); assert.equal(first.code, 200);
+// Approval, not a pending request, occupies group capacity under existing policy.
+rows[0].status = "confirmed";
+assert.equal((await createBooking({ initialMessage: "Must not be saved" })).code, 409);
+assert.equal(rows.length, 1); assert.equal(messages.length, 1); cases++;
+assert.equal((await request("post", "/api/bookings", { user: null })).code, 401); cases++;
 
 // Actual storage SQL filters personal/company scope; actual route scope filters
 // employee visibility. Synthetic adapter interprets predicates, not note policy.
@@ -141,4 +201,4 @@ const employee = await request("get", "/api/bookings/provider", { user: { claims
 assert.equal(employee.code, 200); assert.deepEqual(Array.from(employee.data, row => row.id), [11]); assert.equal(employee.data[0].notes, base.notes);
 assert.equal((await request("get", "/api/bookings/provider", { workspace: { ...employeeScope, invalid: true } })).code, 403);
 assert.equal((await request("get", "/api/bookings/provider", { user: null })).code, 401);
-console.log("Passed: booking POST/schema/storage/provider-list preserves multiline en/lv/ru notes and null; server identity/status, personal/company/employee visibility, auth guard and notifications mapping retained. All adapters injected; no DB clients, services, credentials or environment files loaded.");
+console.log(`Passed ${cases} initial-message scenarios: pending/instant, alias/conflicts, blank/limits/Unicode, server identity/timestamp, atomic rollback on message/reminder failures, private conversation visibility, capacity/auth and redacted logs. Historical DTO/workspace filtering retained. All persistence in memory; no credentials or services.`);

@@ -6,8 +6,9 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../../client/src/lib/queryClient";
 import BookingModal from "../../client/src/components/booking-modal";
 import AppointmentsPage from "../../client/src/pages/provider/appointments";
-import AppointmentAgenda from "../../client/src/components/appointment-agenda";
+import MyBookings from "../../client/src/pages/my-bookings";
 import type { BookingWithDetails, ServiceWithProvider } from "../../shared/schema";
+import type { BookingMessage } from "../../shared/appointment-collaboration";
 
 declare const __FORM_RESOURCES__: Record<string, { translation: object }>;
 const NativeDate = Date, now = NativeDate.UTC(2030, 0, 15, 12);
@@ -29,8 +30,10 @@ const service = {
 } as ServiceWithProvider;
 const context = { company: null, workspaces: [], permissions: { manageBookings: !params.has("viewer"), readAll: !params.has("viewer") } };
 let records: BookingWithDetails[] = [];
+let messages: BookingMessage[] = [];
 const fixture = {
   ready: false, reads: [] as string[], writes: [] as { path: string; body: Record<string, unknown> }[], unexpected: [] as string[],
+  failBooking: false, failReply: false,
   replaceNotes: async (notes: string | null) => {
     records = records.map(row => ({ ...row, notes }));
     await queryClient.invalidateQueries({ queryKey: ["/api/bookings/provider"] });
@@ -49,10 +52,21 @@ window.fetch = async (input, options = {}) => {
   if (/^\/api\/bookings\/\d+\/(event\/)?reschedule-requests$/.test(path) && method === "GET") return Response.json({ requests: [] });
   if (path.startsWith("/api/availability/month/7?") && method === "GET") return Response.json({ days: [{ date: "2030-01-16", availableSlots: 1 }] });
   if (path.startsWith("/api/availability/slots/7?") && method === "GET") return Response.json({ slots: [{ startsAt: "2030-01-16T09:00:00.000Z", endsAt: "2030-01-16T09:45:00.000Z", startTime: "09:00", endTime: "09:45", timezone: "UTC", available: true, availableCapacity: 6, slotDuration: 45 }] });
+  if (path === "/api/bookings/1/conversation" && method === "GET") return Response.json({ messages, nextCursor: null });
+  if (path === "/api/bookings/1/conversation" && method === "POST") {
+    const body = JSON.parse(String(options.body)); fixture.writes.push({ path, body });
+    if (fixture.failReply) { fixture.failReply = false; return Response.json({}, { status: 503 }); }
+    const actor = queryClient.getQueryData<{ id: string }>(["/api/auth/user"]);
+    const providerAuthor = actor?.id === provider.id;
+    const message: BookingMessage = { id: crypto.randomUUID(), bookingId: 1, authorId: actor!.id, authorRole: providerAuthor ? "provider" : "customer", authorName: providerAuthor ? "Synthetic Provider" : "Synthetic Customer", body: body.body, createdAt: new Date().toISOString(), broadcastId: null };
+    messages.push(message); return Response.json(message);
+  }
   if (path === "/api/bookings" && method === "POST") {
     const body = JSON.parse(String(options.body));
     fixture.writes.push({ path, body });
-    records = [{ ...body, id: 1, service, seekerId: customer.id, providerId: provider.id, seeker: customer, provider, totalAmount: "25", status: service.instantBooking ? "confirmed" : "pending" }];
+    if (fixture.failBooking) { fixture.failBooking = false; return Response.json({}, { status: 503 }); }
+    records = [{ ...body, notes: null, id: 1, service, seekerId: customer.id, providerId: provider.id, seeker: customer, provider, totalAmount: "25", status: service.instantBooking ? "confirmed" : "pending" }];
+    messages = body.initialMessage ? [{ id: crypto.randomUUID(), bookingId: 1, authorId: customer.id, authorRole: "customer", authorName: "Synthetic Customer", body: body.initialMessage, createdAt: new Date().toISOString(), broadcastId: null }] : [];
     return Response.json(records[0]);
   }
   fixture.unexpected.push(method + " " + path); throw Error("Unexpected fixture request");
@@ -68,8 +82,8 @@ function Fixture() {
       queryClient.setQueryData(["/api/company/context"], context);
       setMode("provider");
     }}>Open provider fixture</button>
-    <button id="fixture-customer-view" className="p-3" onClick={() => setMode("customer")}>Open customer fixture</button>
-    {mode === "booking" ? <BookingModal service={service} onClose={() => setMode("booked")} /> : mode === "provider" ? <AppointmentsPage /> : mode === "customer" ? <AppointmentAgenda bookings={records} /> : null}
+    <button id="fixture-customer-view" className="p-3" onClick={() => { queryClient.setQueryData(["/api/auth/user"], customer); setMode("customer"); }}>Open customer fixture</button>
+    {mode === "booking" ? <BookingModal service={service} onClose={() => setMode("booked")} /> : mode === "provider" ? <AppointmentsPage view="upcoming" /> : mode === "customer" ? <MyBookings /> : null}
   </main>;
 }
 createRoot(document.getElementById("root")!).render(<QueryClientProvider client={queryClient}><Fixture /></QueryClientProvider>);

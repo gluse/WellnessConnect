@@ -5,6 +5,7 @@ import {
   services,
   addresses,
   bookings,
+  bookingMessages,
   bookingRescheduleRequests,
   availability,
   serviceEmbeddings,
@@ -39,6 +40,7 @@ import { assertCustomerBookingChange } from "./customerBookings";
 import { assertReminderConfiguration, captureStatusEvent, reconcileBookingReminder, reconcileServiceReminders } from "./notifications/repository";
 import { statusAction } from "./notifications/policy";
 import type { NotificationSummary } from "@shared/notifications";
+import { randomUUID } from "node:crypto";
 
 type NotificationBooking = Booking & { notification?: NotificationSummary };
 
@@ -155,7 +157,7 @@ export interface IStorage {
   getPublicServiceEmbeddings(filters: SearchFilters): Promise<{ serviceId: number; embedding: number[] }[]>;
 
   // Booking operations
-  createBooking(booking: InsertBooking): Promise<Booking>;
+  createBooking(booking: InsertBooking, initialMessage?: string | null): Promise<Booking>;
   createReview(bookingId: number, seekerId: string, input: ReviewInput): Promise<ServiceReview>;
   updateReview(bookingId: number, seekerId: string, input: ReviewInput): Promise<ServiceReview>;
   deleteReview(bookingId: number, seekerId: string): Promise<void>;
@@ -522,7 +524,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Booking operations
-  async createBooking(booking: InsertBooking): Promise<Booking> {
+  async createBooking(booking: InsertBooking, initialMessage?: string | null): Promise<Booking> {
     return db.transaction(async tx => {
       // Serialize check + insert for this administrator, including simultaneous requests.
       await tx.execute(sql`SELECT id FROM users WHERE id = ${booking.providerId} FOR UPDATE`);
@@ -533,7 +535,12 @@ export class DatabaseStorage implements IStorage {
       const offered = bookableSlots({ service, schedules, bookings: [], date: booking.scheduledDate.toISOString().slice(0, 10), timezone: "UTC" });
       if (!offered.some(slot => slot.startsAt === booking.scheduledDate.toISOString())) throw new BookingConflictError("This time is outside the available working hours.");
       await assertResourceAvailable(tx, service, { ...booking, bookingDuration: service.duration, bookingCleanupTime: service.cleanupTime });
-      const [created] = await tx.insert(bookings).values({ ...booking, bookingDuration: service.duration, bookingCleanupTime: service.cleanupTime }).returning();
+      const createdAt = new Date();
+      const [created] = await tx.insert(bookings).values({ ...booking, notes: null, createdAt, bookingDuration: service.duration, bookingCleanupTime: service.cleanupTime }).returning();
+      if (initialMessage) {
+        await tx.insert(bookingMessages).values({ id: randomUUID(), bookingId: created.id, authorId: created.seekerId,
+          authorRole: "customer", body: initialMessage, clientRequestId: randomUUID(), broadcastId: null, createdAt });
+      }
       await reconcileBookingReminder(tx, created, new Date(), schedules.find(item => item.serviceId === service.id)?.timezone ?? schedules[0]?.timezone ?? "UTC");
       return created;
     });

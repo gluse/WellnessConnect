@@ -37,7 +37,7 @@ try {
     await key("Tab"); assert.equal(await evaluate(() => !!document.activeElement.closest('[role="dialog"]')), true, "Keyboard focus stays in dialog");
     await button(form.requestBooking);
     await until(() => window.phase2Fixture.writes.length === 1, "valid booking request");
-    assert.deepEqual(await evaluate(() => window.phase2Fixture.writes[0]), { path: "/api/bookings", body: { serviceId: 7, scheduledDate: "2030-01-16T09:00:00.000Z", participantCount: 4, notes: null } });
+    assert.deepEqual(await evaluate(() => window.phase2Fixture.writes[0]), { path: "/api/bookings", body: { serviceId: 7, scheduledDate: "2030-01-16T09:00:00.000Z", participantCount: 4, initialMessage: null } });
     assert.deepEqual(await evaluate(() => window.phase2Fixture.unexpected), []);
   }
 

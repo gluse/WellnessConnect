@@ -52,8 +52,8 @@ function CollaborationDialog({ title, description, pending, onClose, restoreFocu
   </Dialog>;
 }
 
-export function BookingConversationDialog({ booking, scope, viewer, onClose, restoreFocus }: {
-  booking: BookingWithDetails; scope: string; viewer: "provider" | "customer"; onClose: () => void; restoreFocus?: () => void;
+export function BookingConversationDialog({ booking, scope, viewer, canSend = true, onClose, restoreFocus }: {
+  booking: BookingWithDetails; scope: string; viewer: "provider" | "customer"; canSend?: boolean; onClose: () => void; restoreFocus?: () => void;
 }) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient(), alive = useMounted();
@@ -94,12 +94,12 @@ export function BookingConversationDialog({ booking, scope, viewer, onClose, res
         <p className="text-xs text-muted-foreground"><time dateTime={message.createdAt}>{appointmentTime(message.createdAt, i18n.language)}</time> · {t(root + "saved")}</p>
       </article>)}
     </div>
-    <form className="space-y-3" onSubmit={event => { event.preventDefault(); if (!submitting.current && body.trim() && messages.isSuccess) { submitting.current = true; send.mutate(); } }}>
+    {canSend ? <form className="space-y-3" onSubmit={event => { event.preventDefault(); if (!submitting.current && body.trim() && messages.isSuccess) { submitting.current = true; send.mutate(); } }}>
       <Label htmlFor="booking-message-body">{t(root + "message")}</Label>
       <Textarea id="booking-message-body" dir="auto" maxLength={4000} value={body} placeholder={t(root + "writeMessage")} disabled={send.isPending || denied} onChange={event => { setBody(event.target.value); if (send.isError) { id.current = crypto.randomUUID(); send.reset(); } }} className="min-h-24" />
       {send.isError && <p role="alert" className="text-red-700">{t(errorKey(send.error))}</p>}
       <div className="flex flex-wrap justify-end gap-2"><Button type="button" variant="outline" disabled={send.isPending} onClick={onClose}>{t(root + "close")}</Button><Button type="submit" disabled={!body.trim() || send.isPending || !messages.isSuccess || denied}>{send.isPending ? t(root + "loading") : t(root + "send")}</Button></div>
-    </form>
+    </form> : <div className="flex justify-end"><Button type="button" variant="outline" onClick={onClose}>{t(root + "close")}</Button></div>}
   </CollaborationDialog>;
 }
 

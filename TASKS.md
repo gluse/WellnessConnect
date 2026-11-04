@@ -573,4 +573,25 @@ See [business scenarios](docs/payment-business-plan.md),
   database/service operations performed. Next action: review/accept implementation
   plan and assign owners. Preserve existing EUR platform-subscription contracts.
 
-<!-- Add the next task here using TASK-040, or place it in the relevant section. -->
+## Reservation messages
+
+- [x] **TASK-040 — Save reservation notes as the initial conversation message.**
+  **Status, 4 November 2026:** User approved implementation of
+  [the plan](docs/reservation-initial-message-plan.md). Frontend, Backend and DB
+  contract-review owners accepted the scoped local work; root completed delegated
+  implementation and integrated verification. Both application owners returned
+  final review without blockers.
+  User selected ignoring existing notes ("you can delete / ignore current notes").
+  One optional message field creates a customer message atomically with its
+  reservation; new bookings do not store notes. Messages replaces separate notes
+  controls and historical notes are ignored without migration or deletion.
+  Authorized read-only providers can read messages without a composer. Existing
+  backend permissions, capacity/reminder semantics and message retention remain.
+  Three-browser en/lv/ru flow checks, backend/capacity/collaboration/API/retention
+  checks, affected Chrome regressions, TypeScript and isolated build pass; see
+  [implementation, evidence, limits and recovery](docs/reservation-initial-message-handoff.md).
+  Local files and offline/mocked tests only; no connected
+  writes, private config or deployment. Test en/lv/ru; other locales/RTL deferred.
+  See [owner scope and progress](docs/agent-coordination.md#reservation-initial-message--4-november-2026).
+
+<!-- Add the next task here using TASK-041, or place it in the relevant section. -->

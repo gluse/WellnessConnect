@@ -37,6 +37,16 @@ import { bookingReminderSummaries } from "./notifications/repository";
 import { notificationConfig } from "./notifications/transports";
 import { NotificationError, notificationTimezoneSchema } from "@shared/notifications";
 
+// Older booking clients send `notes`; both inputs start the same conversation.
+const initialBookingMessageSchema = z.object({
+  initialMessage: z.string().trim().max(4000).nullish(),
+  notes: z.string().trim().max(4000).nullish(),
+}).superRefine((input, context) => {
+  if (input.initialMessage && input.notes && input.initialMessage !== input.notes) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["initialMessage"], message: "Provide one initial message for this reservation." });
+  }
+}).transform(input => input.initialMessage || input.notes || null);
+
 function apiFailure(error: unknown, res: import("express").Response, fallback: string) {
   const pgError = (error as any)?.cause ?? error;
   if ((pgError as any)?.code === "23503" && (pgError as any)?.constraint === "services_category_categories_key_fk") {
@@ -548,6 +558,7 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
   app.post('/api/bookings', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      const initialMessage = initialBookingMessageSchema.parse(req.body);
       const serviceId = z.number().int().positive().parse(req.body.serviceId);
       const service = await storage.getServiceById(serviceId);
       if (!service || !service.isActive || !service.companyActive) {
@@ -558,7 +569,8 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
       const participantCount = z.number().int().min(1).max(service.serviceType === "group" ? service.maxCapacity ?? 1 : 1).parse(req.body.participantCount ?? 1);
       const total = Number(service.price) * participantCount;
       const bookingData = insertBookingSchema.parse({
-        ...req.body,
+        serviceId,
+        notes: null,
         seekerId: userId,
         providerId: service.providerId,
         companyId: service.companyId,
@@ -573,10 +585,10 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
         advanceAmount: (total * (service.advancePaymentPercent ?? 0) / 100).toFixed(2),
       });
       
-      const booking = await storage.createBooking(bookingData);
+      const booking = await storage.createBooking(bookingData, initialMessage);
       res.json(booking);
     } catch (error) {
-      console.error("Error creating booking:", error);
+      console.error("Error creating booking:", error instanceof Error ? error.name : "Error");
       res.status(error instanceof BookingConflictError ? 409 : error instanceof z.ZodError ? 400 : 500).json({ message: error instanceof BookingConflictError
         ? "This time slot is no longer available. Please choose another time."
         : error instanceof z.ZodError ? error.issues[0].message : "Failed to create booking" });
