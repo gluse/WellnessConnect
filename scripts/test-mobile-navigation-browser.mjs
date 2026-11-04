@@ -68,7 +68,11 @@ try {
         assert.ok(state.targets.every(target => target.width >= 44 && target.height >= 44 && !target.clipped), JSON.stringify(state.targets));
         assert.equal(state.desktopWorkspace, false); assert.equal(state.clearance, true);
         await openMenu();
-        assert.deepEqual(await evaluate(() => [...document.querySelectorAll('[role="menuitem"]')].map(node => node.textContent.trim())), [labels.providerNavigation.upcomingAppointments, labels.providerNavigation.pastAppointments, labels.mobileNavigation.services, labels.mobileNavigation.availability, labels.mobileNavigation.settings, labels.providerNavigation.workspace]);
+        assert.deepEqual(await evaluate(() => [...document.querySelectorAll('[role="menuitem"]')].map(node => node.textContent.trim())), [labels.providerNavigation.upcomingAppointments, labels.providerNavigation.pastAppointments, labels.mobileNavigation.services, labels.mobileNavigation.availability, labels.mobileNavigation.settings, labels.providerNavigation.workspace, labels.legal.privacyPolicyNewTab]);
+        assert.deepEqual(await evaluate(() => {
+          const link = document.querySelector('[role="menuitem"][href="/privacy-policy.html"]');
+          return { target: link.target, rel: link.rel };
+        }), { target: '_blank', rel: 'noopener noreferrer' });
         assert.equal(await evaluate(() => { const box = document.querySelector('[role="menu"]').getBoundingClientRect(); return box.left >= 0 && box.right <= innerWidth + 1 && box.top >= 0 && box.bottom <= document.querySelector('[data-mobile-navigation]').getBoundingClientRect().top; }), true, "menu opens above bar within viewport");
         await key("Escape");
         await until(() => !document.querySelector('[role="menu"]') && document.activeElement === document.querySelector('[data-mobile-navigation] button'), "Escape restores focus");
@@ -134,8 +138,12 @@ try {
   assert.equal(await evaluate(() => document.querySelectorAll('[data-mobile-navigation]').length), 1);
   await click('header button[aria-label="Open account menu"]');
   await until(() => !!document.querySelector('[role="menu"] a[href="/account"]'), "top account menu remains available");
+  assert.deepEqual(await evaluate(() => {
+    const link = document.querySelector('[role="menuitem"][href="/privacy-policy.html"]');
+    return { text: link.textContent.trim(), target: link.target, rel: link.rel };
+  }), { text: resources.en.translation.legal.privacyPolicyNewTab, target: '_blank', rel: 'noopener noreferrer' });
   await key("Escape");
-  checks.push("all tabs and menu destinations, active and nested routes, Account coverage and sole top account control");
+  checks.push("all tabs and menu destinations, active and nested routes, Account coverage and sole top account control; public English/new-tab policy links in mobile/account menus");
 
   await open("/my-services/appointments", "companies=0");
   assert.equal(await evaluate(() => [...document.querySelectorAll('nav button[title]')].length), 0, "personal-only selector hidden");
@@ -173,17 +181,17 @@ try {
   assert.equal(await evaluate(() => /Viewer|You can view appointments assigned to you/.test(document.querySelector('main').textContent)), false, "viewer role and role notice absent above content");
   await checkWorkspace("3");
   await openMenu();
-  assert.deepEqual(await evaluate(() => [...document.querySelectorAll('[role="menuitem"]')].map(node => node.textContent.trim())), ["Upcoming Appointments", "Past & Cancelled Appointments", "Services", "Workspace"], "viewer keeps appointment lists and workspace but cannot access restricted tools");
+  assert.deepEqual(await evaluate(() => [...document.querySelectorAll('[role="menuitem"]')].map(node => node.textContent.trim())), ["Upcoming Appointments", "Past & Cancelled Appointments", "Services", "Workspace", resources.en.translation.legal.privacyPolicyNewTab], "viewer keeps appointment lists, workspace and public policy but cannot access restricted tools");
   await key("Escape");
   checks.push("personal-only, company/personal/viewer switching; roles only in Workspace selection; failure retention and pending/duplicate/navigation protection");
 
   for (const context of ["pending", "error"]) {
     await open("/search", `context=${context}`); await openMenu();
-    assert.deepEqual(await evaluate(() => [...document.querySelectorAll('[role="menuitem"]')].map(node => node.textContent.trim())), ["Upcoming Appointments", "Past & Cancelled Appointments", "Services"]);
+    assert.deepEqual(await evaluate(() => [...document.querySelectorAll('[role="menuitem"]')].map(node => node.textContent.trim())), ["Upcoming Appointments", "Past & Cancelled Appointments", "Services", resources.en.translation.legal.privacyPolicyNewTab]);
     assert.equal(await evaluate(() => document.querySelector('[role="menu"] [role="status"]').textContent.trim()), resources.en.translation.mobileNavigation[context === "pending" ? "workspaceLoading" : "workspaceError"]);
     if (context === "pending") {
       await evaluate(() => { window.phase2Fixture.contextResult = "success"; window.phase2Fixture.releaseContext(); });
-      await until(() => document.querySelectorAll('[role="menuitem"]').length === 6, "permissions load into menu");
+      await until(() => document.querySelectorAll('[role="menuitem"]').length === 7, "permissions load into menu");
     }
     await key("Escape");
   }
@@ -241,6 +249,6 @@ try {
   checks.push("200% text, desktop resize dismisses menu, logout removes signed-in bar, guest navigation unchanged");
   assert.deepEqual(await evaluate(() => window.phase2Fixture.unexpected), []);
   assert.deepEqual(fixture.errors, []); assert.deepEqual(fixture.network, []); assert.deepEqual(fixture.blocked, []);
-  await writeFile(new URL(`../docs/${artifactPrefix}-${engine}-evidence.json`, import.meta.url), JSON.stringify({ date: "2026-11-03", browser: await fixture.api("Browser.getVersion"), languages, checks, matrix, screenshots, deferredLanguages: ["ar", "zh", "fr", "de", "hi", "ja", "pt", "es"], limits: "Actual App with synthetic fetch mocks; no connected services/database/session writes. Physical devices, native-language review and screen readers unverified." }, null, 2) + "\n");
+  await writeFile(new URL(`../docs/${artifactPrefix}-${engine}-evidence.json`, import.meta.url), JSON.stringify({ date: new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Riga', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()), browser: await fixture.api("Browser.getVersion"), languages, checks, matrix, screenshots, deferredLanguages: ["ar", "zh", "fr", "de", "hi", "ja", "pt", "es"], limits: "Actual App with synthetic fetch mocks; no connected services/database/session writes. Physical devices, native-language review and screen readers unverified." }, null, 2) + "\n");
   console.log(`Passed mobile navigation ${engine}: ${checks.length} behavior groups, ${matrix.length} viewport/locale cases.`);
 } finally { await fixture.close(); }

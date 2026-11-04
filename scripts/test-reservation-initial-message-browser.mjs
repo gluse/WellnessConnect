@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { browserFixture } from "./fixtures/browser-harness.mjs";
+import { checkMessagePrivacy } from "./fixtures/message-privacy-checks.mjs";
 
 // Real creation/provider/customer components; synthetic fetch/auth/persistence.
 const languages = ["en", "lv", "ru"], resources = {};
@@ -40,7 +41,8 @@ try {
         help: document.getElementById(input.getAttribute("aria-describedby")).textContent, fits: document.documentElement.scrollWidth <= innerWidth + 1 };
     }), { max: 4000, label: t.bookingForm.initialMessage, help: t.bookingForm.initialMessageHelp, fits: true });
     if (language === "en" && process.env.MESSAGE_SCREENSHOT) await fixture.screenshot(process.env.MESSAGE_SCREENSHOT.replace(/\.png$/, "-form.png"));
-    await set("booking-initial-message", `  ${text}\n `); await finish(language);
+    await checkMessagePrivacy(fixture, t, "booking-initial-message", `  ${text}\n `);
+    await finish(language);
     assert.deepEqual(await evaluate(() => window.phase2Fixture.writes[0]), { path: "/api/bookings", body: { serviceId: 7, scheduledDate: "2030-01-16T09:00:00.000Z", participantCount: 1, initialMessage: text } });
     assert.equal(await evaluate(() => window.phase2Fixture.writes.length), 1, "One creation request; no second message request");
     await providerConversation(); await until(() => document.querySelectorAll('[role="dialog"] article').length === 1, "initial message loaded");
@@ -54,13 +56,22 @@ try {
       }), { text, whitespace: "pre-wrap", safe: true, executed: false, fits: true, customer: true });
     }
     if (language === "en" && process.env.MESSAGE_SCREENSHOT) await fixture.screenshot(process.env.MESSAGE_SCREENSHOT);
-    await set("booking-message-body", "Provider reply"); await button(t.appointmentCollaboration.send);
+    await checkMessagePrivacy(fixture, t, "booking-message-body", "Provider reply");
+    if (language === "en" && process.env.PRIVACY_SCREENSHOT) {
+      await fixture.screenshot(process.env.PRIVACY_SCREENSHOT);
+      await click('[data-booking-message-privacy] summary');
+      await fixture.screenshot(process.env.PRIVACY_SCREENSHOT.replace(/\.png$/, "-expanded.png"));
+      await click('[data-booking-message-privacy] summary');
+    }
+    await button(t.appointmentCollaboration.send);
     await until(() => document.querySelectorAll('[role="dialog"] article').length === 2, "provider reply");
     await closeConversation(); await until(() => document.activeElement?.getAttribute("data-testid") === "booking-messages-1", "provider trigger focus restored");
-    await click("#fixture-customer-view"); await button(t.appointmentCollaboration.messageProvider);
+    await click("#fixture-customer-view");
+    await until(() => !!document.querySelector('[data-appointment-area="customer"] button[title][aria-label]'), 'customer message action loaded');
+    await click(`[data-appointment-area="customer"] button[aria-label=${JSON.stringify(t.appointmentCollaboration.messageProvider)}]`);
     await until(() => document.querySelectorAll('[role="dialog"] article').length === 2, "customer sees same thread");
     assert.equal(await evaluate(() => document.querySelector('[role="dialog"]').textContent.includes("Provider reply")), true);
-    await set("booking-message-body", "Customer reply"); await button(t.appointmentCollaboration.send);
+    await checkMessagePrivacy(fixture, t, "booking-message-body", "Customer reply"); await button(t.appointmentCollaboration.send);
     await until(() => document.querySelectorAll('[role="dialog"] article').length === 3, "customer reply");
     await closeConversation(); assert.deepEqual(await evaluate(() => window.phase2Fixture.unexpected), []);
   }
@@ -80,9 +91,12 @@ try {
     if (value.trim()) await until(() => document.querySelector('[role="dialog"]').textContent.includes("Initial message visible to a read-only provider"), "Read-only initial message");
     else await until(() => document.querySelector('[role="dialog"]').textContent.includes(window.phase2Fixture.emptyText), "empty conversation");
     assert.equal(await evaluate(() => document.querySelectorAll('[role="dialog"] article').length), value.trim() ? 1 : 0);
-    assert.equal(await evaluate(() => !!document.querySelector('[role="dialog"] form, #booking-message-body')), false, "Read-only provider has no composer"); await closeConversation();
+    assert.equal(await evaluate(() => !!document.querySelector('[role="dialog"] form, #booking-message-body')), false, "Read-only provider has no composer");
+    await click('[data-booking-message-privacy] summary');
+    assert.equal(await evaluate(() => document.querySelector('[data-booking-message-privacy]').open), true, 'Read-only viewer can read privacy details');
+    await closeConversation();
   }
   assert.deepEqual(fixture.errors, []); assert.deepEqual(fixture.network, []); assert.deepEqual(fixture.blocked, []);
   console.log((await fixture.api("Browser.getVersion")).product);
-  console.log("Passed: creation -> provider/customer conversation/replies, one request, en/lv/ru labels/help, 4000 limit, 1280/768/375/320 reflow, multiline safe text, focus, failed-save draft/retry, blank/instant group/read-only and ignored historical notes. APIs mocked; no app server/database.");
+  console.log("Passed: collapsed/privacy disclosure keyboard and pointer toggles, exact notices, safe policy links, drafts/no submission, 200% text and 1280/768/375/320 reflow in en/lv/ru; creation -> provider/customer replies, 4000 limit, safe text, focus, failures, blank/instant group/read-only and ignored historical notes. APIs mocked; no app server/database.");
 } finally { await fixture.close(); }

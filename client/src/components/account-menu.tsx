@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { LogOut, UserRound, Shield } from "lucide-react";
 import type { WorkspaceContext } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function AccountMenu() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: adminAccess } = useAppAdmin();
   const { toast } = useToast();
@@ -48,6 +50,9 @@ export default function AccountMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/account"><UserRound aria-hidden="true" /> Account details</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="min-h-11 whitespace-normal break-words">
+          <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer"><Shield aria-hidden="true" />{t("legal.privacyPolicyNewTab")}</a>
         </DropdownMenuItem>
         <DropdownMenuItem disabled={signingOut} onSelect={() => void signOut()}>
           <LogOut aria-hidden="true" /> Sign Out

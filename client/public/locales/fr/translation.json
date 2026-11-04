@@ -104,6 +104,7 @@
     "accessInactive": "L’accès Pro est actuellement inactif."
   },
   "legal": {
+    "privacyPolicyNewTab": "Politique de confidentialité (en anglais, s’ouvre dans un nouvel onglet)",
     "privacyPolicy": "Politique de confidentialité (en anglais)"
   },
   "guestSearch": {
@@ -1097,6 +1098,7 @@
     "messages": "Messages",
     "messageProvider": "Écrire au prestataire",
     "conversation": "Messages privés de la réservation",
+    "privacyDetails": "Confidentialité et conservation des messages",
     "privacy": "Seuls ce client et l'équipe autorisée du prestataire peuvent voir cette conversation.",
     "message": "Message",
     "writeMessage": "Écrivez un message…",

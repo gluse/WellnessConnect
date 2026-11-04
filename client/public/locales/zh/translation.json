@@ -104,6 +104,7 @@
     "accessInactive": "Pro 访问目前未启用。"
   },
   "legal": {
+    "privacyPolicyNewTab": "隐私政策（英文，在新标签页中打开）",
     "privacyPolicy": "隐私政策（英文）"
   },
   "guestSearch": {
@@ -1097,6 +1098,7 @@
     "messages": "消息",
     "messageProvider": "联系服务提供者",
     "conversation": "预订私人消息",
+    "privacyDetails": "消息隐私与保留期限",
     "privacy": "只有该客户和获授权的服务提供者团队可以查看此对话。",
     "message": "消息",
     "writeMessage": "输入消息…",

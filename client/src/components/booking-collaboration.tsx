@@ -8,6 +8,7 @@ import { getProviderName } from "@shared/provider";
 import { apiRequest } from "@/lib/queryClient";
 import { formatDateTime24 } from "@/lib/date-time";
 import BookingTimePicker from "@/components/booking-time-picker";
+import BookingMessagePrivacy from "@/components/booking-message-privacy";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -81,8 +82,7 @@ export function BookingConversationDialog({ booking, scope, viewer, canSend = tr
   const counterpart = viewer === "provider" ? [booking.seeker.firstName, booking.seeker.lastName].filter(Boolean).join(" ") || booking.seeker.email || t(root + "customer") : getProviderName(booking.provider);
   return <CollaborationDialog title={t(root + "conversation")} description={`${booking.service.name} · #${booking.id} · ${appointmentTime(booking.scheduledDate, i18n.language)}`} pending={send.isPending} onClose={onClose} restoreFocus={restoreFocus}>
     <p className="font-semibold" data-testid="conversation-counterpart">{t(root + (viewer === "provider" ? "customer" : "provider"))}: <bdi>{counterpart}</bdi></p>
-    <p className="text-sm rounded-lg bg-indigo-50 p-3">{t(root + "privacy")}</p>
-    <p className="text-xs text-muted-foreground">{t(root + "retentionNotice")}</p>
+    <BookingMessagePrivacy />
     {messages.isPending && <p role="status">{t(root + "loading")}</p>}
     {messages.isError && <div role="alert">{t(root + "loadFailed")} <Button variant="outline" onClick={() => void messages.refetch()}>{t(root + "retry")}</Button></div>}
     {messages.hasNextPage && <Button variant="outline" disabled={messages.isFetchingNextPage} onClick={() => void messages.fetchNextPage()}>{t(root + "olderMessages")}</Button>}

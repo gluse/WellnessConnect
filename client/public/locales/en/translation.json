@@ -104,6 +104,7 @@
     "accessInactive": "Pro access is currently inactive."
   },
   "legal": {
+    "privacyPolicyNewTab": "Privacy policy (English, opens in a new tab)",
     "privacyPolicy": "Privacy policy (English)"
   },
   "guestSearch": {
@@ -1093,6 +1094,7 @@
     "messages": "Messages",
     "messageProvider": "Message provider",
     "conversation": "Private booking messages",
+    "privacyDetails": "Message privacy & retention",
     "privacy": "Only this customer and the authorized provider team can view this conversation.",
     "message": "Message",
     "writeMessage": "Write a message…",

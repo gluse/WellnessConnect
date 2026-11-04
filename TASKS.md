@@ -594,4 +594,32 @@ See [business scenarios](docs/payment-business-plan.md),
   writes, private config or deployment. Test en/lv/ru; other locales/RTL deferred.
   See [owner scope and progress](docs/agent-coordination.md#reservation-initial-message--4-november-2026).
 
-<!-- Add the next task here using TASK-041, or place it in the relevant section. -->
+- [x] **TASK-041 — Collapse booking-message privacy details and link the policy.**
+  **Status, 4 November 2026:** User approved the presentation plan with “go ahead
+  implement”, specifically authorizing root's local frontend work. Conversation
+  and initial-message forms now share a collapsed privacy/retention disclosure;
+  the generated English policy has a dedicated booking-message section, with
+  permanent links in mobile and account menus. Exact access/retention meaning and
+  drafts are preserved. Three-browser en/lv/ru form checks, Chrome navigation and
+  policy checks, TypeScript and isolated build passed. Supported translations
+  maintained; ar/RTL, zh, fr, de, hi, ja, pt and es testing deferred. No connected
+  operations, private configuration, database changes or deployment. See
+  [scope, verification, screenshots and recovery](docs/booking-message-privacy-handoff.md).
+
+## Header messages and notifications
+
+- [ ] **TASK-042 — Add message and notification icons beside language selection.**
+  **Status, 4 November 2026:** Planning completed following the user's `/plan`
+  request and “proceed”; implementation not started. Two authenticated header
+  buttons with red unread badges, linked conversation lists and grouped activity
+  notifications. Existing messages need durable reader state; service-view counts
+  need agreed metric semantics; wishlist notifications need a new save/unsave
+  feature. See [behavior, contracts, phases, decisions and acceptance](docs/header-messages-notifications-plan.md).
+  Frontend, Backend and DB owner assignments/acceptance follow implementation
+  selection. User selected daily grouped view counts excluding provider/team views
+  ("Your Yoga class received 9 views"). Proposed new-data lifetimes remain decisions;
+  existing message privacy/retention and connected-operation/deployment holds stay.
+  Repository review/documentation only; no app or connected checks. Test en/lv/ru;
+  ar/RTL, zh, fr, de, hi, ja, pt and es deferred.
+
+<!-- Add the next task here using TASK-043, or place it in the relevant section. -->

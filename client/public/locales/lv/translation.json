@@ -104,6 +104,7 @@
     "accessInactive": "Pro piekļuve pašlaik nav aktīva."
   },
   "legal": {
+    "privacyPolicyNewTab": "Privātuma politika (angļu valodā, atveras jaunā cilnē)",
     "privacyPolicy": "Privātuma politika (angļu valodā)"
   },
   "guestSearch": {
@@ -1094,6 +1095,7 @@
     "messages": "Ziņas",
     "messageProvider": "Rakstīt pakalpojuma sniedzējam",
     "conversation": "Privāta sarakste par rezervāciju",
+    "privacyDetails": "Ziņojumu privātums un glabāšana",
     "privacy": "Šo saraksti var skatīt tikai attiecīgais klients un pilnvarotā pakalpojuma sniedzēja komanda.",
     "message": "Ziņa",
     "writeMessage": "Rakstiet ziņu…",

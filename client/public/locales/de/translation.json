@@ -104,6 +104,7 @@
     "accessInactive": "Pro-Zugriff ist derzeit inaktiv."
   },
   "legal": {
+    "privacyPolicyNewTab": "Datenschutzerklärung (Englisch, öffnet in einem neuen Tab)",
     "privacyPolicy": "Datenschutzerklärung (Englisch)"
   },
   "guestSearch": {
@@ -1097,6 +1098,7 @@
     "messages": "Nachrichten",
     "messageProvider": "Anbieter kontaktieren",
     "conversation": "Private Buchungsnachrichten",
+    "privacyDetails": "Datenschutz und Aufbewahrung von Nachrichten",
     "privacy": "Nur dieser Kunde und das berechtigte Anbieterteam können diese Unterhaltung sehen.",
     "message": "Nachricht",
     "writeMessage": "Nachricht schreiben…",

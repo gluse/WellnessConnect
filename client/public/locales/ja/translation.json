@@ -104,6 +104,7 @@
     "accessInactive": "Pro アクセスは現在無効です。"
   },
   "legal": {
+    "privacyPolicyNewTab": "プライバシーポリシー（英語、新しいタブで開きます）",
     "privacyPolicy": "プライバシーポリシー（英語）"
   },
   "guestSearch": {
@@ -1097,6 +1098,7 @@
     "messages": "メッセージ",
     "messageProvider": "提供者にメッセージ",
     "conversation": "予約のプライベートメッセージ",
+    "privacyDetails": "メッセージのプライバシーと保存期間",
     "privacy": "この会話を閲覧できるのは、この顧客と権限を持つ提供者チームのみです。",
     "message": "メッセージ",
     "writeMessage": "メッセージを入力…",

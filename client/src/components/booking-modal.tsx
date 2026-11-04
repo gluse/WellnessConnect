@@ -12,6 +12,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useToast } from "@/hooks/use-toast";
 import BookingTimePicker from "@/components/booking-time-picker";
+import BookingMessagePrivacy from "@/components/booking-message-privacy";
 import { serviceAmount, useFormLocale } from "./forms-locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -173,7 +174,7 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
                 <p id="booking-participants-help" className="text-sm text-muted-foreground">{t("bookingForm.participantHelp", { maximum: new Intl.NumberFormat(language).format(maximum) })}</p>
                 {participantTouched && !participantValid && <p id="booking-participants-error" role="alert" className="text-sm text-red-700 dark:text-red-300">{t("bookingForm.participantError", { maximum: new Intl.NumberFormat(language).format(maximum) })}</p>}
               </div>}
-              <div className="space-y-2"><Label htmlFor="booking-initial-message">{t("bookingForm.initialMessage")}</Label><Textarea id="booking-initial-message" aria-describedby="booking-initial-message-help" dir="auto" maxLength={4000} disabled={busy} value={initialMessage} onChange={event => setInitialMessage(event.target.value)} /><p id="booking-initial-message-help" className="text-sm text-muted-foreground">{t("bookingForm.initialMessageHelp")}</p></div>
+              <div className="space-y-2"><Label htmlFor="booking-initial-message">{t("bookingForm.initialMessage")}</Label><Textarea id="booking-initial-message" aria-describedby="booking-initial-message-help" dir="auto" maxLength={4000} disabled={busy} value={initialMessage} onChange={event => setInitialMessage(event.target.value)} /><p id="booking-initial-message-help" className="text-sm text-muted-foreground">{t("bookingForm.initialMessageHelp")}</p><BookingMessagePrivacy /></div>
               <dl className="flex flex-wrap justify-between gap-3 font-medium"><dt>{t("bookingForm.total")}</dt><dd><bdi>{participantValid ? amount(total) : "—"}</bdi></dd></dl>
               {participantValid && advance > 0 && <p className="text-sm text-muted-foreground">{t("bookingForm.advanceNotice", { amount: amount(advance) })}</p>}
             </>}
