@@ -14,6 +14,18 @@ acceptance checks, recovery and next action. Use requested, accepted, in progres
 blocked or completed; state a concrete reason for blocked work. Owners return
 results and evidence; requesters check integration before closing dependencies.
 
+## Service search reference design — 4 November 2026
+
+**Completed / verified locally.** User supplied the search-page mockup and assigned
+Front End Developer `/root` to apply it. Scope: local search/header presentation,
+compact sorting, locale labels and isolated frontend verification. No backend,
+database, connected-service or deployment execution. Dark header, stacked mobile
+fields/full-width Search, combined toolbar, count and bottom price/details rows
+implemented. User clarified **mobile app only**; reference presentation is limited
+to widths below 1024px and prior desktop presentation is restored at/above 1024px.
+Type checks/build and Chrome/Firefox/WebKit mocked en/lv/ru matrix
+passed. [Scope, evidence, limits and recovery](search-reference-design-handoff.md).
+
 ## Reservation initial message — 4 November 2026
 
 **Completed / verified locally.** User approved implementation of

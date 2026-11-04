@@ -844,6 +844,10 @@
     "recoverySent": "If this address has an active invitation and an account, a fresh sign-in email will arrive. Open the newest link in this browser to set your password."
   },
   "searchPage": {
+    "anywhere": "Anywhere",
+    "anything": "Anything",
+    "sortAction": "Sort",
+    "filterAction": "Filter",
     "whereLabel": "Where",
     "when": "When",
     "whatLabel": "What",

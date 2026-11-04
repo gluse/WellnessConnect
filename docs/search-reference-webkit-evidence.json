@@ -1,0 +1,233 @@
+{
+  "date": "2026-11-04",
+  "browser": {
+    "product": "webkit/27.2"
+  },
+  "checks": [
+    "Empty search immediately returns the unfiltered catalog in list mode; Where/When/What are optional; no GPS or Maps access",
+    "Existing shared header language globe and authenticated account icon/menu rendered without replacing their behavior",
+    "Grid/list share sorting and data with no request on view switch; square cover images and missing/broken-image placeholders; session and booking labels retained",
+    "Independent query/filter drafts; explicit Search/Apply; empty-result recovery restores the catalog",
+    "When date/time ranges use existing request contract; invalid dates focus feedback and retain results; Apply synchronizes Filters; Escape restores focus without applying drafts",
+    "Explicit location and geolocation actions retain permission handling, failed-location result retention, and existing resolution contract",
+    "Existing map markers/hover previews/Escape/list recovery retained, with square thumbnail and service-type/booking-mode labels",
+    "Map-load fallback and rate-limit retry remain recoverable without resetting chosen view/filter state",
+    "en/lv/ru grid/list/map at phone/tablet/desktop widths; light/dark text contrast; 200% text reflow; Filters keyboard focus containment and restoration",
+    "Reference layout: translated visible Search and placeholders, stacked mobile fields/full-width submit, one touch-friendly toolbar before count, bottom price/details rows"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "view": "grid"
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "view": "list"
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "view": "map"
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "view": "grid"
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "view": "list"
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "view": "map"
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "view": "grid"
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "view": "list"
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "view": "map"
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "view": "grid"
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "view": "list"
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "view": "map"
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "view": "grid"
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "view": "list"
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "view": "map"
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "view": "grid"
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "view": "list"
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "view": "map"
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "view": "grid"
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "view": "list"
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "view": "map"
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "view": "grid"
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "view": "list"
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "view": "map"
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "view": "grid"
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "view": "list"
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "view": "map"
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "view": "grid"
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "view": "list"
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "view": "map"
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "view": "grid"
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "view": "list"
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "view": "map"
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "view": "grid"
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "view": "list"
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "view": "map"
+    }
+  ],
+  "screenshots": [
+    "docs/search-reference-webkit-phone-initial.png",
+    "docs/search-reference-webkit-header-account.png",
+    "docs/search-reference-webkit-map-preview.png",
+    "docs/search-reference-webkit-desktop-grid.png",
+    "docs/search-reference-webkit-phone-grid.png",
+    "docs/search-reference-webkit-phone-list.png",
+    "docs/search-reference-webkit-phone-dark.png"
+  ],
+  "contrast": {
+    "failures": [],
+    "minText": 6.133118027695773,
+    "minControlBorder": 3.253210328509685
+  },
+  "darkContrast": {
+    "failures": [],
+    "minText": 6.287528596095884,
+    "minControlBorder": 5.151346927076939
+  },
+  "unexpectedNetwork": [],
+  "blocked": [],
+  "runtimeErrors": [],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Synthetic local static fixture; mocked APIs/auth/geocoding/geolocation/Maps and images. No connected application server, database writes, paid Maps calls or deployment. Browser emulation does not establish physical-device or screen-reader coverage."
+}

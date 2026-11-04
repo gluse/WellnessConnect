@@ -844,6 +844,10 @@
     "recoverySent": "このアドレスに有効な招待とアカウントがあれば、新しいログインメールが届きます。このブラウザーで最新のリンクを開いてパスワードを設定してください。"
   },
   "searchPage": {
+    "anywhere": "すべての場所",
+    "anything": "すべてのサービス",
+    "sortAction": "並べ替え",
+    "filterAction": "絞り込み",
     "whereLabel": "場所",
     "when": "日時",
     "whatLabel": "サービス",

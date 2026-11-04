@@ -844,6 +844,10 @@
     "recoverySent": "Si esta dirección tiene invitación activa y cuenta, llegará un correo nuevo. Abre el enlace más reciente en este navegador para establecer la contraseña."
   },
   "searchPage": {
+    "anywhere": "Cualquier lugar",
+    "anything": "Cualquier servicio",
+    "sortAction": "Ordenar",
+    "filterAction": "Filtrar",
     "whereLabel": "Dónde",
     "when": "Cuándo",
     "whatLabel": "Qué",

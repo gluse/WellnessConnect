@@ -10,6 +10,7 @@ import { serviceRating, sortServices, type ServiceSort } from "@/lib/service-sor
 import GoogleMap from "@/components/google-map";
 import { resolveSearchLocation, type ResolvedSearchLocation } from "@/lib/saved-search-location";
 import { useSearchLocation } from "@/hooks/use-search-location";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import BookingModal from "@/components/booking-modal";
 import ServiceDetailModal from "@/components/service-detail-modal";
@@ -36,6 +37,7 @@ export default function Home() {
 }
 
 function SearchPage({ userId }: { userId: string | null }) {
+  const isMobile = useIsMobile(1024);
   const queryClient = useQueryClient();
   useEffect(() => () => {
     queryClient.removeQueries({ predicate: query => query.queryKey[0] === "/api/services/search" && query.queryKey[1] === userId });
@@ -250,13 +252,13 @@ function SearchPage({ userId }: { userId: string | null }) {
         <div className="search-query-bar">
           <div className="search-query-field">
             <Button ref={locationTrigger} type="button" variant="ghost" className="search-field-icon" data-testid="open-search-location" onClick={() => setLocationOpen(true)} disabled={busy} aria-label={t(location ? "searchLocation.change" : "searchLocation.title")}><MapPin aria-hidden="true" /></Button>
-            <div><label htmlFor="search-location">{t("searchPage.whereLabel")}</label><input id="search-location" aria-invalid={(queryError?.startsWith("searchPage.location") || queryError === "searchLocation.required") || false} data-testid="input-location" maxLength={300} aria-describedby={queryError ? "search-query-feedback" : undefined} value={resolvedDraft?.current && locationDraft === resolvedDraft.name ? t("searchPage.currentLocation") : locationDraft} onChange={event => { setLocationDraft(event.target.value); setResolvedDraft(null); setLocationReceipt(false); setQueryError(undefined); }} placeholder={t("searchPage.anyLocation")} disabled={busy} /></div>
+            <div><label htmlFor="search-location">{t("searchPage.whereLabel")}</label><input id="search-location" aria-invalid={(queryError?.startsWith("searchPage.location") || queryError === "searchLocation.required") || false} data-testid="input-location" maxLength={300} aria-describedby={queryError ? "search-query-feedback" : undefined} value={resolvedDraft?.current && locationDraft === resolvedDraft.name ? t("searchPage.currentLocation") : locationDraft} onChange={event => { setLocationDraft(event.target.value); setResolvedDraft(null); setLocationReceipt(false); setQueryError(undefined); }} placeholder={t(isMobile ? "searchPage.anywhere" : "searchPage.anyLocation")} disabled={busy} /></div>
           </div>
           <Button ref={whenTrigger} variant="ghost" type="button" className="search-when-field" data-testid="open-search-when" aria-haspopup="dialog" aria-expanded={whenOpen} onClick={openWhen} disabled={busy}>
             <CalendarDays aria-hidden="true" /><span><span className="search-field-label">{t("searchPage.when")}</span><span className="search-field-value">{whenSummary}</span></span>
           </Button>
-          <div className="search-query-field"><Search className="search-field-icon" aria-hidden="true" /><div><label htmlFor="service-query">{t("searchPage.whatLabel")}</label><input id="service-query" aria-invalid={queryError === "publicSearch.queryTooLong"} aria-describedby={queryError ? "search-query-feedback" : undefined} data-testid="input-search-query" type="search" maxLength={SEARCH_QUERY_LIMIT} value={query} onChange={event => { setQuery(event.target.value); setQueryError(undefined); }} placeholder={t("searchPage.allServices")} disabled={busy} /></div></div>
-          <Button type="submit" className="search-submit" data-testid="button-search-services" disabled={busy} aria-label={t(locationBusy ? "searchPage.resolvingLocation" : "searchPage.search")}><Search aria-hidden="true" /></Button>
+          <div className="search-query-field"><Search className="search-field-icon" aria-hidden="true" /><div><label htmlFor="service-query">{t("searchPage.whatLabel")}</label><input id="service-query" aria-invalid={queryError === "publicSearch.queryTooLong"} aria-describedby={queryError ? "search-query-feedback" : undefined} data-testid="input-search-query" type="search" maxLength={SEARCH_QUERY_LIMIT} value={query} onChange={event => { setQuery(event.target.value); setQueryError(undefined); }} placeholder={t(isMobile ? "searchPage.anything" : "searchPage.allServices")} disabled={busy} /></div></div>
+          <Button type="submit" className="search-submit" data-testid="button-search-services" disabled={busy} aria-label={t(locationBusy ? "searchPage.resolvingLocation" : "searchPage.search")}>{isMobile ? <span>{t("common.search")}</span> : <Search aria-hidden="true" />}</Button>
         </div>
         <details className="search-query-options"><summary>{t("searchPage.searchMode")}: {t(mode === "exact" ? "searchPage.keyword" : "searchPage.ai")}</summary><div className="search-query-mode"><fieldset><legend className="sr-only">{t("searchPage.searchMode")}</legend>{["exact", "semantic"].map(value => <label key={value}><input type="radio" name="search-mode" value={value} checked={mode === value} disabled={busy} onChange={() => setMode(value as SearchFilters["searchMode"])} aria-describedby="search-mode-help" />{t(value === "exact" ? "searchPage.keyword" : "searchPage.ai")}</label>)}</fieldset><p id="search-mode-help">{t(mode === "exact" ? "searchPage.keywordHelp" : "searchPage.aiHelp")}</p></div></details>
         {queryError && !locationOpen && <p ref={queryFeedback} id="search-query-feedback" tabIndex={-1} role="alert" className="search-query-error">{t(queryError)}</p>}
@@ -308,14 +310,16 @@ function SearchPage({ userId }: { userId: string | null }) {
         </DialogContent>
       </Dialog>
       <div className="search-workspace"><section className="search-results" aria-labelledby="search-results-title" aria-busy={loading}>
-        <div className="search-results-head">
-          <h2 id="search-results-title" ref={resultsHeading} tabIndex={-1} aria-live="polite">{loading ? t("publicSearch.loading") : errorKey ? t("searchPage.navSearch") : t("searchPage.resultsCount", { count: services.length })}</h2>
+        <div className="search-results-controls">
+        <div className="search-results-head"><h2 id="search-results-title" ref={resultsHeading} tabIndex={-1} aria-live="polite">{loading ? t("publicSearch.loading") : errorKey ? t("searchPage.navSearch") : t("searchPage.resultsCount", { count: services.length })}</h2></div>
+        <div className="search-results-toolbar">
           <div className="search-view-actions">
-            <Dialog open={filtersOpen} onOpenChange={setFiltersOpen}><DialogTrigger asChild><Button type="button" variant="ghost" className="search-mobile-filter-trigger"><SlidersHorizontal aria-hidden="true" />{t("searchPage.filters")}</Button></DialogTrigger><DialogContent className="search-design search-filter-dialog" closeLabel={t("searchPage.close")}><DialogHeader className="sr-only"><DialogTitle>{t("searchPage.filters")}</DialogTitle><DialogDescription>{t("searchPage.filterHelp")}</DialogDescription></DialogHeader><ServiceFilters {...filterProps} /></DialogContent></Dialog>
-            <SearchResultsSort value={effectiveSort} onChange={setSort} hasLocation={!!location} hasRatings={services.some(service => serviceRating(service) !== undefined)} compact />
+            <SearchResultsSort value={effectiveSort} onChange={setSort} hasLocation={!!location} hasRatings={services.some(service => serviceRating(service) !== undefined)} compact mobileLayout={isMobile} />
+            <Dialog open={filtersOpen} onOpenChange={setFiltersOpen}><DialogTrigger asChild><Button type="button" variant="ghost" className="search-mobile-filter-trigger"><SlidersHorizontal aria-hidden="true" />{t(isMobile ? "searchPage.filterAction" : "searchPage.filters")}</Button></DialogTrigger><DialogContent className="search-design search-filter-dialog" closeLabel={t("searchPage.close")}><DialogHeader className="sr-only"><DialogTitle>{t("searchPage.filters")}</DialogTitle><DialogDescription>{t("searchPage.filterHelp")}</DialogDescription></DialogHeader><ServiceFilters {...filterProps} /></DialogContent></Dialog>
           </div>
+          <div className="search-view-toggle" role="group" aria-label={t("searchPage.resultView")}>{(["grid", "list", "map"] as const).map(value => <Button key={value} variant="ghost" type="button" data-testid={`button-view-${value}`} aria-label={t(`views.${value}`)} aria-pressed={viewMode === value} onClick={() => setViewMode(value)}>{value === "grid" ? <LayoutGrid aria-hidden="true" /> : value === "list" ? <List aria-hidden="true" /> : <MapIcon aria-hidden="true" />}{!isMobile && <span>{t(`views.${value}`)}</span>}</Button>)}</div>
         </div>
-        <div className="search-view-toggle" role="group" aria-label={t("searchPage.resultView")}>{(["grid", "list", "map"] as const).map(value => <Button key={value} variant="ghost" type="button" data-testid={`button-view-${value}`} aria-pressed={viewMode === value} onClick={() => setViewMode(value)}>{value === "grid" ? <LayoutGrid aria-hidden="true" /> : value === "list" ? <List aria-hidden="true" /> : <MapIcon aria-hidden="true" />}<span>{t(`views.${value}`)}</span></Button>)}</div>
+        </div>
         {!!chips.length && <div className="search-chips">{chips.map(chip => <button type="button" className="search-chip" key={chip.key} disabled={locationBusy || restoringLocation || savedLocation.saving} onClick={chip.action} aria-label={t("searchPage.remove", { filter: chip.label })}><bdi>{chip.label}</bdi><X aria-hidden="true" /></button>)}<button type="button" className="search-text-button" onClick={clearAll} disabled={locationBusy || restoringLocation || savedLocation.saving}>{t("searchPage.clear")}</button></div>}
         {!searchEnabled && !loading ? <div className="search-state" role="status"><p>{t("searchLocation.intro")}</p><Button type="button" variant="outline" onClick={browseWithoutLocation}>{t("searchLocation.browseWithout")}</Button></div> : loading ? <div className="search-loading" role="status"><p>{t("publicSearch.loading")}</p><div /><div /></div> : errorKey ? <div className="search-state" role="alert"><h3>{t("searchPage.errorTitle")}</h3><p>{t(errorKey)}</p><Button variant="outline" onClick={() => void search.refetch()} disabled={search.isFetching}>{t("publicSearch.retry")}</Button></div> : <>
           {search.data?.truncated && <p className="search-truncated" role="status">{t("publicSearch.truncated")}</p>}

@@ -844,6 +844,10 @@
     "recoverySent": "Si cette adresse dispose d’une invitation active et d’un compte, un nouvel e-mail arrivera. Ouvrez le lien le plus récent dans ce navigateur pour définir votre mot de passe."
   },
   "searchPage": {
+    "anywhere": "Partout",
+    "anything": "Tous les services",
+    "sortAction": "Trier",
+    "filterAction": "Filtrer",
     "whereLabel": "Où",
     "when": "Quand",
     "whatLabel": "Quoi",

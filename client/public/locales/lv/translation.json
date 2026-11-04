@@ -844,6 +844,10 @@
     "recoverySent": "Ja adresei ir aktīvs uzaicinājums un konts, saņemsiet jaunu pieteikšanās e-pastu. Atveriet jaunāko saiti šajā pārlūkā, lai iestatītu paroli."
   },
   "searchPage": {
+    "anywhere": "Jebkur",
+    "anything": "Jebkas",
+    "sortAction": "Kārtot",
+    "filterAction": "Filtrēt",
     "whereLabel": "Kur",
     "when": "Kad",
     "whatLabel": "Ko",

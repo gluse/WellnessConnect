@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* The compact search header follows the service-discovery reference design. */
+@media(max-width:1023px){
+.search-app-header>div{min-height:72px}
+.search-app-header>div>a{font-size:1.25rem;gap:.75rem}
+.search-app-header>div>a>span:first-child{width:40px;height:40px;border-radius:.75rem}
+.search-app-header>div>a svg{width:22px;height:22px}
+.search-app-header [data-testid=button-language-picker]{width:44px;min-height:44px;padding:.5rem}
+.search-app-header [data-testid=button-language-picker] svg{width:22px;height:22px}
+.search-app-header [data-testid=button-language-picker]>span{display:none}
+.search-app-header .search-header-login{width:44px;height:44px;padding:.65rem;border-radius:50%;background:#343c53;color:#fff}
+.search-app-header .search-header-login svg{width:22px;height:22px}
+.search-app-header>div>div:last-child>button{min-width:44px;height:44px}
+.search-app-header>div>div:last-child>button:not([data-testid])>span{width:44px;height:44px;background:#343c53}
+.search-app-header>div>div:last-child>button:not([data-testid]) svg{width:22px;height:22px}
+}
+
 :root {
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(20, 14.3%, 4.1%);

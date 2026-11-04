@@ -844,6 +844,10 @@
     "recoverySent": "Wenn diese Adresse eine aktive Einladung und ein Konto hat, erhalten Sie eine neue E-Mail. Öffnen Sie den neuesten Link in diesem Browser, um Ihr Passwort festzulegen."
   },
   "searchPage": {
+    "anywhere": "Überall",
+    "anything": "Alle Angebote",
+    "sortAction": "Sortieren",
+    "filterAction": "Filtern",
     "whereLabel": "Wo",
     "when": "Wann",
     "whatLabel": "Was",

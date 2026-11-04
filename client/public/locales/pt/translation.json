@@ -844,6 +844,10 @@
     "recoverySent": "Se este endereço tiver convite ativo e conta, chegará novo e-mail. Abra o link mais recente neste navegador para definir a senha."
   },
   "searchPage": {
+    "anywhere": "Qualquer lugar",
+    "anything": "Qualquer serviço",
+    "sortAction": "Ordenar",
+    "filterAction": "Filtrar",
     "whereLabel": "Onde",
     "when": "Quando",
     "whatLabel": "O quê",

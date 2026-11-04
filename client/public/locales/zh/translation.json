@@ -844,6 +844,10 @@
     "recoverySent": "如果此地址有有效邀请和账户，将收到新的登录邮件。请在此浏览器打开最新链接设置密码。"
   },
   "searchPage": {
+    "anywhere": "任何地点",
+    "anything": "任何服务",
+    "sortAction": "排序",
+    "filterAction": "筛选",
     "whereLabel": "地点",
     "when": "时间",
     "whatLabel": "服务",
