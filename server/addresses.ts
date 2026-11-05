@@ -3,14 +3,16 @@ import { addresses, type Address, type AddressLocation, type Service, services }
 import { currentLocation } from "@shared/locations";
 import { db } from "./db";
 import { AccessError } from "./companyAccess";
+import { serviceMoneyDto } from "./money";
 
 type Owner = { providerId: string; companyId?: number };
 const owned = (owner: Owner) => owner.companyId != null ? eq(addresses.companyId, owner.companyId)
   : and(eq(addresses.providerId, owner.providerId), isNull(addresses.companyId));
 
 export function serviceLocation(service: typeof services.$inferSelect, location?: Address | null): Service {
-  return { ...service, ...currentLocation({
+  return { ...serviceMoneyDto(service), ...currentLocation({
     address: location?.address ?? null, latitude: location?.latitude ?? null, longitude: location?.longitude ?? null,
+    countryCode: location?.countryCode ?? null,
     locationSource: location?.locationSource ?? "legacy", locationKey: location?.locationKey ?? null,
     locationPlaceId: location?.locationPlaceId ?? null, locationExpiresAt: location?.locationExpiresAt ?? null,
     locationAddressSource: location?.locationAddressSource ?? "user",
@@ -30,6 +32,7 @@ export const addressStore = {
   async save(location: AddressLocation, owner: Owner, id?: number) {
     const values: AddressLocation = {
       address: location.address, latitude: location.latitude, longitude: location.longitude,
+      countryCode: location.countryCode ?? null,
       locationSource: location.locationSource, locationKey: location.locationKey,
       locationPlaceId: location.locationPlaceId, locationExpiresAt: location.locationExpiresAt,
       locationAddressSource: location.locationAddressSource,

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Leaf } from "lucide-react";
 import type { Service } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { serviceAmount } from "@/components/forms-locale";
+import { formatMoney } from "@/lib/money";
 import WishlistHeart from "@/components/wishlist-heart";
 import { formatServiceDuration } from "@/lib/service-duration";
 
@@ -28,7 +28,7 @@ export default function ServiceResultCard({ service, provider, rating, category,
       {employeeName && <p className="search-service-description">{t("searchPage.withEmployee", { name: employeeName })}</p>}
       {service.description && <p className="search-service-description search-description-clamp">{service.description}</p>}
       <div className="search-service-meta"><span>{formatServiceDuration(service.duration, i18n.resolvedLanguage || i18n.language)}</span><span aria-hidden="true">·</span><span>{t(service.serviceType === "group" ? "searchPage.group" : "searchPage.individual")}</span><span className={`search-booking-badge ${service.instantBooking ? "instant" : ""}`}>{t(service.instantBooking ? "searchPage.instant" : "searchPage.approval")}</span></div>
-      <div className="search-card-actions"><div className="search-price"><strong>{serviceAmount(Number(service.price), i18n.resolvedLanguage || i18n.language)}</strong>{service.serviceType === "group" && <span>{t("searchPage.perPerson")}</span>}</div>{onViewDetails && <Button variant="ghost" type="button" onClick={onViewDetails}>{t("searchPage.details")}</Button>}</div>
+      <div className="search-card-actions"><div className="search-price"><strong>{formatMoney(service.price, service.currency, i18n.resolvedLanguage || i18n.language) ?? t("currency.unavailable")}</strong>{service.serviceType === "group" && <span>{t("searchPage.perPerson")}</span>}</div>{onViewDetails && <Button variant="ghost" type="button" onClick={onViewDetails}>{t("searchPage.details")}</Button>}</div>
     </div>
   </article>;
 }

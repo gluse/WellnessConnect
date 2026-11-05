@@ -1,0 +1,21 @@
+{
+  "task": "TASK-039",
+  "project": "hbkooiknruimukkhshrk",
+  "executor": "/root/currency_db",
+  "startedAt": "2026-11-05T19:58:00.537Z",
+  "state": "stopped",
+  "authorization": "User approved DB owner preflight/apply 0020 with verified recovery and stop-on-first-failure, 5 November 2026",
+  "script": {
+    "name": "0020_currencies.sql",
+    "sha256": "e145bc2d687e03b7785d3dc3ec6041c6176213388ccdebed1c16b5e576f56094",
+    "attempted": false,
+    "committed": false
+  },
+  "retry": false,
+  "readOnly": true,
+  "sourceOnly": true,
+  "backupCreated": false,
+  "stage": "restricted40_readonly_preflight",
+  "safeCode": "ENOTFOUND",
+  "stoppedAt": "2026-11-05T19:58:01.974Z"
+}

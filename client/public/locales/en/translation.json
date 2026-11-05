@@ -473,7 +473,7 @@
     "sharedSchedule": "No specific employee (shared schedule)",
     "employeeHelp": "Different employees can take bookings at the same time. Customer name visibility is set in Employees.",
     "duration": "Duration (min)",
-    "price": "Price ($)",
+    "price": "Price",
     "advance": "Advance payment (%)",
     "ageGroups": "Age groups",
     "age_children": "Children",
@@ -1264,5 +1264,22 @@
     "service_views_one": "{{service}} received {{count}} view.",
     "wishlist_additions_other": "{{count}} users added {{service}} to their wishlist.",
     "service_views_other": "{{service}} received {{count}} views."
+  },
+  "currency": {
+    "label": "Currency",
+    "choose": "Choose a currency",
+    "precision": "Decimal places allowed: {{digits}}. Do not use thousands separators.",
+    "serviceHelp": "The service location can suggest a currency. Review the amount and currency before saving.",
+    "country": "Service country (optional)",
+    "countryUnknown": "Country not specified",
+    "countryHelp": "Confirm the country to suggest currency for new services. Existing prices stay in their saved currency.",
+    "changeTitle": "Confirm price currency",
+    "changeHelp": "Save {{price}} {{currency}} for future bookings? Review the amount; this change does not convert it. Existing bookings keep their original currency.",
+    "confirmChange": "Confirm amount and currency",
+    "priceInvalid": "Enter a valid price within the allowed range and decimal precision.",
+    "unavailable": "Currency unavailable",
+    "priceChanged": "The price, currency or advance payment terms changed. Review the updated amounts before confirming again.",
+    "balance": "Remaining balance",
+    "mixedSort": "Price sorting is unavailable when matching services use different or unknown currencies."
   }
 }

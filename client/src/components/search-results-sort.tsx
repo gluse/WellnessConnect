@@ -7,11 +7,12 @@ interface SearchResultsSortProps {
   onChange: (value: ServiceSort) => void;
   hasLocation: boolean;
   hasRatings: boolean;
+  priceSortAvailable?: boolean;
   compact?: boolean;
   mobileLayout?: boolean;
 }
 
-export default function SearchResultsSort({ value, onChange, hasLocation, hasRatings, compact = false, mobileLayout = false }: SearchResultsSortProps) {
+export default function SearchResultsSort({ value, onChange, hasLocation, hasRatings, priceSortAvailable = true, compact = false, mobileLayout = false }: SearchResultsSortProps) {
   const { t } = useTranslation();
   return (
     <div className={compact ? "search-compact-sort" : "space-y-1"}>
@@ -27,8 +28,8 @@ export default function SearchResultsSort({ value, onChange, hasLocation, hasRat
         <option value="default">{t("sorting.default")}</option>
         <option value="distance-asc" disabled={!hasLocation}>{t("sorting.distanceAsc")}</option>
         <option value="distance-desc" disabled={!hasLocation}>{t("sorting.distanceDesc")}</option>
-        <option value="price-asc">{t("sorting.priceAsc")}</option>
-        <option value="price-desc">{t("sorting.priceDesc")}</option>
+        <option value="price-asc" disabled={!priceSortAvailable}>{t("sorting.priceAsc")}</option>
+        <option value="price-desc" disabled={!priceSortAvailable}>{t("sorting.priceDesc")}</option>
         <option value="rating-asc">{t("sorting.ratingAsc")}</option>
         <option value="rating-desc">{t("sorting.ratingDesc")}</option>
       </select>
@@ -36,6 +37,7 @@ export default function SearchResultsSort({ value, onChange, hasLocation, hasRat
         {!hasLocation && t("sorting.locationRequired")}
         {!hasLocation && !hasRatings && " "}
         {!hasRatings && t("sorting.ratingsUnavailable")}
+        {!priceSortAvailable && " " + t("currency.mixedSort")}
       </p>
     </div>
   );

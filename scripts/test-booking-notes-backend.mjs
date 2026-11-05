@@ -17,6 +17,7 @@ import * as auditEvents from "../server/audit/events.ts";
 import * as auditCapture from "../server/audit/capture.ts";
 import * as customerBookings from "../server/customerBookings.ts";
 import * as notifications from "../shared/notifications.ts";
+import * as money from "../server/money.ts";
 
 // Production route/storage logic runs with explicit in-memory boundaries. Never
 // import DB clients, auth providers, dotenv, notification transports or startup.
@@ -33,7 +34,7 @@ async function load(file, dependencies) {
 const scheduling = await load("shared/scheduling.ts", {});
 const day = "2099-06-04", at = time => new Date(`${day}T${time}:00Z`);
 const service = { id: 7, providerId: "provider", companyId: null, employeeId: null, serviceType: "group", maxCapacity: 6,
-  duration: 30, cleanupTime: 0, isActive: true, companyActive: true, instantBooking: false, price: "10", advancePaymentPercent: 0 };
+  duration: 30, cleanupTime: 0, isActive: true, companyActive: true, instantBooking: false, currency: "EUR", price: "10", advancePaymentPercent: 0 };
 const schedule = { id: 1, providerId: "provider", companyId: null, serviceId: null, scheduleType: "specific", specificDate: at("00:00"), startTime: "09:00", endTime: "12:00", timezone: "UTC", breaks: [], isActive: true };
 const dialect = new PgDialect();
 let rows = [], messages = [], reminders = [], logs = [], id = 1, notificationsEnabled = false, failMessage = false, failReminder = false;
@@ -91,6 +92,7 @@ const db = {
   },
 };
 const dependencies = {
+  "./money": money,
   "@shared/schema": schema, "./db": { db }, "drizzle-orm": drizzle, "@shared/provider": provider, "node:crypto": { randomUUID },
   "./storefronts": {}, "./addresses": { serviceLocation: value => value }, "@shared/scheduling": scheduling,
   "@shared/reviews": reviews, "./searchInput": searchInput, "./customerBookings": customerBookings,
@@ -135,7 +137,7 @@ async function request(method, path, options = {}) {
 const text = "Bring a mat.\nLūdzu, zvaniet pie durvīm.\nПожалуйста, без звонка. <img src=x onerror=alert(1)>";
 const reset = () => { rows = []; messages = []; reminders = []; logs = []; failMessage = failReminder = false; };
 const createBooking = input => request("post", "/api/bookings", { user: { claims: { sub: "customer" } }, body: {
-  serviceId: 7, scheduledDate: at("09:00").toISOString(), participantCount: 1,
+  serviceId: 7, expectedPrice: service.price, expectedCurrency: service.currency, expectedAdvancePaymentPercent: service.advancePaymentPercent ?? 0, scheduledDate: at("09:00").toISOString(), participantCount: 1,
   seekerId: "spoofed", providerId: "spoofed", status: "completed", authorRole: "provider", authorId: "intruder", createdAt: "1900-01-01Z", ...input,
 } });
 let cases = 0;
@@ -205,3 +207,47 @@ assert.equal(employee.code, 200); assert.deepEqual(Array.from(employee.data, row
 assert.equal((await request("get", "/api/bookings/provider", { workspace: { ...employeeScope, invalid: true } })).code, 403);
 assert.equal((await request("get", "/api/bookings/provider", { user: null })).code, 401);
 console.log(`Passed ${cases} initial-message scenarios: pending/instant, alias/conflicts, blank/limits/Unicode, server identity/timestamp, atomic rollback on message/reminder failures, private conversation visibility, capacity/auth and redacted logs. Historical DTO/workspace filtering retained. All persistence in memory; no credentials or services.`);
+
+// TASK-039 exercises the production booking route and its locked storage read.
+let currencyCases = 0;
+for (const [currency, price, count, percent, total, advance] of [
+  ['EUR','0.10',3,50,'0.30','0.15'], ['JPY','1',1,50,'1','1'],
+  ['KWD','0.001',3,50,'0.003','0.002'], ['USD','10.00',2,100,'20.00','20.00'],
+  ['CAD','0.00',1,0,'0.00','0.00'],
+]) {
+  reset(); Object.assign(service, { currency, price, advancePaymentPercent: percent });
+  const result = await createBooking({ participantCount: count, currency:'GBP', totalAmount:'1', advanceAmount:'1' });
+  assert.equal(result.code,200,JSON.stringify(result));
+  assert.equal(result.data.currency,currency); assert.equal(result.data.totalAmount,total); assert.equal(result.data.advanceAmount,advance);
+  assert.equal(rows[0].currency,currency,'currency snapshot is persisted'); currencyCases++;
+}
+Object.assign(service,{currency:'EUR',price:'10.00',advancePaymentPercent:50});
+for (const input of [
+  {expectedPrice:undefined},{expectedCurrency:undefined},{expectedCurrency:'ZZZ'},
+  {expectedAdvancePaymentPercent:undefined},{expectedAdvancePaymentPercent:-1},{expectedAdvancePaymentPercent:101},{expectedAdvancePaymentPercent:0.5},
+  {expectedPrice:'10.001'},{expectedPrice:'NaN'},{expectedPrice:'1e1'},
+]) {
+  reset(); const result=await createBooking(input);assert.equal(result.code,400);assert.equal(rows.length,0);currencyCases++;
+}
+for (const input of [{expectedPrice:'9.00'},{expectedCurrency:'USD'},{expectedAdvancePaymentPercent:0}]) {
+  reset(); const result=await createBooking(input); assert.equal(result.code,409);assert.equal(result.data.code,'PRICE_CHANGED');
+  assert.equal(result.data.currentPrice,'10.00'); assert.equal(result.data.currentCurrency,'EUR'); assert.equal(result.data.currentAdvancePaymentPercent,50); assert.equal(rows.length,0);currencyCases++;
+}
+const originalCreate=storage.createBooking.bind(storage);
+for (const change of [{price:'11.00'},{currency:'GBP'},{advancePaymentPercent:100}]) {
+  reset(); Object.assign(service,{currency:'EUR',price:'10.00',advancePaymentPercent:50});
+  storage.createBooking=async(...args)=>{Object.assign(service,change);return originalCreate(...args);};
+  const result=await createBooking({initialMessage:'must not persist'});
+  assert.equal(result.code,409);assert.equal(result.data.code,'PRICE_CHANGED');assert.equal(rows.length,0);assert.equal(messages.length,0);currencyCases++;
+}
+storage.createBooking=originalCreate;
+reset();Object.assign(service,{currency:'EUR',price:'99999999.99'});
+assert.equal((await createBooking({participantCount:2})).code,400);assert.equal(rows.length,0);currencyCases++;
+reset();Object.assign(service,{currency:'EUR',price:'10.000'});
+const padded=await createBooking({expectedPrice:'10.00'});assert.equal(padded.code,200);assert.equal(padded.data.totalAmount,'10.00');currencyCases++;
+reset(); Object.assign(service,{currency:'EUR',price:'10.00',advancePaymentPercent:100});
+const changedAdvance=await createBooking({expectedAdvancePaymentPercent:0});
+assert.equal(changedAdvance.code,409);assert.equal(changedAdvance.data.currentAdvancePaymentPercent,100);assert.equal(rows.length,0);currencyCases++;
+const reviewedAdvance=await createBooking({expectedPrice:changedAdvance.data.currentPrice,expectedCurrency:changedAdvance.data.currentCurrency,expectedAdvancePaymentPercent:changedAdvance.data.currentAdvancePaymentPercent});
+assert.equal(reviewedAdvance.code,200);assert.equal(reviewedAdvance.data.totalAmount,'10.00');assert.equal(reviewedAdvance.data.advanceAmount,'10.00');currencyCases++;
+console.log('Passed '+currencyCases+' currency booking scenarios: exact totals/advances, server ownership, required quote, stale price/currency and concurrent edits, overflow and DB-scale serialization.');

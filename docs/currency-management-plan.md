@@ -1,6 +1,9 @@
 # Service and booking currencies — 3 November 2026
 
-Status: planning complete; implementation not started. User requested `/plan`.
+Status: implemented and verified locally; approved development migration applied
+and read-only postflight verified on 5 November 2026. See
+[implementation scope and evidence](currency-management-handoff.md).
+Original planning record: user requested `/plan`.
 Executor `/root` reviewed repository files only. No application, database,
 credential, connected-service or deployment operations were performed.
 

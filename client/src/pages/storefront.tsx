@@ -12,6 +12,7 @@ import BookingModal from "@/components/booking-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { canSortServicePrices } from "@/lib/service-sort";
 
 export function StorefrontView({ page, preview = false }: { page: PublicStorefront; preview?: boolean }) {
   const { t } = useTranslation();
@@ -19,6 +20,8 @@ export function StorefrontView({ page, preview = false }: { page: PublicStorefro
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("name");
+  const priceSortAvailable = canSortServicePrices(page.services);
+  useEffect(() => { if (!priceSortAvailable && sort === "price") setSort("name"); }, [priceSortAvailable, sort]);
   const [detail, setDetail] = useState<ServiceWithProvider | null>(null);
   const [booking, setBooking] = useState<ServiceWithProvider | null>(() => {
     const id = preview || typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("book");
@@ -26,8 +29,8 @@ export function StorefrontView({ page, preview = false }: { page: PublicStorefro
   });
   const services = useMemo(() => page.services.filter(service => (!category || service.category === category)
     && `${service.name} ${service.description ?? ""}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
-    .sort((a, b) => sort === "price" ? Number(a.price) - Number(b.price) || a.id - b.id
-      : sort === "duration" ? a.duration - b.duration || a.id - b.id : a.name.localeCompare(b.name) || a.id - b.id), [page.services, search, category, sort]);
+    .sort((a, b) => sort === "price" && priceSortAvailable ? Number(a.price) - Number(b.price) || a.id - b.id
+      : sort === "duration" ? a.duration - b.duration || a.id - b.id : a.name.localeCompare(b.name) || a.id - b.id), [page.services, search, category, sort, priceSortAvailable]);
   const availableCategories = Array.from(new Set(page.services.map(service => service.category)));
   return <div className="space-y-6">
     <section className="overflow-hidden rounded-2xl border bg-white shadow-sm">
@@ -50,9 +53,10 @@ export function StorefrontView({ page, preview = false }: { page: PublicStorefro
           <option value="">{t("storefront.allCategories")}</option>{availableCategories.map(key => <option key={key} value={key}>{categories.data?.find(item => item.key === key)?.name ?? key}</option>)}
         </select></div>
         <div><Label htmlFor="storefront-sort">{t("storefront.sort")}</Label><select id="storefront-sort" className="h-10 w-full border rounded-md px-3 bg-white" value={sort} onChange={event => setSort(event.target.value)}>
-          {["name", "price", "duration"].map(value => <option key={value} value={value}>{t(`storefront.sort_${value}`)}</option>)}
+          {["name", "price", "duration"].map(value => <option key={value} value={value} disabled={value === "price" && !priceSortAvailable}>{t(`storefront.sort_${value}`)}</option>)}
         </select></div>
       </div>
+      {!priceSortAvailable && <p className="text-sm text-neutral-600" role="status">{t("currency.mixedSort")}</p>}
       <p role="status" className="text-sm text-neutral-500">{t("catalog.count", { count: services.length })}</p>
       {!services.length ? <p className="rounded-xl border bg-white p-6">{t("storefront.empty")}</p> : <div className="grid gap-4 lg:grid-cols-2">
         {services.map(service => <ServiceCard key={service.id} service={service} wishlistEnabled={!preview} onBook={() => setBooking(service)} onViewDetails={() => setDetail(service)} />)}

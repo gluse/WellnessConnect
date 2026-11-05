@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import ServiceRating from "@/components/service-rating";
-import { serviceAmount } from "@/components/forms-locale";
+import { formatMoney } from "@/lib/money";
 import { getProviderName } from "@shared/provider";
 import type { ServiceWithProvider } from "@shared/schema";
 import WishlistHeart from "@/components/wishlist-heart";
@@ -21,7 +21,7 @@ export default function SearchServiceDetails({ service, open, onClose, onBook, o
       <div className="relative min-h-16">{service.imageUrl && <img src={service.imageUrl} alt="" className="search-detail-image" />}<WishlistHeart serviceId={service.id} /></div>
       {service.description && <section><h3>{t("searchPage.about")}</h3><p data-testid="text-description">{service.description}</p></section>}
       <dl className="search-detail-grid">
-        <div><dt>{t("searchPage.price")}</dt><dd>{serviceAmount(Number(service.price), i18n.resolvedLanguage || i18n.language)} {service.serviceType === "group" && t("searchPage.perPerson")}</dd></div>
+        <div><dt>{t("searchPage.price")}</dt><dd>{formatMoney(service.price, service.currency, i18n.resolvedLanguage || i18n.language) ?? t("currency.unavailable")} {service.serviceType === "group" && t("searchPage.perPerson")}</dd></div>
         <div><dt>{t("searchPage.duration")}</dt><dd>{formatServiceDuration(service.duration, i18n.resolvedLanguage || i18n.language)}</dd></div>
         <div><dt>{t("searchPage.sessionType")}</dt><dd>{t(service.serviceType === "group" ? "searchPage.group" : "searchPage.individual")}</dd></div>
         {service.serviceType === "group" && <div>

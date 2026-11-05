@@ -24,7 +24,7 @@ assert.equal(searchValidationKey({ ...filters, time: "14:00", timeEnd: "13:00" }
 assert.equal(searchValidationKey({ ...filters, time: "14:00", timeEnd: "15:00" }), undefined);
 
 let searchRequests = [], status = 200, truncated = false, holdSearch = false;
-const publicService = { id: 1, providerId: "fixture-provider", name: "Fixture service", price: "20", duration: 30, category: "health_wellness", serviceType: "one_to_one", latitude: null, longitude: null, provider: { firstName: "Fixture", lastName: "Provider" }, employee: null };
+const publicService = { id: 1, providerId: "fixture-provider", name: "Fixture service", price: "20", currency: "EUR", duration: 30, category: "health_wellness", serviceType: "one_to_one", latitude: null, longitude: null, provider: { firstName: "Fixture", lastName: "Provider" }, employee: null };
 globalThis.fetch = async (url, options = {}) => {
   if (String(url).startsWith("/locales/")) return new Response(await readFile(`client/public${url}`, "utf8"));
   if (url === "/api/categories") return new Response(JSON.stringify(categoryFixtures));

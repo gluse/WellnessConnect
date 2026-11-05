@@ -7,6 +7,7 @@ import { availableCapacity, bookableSlots } from "../../shared/scheduling";
 import { captureStatusEvent, reconcileBookingReminder, workspacePro } from "../notifications/repository";
 import { statusAction } from "../notifications/policy";
 import type { db } from "../db";
+import { bookingMoneyDto, serviceMoneyDto } from "../money";
 
 export class AppointmentError extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }
@@ -196,7 +197,7 @@ export function createAppointmentRepository(database: Database, now: () => Date 
           if (action) await captureStatusEvent(tx, changed, action, input.timeZone);
           await reconcileBookingReminder(tx, changed, now(), input.timeZone); updated.push(changed);
         }
-        return { bookings: updated };
+        return { bookings: updated.map(bookingMoneyDto) };
       });
     },
     broadcast(actor: AppointmentActor, id: number, input: { body: string; clientRequestId: string; bookingIds: number[] }) {
@@ -251,7 +252,7 @@ export function createAppointmentRepository(database: Database, now: () => Date 
         const [request] = await tx.select().from(bookingRescheduleRequests).where(and(eq(bookingRescheduleRequests.id, requestId), eq(bookingRescheduleRequests.bookingId, id))).for("update");
         if (!request) fail(404, "request_not_found", "Reschedule request not found.");
         if (actor.role === request.requestedByRole) fail(403, "wrong_recipient", "Only the other party can respond to this request.");
-        if (request.state === (decision === "accept" ? "accepted" : "declined")) return { request: requestView(request, actor, booking), booking };
+        if (request.state === (decision === "accept" ? "accepted" : "declined")) return { request: requestView(request, actor, booking), booking: { ...bookingMoneyDto(booking), service: serviceMoneyDto(booking.service) } };
         if (!requestView(request, actor, booking).canRespond) fail(409, "request_superseded", "This reschedule request is no longer actionable.");
         let changed: Booking = booking;
         if (decision === "accept") {
@@ -266,7 +267,7 @@ export function createAppointmentRepository(database: Database, now: () => Date 
           await reconcileBookingReminder(tx, changed, now(), request.timezone);
         }
         const [responded] = await tx.update(bookingRescheduleRequests).set({ state: decision === "accept" ? "accepted" : "declined", respondedAt: now(), respondedById: actor.id }).where(eq(bookingRescheduleRequests.id, request.id)).returning();
-        return { request: requestView(responded, actor, changed), booking: changed };
+        return { request: requestView(responded, actor, changed), booking: bookingMoneyDto(changed) };
       });
     },
     withdraw(actor: AppointmentActor, id: number, requestId: string) {

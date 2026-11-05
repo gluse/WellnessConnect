@@ -41,6 +41,7 @@ import { createSearchPageStore } from "./search-pagination/store";
 import { bookingReminderSummaries } from "./notifications/repository";
 import { notificationConfig } from "./notifications/transports";
 import { NotificationError, notificationTimezoneSchema } from "@shared/notifications";
+import { bookingMoneyDto, bookingPriceSnapshot, expectedPriceSchema, MoneyInputError, PriceChangedError } from "./money";
 
 // Older booking clients send `notes`; both inputs start the same conversation.
 const initialBookingMessageSchema = z.object({
@@ -53,11 +54,12 @@ const initialBookingMessageSchema = z.object({
 }).transform(input => input.initialMessage || input.notes || null);
 
 function apiFailure(error: unknown, res: import("express").Response, fallback: string) {
+  if (error instanceof PriceChangedError) return res.status(409).json({ code: error.code, message: error.message, currentPrice: error.currentPrice, currentCurrency: error.currentCurrency, currentAdvancePaymentPercent: error.currentAdvancePaymentPercent });
   const pgError = (error as any)?.cause ?? error;
   if ((pgError as any)?.code === "23503" && (pgError as any)?.constraint === "services_category_categories_key_fk") {
     return res.status(400).json({ message: "Choose an existing category." });
   }
-  const known = error instanceof AccessError || error instanceof CustomerBookingError || error instanceof ImageStorageError || error instanceof GeocodingError || error instanceof CategoryError || error instanceof AuditCaptureUnavailable || error instanceof NotificationError;
+  const known = error instanceof AccessError || error instanceof CustomerBookingError || error instanceof ImageStorageError || error instanceof GeocodingError || error instanceof CategoryError || error instanceof AuditCaptureUnavailable || error instanceof NotificationError || error instanceof MoneyInputError;
   res.status(known ? error.status : error instanceof z.ZodError ? 400 : error instanceof BookingConflictError ? 409 : 500)
     .json({ message: known || error instanceof BookingConflictError ? error.message : error instanceof z.ZodError ? error.issues[0].message : fallback });
 }
@@ -576,7 +578,8 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
 
       const scheduledDate = z.string().datetime().transform(value => new Date(value)).refine(value => value.getTime() > Date.now(), "Choose a future appointment time.").parse(req.body.scheduledDate);
       const participantCount = z.number().int().min(1).max(service.serviceType === "group" ? service.maxCapacity ?? 1 : 1).parse(req.body.participantCount ?? 1);
-      const total = Number(service.price) * participantCount;
+      const expectedPrice = expectedPriceSchema.parse(req.body);
+      const snapshot = bookingPriceSnapshot(service, participantCount, expectedPrice);
       const bookingData = insertBookingSchema.parse({
         serviceId,
         notes: null,
@@ -590,17 +593,14 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
         paymentStatus: "pending",
         scheduledDate,
         participantCount,
-        totalAmount: total.toFixed(2),
-        advanceAmount: (total * (service.advancePaymentPercent ?? 0) / 100).toFixed(2),
+        ...snapshot,
       });
       
-      const booking = await storage.createBooking(bookingData, initialMessage);
-      res.json(booking);
+      const booking = await storage.createBooking(bookingData, initialMessage, expectedPrice);
+      res.json(bookingMoneyDto(booking));
     } catch (error) {
       console.error("Error creating booking:", error instanceof Error ? error.name : "Error");
-      res.status(error instanceof BookingConflictError ? 409 : error instanceof z.ZodError ? 400 : 500).json({ message: error instanceof BookingConflictError
-        ? "This time slot is no longer available. Please choose another time."
-        : error instanceof z.ZodError ? error.issues[0].message : "Failed to create booking" });
+      apiFailure(error, res, "Failed to create booking");
     }
   });
 

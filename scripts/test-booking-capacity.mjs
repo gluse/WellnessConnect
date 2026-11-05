@@ -15,6 +15,7 @@ import * as auditEvents from "../server/audit/events.ts";
 import * as auditCapture from "../server/audit/capture.ts";
 import * as customerBookings from "../server/customerBookings.ts";
 import * as notifications from "../shared/notifications.ts";
+import * as money from "../server/money.ts";
 
 // Never import server/db, dotenv, Auth, external providers or server startup.
 // --original demonstrates the regression against tracked pre-fix modules.
@@ -33,12 +34,12 @@ async function load(path, dependencies) {
 const scheduling = await load("shared/scheduling.ts", {});
 const date = "2099-06-04", at = time => new Date(`${date}T${time}:00Z`);
 const service = { id: 1, providerId: "provider", companyId: null, employeeId: null, serviceType: "group", maxCapacity: 6,
-  duration: 30, cleanupTime: 15, isActive: true, companyActive: true, instantBooking: true, price: "10", advancePaymentPercent: 0 };
+  duration: 30, cleanupTime: 15, isActive: true, companyActive: true, instantBooking: true, currency: "EUR", price: "10", advancePaymentPercent: 0 };
 const schedule = { id: 1, providerId: "provider", companyId: null, serviceId: null, scheduleType: "specific", specificDate: at("00:00"),
   startTime: "09:00", endTime: "12:00", timezone: "UTC", breaks: [], isActive: true };
 const booking = (id, status = "confirmed", participantCount = 2, time = "09:00", overrides = {}) => ({ id, serviceId: 1, seekerId: `customer-${id}`,
   providerId: "provider", companyId: null, employeeId: null, scheduledDate: at(time), status, participantCount,
-  bookingDuration: 30, bookingCleanupTime: 15, notificationRevision: 0, totalAmount: "20", advanceAmount: "0", ...overrides });
+  bookingDuration: 30, bookingCleanupTime: 15, notificationRevision: 0, currency: "EUR", totalAmount: "20", advanceAmount: "0", ...overrides });
 const slots = (bookings = [], overrides = {}) => scheduling.bookableSlots({ service, schedules: [schedule], bookings,
   date, timezone: "UTC", now: new Date("2099-01-01"), ...overrides });
 const slot = (bookings, time = "09:00", overrides) => slots(bookings, overrides).find(row => row.startTime === time);
@@ -114,6 +115,7 @@ const db = { select,
   async transaction(work) { const before = rows.map(row => ({ ...row })); lock = false; transactionActive = true; try { return await work(db); } catch (error) { rows = before; throw error; } finally { lock = false; transactionActive = false; } },
 };
 const dependencies = {
+  "./money": money,
   "node:crypto": await import("node:crypto"),
   "@shared/schema": schema, "./db": { db }, "drizzle-orm": drizzle, "@shared/provider": provider,
   "./storefronts": {}, "./addresses": { serviceLocation: value => value }, "@shared/scheduling": scheduling,
@@ -242,11 +244,11 @@ for (const actor of ["provider", "customer-2"]) {
   assert.equal(rows[1].scheduledDate.getTime(), unchangedDate, "The legacy API cannot bypass recipient agreement");
 }
 reset([]); service.instantBooking = false;
-const pending = await request("post", "/api/bookings", { body: { serviceId: 1, scheduledDate: at("09:00").toISOString(), participantCount: 2, status: "confirmed", seekerId: "spoofed" } });
+const pending = await request("post", "/api/bookings", { body: { serviceId: 1, expectedPrice: service.price, expectedCurrency: service.currency, expectedAdvancePaymentPercent: service.advancePaymentPercent ?? 0, scheduledDate: at("09:00").toISOString(), participantCount: 2, status: "confirmed", seekerId: "spoofed" } });
 assert.equal(pending.code, 200); assert.equal(pending.data.status, "pending"); assert.equal(pending.data.seekerId, "provider");
 service.instantBooking = true;
-const first = await request("post", "/api/bookings", { body: { serviceId: 1, scheduledDate: at("09:00").toISOString(), participantCount: 2 } });
-const second = await request("post", "/api/bookings", { body: { serviceId: 1, scheduledDate: at("09:00").toISOString(), participantCount: 4 } });
-const full = await request("post", "/api/bookings", { body: { serviceId: 1, scheduledDate: at("09:00").toISOString(), participantCount: 1 } });
+const first = await request("post", "/api/bookings", { body: { serviceId: 1, expectedPrice: service.price, expectedCurrency: service.currency, expectedAdvancePaymentPercent: service.advancePaymentPercent ?? 0, scheduledDate: at("09:00").toISOString(), participantCount: 2 } });
+const second = await request("post", "/api/bookings", { body: { serviceId: 1, expectedPrice: service.price, expectedCurrency: service.currency, expectedAdvancePaymentPercent: service.advancePaymentPercent ?? 0, scheduledDate: at("09:00").toISOString(), participantCount: 4 } });
+const full = await request("post", "/api/bookings", { body: { serviceId: 1, expectedPrice: service.price, expectedCurrency: service.currency, expectedAdvancePaymentPercent: service.advancePaymentPercent ?? 0, scheduledDate: at("09:00").toISOString(), participantCount: 1 } });
 assert.equal(first.code, 200); assert.equal(second.code, 200); assert.equal(full.code, 409);
 console.log("Passed: pending availability, shared group capacity, exclusive employee sessions, cleanup/snapshots, creation/approval/reschedule conflicts, participant validation, SQL filters, daily/month previews, server-owned status/identity and API 403/409. Only injected in-memory adapters; no live clients or environment files loaded.");

@@ -473,7 +473,7 @@
     "sharedSchedule": "Sem funcionário específico (agenda compartilhada)",
     "employeeHelp": "Funcionários diferentes podem receber reservas ao mesmo tempo. A visibilidade dos nomes dos clientes é definida em Funcionários.",
     "duration": "Duração (min)",
-    "price": "Preço ($)",
+    "price": "Preço",
     "advance": "Pagamento antecipado (%)",
     "ageGroups": "Faixas etárias",
     "age_children": "Crianças",
@@ -1273,5 +1273,22 @@
     "service_views_one": "{{service}} recebeu {{count}} visualização.",
     "wishlist_additions_other": "{{count}} pessoas adicionaram {{service}} às suas listas.",
     "service_views_other": "{{service}} recebeu {{count}} visualizações."
+  },
+  "currency": {
+    "label": "Moeda",
+    "choose": "Selecione uma moeda",
+    "precision": "Casas decimais permitidas: {{digits}}. Não use separadores de milhares.",
+    "serviceHelp": "A localização do serviço pode sugerir uma moeda. Reveja o valor e a moeda antes de guardar.",
+    "country": "País do serviço (opcional)",
+    "countryUnknown": "País não especificado",
+    "countryHelp": "Confirme o país para sugerir uma moeda aos novos serviços. Os preços existentes mantêm a sua moeda.",
+    "changeTitle": "Confirmar a moeda do preço",
+    "changeHelp": "Guardar {{price}} {{currency}} para futuras reservas? Reveja o valor; não será feita conversão. As reservas existentes mantêm a moeda original.",
+    "confirmChange": "Confirmar valor e moeda",
+    "priceInvalid": "Introduza um preço válido dentro do intervalo e da precisão permitidos.",
+    "unavailable": "Moeda indisponível",
+    "priceChanged": "O preço, a moeda ou as condições do adiantamento mudaram. Reveja os valores atualizados antes de confirmar novamente.",
+    "balance": "Saldo restante",
+    "mixedSort": "A ordenação por preço não está disponível para serviços com moedas diferentes ou desconhecidas."
   }
 }

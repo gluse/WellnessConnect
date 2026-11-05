@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["currency-preview.tsx", "service-form.tsx", "forms-phase2.tsx", "search-page.tsx"],
+  "exclude": [],
+  "compilerOptions": { "target": "ES2022", "incremental": false }
+}

@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,7 +25,7 @@ interface ServiceCardProps {
 
 export default function ServiceCard({ service, onBook, onViewDetails, onViewProvider, searchLayout, hasLocation = false, wishlistEnabled = true }: ServiceCardProps) {
   service = currentLocation(service);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const categories = useCategories();
   if (searchLayout) return <SearchServiceCard service={service} onViewDetails={onViewDetails} onViewProvider={onViewProvider} hasLocation={hasLocation} />;
   const isGroupService = service.serviceType === "group";
@@ -82,7 +83,7 @@ export default function ServiceCard({ service, onBook, onViewDetails, onViewProv
             <div className="flex items-center justify-between mb-3">
               <ServiceRating service={service} />
               <div className="text-right">
-                <p className="text-lg font-semibold text-neutral-800">${service.price}</p>
+                <p className="text-lg font-semibold text-neutral-800">{formatMoney(service.price, service.currency, i18n.resolvedLanguage || i18n.language) ?? t("currency.unavailable")}</p>
                 <p className="text-xs text-neutral-500">
                   {isGroupService ? "per person" : `${service.duration} min`}
                 </p>

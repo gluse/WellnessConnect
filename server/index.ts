@@ -16,6 +16,7 @@ import { verifyAuditApplicationPool } from "./audit/application";
 import { mountNotificationWebhooks } from "./notifications/webhooks";
 import { startupFailureDiagnostic, type StartupStage } from "./startup-diagnostics";
 import { startBookingMessageRetention } from "./appointments/retention";
+import { verifyCurrencyDatabaseReadiness } from "../migrations/currencies/application-readiness.mjs";
 
 assertAuditActivation(process.env);
 const app = express();
@@ -56,6 +57,11 @@ app.use((req, res, next) => {
   // Verify the actual app principal before registering sessions or accepting requests.
   startupStage = "audit_principal";
   await verifyAuditApplicationPool(pool, process.env);
+  startupStage = "currency_database";
+  await verifyCurrencyDatabaseReadiness((text, values) => {
+    const query: QueryConfig & Pick<ClientConfig, "query_timeout"> = { text, values, query_timeout: 5000 };
+    return pool.query(query);
+  });
   startupStage = "billing_configuration";
   const config = selectedLocalBillingRuntime();
   startupStage = "billing_runtime";

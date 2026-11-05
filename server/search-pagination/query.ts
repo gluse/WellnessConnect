@@ -1,10 +1,11 @@
 import {sql,type SQL} from 'drizzle-orm';
 import type {SearchFilters} from '../searchInput';
 import type {SearchSort} from '../../shared/search-pagination';
+import {SUPPORTED_CURRENCIES} from '../../shared/currencies';
 
 export type SearchPosition=(number|string|null)[];
 export type SearchPageRequest={filters:SearchFilters;sort:SearchSort;limit:number;position?:SearchPosition;embedding?:number[];requireEmbedding?:boolean};
-export type SearchPageRow={id:number;keys:SearchPosition;distance:number|null};
+export type SearchPageRow={id:number;keys:SearchPosition;distance:number|null;priceSortAvailable?:boolean;currency?:string|null};
 type OrderKey={name:string;direction:'ASC'|'DESC';type:'float8'|'timestamp'|'integer'};
 function orderKeys(request:SearchPageRequest):OrderKey[]{
  const {filters,sort,embedding}=request;
@@ -64,15 +65,19 @@ export function searchPageSQL(request:SearchPageRequest):SQL{
   const after=sql`(${column(key.name)} ${sql.raw(key.direction==='ASC'?'>':'<')} ${value}::${sql.raw(key.type)} OR ${column(key.name)} IS NULL)`;
   continuation.push(sql`(${sql.join([...equal,after],sql` AND `)})`);
  }
- return sql`WITH eligible AS (SELECT s.id,s.created_at AS created_key,CASE WHEN s.price>=0 THEN s.price::float8 ELSE NULL END AS price_key,
+ return sql`WITH candidates AS (SELECT s.id,s.currency,s.created_at AS created_key,CASE WHEN s.price>=0 THEN s.price::float8 ELSE NULL END AS price_key,
   reviews.rating AS rating_key,${distance} AS distance_key,${score} AS score_key
   FROM public.services s LEFT JOIN public.addresses a ON a.id=s.address_id
   LEFT JOIN public.companies c ON c.id=s.company_id LEFT JOIN public.employees em ON em.id=s.employee_id
   LEFT JOIN (SELECT b.service_id,avg(r.rating)::float8 AS rating FROM public.service_reviews r JOIN public.bookings b ON b.id=r.booking_id GROUP BY b.service_id) reviews ON reviews.service_id=s.id
-  ${vectorJoin} WHERE ${sql.join(conditions,sql` AND `)})
-  SELECT e.id,jsonb_build_array(${sql.join(keys.map(key=>column(key.name)),sql`, `)}) AS keys,e.distance_key AS distance
-  FROM eligible e WHERE true ${filters.radius!==undefined?sql`AND e.distance_key<=${filters.radius}`:sql``}
-  ${embedding?sql`AND e.score_key>=0.30 AND e.score_key<'Infinity'::float8 AND e.score_key<>'NaN'::float8`:sql``}
+  ${vectorJoin} WHERE ${sql.join(conditions,sql` AND `)}),
+  matched AS (SELECT * FROM candidates e WHERE true ${filters.radius!==undefined?sql`AND e.distance_key<=${filters.radius}`:sql``}
+    ${embedding?sql`AND e.score_key>=0.30 AND e.score_key<'Infinity'::float8 AND e.score_key<>'NaN'::float8`:sql``}),
+  currency_state AS (SELECT count(DISTINCT currency)<=1 AND coalesce(bool_and(currency IS NOT NULL AND currency IN (${sql.join(SUPPORTED_CURRENCIES.map(code=>sql`${code}`),sql`, `)})),true) AS price_sort_available FROM matched),
+  eligible AS (SELECT m.id,m.currency,m.created_key,m.rating_key,m.distance_key,m.score_key,
+    CASE WHEN cs.price_sort_available THEN m.price_key ELSE NULL END AS price_key,cs.price_sort_available FROM matched m CROSS JOIN currency_state cs)
+  SELECT e.id,e.currency,jsonb_build_array(${sql.join(keys.map(key=>column(key.name)),sql`, `)}) AS keys,e.distance_key AS distance,e.price_sort_available AS "priceSortAvailable"
+  FROM eligible e WHERE true
   ${position?sql`AND (${continuation.length?sql.join(continuation,sql` OR `):sql`false`})`:sql``}
   ORDER BY ${sql.join(keys.map(key=>sql`${column(key.name)} ${sql.raw(key.direction)} NULLS LAST`),sql`, `)} LIMIT ${limit+1}`;
 }

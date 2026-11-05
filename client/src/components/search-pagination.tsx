@@ -21,7 +21,7 @@ export default function SearchPagination({ hasNextPage, fetching, failed, error,
   }, [hasNextPage, fetching]);
   const latest = useRef({ hasNextPage, fetching, failed, onLoad });
   latest.current = { hasNextPage, fetching, failed, onLoad };
-  const expired = error instanceof PublicSearchError && (error.status === 400 || error.status === 410);
+  const expired = error instanceof PublicSearchError && (error.status === 400 || error.status === 409 || error.status === 410);
   useEffect(() => {
     if (!hasNextPage || !sentinel.current || typeof IntersectionObserver === "undefined") return;
     let intersecting = false;

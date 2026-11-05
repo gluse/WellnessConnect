@@ -53,7 +53,7 @@ const service = { id: 1, providerId: "provider", companyId: null, employeeId: nu
 const schedule = { serviceId: null, scheduleType: "specific", specificDate: at("00:00"), startTime: "09:00", endTime: "12:00", timezone: "UTC", breaks: [], isActive: true };
 const baseline = { id: 7, seekerId: "customer", serviceId: 1, providerId: "provider", companyId: null, employeeId: null, status: "confirmed", scheduledDate: at("09:00"), bookingDuration: 30, bookingCleanupTime: 15, participantCount: 1, totalAmount: "25.00", service };
 let current = baseline;
-const { storage: actualStorage, BookingConflictError } = await loadBackend("server/storage.ts", ["storage", "customerBookings", "searchInput"]);
+const { storage: actualStorage, BookingConflictError } = await loadBackend("server/storage.ts", ["storage", "customerBookings", "searchInput", "money"]);
 const fixtures = {
   ...globalThis.__bookingDependencies, BookingConflictError,
   isAuthenticated(req, res, next) { if (!req.user) return res.status(401).json({ message: "Unauthorized" }); next(); },
@@ -66,7 +66,7 @@ const fixtures = {
   },
 };
 globalThis.__bookingDependencies = fixtures;
-const { registerRoutes } = await loadBackend("server/routes.ts", ["routes", "companyAccess", "customerBookings", "schedulingRoutes"]);
+const { registerRoutes } = await loadBackend("server/routes.ts", ["routes", "companyAccess", "customerBookings", "schedulingRoutes", "money"]);
 const registered = [], app = () => {};
 app.use = app.set = () => app;
 for (const method of ["get", "post", "put", "patch", "delete"]) app[method] = (path, ...handlers) => { registered.push({ method, path, handlers }); return app; };

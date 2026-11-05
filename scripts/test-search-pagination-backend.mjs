@@ -13,7 +13,7 @@ import {createSearchPageStore} from '../server/search-pagination/store.ts';
 // provider and an in-process HTTP stream. No sockets, DB engine, env loading,
 // private configuration, embedding provider or application startup is involved.
 let checks=0;const check=fn=>{fn();checks++;};
-const data=Array.from({length:620},(_,index)=>{const id=index+1;return {id,name:`Service ${id}`,price:id%9===0?'-1':String(id%37),rating:id%8===0?null:(id%5)+1,
+const data=Array.from({length:620},(_,index)=>{const id=index+1;return {id,name:`Service ${id}`,currency:'EUR',price:id%9===0?'-1':String(id%37),rating:id%8===0?null:(id%5)+1,
  isActive:true,companyActive:true,category:id%2?'education':'wellness',created:`2026-01-01T00:00:00.${String(id).padStart(6,'0')}`,score:(id%17)/16,
  distance:id%10===0?null:(id%60)/10,locationSource:'manual',latitude:0,longitude:0};});
 const calls=[];let vectors=0,failEmbedding=false,invalidVector=false,failRanking=false;
@@ -23,11 +23,12 @@ function ranked(request){
  if(filters.availableOnly)rows=rows.filter(row=>row.id%4!==0);
  if(filters.latitude!==undefined)rows=rows.filter(row=>row.distance!==null&&row.distance<=filters.radius);
  if(embedding)rows=rows.filter(row=>row.score>=.3);
+ const priceSortAvailable=rows.every(row=>row.currency==='EUR'||row.currency==='USD')&&new Set(rows.map(row=>row.currency)).size<=1;
  const keys=row=>sort==='default'?embedding?[row.score,row.id]:filters.latitude!==undefined?[row.distance,row.created,row.id]:[row.created,row.id]
-  :[sort.startsWith('price')?(Number(row.price)>=0?Number(row.price):null):sort.startsWith('rating')?row.rating:row.distance,row.id];
+  :[sort.startsWith('price')?(priceSortAvailable&&Number(row.price)>=0?Number(row.price):null):sort.startsWith('rating')?row.rating:row.distance,row.id];
  const directions=sort==='default'?(embedding?[-1,1]:filters.latitude!==undefined?[1,-1,-1]:[-1,-1]):[sort.endsWith('desc')?-1:1,1];
  function compare(a,b){for(let index=0;index<a.length;index++){if(a[index]===b[index])continue;if(a[index]===null)return 1;if(b[index]===null)return -1;return (a[index]<b[index]?-1:1)*directions[index];}return 0;}
- return rows.map(row=>({id:row.id,keys:keys(row),distance:filters.latitude!==undefined?row.distance:null})).sort((a,b)=>compare(a.keys,b.keys)).filter(row=>!request.position||compare(row.keys,request.position)>0).slice(0,request.limit+1);
+ return rows.map(row=>({id:row.id,keys:keys(row),priceSortAvailable,currency:row.currency,distance:filters.latitude!==undefined?row.distance:null})).sort((a,b)=>compare(a.keys,b.keys)).filter(row=>!request.position||compare(row.keys,request.position)>0).slice(0,request.limit+1);
 }
 const store={async rows(request){calls.push(structuredClone(request));if(failRanking&&request.embedding)throw Error('PRIVATE_SQL_CANARY');return ranked(request);},async hydrate(ids){return ids.slice().reverse().map(id=>data.find(row=>row.id===id)).filter(Boolean);}};
 let now=100000;const pager=createSearchPageService(store,async()=>{vectors++;if(failEmbedding)throw Error('PRIVATE_PROVIDER_CANARY');return invalidVector?[1e-300,0]:[1,0];},{now:()=>now,secret:Buffer.alloc(32,7)});
@@ -48,6 +49,26 @@ for(const sort of ['price-asc','price-desc','rating-asc','rating-desc','distance
 }
 result=await collect({filters:{category:'education',availableOnly:true,date:'2026-11-05'},sort:'price-asc',limit:24});
 check(()=>{assert.ok(result.ids.length>50);assert.ok(result.ids.every(id=>id%2===1&&id%4!==0));});
+// Currency eligibility is calculated over all filtered matches before any page.
+data[0].currency='USD';
+const mixed=await pager.page({filters:{},sort:'price-asc',limit:24,signal});
+check(()=>{assert.equal(mixed.priceSortAvailable,false);assert.equal(mixed.effectiveSort,'default');assert.deepEqual(mixed.services.map(row=>row.id),Array.from({length:24},(_,i)=>620-i));assert.ok(!mixed.services.some(row=>row.currency==='USD'),'foreign currency can lie beyond the visible page');});
+const mixedTraversal=await collect({filters:{},sort:'price-desc',limit:24});
+check(()=>{assert.equal(mixedTraversal.ids.length,620);assert.equal(new Set(mixedTraversal.ids).size,620);assert.ok(mixedTraversal.pages.every(page=>page.effectiveSort==='default'&&!page.priceSortAvailable));});
+const singleFiltered=await pager.page({filters:{category:'wellness'},sort:'price-asc',limit:24,signal});
+check(()=>{assert.equal(singleFiltered.priceSortAvailable,true);assert.equal(singleFiltered.effectiveSort,'price-asc');});
+data[0].currency=null;
+check(()=>assert.equal(ranked({filters:{},sort:'default',limit:1})[0].priceSortAvailable,false));
+assert.equal((await pager.page({filters:{},sort:'price-asc',limit:24,signal})).effectiveSort,'default');checks++;
+data[0].currency='EUR';
+const beforeCurrencyChange=await pager.page({filters:{},sort:'price-asc',limit:24,signal});
+data[0].currency='USD';
+await assert.rejects(()=>pager.page({filters:{},sort:'price-asc',limit:24,signal,cursor:beforeCurrencyChange.nextCursor}),error=>error.code==='SEARCH_CURRENCY_CHANGED');checks++;
+data[0].currency='EUR';
+const hydrationMutation=createSearchPageService({...store,async hydrate(ids){return (await store.hydrate(ids)).map((row,index)=>index===0?{...row,currency:'USD'}:row);}},async()=>[1,0],{secret:Buffer.alloc(32,9)});
+for(const sort of ['default','price-asc','price-desc']){
+ await assert.rejects(()=>hydrationMutation.page({filters:{},sort,limit:24,signal}),error=>error.code==='SEARCH_CURRENCY_CHANGED');checks++;
+}
 const first=await pager.page({filters:{},sort:'default',limit:24,signal});
 await assert.rejects(()=>pager.page({filters:{category:'education'},sort:'default',limit:24,signal,cursor:first.nextCursor}),error=>error.status===400);checks++;
 await assert.rejects(()=>pager.page({filters:{},sort:'price-asc',limit:24,signal,cursor:first.nextCursor}),error=>error.status===400);checks++;

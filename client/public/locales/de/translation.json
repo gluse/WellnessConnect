@@ -473,7 +473,7 @@
     "sharedSchedule": "Kein bestimmter Mitarbeiter (gemeinsamer Zeitplan)",
     "employeeHelp": "Verschiedene Mitarbeiter können gleichzeitig Buchungen annehmen. Die Sichtbarkeit von Kundennamen wird unter Mitarbeiter eingestellt.",
     "duration": "Dauer (Min.)",
-    "price": "Preis ($)",
+    "price": "Preis",
     "advance": "Vorauszahlung (%)",
     "ageGroups": "Altersgruppen",
     "age_children": "Kinder",
@@ -1268,5 +1268,22 @@
     "service_views_one": "{{service}} wurde {{count}} Mal angesehen.",
     "wishlist_additions_other": "{{count}} Personen haben {{service}} gespeichert.",
     "service_views_other": "{{service}} wurde {{count}} Mal angesehen."
+  },
+  "currency": {
+    "label": "Währung",
+    "choose": "Währung auswählen",
+    "precision": "Erlaubte Nachkommastellen: {{digits}}. Keine Tausendertrennzeichen verwenden.",
+    "serviceHelp": "Der Leistungsort kann eine Währung vorschlagen. Betrag und Währung vor dem Speichern prüfen.",
+    "country": "Land der Dienstleistung (optional)",
+    "countryUnknown": "Land nicht angegeben",
+    "countryHelp": "Land bestätigen, um eine Währung für neue Leistungen vorzuschlagen. Bestehende Preise behalten ihre Währung.",
+    "changeTitle": "Preiswährung bestätigen",
+    "changeHelp": "{{price}} {{currency}} für künftige Buchungen speichern? Betrag prüfen; es erfolgt keine Umrechnung. Bestehende Buchungen behalten ihre Währung.",
+    "confirmChange": "Betrag und Währung bestätigen",
+    "priceInvalid": "Einen gültigen Preis im erlaubten Bereich und mit zulässiger Genauigkeit eingeben.",
+    "unavailable": "Währung nicht verfügbar",
+    "priceChanged": "Preis, Währung oder Anzahlungsbedingungen wurden geändert. Aktualisierte Beträge vor erneuter Bestätigung prüfen.",
+    "balance": "Restbetrag",
+    "mixedSort": "Preissortierung ist bei unterschiedlichen oder unbekannten Währungen nicht verfügbar."
   }
 }

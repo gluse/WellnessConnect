@@ -22,7 +22,7 @@ globalThis.Date = FixtureDate as DateConstructor;
 const params = new URLSearchParams(location.search);
 const user = { id: "synthetic-user", firstName: "Synthetic", lastName: "User", email: "synthetic@example.com", currentRole: "seeker", providerType: "individual" };
 const service = {
-  id: 7, providerId: "synthetic-provider", name: "Synthetic group session", description: "", category: "education", serviceType: "group", price: "25.00", duration: 45, cleanupTime: 15,
+  id: 7, providerId: "synthetic-provider", name: "Synthetic group session", description: "", category: "education", serviceType: "group", price: params.get("price") || "25.00", currency: params.has("unknownCurrency") ? null : params.get("currency") || "EUR", duration: 45, cleanupTime: 15,
   maxCapacity: 4, ageGroups: ["adults"], targetGender: "both", instantBooking: params.get("instant") === "true", advancePaymentPercent: 30,
   isActive: true, address: "Synthetic address", latitude: 0, longitude: 0, locationSource: "manual",
   provider: { id: "synthetic-provider", firstName: "Synthetic", lastName: "Provider" },
@@ -102,6 +102,7 @@ window.fetch = async (input, options = {}) => {
   if (path === "/api/bookings" && method === "POST") {
     if (fixture.bookingResult === "pending") await held();
     if (fixture.bookingResult === "conflict") return Response.json({}, { status: 409 });
+    if (fixture.bookingResult === "priceChanged") return Response.json({ code: "PRICE_CHANGED", currentPrice: "35.00", currentCurrency: "GBP", currentAdvancePaymentPercent: 100 }, { status: 409 });
     if (fixture.bookingResult === "error") return Response.json({ message: "<img src=x onerror=alert(1)>" }, { status: 503 });
     if (fixture.bookingResult === "forbidden") return Response.json({}, { status: 403 });
     return Response.json({ id: 12, ...body, status: service.instantBooking ? "confirmed" : "pending" });

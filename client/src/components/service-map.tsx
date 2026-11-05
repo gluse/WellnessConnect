@@ -1,3 +1,5 @@
+import { formatMoney } from "@/lib/money";
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -17,6 +19,7 @@ function escapeHtml(text: string): string {
 }
 
 export default function ServiceMap({ services, userLocation, onServiceSelect }: ServiceMapProps) {
+  const { t, i18n } = useTranslation();
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
@@ -71,7 +74,7 @@ export default function ServiceMap({ services, userLocation, onServiceSelect }: 
             <h3 style="font-weight: bold; margin-bottom: 4px;">${escapeHtml(service.name)}</h3>
             <p style="font-size: 14px; color: #666; margin-bottom: 4px;">${escapeHtml(providerName)}</p>
             ${service.employee?.name ? `<p style="font-size: 14px; color: #666; margin-bottom: 4px;">With ${escapeHtml(service.employee.name)}</p>` : ''}
-            <p style="font-size: 14px; font-weight: bold; color: #10b981;">$${Number(service.price).toFixed(2)}</p>
+            <p style="font-size: 14px; font-weight: bold; color: #10b981;">${escapeHtml(formatMoney(service.price, service.currency, i18n.resolvedLanguage || i18n.language) ?? t("currency.unavailable"))}</p>
             ${service.distance ? `<p style="font-size: 12px; color: #999;">${Number(service.distance).toFixed(1)} km away</p>` : ''}
           </div>
         `;
@@ -96,7 +99,7 @@ export default function ServiceMap({ services, userLocation, onServiceSelect }: 
     return () => {
       markers.forEach(marker => marker.remove());
     };
-  }, [services, userLocation, onServiceSelect]);
+  }, [services, userLocation, onServiceSelect, i18n.resolvedLanguage, i18n.language, t]);
 
   useEffect(() => {
     return () => {

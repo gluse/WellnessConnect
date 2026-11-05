@@ -7,11 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { SUPPORTED_COUNTRIES } from "@shared/currencies";
 
 export function createLocationDraft(address?: Address) {
   const location = address ? currentLocation(address) : undefined;
   return {
-    address: location?.address ?? "", latitude: location?.latitude ?? null, longitude: location?.longitude ?? null,
+    address: location?.address ?? "", countryCode: location?.countryCode ?? null, latitude: location?.latitude ?? null, longitude: location?.longitude ?? null,
     locationSource: location?.locationSource ?? "legacy", locationKey: location?.locationKey ?? null,
     locationExpiresAt: location?.locationExpiresAt ? new Date(location.locationExpiresAt).toISOString() : null,
     locationAddressSource: location?.locationAddressSource ?? "user",
@@ -23,6 +24,7 @@ export default function AddressLocationFields({ newService, setNewService, addre
 }) {
   const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage || i18n.language;
+  const countryNames = new Intl.DisplayNames([language], { type: "region" });
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -68,6 +70,14 @@ export default function AddressLocationFields({ newService, setNewService, addre
   };
   const addressErrorText = addressIssue || (feedback === "addressForm.addressInvalid" ? t(feedback) : "");
   return <section className="space-y-4">
+    <div className="space-y-2"><Label htmlFor="address-country">{t("currency.country")}</Label>
+      <select id="address-country" autoComplete="country" className="w-full min-h-11 rounded-md border bg-background px-3 py-2 text-base" value={newService.countryCode ?? ""}
+        aria-describedby="address-country-help" onChange={event => setNewService(prev => ({ ...prev, countryCode: event.target.value || null }))}>
+        <option value="">{t("currency.countryUnknown")}</option>
+        {SUPPORTED_COUNTRIES.map(code => <option key={code} value={code}>{countryNames.of(code) || code}</option>)}
+      </select>
+      <p id="address-country-help" className="text-sm text-muted-foreground">{t("currency.countryHelp")}</p>
+    </div>
     <div className="space-y-2">
       <Label htmlFor="address">{t("addressForm.address")} *</Label>
       <div className="grid sm:grid-cols-[minmax(0,1fr)_auto] gap-3">

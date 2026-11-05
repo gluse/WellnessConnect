@@ -558,20 +558,24 @@ See [business scenarios](docs/payment-business-plan.md),
 
 ## Service currencies
 
-- [ ] **TASK-039 — Store and display service and booking currencies.**
-  **Status, 3 November 2026:** Plan prepared at the user's request; implementation
-  not started. User selected service-currency display with customer-currency
-  estimates deferred, and confirmed all existing service/booking amounts are EUR
-  with an incorrect dollar symbol. Preserve numeric amounts during EUR backfill.
-  See [currency rules, contract, owners, migration and acceptance](docs/currency-management-plan.md).
-  Service-country suggestions with provider confirmation, booking currency
-  snapshots, exact arithmetic and currency-aware summaries/sorting are proposed.
-  Frontend, Backend and DB owners must implement their respective scopes when
-  assigned; connected migration/execution and deployment need exact-target scope.
-  Validate en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred.
-  Planning is documentation/repository review only; no application tests or
-  database/service operations performed. Next action: review/accept implementation
-  plan and assign owners. Preserve existing EUR platform-subscription contracts.
+- [x] **TASK-039 — Store and display service and booking currencies.**
+  **Completed, 5 November 2026:** Explicit service/booking currencies, country
+  suggestions, exact money, price/advance quote review, shared formatting and safe
+  mixed-currency summaries/sorting implemented. Root and assigned Frontend-money,
+  Backend and DB owners reviewed integrated contracts. TypeScript/fixture types,
+  isolated builds, affected offline regressions and Chrome/Firefox/WebKit en/lv/ru
+  currency checks pass; existing Chrome booking/address regression passes.
+  User explicitly approved proceeding without a verified backup for one migration
+  0020 application to development `hbkooiknruimukkhshrk`; assigned DB executor
+  `/root/currency_db` applied it once and verified postflight. All 27 services and
+  32 bookings now have EUR; counts and exact monetary fingerprints unchanged.
+  All 28 runtime readiness gates pass; root verified the receipt. Prior failed/
+  stopped preflight receipts and approvals are preserved in the
+  [scope, evidence and recovery handoff](docs/currency-management-handoff.md).
+  No app/worker startup, live workflow/session tests or deployment occurred.
+  Customer FX estimates and ar/RTL, zh, fr, de, hi, ja, pt and es verification remain
+  deferred. Existing EUR subscription policy is preserved. No remaining approved
+  code/migration work; use the updated compatible app on subsequent startup.
 
 ## Reservation messages
 

@@ -473,7 +473,7 @@
     "sharedSchedule": "従業員を指定しない（共通スケジュール）",
     "employeeHelp": "異なる従業員は同時刻に予約を受け付けられます。顧客名の表示は従業員の設定で変更できます。",
     "duration": "所要時間（分）",
-    "price": "料金（$）",
+    "price": "価格",
     "advance": "前払い（%）",
     "ageGroups": "年齢層",
     "age_children": "子ども",
@@ -1258,5 +1258,22 @@
     "service_views_one": "{{service}} の閲覧数：{{count}}。",
     "wishlist_additions_other": "{{count}} 人が {{service}} をウィッシュリストに追加しました。",
     "service_views_other": "{{service}} の閲覧数：{{count}}。"
+  },
+  "currency": {
+    "label": "通貨",
+    "choose": "通貨を選択",
+    "precision": "小数点以下の桁数：{{digits}}。桁区切り文字は使用しないでください。",
+    "serviceHelp": "サービスの場所から通貨を提案できます。保存前に金額と通貨をご確認ください。",
+    "country": "サービスの国（任意）",
+    "countryUnknown": "国が未指定",
+    "countryHelp": "国を確認すると新しいサービスの通貨を提案できます。既存の価格の通貨は変わりません。",
+    "changeTitle": "価格の通貨を確認",
+    "changeHelp": "今後の予約に {{price}} {{currency}} を保存しますか？金額をご確認ください。通貨換算は行われません。既存の予約は元の通貨を維持します。",
+    "confirmChange": "金額と通貨を確認",
+    "priceInvalid": "許可された範囲と小数精度で有効な価格を入力してください。",
+    "unavailable": "通貨を利用できません",
+    "priceChanged": "価格、通貨、または前払い条件が変更されました。更新された金額を確認してから再度確定してください。",
+    "balance": "残額",
+    "mixedSort": "該当サービスの通貨が異なる場合や不明な場合は価格順に並べ替えできません。"
   }
 }

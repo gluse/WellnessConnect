@@ -18,7 +18,7 @@ const parameters = new URLSearchParams(location.search);
 const syntheticService = {
   id: 7, providerId: "synthetic-provider", companyId: null, employeeId: null,
   name: "Synthetic service", description: "Synthetic description", category: "education", serviceType: "one_to_one",
-  price: "25.00", duration: Number(parameters.get("duration") || 45), cleanupTime: Number(parameters.get("cleanupTime") ?? 15), maxCapacity: 1, ageGroups: ["adults"], targetGender: "both",
+  price: parameters.get("price") || "25.00", currency: parameters.get("currency") || "EUR", duration: Number(parameters.get("duration") || 45), cleanupTime: Number(parameters.get("cleanupTime") ?? 15), maxCapacity: 1, ageGroups: ["adults"], targetGender: "both",
   instantBooking: false, advancePaymentPercent: 30, addressId: 3, imageUrl: "", externalUrl: "", isActive: parameters.get("mode") !== "inactive",
 } as Service;
 const permissions = { manageServices: parameters.get("mode") !== "denied", manageSchedules: true, manageBookings: true, manageTeam: true, isOwner: true, readAll: true };
@@ -34,7 +34,7 @@ window.fetch = async (input, options = {}) => {
   if (path === "/api/addresses") {
     if (fixture.addressResult === "pending") return new Promise<Response>(() => {});
     if (fixture.addressResult === "error") return Response.json({}, { status: 503 });
-    return Response.json(fixture.addressResult === "empty" ? [] : [{ id: 3, address: "Synthetic address" }]);
+    return Response.json(fixture.addressResult === "empty" ? [] : [{ id: 3, address: "Synthetic address", countryCode: "LV" }, { id: 4, address: "Synthetic UK address", countryCode: "GB" }, { id: 5, address: "Synthetic unknown country", countryCode: null }]);
   }
   if (path === "/api/provider/employees") return Response.json([{ id: 5, name: "Synthetic employee" }]);
   if (path === "/api/company/context") return Response.json({ company: null, permissions, workspaces: [] });

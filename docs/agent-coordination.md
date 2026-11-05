@@ -1,5 +1,45 @@
 # Cross-role dependency queue
 
+## TASK-039 service currencies — 5 November 2026
+
+**Completed / local implementation and development DB verified.** User approved the currency plan for local implementation.
+Requester/coordinator/frontend executor `/root`; assigned Backend owner
+`/root/currency_backend`, DB owner `/root/currency_db`, and delegated frontend
+money/display executor `/root/currency_money` accepted through live agent tools.
+Scope, file boundaries, decisions, checks and recovery:
+[implementation handoff](currency-management-handoff.md).
+Existing amounts are EUR without conversion; FX estimates deferred. Local code,
+migration preparation and offline/mocked en/lv/ru checks only. No new connected
+database/private configuration/service/deployment authority. Owners returned
+implementation, verification and integrated contract reviews. TypeScript/fixture
+types, isolated builds, affected money/backend/schema/search/billing regressions
+and Chrome/Firefox/WebKit en/lv/ru currency checks pass; the existing Chrome
+booking/address regression passes. On 5 November the user approved the assigned
+DB owner to preflight/apply 0020 on development `hbkooiknruimukkhshrk`, conditional
+on verified recovery and stop-on-first-failure. The owner accepted and made one
+connection attempt under the default sandbox; `ENOTFOUND` stopped it before TLS
+or SQL. No retry/DDL occurred. Root reviewed the sanitized receipt. Live target,
+schema/writer state and recovery remain unverified; no local backup tools/archive
+or accessible independent provider recovery evidence was found. User subsequently
+approved one fresh network-enabled read-only preflight for the same project; DB
+owner accepted, preserves the first receipt and writes a separate attempt receipt.
+Network attempt verified TLS/target/PG17, all 26 runtime gates and expected starting
+schema: 27 services, 32 bookings, zero invalid money and zero observed other app/
+owner connections. It stopped at unverified recovery, without DDL or retry; root
+reviewed the separate receipt and original preservation. User must supply verified
+backup/restore evidence, authorize backup creation/verification, or explicitly
+select a development-only TASK-039 no-backup exception. DB prepared/tested the
+apply-once runner for that explicit choice; it has not executed. Prepared migration
+was unapplied at that point. User then explicitly selected "yes proceed without
+backup" for this TASK-039 development migration. DB owner accepted the scoped
+waiver and executed the reviewed apply-once command with fresh guards/postflight.
+Migration 0020 committed once: all 27 services and 32 bookings are EUR, counts and
+exact monetary fingerprints unchanged, all 28 runtime readiness gates pass. Root
+independently reviewed the activation receipt and preserved prior receipt hashes.
+No retry/startup/workflow/deployment. TASK-039 code/migration scope is complete;
+no outstanding owner dependency. See the handoff for approval history, execution
+receipt, evidence and recovery. Other locales/RTL remain deferred.
+
 Follow [AGENTS.md standing authorization](../AGENTS.md#cross-role-cooperation-and-standing-authorization).
 Contact a reachable owning agent directly and link the request here or in the
 task handoff. Use this shared queue when a dependency spans sessions or cannot

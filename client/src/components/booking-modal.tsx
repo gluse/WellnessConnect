@@ -13,7 +13,10 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { useToast } from "@/hooks/use-toast";
 import BookingTimePicker from "@/components/booking-time-picker";
 import BookingMessagePrivacy from "@/components/booking-message-privacy";
-import { serviceAmount, useFormLocale } from "./forms-locale";
+import { useFormLocale } from "./forms-locale";
+import { calculateBookingAmounts, normalizeMoneyAmount } from "@shared/money";
+import { isSupportedCurrency } from "@shared/currencies";
+import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,6 +56,7 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
   const [selectedSlot, setSelectedSlot] = useState<BookableSlot | null>(null);
   const [reviewing, setReviewing] = useState(false);
   const [participantCount, setParticipantCount] = useState(1);
+  const [quote, setQuote] = useState({ price: service.price, currency: service.currency, advancePaymentPercent: service.advancePaymentPercent ?? 0 });
   const [participantTouched, setParticipantTouched] = useState(false);
   const [initialMessage, setInitialMessage] = useState("");
   const [error, setError] = useState("");
@@ -69,9 +73,11 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
   const serviceMaximum = service.serviceType === "group" ? service.maxCapacity ?? 1 : 1;
   const maximum = service.serviceType === "group" ? Math.min(serviceMaximum, selectedSlot?.availableCapacity ?? serviceMaximum) : 1;
   const participantValid = Number.isInteger(participantCount) && participantCount >= 1 && participantCount <= maximum;
-  const total = Number(service.price) * participantCount;
-  const advance = total * (service.advancePaymentPercent ?? 0) / 100;
-  const amount = (value: number) => serviceAmount(value, language);
+  const totals = (() => {
+    try { return calculateBookingAmounts(quote.price, quote.currency, participantValid ? participantCount : 1, quote.advancePaymentPercent); }
+    catch { return null; }
+  })();
+  const amount = (value: string) => formatMoney(value, quote.currency, language) ?? t("currency.unavailable");
   const appointmentDate = selectedSlot ? new Intl.DateTimeFormat(language, { timeZone: selectedSlot.timezone, weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date(selectedSlot.startsAt)) : "";
   useEffect(() => {
     content.current?.scrollTo({ top: 0 });
@@ -82,7 +88,8 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
     retry: false,
     mutationFn: async () => {
       if (!selectedSlot) throw new Error("No selected appointment");
-      return (await apiRequest("POST", "/api/bookings", { serviceId: service.id, scheduledDate: selectedSlot.startsAt, participantCount, initialMessage: initialMessage.trim() || null })).json();
+      return (await apiRequest("POST", "/api/bookings", { serviceId: service.id, scheduledDate: selectedSlot.startsAt, participantCount,
+        expectedPrice: quote.price, expectedCurrency: quote.currency, expectedAdvancePaymentPercent: quote.advancePaymentPercent, initialMessage: initialMessage.trim() || null })).json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bookings/seeker"] });
@@ -93,6 +100,19 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
     },
     onError: error => {
       if (isUnauthorizedError(error)) { window.location.assign(`/login?returnTo=${encodeURIComponent(returnTo)}`); return; }
+      if (error.message.startsWith("409:")) {
+        try {
+          const detail = JSON.parse(error.message.slice(4));
+          if (detail.code === "PRICE_CHANGED" && typeof detail.currentPrice === "string" && isSupportedCurrency(detail.currentCurrency)
+            && Number.isInteger(detail.currentAdvancePaymentPercent) && detail.currentAdvancePaymentPercent >= 0 && detail.currentAdvancePaymentPercent <= 100) {
+            setQuote({ price: normalizeMoneyAmount(detail.currentPrice, detail.currentCurrency), currency: detail.currentCurrency, advancePaymentPercent: detail.currentAdvancePaymentPercent });
+            setError("currency.priceChanged"); setReviewing(false); setDuplicateWarning(false);
+            queryClient.invalidateQueries({ predicate: query => String(query.queryKey[0]).startsWith("/api/services/") });
+            queueMicrotask(() => heading.current?.focus());
+            return;
+          }
+        } catch { /* Malformed conflict responses retain the normal conflict flow. */ }
+      }
       setError(error.message.startsWith("409:") ? "bookingForm.conflict" : error.message.startsWith("403:") ? "bookingForm.denied" : "bookingForm.saveError");
       if (error.message.startsWith("409:")) {
         setSelectedSlot(null); setReviewing(false);
@@ -104,6 +124,7 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
   const submit = async (duplicateApproved = false) => {
     if (submitting.current || succeeded) return;
     setError(""); setParticipantTouched(true);
+    if (!totals) { setError("currency.unavailable"); return; }
     if (!participantValid) { participants.current?.focus(); return; }
     if (!selectedSlot) { setError("bookingForm.chooseTimeFirst"); setReviewing(false); return; }
     submitting.current = true;
@@ -149,7 +170,7 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
           {service.employee?.name && <p className="text-sm text-muted-foreground"><bdi>{service.employee.name}</bdi></p>}
           <p className="hidden md:flex items-center gap-2 text-sm"><Clock className="w-4 h-4 shrink-0" aria-hidden="true" />{new Intl.NumberFormat(language, { style: "unit", unit: "minute", unitDisplay: "short" }).format(service.duration)}</p>
           {service.address && <p className="hidden md:flex items-start gap-2 text-sm"><MapPin className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" /><bdi>{service.address}</bdi></p>}
-          <p className="font-semibold"><bdi>{service.serviceType === "group" ? t("bookingForm.perParticipant", { amount: amount(Number(service.price)) }) : amount(Number(service.price))}</bdi></p>
+          <p className="font-semibold"><bdi>{service.serviceType === "group" ? t("bookingForm.perParticipant", { amount: amount(quote.price) }) : amount(quote.price)}</bdi></p>
           <p className="text-sm text-muted-foreground">{t(service.instantBooking ? "bookingForm.instantHelp" : "bookingForm.requestHelp")}</p>
         </aside>
         <div className="p-4 sm:p-6 space-y-5 min-w-0">
@@ -175,15 +196,16 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
                 {participantTouched && !participantValid && <p id="booking-participants-error" role="alert" className="text-sm text-red-700 dark:text-red-300">{t("bookingForm.participantError", { maximum: new Intl.NumberFormat(language).format(maximum) })}</p>}
               </div>}
               <div className="space-y-2"><Label htmlFor="booking-initial-message">{t("bookingForm.initialMessage")}</Label><Textarea id="booking-initial-message" aria-describedby="booking-initial-message-help" dir="auto" maxLength={4000} disabled={busy} value={initialMessage} onChange={event => setInitialMessage(event.target.value)} /><p id="booking-initial-message-help" className="text-sm text-muted-foreground">{t("bookingForm.initialMessageHelp")}</p><BookingMessagePrivacy /></div>
-              <dl className="flex flex-wrap justify-between gap-3 font-medium"><dt>{t("bookingForm.total")}</dt><dd><bdi>{participantValid ? amount(total) : "—"}</bdi></dd></dl>
-              {participantValid && advance > 0 && <p className="text-sm text-muted-foreground">{t("bookingForm.advanceNotice", { amount: amount(advance) })}</p>}
+              <dl className="flex flex-wrap justify-between gap-3 font-medium"><dt>{t("bookingForm.total")}</dt><dd><bdi>{participantValid && totals ? amount(totals.totalAmount) : totals ? "—" : t("currency.unavailable")}</bdi></dd></dl>
+              {participantValid && totals && Number(totals.advanceAmount) > 0 && <p className="text-sm text-muted-foreground">{t("bookingForm.advanceNotice", { amount: amount(totals.advanceAmount) })}</p>}
+              {participantValid && totals && <dl className="flex flex-wrap justify-between gap-3 text-sm"><dt>{t("currency.balance")}</dt><dd><bdi>{amount(totals.balanceAmount)}</bdi></dd></dl>}
             </>}
             {error && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t(error)}</p>}
             <p role="status" aria-live="polite" className="text-sm">{checkingDuplicates ? t("bookingForm.checkingDuplicates") : booking.isPending ? t(service.instantBooking ? "bookingForm.confirming" : "bookingForm.requesting") : ""}</p>
             <div className="grid sm:grid-cols-2 gap-3 border-t pt-4">
               <Button variant="outline" className={actionClass} disabled={busy} onClick={() => reviewing ? setReviewing(false) : onClose()}>{t(reviewing ? "common.back" : "common.cancel")}</Button>
-              {!reviewing ? <Button className={actionClass} disabled={!selectedSlot} onClick={() => { setError(""); setReviewing(true); }}>{t("bookingForm.continue")}</Button>
-                : <Button ref={submitButton} className={actionClass} disabled={busy || !selectedSlot} onClick={() => void submit()}>{t(service.instantBooking ? "booking.confirmBooking" : "bookingForm.requestBooking")}</Button>}
+              {!reviewing ? <Button className={actionClass} disabled={!selectedSlot || !totals} onClick={() => { setError(""); setReviewing(true); }}>{t("bookingForm.continue")}</Button>
+                : <Button ref={submitButton} className={actionClass} disabled={busy || !selectedSlot || !totals} onClick={() => void submit()}>{t(service.instantBooking ? "booking.confirmBooking" : "bookingForm.requestBooking")}</Button>}
             </div>
           </>}
         </div>

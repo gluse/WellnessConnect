@@ -8,7 +8,7 @@ import { initReactI18next } from "react-i18next";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
-import { sortServices } from "../client/src/lib/service-sort.ts";
+import { sortServices, canSortServicePrices } from "../client/src/lib/service-sort.ts";
 
 globalThis.React = React;
 globalThis.window = {
@@ -30,7 +30,7 @@ const { default: ServiceRating } = await import("../client/src/components/servic
 const { DialogContent } = await import("../client/src/components/ui/dialog.tsx");
 const { act, create } = renderer;
 const service = (id, price, extra = {}) => ({
-  id, name: `Service ${id}`, price, duration: 30, category: "education", serviceType: "one_to_one",
+  id, name: `Service ${id}`, price, currency: "EUR", duration: 30, category: "education", serviceType: "one_to_one",
   latitude: null, longitude: null, provider: { firstName: "Test", lastName: "Provider" }, employee: null, ...extra,
 });
 const rows = [
@@ -44,6 +44,8 @@ const ids = (sort, location = origin, records = rows) => sortServices(records, s
 assert.deepEqual(ids("default"), [1, 2, 3, 4]);
 assert.deepEqual(ids("price-asc"), [2, 4, 3, 1], "Prices must be numeric; equal prices retain their search order");
 assert.deepEqual(ids("price-desc"), [1, 3, 2, 4]);
+assert.deepEqual(ids("price-asc", origin, [rows[0], { ...rows[1], currency: "USD" }]), [1, 2], "Unlike prices must not be compared");
+assert.deepEqual(ids("price-asc", origin, [rows[0], { ...rows[1], currency: null }]), [1, 2], "Unknown currency disables price sort");
 assert.deepEqual(ids("distance-asc"), [2, 1, 3, 4]);
 assert.deepEqual(ids("distance-desc"), [3, 1, 2, 4], "Unknown distances stay last in either direction");
 assert.deepEqual(ids("distance-desc", null), [1, 2, 3, 4], "Distance sorting needs a search location");
@@ -71,7 +73,7 @@ globalThis.fetch = async url => {
   assert.ok(url.startsWith("/api/services/search/page?") || url.startsWith("/api/services/semantic-search/page?"), `Unexpected request: ${url}`);
   const params = new URL(url, 'https://fixture.invalid').searchParams;
   const location = params.has('latitude') ? { lat: Number(params.get('latitude')), lng: Number(params.get('longitude')) } : null;
-  return new Response(JSON.stringify({ services: sortServices(responseRows, params.get('sort') ?? 'default', location), nextCursor: null, mode: 'text' }));
+  return new Response(JSON.stringify({ services: sortServices(responseRows, params.get('sort') ?? 'default', location), nextCursor: null, mode: 'text', priceSortAvailable: canSortServicePrices(responseRows) }));
 };
 const flush = async (milliseconds = 40) => act(async () => { await new Promise(resolve => setTimeout(resolve, milliseconds)); });
 const flushSearch = async () => { await flush(450); await flush(); };
@@ -128,6 +130,11 @@ await submitQuery("no matches");
 await flushSearch();
 assert.deepEqual(renderedIds(), []);
 assert.equal(dropdown().props.value, "distance-asc", "Filter changes preserve the chosen sorting");
+responseRows = [rows[0], { ...rows[1], currency: "USD" }];
+await changeSort("price-asc"); await submitQuery("mixed currency"); await flushSearch();
+assert.equal(dropdown().props.value, "default", "Server mixed-currency metadata resets active price sort");
+assert.equal(dropdown().findAllByType("option").find(node => node.props.value === "price-asc").props.disabled, true);
+assert.equal(dropdown().findAllByType("option").find(node => node.props.value === "price-desc").props.disabled, true);
 await act(async () => component.unmount());
 queryClient.clear();
 await act(async () => { component = create(React.createElement(ServiceRating, { service: unrated[0] })); });

@@ -1,8 +1,10 @@
 import type { ServiceDraft } from "./service-draft";
+import { isSupportedCurrency } from "@shared/currencies";
+import { parseMoneyInput } from "@/lib/money-input";
 
 export type ServiceErrors = Partial<Record<keyof ServiceDraft, string>>;
 export const serviceControlIds: Partial<Record<keyof ServiceDraft, string>> = {
-  name: "serviceName", category: "category", price: "price", duration: "duration",
+  name: "serviceName", category: "category", price: "price", currency: "service-currency", duration: "duration",
   cleanupTime: "cleanupTime", maxCapacity: "maxCapacity", advancePaymentPercent: "advancePayment",
   addressId: "service-address", externalUrl: "externalUrl",
   reminderHours: "service-reminder-hours",
@@ -17,11 +19,12 @@ export function ServiceFieldError({ errors, field }: { errors: ServiceErrors; fi
   return errors[field] ? <p id={`${serviceControlIds[field]}-error`} className="text-sm text-red-700 dark:text-red-300">{errors[field]}</p> : null;
 }
 // Presentation validation only; server validation and authorization remain authoritative.
-export function validateServiceDraft(draft: ServiceDraft): Partial<Record<keyof ServiceDraft, string>> {
+export function validateServiceDraft(draft: ServiceDraft, locale = "en"): Partial<Record<keyof ServiceDraft, string>> {
   const errors: Partial<Record<keyof ServiceDraft, string>> = {};
   if (!draft.name.trim()) errors.name = "serviceForm.nameRequired";
   if (!draft.category) errors.category = "serviceForm.categoryRequired";
-  if (!draft.price.trim() || !Number.isFinite(Number(draft.price)) || Number(draft.price) < 0) errors.price = "serviceForm.priceInvalid";
+  if (!isSupportedCurrency(draft.currency)) errors.currency = "currency.choose";
+  else if (parseMoneyInput(draft.price, draft.currency, locale) === null) errors.price = "currency.priceInvalid";
   if (!Number.isSafeInteger(draft.duration) || draft.duration < 1) errors.duration = "serviceDuration.invalid";
   if (!Number.isInteger(draft.cleanupTime) || draft.cleanupTime < 0 || draft.cleanupTime > 1440) errors.cleanupTime = "serviceCleanup.invalid";
   if (!Number.isInteger(draft.maxCapacity) || draft.maxCapacity < 1) errors.maxCapacity = "serviceForm.positiveWhole";

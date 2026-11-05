@@ -473,7 +473,7 @@
     "sharedSchedule": "不指定员工（共享日程）",
     "employeeHelp": "不同员工可以同时接受预约。客户姓名的可见性在“员工”中设置。",
     "duration": "时长（分钟）",
-    "price": "价格（$）",
+    "price": "价格",
     "advance": "预付款（%）",
     "ageGroups": "年龄组",
     "age_children": "儿童",
@@ -1258,5 +1258,22 @@
     "service_views_one": "{{service}} 获得了 {{count}} 次浏览。",
     "wishlist_additions_other": "{{count}} 位用户将 {{service}} 加入了心愿单。",
     "service_views_other": "{{service}} 获得了 {{count}} 次浏览。"
+  },
+  "currency": {
+    "label": "货币",
+    "choose": "选择货币",
+    "precision": "允许的小数位数：{{digits}}。请勿使用千位分隔符。",
+    "serviceHelp": "服务地点可建议货币。保存前请核对金额和货币。",
+    "country": "服务所在国家（可选）",
+    "countryUnknown": "未指定国家",
+    "countryHelp": "确认国家以便为新服务建议货币。现有价格保留其已保存的货币。",
+    "changeTitle": "确认价格货币",
+    "changeHelp": "将 {{price}} {{currency}} 保存用于今后的预约？请核对金额；此更改不会进行兑换。现有预约保留原货币。",
+    "confirmChange": "确认金额和货币",
+    "priceInvalid": "请输入在允许范围内且小数精度正确的有效价格。",
+    "unavailable": "货币不可用",
+    "priceChanged": "价格、货币或预付款条款已更改。再次确认前请核对更新后的金额。",
+    "balance": "剩余应付金额",
+    "mixedSort": "当匹配服务使用不同或未知货币时，无法按价格排序。"
   }
 }

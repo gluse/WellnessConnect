@@ -1,8 +1,9 @@
+import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Clock, Users, MapPin, DollarSign, Calendar, CheckCircle } from "lucide-react";
+import { Clock, Users, MapPin, Coins, Calendar, CheckCircle } from "lucide-react";
 import ServiceRating from "@/components/service-rating";
 import type { ServiceWithProvider } from "@shared/schema";
 import { getProviderName } from "@shared/provider";
@@ -24,7 +25,7 @@ interface ServiceDetailModalProps {
 }
 
 export default function ServiceDetailModal({ service, open, onClose, onBook, onViewProvider, searchLayout, wishlistEnabled = true }: ServiceDetailModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const categories = useCategories();
   if (!service) return null;
   service = currentLocation(service);
@@ -117,11 +118,11 @@ export default function ServiceDetailModal({ service, open, onClose, onBook, onV
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <div className="flex items-center space-x-2 text-neutral-500">
-                <DollarSign className="w-4 h-4" />
+                <Coins className="w-4 h-4" />
                 <span className="text-sm font-medium">Price</span>
               </div>
               <p className="text-lg font-semibold text-neutral-800" data-testid="text-price">
-                ${service.price}
+                {formatMoney(service.price, service.currency, i18n.resolvedLanguage || i18n.language) ?? t("currency.unavailable")}
                 {isGroupService ? " per person" : ""}
               </p>
             </div>

@@ -3,13 +3,14 @@ import {z} from 'zod';
 import {currentLocation} from '../../shared/locations';
 import type {ServiceWithProvider} from '../../shared/schema';
 import type {SearchPage,SearchPageMode,SearchSort} from '../../shared/search-pagination';
+import {SEARCH_SORTS} from '../../shared/search-pagination';
 import {SearchError,type SearchFilters} from '../searchInput';
 import type {SearchPageRequest,SearchPageRow,SearchPosition} from './query';
 
 export type SearchPageStore={rows(request:SearchPageRequest):Promise<SearchPageRow[]>;hydrate(ids:number[]):Promise<ServiceWithProvider[]>};
 export type SearchPageInput={filters:SearchFilters;sort:SearchSort;limit:number;cursor?:string;semanticQuery?:string;signal:AbortSignal};
 type EmbeddingContext={embedding:number[];expires:number;hash:string};
-const cursorSchema=z.object({v:z.literal(1),hash:z.string().regex(/^[a-f0-9]{64}$/),mode:z.enum(['text','semantic','text-fallback']),position:z.array(z.union([z.number().finite(),z.string().max(40),z.null()])).min(2).max(3),expires:z.number().int().positive(),context:z.string().uuid().optional()}).strict();
+const cursorSchema=z.object({v:z.literal(1),hash:z.string().regex(/^[a-f0-9]{64}$/),mode:z.enum(['text','semantic','text-fallback']),effectiveSort:z.enum(SEARCH_SORTS).optional(),position:z.array(z.union([z.number().finite(),z.string().max(40),z.null()])).min(2).max(3),expires:z.number().int().positive(),context:z.string().uuid().optional()}).strict();
 const vector=z.array(z.number().finite().min(-1e100).max(1e100)).min(1).max(8192).refine(values=>{const norm=values.reduce((sum,value)=>sum+value*value,0);return norm>0&&Number.isFinite(norm);});
 const invalid=()=>new SearchError(400,'INVALID_SEARCH_CURSOR','Search continuation does not match this search. Start again.');
 const expired=()=>new SearchError(410,'SEARCH_EXPIRED','This search continuation expired. Start the search again.');
@@ -38,39 +39,53 @@ export function createSearchPageService(store:SearchPageStore,embed:(query:strin
    let mode:SearchPageMode=continuation?.mode??'text',contextId=continuation?.context,embedding:number[]|undefined,rows:SearchPageRow[];
    const expiresAt=continuation?.expires??now()+ttl;
    const exactFilters=input.semanticQuery?{...filters,searchQuery:input.semanticQuery}:filters;
+   let effectiveSort=continuation?.effectiveSort??input.sort,priceSortAvailable=true;
+   const read=async(request:SearchPageRequest)=>{
+    let found=await store.rows({...request,sort:effectiveSort});
+    priceSortAvailable=found.every(row=>row.priceSortAvailable!==false);
+    if(effectiveSort.startsWith('price-')&&!priceSortAvailable){
+     if(request.position)throw new SearchError(409,'SEARCH_CURRENCY_CHANGED','Search currencies changed. Start this search again.');
+     effectiveSort='default';
+     found=await store.rows({...request,sort:effectiveSort});
+    }
+    return found;
+   };
    if(continuation?.mode==='semantic'){
     const context=contextId?contexts.get(contextId):undefined;if(!context||context.hash!==hash||context.expires<=now())throw expired();embedding=context.embedding;
-    rows=await store.rows({filters,sort:input.sort,limit:input.limit,position:continuation.position,embedding});
+    rows=await read({filters,sort:effectiveSort,limit:input.limit,position:continuation.position,embedding});
    }else if(continuation){
-    rows=await store.rows({filters:exactFilters,sort:input.sort,limit:input.limit,position:continuation.position});
+    rows=await read({filters:exactFilters,sort:effectiveSort,limit:input.limit,position:continuation.position});
    }else{
-    rows=await store.rows({filters:exactFilters,sort:input.sort,limit:input.limit});
+    rows=await read({filters:exactFilters,sort:effectiveSort,limit:input.limit});
     if(input.semanticQuery&&!rows.length){
-     if(!(await store.rows({filters,sort:input.sort,limit:1,requireEmbedding:true})).length)return {services:[],nextCursor:null,mode:'semantic'};
+     if(!(await store.rows({filters,sort:input.sort,limit:1,requireEmbedding:true})).length)return {services:[],nextCursor:null,mode:'semantic',priceSortAvailable:true,effectiveSort};
      try{
       embedding=vector.parse(await embed(input.semanticQuery,input.signal));
      }catch(error){
       if(error instanceof SearchError)throw error;
       mode='text-fallback';embedding=undefined;contextId=undefined;
-      rows=await store.rows({filters:exactFilters,sort:input.sort,limit:input.limit});
+      rows=await read({filters:exactFilters,sort:effectiveSort,limit:input.limit});
      }
      if(embedding){
       mode='semantic';contextId=randomUUID();
       while(contexts.size>=maxContexts)contexts.delete(contexts.keys().next().value!);
       contexts.set(contextId,{embedding,hash,expires:expiresAt});
-      rows=await store.rows({filters,sort:input.sort,limit:input.limit,embedding});
+      rows=await read({filters,sort:effectiveSort,limit:input.limit,embedding});
      }
     }
    }
    const selected=rows.slice(0,input.limit),hydrated=await store.hydrate(selected.map(row=>row.id));const byId=new Map(hydrated.map(service=>[service.id,service]));
    const services=selected.flatMap(row=>{
     const service=byId.get(row.id);if(!service?.isActive||!service.companyActive)return [];
+    // Ranking and hydration are separate reads. A concurrent currency edit must
+    // not turn a previously safe price ordering into unlike displayed amounts.
+    if(row.currency!==undefined&&row.currency!==service.currency)throw new SearchError(409,'SEARCH_CURRENCY_CHANGED','Search currencies changed. Start this search again.');
     const dto=currentLocation({...service,...(row.distance!=null?{distance:Math.round(row.distance*10)/10}:{})});
     return filters.latitude!==undefined&&dto.distance===undefined?[]:[dto];
    });
    const last=selected.at(-1);
-   const nextCursor=rows.length>input.limit&&last?encode({v:1,hash,mode,position:last.keys,expires:expiresAt,...(contextId?{context:contextId}:{})}):null;
-   return {services,nextCursor,mode};
+   const nextCursor=rows.length>input.limit&&last?encode({v:1,hash,mode,effectiveSort,position:last.keys,expires:expiresAt,...(contextId?{context:contextId}:{})}):null;
+   return {services,nextCursor,mode,priceSortAvailable,effectiveSort};
   },
  };
 }

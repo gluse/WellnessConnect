@@ -473,7 +473,7 @@
     "sharedSchedule": "Nav konkrēta darbinieka (kopīgs grafiks)",
     "employeeHelp": "Dažādi darbinieki var pieņemt rezervācijas vienlaikus. Klientu vārdu redzamību iestata sadaļā Darbinieki.",
     "duration": "Ilgums (min)",
-    "price": "Cena ($)",
+    "price": "Cena",
     "advance": "Priekšapmaksa (%)",
     "ageGroups": "Vecuma grupas",
     "age_children": "Bērni",
@@ -1273,5 +1273,22 @@
     "service_views_one": "{{service}} saņēma {{count}} skatījumu.",
     "wishlist_additions_other": "{{count}} lietotāji pievienoja {{service}} vēlmju sarakstam.",
     "service_views_other": "{{service}} saņēma {{count}} skatījumus."
+  },
+  "currency": {
+    "label": "Valūta",
+    "choose": "Izvēlieties valūtu",
+    "precision": "Atļauto ciparu skaits aiz komata: {{digits}}. Nelietojiet tūkstošu atdalītājus.",
+    "serviceHelp": "Pakalpojuma atrašanās vieta var ieteikt valūtu. Pirms saglabāšanas pārbaudiet summu un valūtu.",
+    "country": "Pakalpojuma valsts (neobligāti)",
+    "countryUnknown": "Valsts nav norādīta",
+    "countryHelp": "Apstipriniet valsti, lai ieteiktu valūtu jauniem pakalpojumiem. Esošās cenas saglabā savu valūtu.",
+    "changeTitle": "Apstiprināt cenas valūtu",
+    "changeHelp": "Saglabāt {{price}} {{currency}} turpmākajām rezervācijām? Pārbaudiet summu; tā netiek konvertēta. Esošās rezervācijas saglabā sākotnējo valūtu.",
+    "confirmChange": "Apstiprināt summu un valūtu",
+    "priceInvalid": "Ievadiet derīgu cenu atļautajā diapazonā un ar atļauto precizitāti.",
+    "unavailable": "Valūta nav pieejama",
+    "priceChanged": "Cena, valūta vai avansa nosacījumi ir mainījušies. Pirms atkārtotas apstiprināšanas pārbaudiet atjauninātās summas.",
+    "balance": "Atlikusī summa",
+    "mixedSort": "Kārtošana pēc cenas nav pieejama, ja atrastajiem pakalpojumiem ir dažādas vai nezināmas valūtas."
   }
 }

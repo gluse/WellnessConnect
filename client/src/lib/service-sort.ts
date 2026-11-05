@@ -1,5 +1,10 @@
 import type { ServiceWithProvider } from "@shared/schema";
 import { currentLocation } from "@shared/locations";
+import { isSupportedCurrency } from "@shared/currencies";
+
+export function canSortServicePrices(services: readonly Pick<ServiceWithProvider, "currency">[]): boolean {
+  return services.every(service => isSupportedCurrency(service.currency)) && new Set(services.map(service => service.currency)).size <= 1;
+}
 
 export type ServiceSort = "default" | "distance-asc" | "distance-desc" |
   "price-asc" | "price-desc" | "rating-asc" | "rating-desc";
@@ -26,7 +31,7 @@ export function sortServices(
     const distance = 6371 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, a))));
     return { ...service, distance: Math.round(distance * 10) / 10 };
   });
-  if (sort === "default" || (sort.startsWith("distance-") && !location)) return results;
+  if (sort === "default" || (sort.startsWith("distance-") && !location) || (sort.startsWith("price-") && !canSortServicePrices(services))) return results;
 
   const value = (service: ServiceWithProvider): number | undefined => {
     if (sort.startsWith("rating-")) return serviceRating(service);

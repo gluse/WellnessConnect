@@ -17,10 +17,27 @@ import {
   uuid,
   foreignKey,
   unique,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { CURRENCY_DIGITS, SUPPORTED_CURRENCIES, SUPPORTED_COUNTRIES, isSupportedCurrency } from "./currencies";
+
+// Use unconstrained exact numeric plus explicit checks. numeric(p,s) would round
+// excess input precision before CHECK constraints get a chance to reject it.
+const codeLiterals = (codes: readonly string[]) => sql.join(codes.map(code => {
+  if (!/^[A-Z]{2,3}$/.test(code)) throw new Error("Invalid static country/currency code");
+  return sql.raw(`'${code}'`);
+}), sql`, `);
+const currencyCodeCheck = (currency: AnyPgColumn) => sql`${currency} IN (${codeLiterals(SUPPORTED_CURRENCIES)})`;
+const moneyAmountCheck = (amount: AnyPgColumn, currency: AnyPgColumn) => {
+  const zero = SUPPORTED_CURRENCIES.filter(code => CURRENCY_DIGITS[code] === 0);
+  const three = SUPPORTED_CURRENCIES.filter(code => CURRENCY_DIGITS[code] === 3);
+  return sql`${amount} >= 0 AND ${amount} <= 99999999.99 AND ${amount} = trunc(${amount}, CASE WHEN ${currency} IN (${codeLiterals(zero)}) THEN 0 WHEN ${currency} IN (${codeLiterals(three)}) THEN 3 ELSE 2 END)`;
+};
+const currencyInput = z.string().refine(isSupportedCurrency, "Choose a supported currency.");
+const countryInput = z.string().refine(value => SUPPORTED_COUNTRIES.some(country => country === value), "Choose a supported country.");
 
 // Express session storage for Supabase authentication.
 export const sessions = pgTable(
@@ -384,6 +401,7 @@ export const addresses = pgTable("addresses", {
   latitude: doublePrecision("latitude"),
   longitude: doublePrecision("longitude"),
   address: text("address"),
+  countryCode: varchar("country_code", { length: 2 }),
   locationSource: varchar("location_source", { enum: ["legacy", "manual", "google"] }).notNull().default("legacy"),
   locationKey: varchar("location_key"),
   locationPlaceId: text("location_place_id"),
@@ -392,14 +410,16 @@ export const addresses = pgTable("addresses", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, table => [index("addresses_workspace_idx").on(table.providerId, table.companyId),
-  index("addresses_google_expiry_idx").on(table.locationExpiresAt).where(sql`${table.locationSource} = 'google'`)]).enableRLS();
+  index("addresses_google_expiry_idx").on(table.locationExpiresAt).where(sql`${table.locationSource} = 'google'`),
+  check("addresses_country_code_check", sql`${table.countryCode} IS NULL OR ${table.countryCode} IN (${codeLiterals(SUPPORTED_COUNTRIES)})`)]).enableRLS();
 export type Address = typeof addresses.$inferSelect;
-export type AddressLocation = Pick<Address, "address" | "latitude" | "longitude" | "locationSource" | "locationKey" | "locationPlaceId" | "locationExpiresAt" | "locationAddressSource">;
+export type AddressLocation = Pick<Address, "address" | "countryCode" | "latitude" | "longitude" | "locationSource" | "locationKey" | "locationPlaceId" | "locationExpiresAt" | "locationAddressSource">;
 export const addressInputSchema = createInsertSchema(addresses, {
   address: z.string().trim().min(5).max(500),
   latitude: z.number().finite().min(-90).max(90),
   longitude: z.number().finite().min(-180).max(180),
-}).pick({ address: true, latitude: true, longitude: true });
+  countryCode: countryInput.nullable().optional(),
+}).pick({ address: true, latitude: true, longitude: true, countryCode: true });
 
 // Services table
 export const services = pgTable("services", {
@@ -412,7 +432,8 @@ export const services = pgTable("services", {
   description: text("description"),
   category: varchar("category").notNull().references(() => categories.key),
   serviceType: varchar("service_type", { enum: ["one_to_one", "group"] }).notNull(),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  price: decimal("price").notNull(),
+  currency: varchar("currency", { length: 3 }).notNull(),
   duration: integer("duration").notNull(), // in minutes
   cleanupTime: integer("cleanup_time").notNull().default(0), // Extra minutes after the service
   maxCapacity: integer("max_capacity").default(1),
@@ -429,7 +450,10 @@ export const services = pgTable("services", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, table => [index("services_address_idx").on(table.addressId), index("services_category_idx").on(table.category), check("services_cleanup_time_check", sql`${table.cleanupTime} BETWEEN 0 AND 1440`),
-  check("services_reminder_settings_check", sql`${table.reminderMethod} IN ('email','sms','whatsapp') AND ${table.reminderHours} BETWEEN 1 AND 168`)]).enableRLS();
+  check("services_reminder_settings_check", sql`${table.reminderMethod} IN ('email','sms','whatsapp') AND ${table.reminderHours} BETWEEN 1 AND 168`),
+  check("services_currency_check", currencyCodeCheck(table.currency)),
+  check("services_advance_percent_check", sql`${table.advancePaymentPercent} IS NULL OR (${table.advancePaymentPercent} >= 0 AND ${table.advancePaymentPercent} <= 100)`),
+  check("services_price_money_check", moneyAmountCheck(table.price, table.currency))]).enableRLS();
 
 // Only accepted Google coordinates, never Google's formatted address or response.
 // Place IDs may survive coordinate expiry; the key hashes the user's address.
@@ -456,8 +480,9 @@ export const bookings = pgTable("bookings", {
   bookingCleanupTime: integer("booking_cleanup_time").notNull().default(0), // Snapshot; listing edits do not change reservations
   status: varchar("status", { enum: ["pending", "confirmed", "cancelled", "completed"] }).default("pending"),
   closedAt: timestamp("closed_at", { withTimezone: true }), // Terminal transition snapshot; payment updates must not extend history retention.
-  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
-  advanceAmount: decimal("advance_amount", { precision: 10, scale: 2 }).notNull(),
+  totalAmount: decimal("total_amount").notNull(),
+  advanceAmount: decimal("advance_amount").notNull(),
+  currency: varchar("currency", { length: 3 }).notNull(),
   paymentStatus: varchar("payment_status", { enum: ["pending", "advance_paid", "fully_paid"] }).default("pending"),
   notes: text("notes"),
   notificationRevision: integer("notification_revision").notNull().default(0),
@@ -466,7 +491,10 @@ export const bookings = pgTable("bookings", {
 }, (table) => [index("bookings_employee_date_idx").on(table.employeeId, table.scheduledDate), check("bookings_cleanup_time_check", sql`${table.bookingCleanupTime} BETWEEN 0 AND 1440`),
   index("bookings_message_retention_idx").on(table.closedAt, table.id).where(sql`${table.closedAt} IS NOT NULL AND ${table.status} IN ('cancelled','completed')`),
   check("bookings_notification_revision_check", sql`${table.notificationRevision} >= 0`),
-  check("bookings_closed_at_check", sql`${table.closedAt} IS NULL OR ${table.status} IN ('cancelled','completed')`)]).enableRLS();
+  check("bookings_closed_at_check", sql`${table.closedAt} IS NULL OR ${table.status} IN ('cancelled','completed')`),
+  check("bookings_currency_check", currencyCodeCheck(table.currency)),
+  check("bookings_total_money_check", moneyAmountCheck(table.totalAmount, table.currency)),
+  check("bookings_advance_money_check", sql`${moneyAmountCheck(table.advanceAmount, table.currency)} AND ${table.advanceAmount} <= ${table.totalAmount}`)]).enableRLS();
 
 // Private booking conversations and agreement requests. Only the server runtime
 // accesses these; booking/workspace authorization is checked per operation.
@@ -866,6 +894,8 @@ export type ServiceEmbedding = typeof serviceEmbeddings.$inferSelect;
 
 // Schemas
 export const insertServiceSchema = createInsertSchema(services, {
+  currency: currencyInput,
+  advancePaymentPercent: z.number().int().min(0).max(100).nullable().optional(),
   reminderEnabled: z.boolean().optional(),
   reminderMethod: z.enum(["email", "sms", "whatsapp"]).optional(),
   reminderHours: z.number().int().min(1).max(168).optional(),
@@ -880,7 +910,7 @@ export const insertServiceSchema = createInsertSchema(services, {
   updatedAt: true,
 });
 
-export const insertBookingSchema = createInsertSchema(bookings).omit({
+export const insertBookingSchema = createInsertSchema(bookings, { currency: currencyInput }).omit({
   id: true,
   closedAt: true,
   notificationRevision: true,

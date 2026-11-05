@@ -11,6 +11,3 @@ export function useFormLocale() {
   }, [language, i18n]);
   return { t, i18n, language };
 }
-
-// Preserve the application's existing dollar unit; the API has no currency field.
-export const serviceAmount = (amount: number, language: string) => "$" + new Intl.NumberFormat(language, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(amount.toFixed(2)));

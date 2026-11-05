@@ -473,7 +473,7 @@
     "sharedSchedule": "Aucun employé précis (planning partagé)",
     "employeeHelp": "Des employés différents peuvent recevoir des réservations simultanément. La visibilité des noms des clients se règle dans Employés.",
     "duration": "Durée (min)",
-    "price": "Prix ($)",
+    "price": "Prix",
     "advance": "Acompte (%)",
     "ageGroups": "Tranches d’âge",
     "age_children": "Enfants",
@@ -1273,5 +1273,22 @@
     "service_views_one": "{{service}} a reçu {{count}} vue.",
     "wishlist_additions_other": "{{count}} personnes ont ajouté {{service}} à leur liste.",
     "service_views_other": "{{service}} a reçu {{count}} vues."
+  },
+  "currency": {
+    "label": "Devise",
+    "choose": "Choisissez une devise",
+    "precision": "Décimales autorisées : {{digits}}. Ne pas utiliser de séparateurs de milliers.",
+    "serviceHelp": "Le lieu du service peut suggérer une devise. Vérifiez le montant et la devise avant de sauvegarder.",
+    "country": "Pays du service (facultatif)",
+    "countryUnknown": "Pays non précisé",
+    "countryHelp": "Confirmez le pays pour suggérer une devise aux nouveaux services. Les prix existants conservent leur devise.",
+    "changeTitle": "Confirmer la devise du prix",
+    "changeHelp": "Enregistrer {{price}} {{currency}} pour les futures réservations ? Vérifiez le montant : aucune conversion ne sera effectuée. Les réservations existantes conservent leur devise.",
+    "confirmChange": "Confirmer le montant et la devise",
+    "priceInvalid": "Saisissez un prix valide dans la plage et avec la précision autorisées.",
+    "unavailable": "Devise indisponible",
+    "priceChanged": "Le prix, la devise ou les conditions d’acompte ont changé. Vérifiez les nouveaux montants avant de confirmer à nouveau.",
+    "balance": "Solde restant",
+    "mixedSort": "Le tri par prix est indisponible lorsque les services utilisent des devises différentes ou inconnues."
   }
 }

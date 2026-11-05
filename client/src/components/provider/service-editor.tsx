@@ -17,6 +17,7 @@ import ServiceMediaFields from "./service-media-fields";
 import ServiceReminderFields from "./service-reminder-fields";
 import { serviceControlIds, validateServiceDraft, type ServiceErrors } from "./service-field-feedback";
 import { registerServiceExitBlocker, requestServiceEditorExit } from "./service-navigation-guard";
+import { parseMoneyInput } from "@/lib/money-input";
 
 const actionClass = "min-h-11 h-auto whitespace-normal py-3 text-center";
 const dialogClass = "service-editor max-w-[calc(100%-2rem)] sm:max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl motion-reduce:animate-none";
@@ -35,6 +36,8 @@ export default function ServiceEditor({ service, employees, company }: { service
   const [fieldErrors, setFieldErrors] = useState<ServiceErrors>({});
   const [exit, setExit] = useState<{ proceed: () => unknown } | null>(null);
   const [hideConfirmation, setHideConfirmation] = useState(false);
+  const [currencyConfirmation, setCurrencyConfirmation] = useState<boolean | null>(null);
+  const [currencyChosen, setCurrencyChosen] = useState(Boolean(service));
   const [savingAs, setSavingAs] = useState<boolean | null>(null);
   const summary = useRef<HTMLDivElement>(null);
   const lastExitTrigger = useRef<HTMLElement | null>(null);
@@ -84,7 +87,9 @@ export default function ServiceEditor({ service, employees, company }: { service
     return () => document.removeEventListener("click", click, true);
   }, [dirty]);
   const save = useMutation({
-    mutationFn: async (isActive: boolean) => (await apiRequest(service ? "PATCH" : "POST", service ? `/api/services/${service.id}` : "/api/services", { ...newService, isActive })).json(),
+    mutationFn: async (isActive: boolean) => (await apiRequest(service ? "PATCH" : "POST", service ? `/api/services/${service.id}` : "/api/services", {
+      ...newService, price: parseMoneyInput(newService.price, newService.currency, i18n.resolvedLanguage || i18n.language), isActive,
+    })).json(),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ predicate: query => String(query.queryKey[0]).startsWith("/api/services/") });
       toast({ title: t("serviceForm.saved") });
@@ -102,11 +107,12 @@ export default function ServiceEditor({ service, employees, company }: { service
     },
     onSettled: () => { submitting.current = false; setSavingAs(null); },
   });
-  const submit = (isActive: boolean, confirmed = false) => {
+  const submit = (isActive: boolean, confirmed = false, currencyConfirmed = false) => {
     if (submitting.current || save.isPending) return;
-    const nextErrors = validateServiceDraft(newService);
+    const nextErrors = validateServiceDraft(newService, i18n.resolvedLanguage || i18n.language);
     setFieldErrors(nextErrors); setError("");
     if (Object.keys(nextErrors).length) { queueMicrotask(() => summary.current?.focus()); return; }
+    if (service && newService.currency !== service.currency && !currencyConfirmed) { setCurrencyConfirmation(isActive); return; }
     if (!isActive && service?.isActive && !confirmed) { lastHideTrigger.current = activeFocus(); setHideConfirmation(true); return; }
     submitting.current = true; setSavingAs(isActive); save.mutate(isActive);
   };
@@ -132,11 +138,11 @@ export default function ServiceEditor({ service, employees, company }: { service
       </div>}
       <fieldset disabled={save.isPending} className="space-y-6 min-w-0">
         <FormSection number={1} title={t("serviceForm.details")}><ServiceDetailsFields newService={newService} setNewService={setNewService} employees={employees} company={company} errors={errors} /></FormSection>
-        <FormSection number={2} title={t("serviceForm.sessionPrice")}><ServiceBookingFields newService={newService} setNewService={setNewService} errors={errors} /></FormSection>
+        <FormSection number={2} title={t("serviceForm.sessionPrice")}><ServiceBookingFields newService={newService} setNewService={setNewService} errors={errors} onCurrencyChoice={() => setCurrencyChosen(true)} /></FormSection>
         <FormSection number={3} title={t("serviceForm.audience")}><ServiceAudienceFields newService={newService} setNewService={setNewService} /></FormSection>
         <FormSection number={4} title={t("serviceForm.bookingLocation")}>
           <ServiceInstantBookingField newService={newService} setNewService={setNewService} />
-          <ServiceLocationFields newService={newService} setNewService={setNewService} errors={errors} />
+          <ServiceLocationFields newService={newService} setNewService={setNewService} errors={errors} allowCurrencySuggestion={!currencyChosen} />
         </FormSection>
         <FormSection number={5} title={t("serviceForm.media")}><ServiceMediaFields newService={newService} setNewService={setNewService} errors={errors} /></FormSection>
         <FormSection number={6} title={t("notifications.reminderSettings")}><ServiceReminderFields draft={newService} setDraft={setNewService} errors={errors} /></FormSection>
@@ -152,6 +158,15 @@ export default function ServiceEditor({ service, employees, company }: { service
         </div>
       </div>
     </form>
+    <AlertDialog open={currencyConfirmation !== null} onOpenChange={open => { if (!open) setCurrencyConfirmation(null); }}>
+      <AlertDialogContent dir={i18n.dir()} className={dialogClass} onCloseAutoFocus={event => { event.preventDefault(); document.getElementById("service-currency")?.focus(); }}>
+        <AlertDialogHeader className="text-start sm:text-start"><AlertDialogTitle>{t("currency.changeTitle")}</AlertDialogTitle>
+          <AlertDialogDescription>{t("currency.changeHelp", { currency: newService.currency, price: newService.price })}</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogFooter className="gap-2 sm:space-x-0"><AlertDialogCancel className={actionClass}>{t("serviceForm.keepEditing")}</AlertDialogCancel>
+          <AlertDialogAction className={actionClass} onClick={() => { const active = currencyConfirmation; setCurrencyConfirmation(null); if (active !== null) submit(active, false, true); }}>{t("currency.confirmChange")}</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <AlertDialog open={Boolean(exit)} onOpenChange={open => { if (!open) setExit(null); }}>
       <AlertDialogContent dir={i18n.dir()} className={dialogClass} onCloseAutoFocus={event => { event.preventDefault(); lastExitTrigger.current?.focus(); }}>
         <AlertDialogHeader className="text-start sm:text-start"><AlertDialogTitle>{t("serviceForm.discardTitle")}</AlertDialogTitle><AlertDialogDescription>{t("serviceForm.discardHelp")}</AlertDialogDescription></AlertDialogHeader>
@@ -171,7 +186,7 @@ export default function ServiceEditor({ service, employees, company }: { service
       <AlertDialogContent dir={i18n.dir()} className={dialogClass} onCloseAutoFocus={event => { event.preventDefault(); lastHideTrigger.current?.focus(); }}>
         <AlertDialogHeader className="text-start sm:text-start"><AlertDialogTitle>{t("serviceForm.hideTitle")}</AlertDialogTitle><AlertDialogDescription>{hideMessageParts.map((part, index) => <Fragment key={index}>{index > 0 && <bdi>{newService.name}</bdi>}{part}</Fragment>)}</AlertDialogDescription></AlertDialogHeader>
         <AlertDialogFooter className="gap-2 sm:space-x-0"><AlertDialogCancel className={actionClass}>{t("serviceForm.keepEditing")}</AlertDialogCancel>
-          <AlertDialogAction className={actionClass} onClick={() => submit(false, true)}>{t("serviceForm.saveInactive")}</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogAction className={actionClass} onClick={() => submit(false, true, true)}>{t("serviceForm.saveInactive")}</AlertDialogAction></AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   </div>;

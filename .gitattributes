@@ -1,0 +1,2 @@
+# Currency execution receipts and migration pins depend on exact file bytes.
+/migrations/currencies/* text eol=lf

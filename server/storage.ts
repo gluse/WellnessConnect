@@ -41,6 +41,7 @@ import { assertReminderConfiguration, captureStatusEvent, reconcileBookingRemind
 import { statusAction } from "./notifications/policy";
 import type { NotificationSummary } from "@shared/notifications";
 import { randomUUID } from "node:crypto";
+import { bookingMoneyDto, bookingPriceSnapshot, serviceMoneyChanges, serviceMoneyDto, type ExpectedPrice } from "./money";
 
 type NotificationBooking = Booking & { notification?: NotificationSummary };
 
@@ -157,7 +158,7 @@ export interface IStorage {
   getPublicServiceEmbeddings(filters: SearchFilters): Promise<{ serviceId: number; embedding: number[] }[]>;
 
   // Booking operations
-  createBooking(booking: InsertBooking, initialMessage?: string | null): Promise<Booking>;
+  createBooking(booking: InsertBooking, initialMessage?: string | null, expectedPrice?: ExpectedPrice): Promise<Booking>;
   createReview(bookingId: number, seekerId: string, input: ReviewInput): Promise<ServiceReview>;
   updateReview(bookingId: number, seekerId: string, input: ReviewInput): Promise<ServiceReview>;
   deleteReview(bookingId: number, seekerId: string): Promise<void>;
@@ -268,6 +269,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createService(service: InsertService): Promise<Service> {
+    service = { ...service, ...serviceMoneyChanges(service) };
     const newService = await db.transaction(async tx => {
       await assertReminderConfiguration(tx, service, service);
       const [created] = await tx.insert(services).values(service).returning();
@@ -333,6 +335,7 @@ export class DatabaseStorage implements IStorage {
     const service = await db.transaction(async tx => {
       const [previous] = await tx.select().from(services).where(eq(services.id, id)).for("update");
       if (!previous) throw new BookingConflictError("Service not found.");
+      updates = { ...updates, ...serviceMoneyChanges(updates, previous) };
       await assertReminderConfiguration(tx, previous, updates, previous);
       const [updated] = await tx.update(services).set({ ...updates, updatedAt: new Date() }).where(eq(services.id, id)).returning();
       if (updated.reminderEnabled !== previous.reminderEnabled || updated.reminderMethod !== previous.reminderMethod || updated.reminderHours !== previous.reminderHours) await reconcileServiceReminders(tx, id);
@@ -524,25 +527,30 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Booking operations
-  async createBooking(booking: InsertBooking, initialMessage?: string | null): Promise<Booking> {
+  async createBooking(booking: InsertBooking, initialMessage?: string | null, expectedPrice?: ExpectedPrice): Promise<Booking> {
     return db.transaction(async tx => {
       // Serialize check + insert for this administrator, including simultaneous requests.
       await tx.execute(sql`SELECT id FROM users WHERE id = ${booking.providerId} FOR UPDATE`);
       const [service] = await tx.select().from(services).where(eq(services.id, booking.serviceId)).for("share");
-      if (!service?.isActive || service.providerId !== booking.providerId || service.employeeId !== (booking.employeeId ?? null)) throw new BookingConflictError("The service has changed. Please choose a time again.");
+      if (!service?.isActive || service.providerId !== booking.providerId || service.companyId !== (booking.companyId ?? null) || service.employeeId !== (booking.employeeId ?? null)) throw new BookingConflictError("The service has changed. Please choose a time again.");
+      // The locked listing owns money and its currency; never accept caller totals.
+      // HTTP requires an explicit quote. Internal callers also compare their saved
+      // currency and must take their expected unit price from the listing.
+      const expected = expectedPrice ?? { expectedPrice: serviceMoneyDto(service).price, expectedCurrency: booking.currency, expectedAdvancePaymentPercent: service.advancePaymentPercent ?? 0 };
       const schedules = await tx.select().from(availability).where(and(
         service.companyId != null ? eq(availability.companyId, service.companyId) : and(eq(availability.providerId, service.providerId), isNull(availability.companyId)), eq(availability.isActive, true)));
       const offered = bookableSlots({ service, schedules, bookings: [], date: booking.scheduledDate.toISOString().slice(0, 10), timezone: "UTC" });
       if (!offered.some(slot => slot.startsAt === booking.scheduledDate.toISOString())) throw new BookingConflictError("This time is outside the available working hours.");
       await assertResourceAvailable(tx, service, { ...booking, bookingDuration: service.duration, bookingCleanupTime: service.cleanupTime });
+      const snapshot = bookingPriceSnapshot(service, booking.participantCount ?? 1, expected);
       const createdAt = new Date();
-      const [created] = await tx.insert(bookings).values({ ...booking, notes: null, createdAt, bookingDuration: service.duration, bookingCleanupTime: service.cleanupTime }).returning();
+      const [created] = await tx.insert(bookings).values({ ...booking, ...snapshot, notes: null, createdAt, bookingDuration: service.duration, bookingCleanupTime: service.cleanupTime }).returning();
       if (initialMessage) {
         await tx.insert(bookingMessages).values({ id: randomUUID(), bookingId: created.id, authorId: created.seekerId,
           authorRole: "customer", body: initialMessage, clientRequestId: randomUUID(), broadcastId: null, createdAt });
       }
       await reconcileBookingReminder(tx, created, new Date(), schedules.find(item => item.serviceId === service.id)?.timezone ?? schedules[0]?.timezone ?? "UTC");
-      return created;
+      return bookingMoneyDto(created);
     });
   }
 
@@ -621,7 +629,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(bookings.createdAt));
 
     return results.map(result => ({
-      ...result.bookings,
+      ...bookingMoneyDto(result.bookings),
       review: result.service_reviews,
       service: serviceLocation(result.services!, result.addresses),
       seeker: { id: seekerId } as User,
@@ -641,7 +649,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(bookings.createdAt));
 
     return results.map(result => ({
-      ...result.bookings,
+      ...bookingMoneyDto(result.bookings),
       service: serviceLocation(result.services!, result.addresses),
       seeker: result.users!,
       provider: { id: providerId } as User,
@@ -660,7 +668,7 @@ export class DatabaseStorage implements IStorage {
     if (!result) return undefined;
 
     return {
-      ...result.bookings,
+      ...bookingMoneyDto(result.bookings),
       service: serviceLocation(result.services!, result.addresses),
       seeker: result.users!,
       provider: { id: result.bookings.providerId } as User,
@@ -683,14 +691,14 @@ export class DatabaseStorage implements IStorage {
         if (!service) throw new BookingConflictError("The service is no longer available.");
         await assertResourceAvailable(tx, service, { ...booking, bookingDuration: booking.bookingDuration ?? service.duration, bookingCleanupTime: booking.bookingCleanupTime ?? 0 });
       }
-      if (booking.status === status) return { ...booking, notification: { mode: "none" as const } };
+      if (booking.status === status) return { ...bookingMoneyDto(booking), notification: { mode: "none" as const } };
       const [updated] = await tx.update(bookings).set({ status: status as Booking["status"], notificationRevision: booking.notificationRevision + 1,
         closedAt: status === "completed" || status === "cancelled" ? booking.closedAt ?? new Date() : null, updatedAt: new Date() }).where(eq(bookings.id, id)).returning();
       await tx.update(bookingRescheduleRequests).set({ state: "superseded" }).where(and(eq(bookingRescheduleRequests.bookingId, id), eq(bookingRescheduleRequests.state, "pending")));
       const action = seekerId === undefined ? statusAction(booking.status, updated.status) : null;
       const notification = action ? await captureStatusEvent(tx, updated, action, timeZone) : { mode: "none" as const };
       await reconcileBookingReminder(tx, updated, new Date(), timeZone);
-      return { ...updated, notification };
+      return { ...bookingMoneyDto(updated), notification };
     });
   }
 
@@ -700,7 +708,7 @@ export class DatabaseStorage implements IStorage {
       .set({ paymentStatus: paymentStatus as any, updatedAt: new Date() })
       .where(eq(bookings.id, id))
       .returning();
-    return booking;
+    return bookingMoneyDto(booking);
   }
 
   async rescheduleBooking(id: number, date: Date, seekerId?: string, timeZone = "UTC"): Promise<NotificationBooking> {
@@ -712,7 +720,7 @@ export class DatabaseStorage implements IStorage {
       if (seekerId !== undefined) assertCustomerBookingChange(booking, seekerId);
       if (!(date.getTime() > Date.now())) throw new BookingConflictError("Choose a future appointment time.");
       if (booking.status !== "pending" && booking.status !== "confirmed") throw new BookingConflictError("Only pending or confirmed reservations can be rescheduled.");
-      if (booking.scheduledDate.getTime() === date.getTime()) return { ...booking, notification: { mode: "none" as const } };
+      if (booking.scheduledDate.getTime() === date.getTime()) return { ...bookingMoneyDto(booking), notification: { mode: "none" as const } };
       const [service] = await tx.select().from(services).where(eq(services.id, booking.serviceId));
       const schedules = await tx.select().from(availability).where(and(
         booking.companyId != null ? eq(availability.companyId, booking.companyId) : and(eq(availability.providerId, booking.providerId), isNull(availability.companyId)), eq(availability.isActive, true)));
@@ -722,7 +730,7 @@ export class DatabaseStorage implements IStorage {
       const [updated] = await tx.update(bookings).set({ scheduledDate: date, notificationRevision: booking.notificationRevision + 1, updatedAt: new Date() }).where(eq(bookings.id, id)).returning();
       const notification = seekerId === undefined ? await captureStatusEvent(tx, updated, "rescheduled", timeZone, booking.scheduledDate) : { mode: "none" as const };
       await reconcileBookingReminder(tx, updated, new Date(), timeZone);
-      return { ...updated, notification };
+      return { ...bookingMoneyDto(updated), notification };
     });
   }
 

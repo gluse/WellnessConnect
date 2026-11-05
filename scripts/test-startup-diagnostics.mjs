@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { startupFailureDiagnostic, startupStages } from "../server/startup-diagnostics.ts";
 import { BillingDatabaseReadinessError, verifyBillingDatabaseReadiness } from "../server/billing/database-readiness.ts";
+import { CurrencyDatabaseReadinessError } from "../migrations/currencies/application-readiness.mjs";
 import { WISHLIST_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS, WISHLIST_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL,
   wishlistApplicationReadinessArguments as billingApplicationReadinessArguments } from "../migrations/wishlist/application-readiness.mjs";
 
@@ -35,6 +36,9 @@ for (const type of ["StripeAuthenticationError", "StripePermissionError"])
   check(() => assert.equal(startupFailureDiagnostic("billing_portal", { type }).code, "STRIPE_AUTHENTICATION_OR_PERMISSION"));
 check(() => assert.equal(startupFailureDiagnostic("billing_portal", { type: "StripeConnectionError" }).code, "STRIPE_NETWORK_OR_TIMEOUT"));
 let calls = 0;
+check(() => assert.deepEqual(startupFailureDiagnostic("currency_database", new CurrencyDatabaseReadinessError(["currency_columns", canary])), {
+  event: "application_startup_refused", stage: "currency_database", code: "CURRENCY_DB_NOT_READY", checks: ["currency_columns"],
+}));
 await verifyBillingDatabaseReadiness(async (sql, parameters) => {
   calls++; assert.equal(sql, BILLING_APPLICATION_READINESS_SQL); assert.deepEqual(parameters, billingApplicationReadinessArguments()); return { rows: [good] };
 });
