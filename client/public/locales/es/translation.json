@@ -1,4 +1,13 @@
 {
+  "serviceDuration": {
+    "label": "Duración",
+    "unit": "Unidad",
+    "minute": "Minutos",
+    "hour": "Horas",
+    "day": "Días",
+    "help": "1 día = 24 horas. Se permiten decimales si la duración equivale a un número entero de minutos.",
+    "invalid": "Introduce una duración de al menos 1 minuto que equivalga a un número entero de minutos."
+  },
   "mobileNavigation": {
     "services": "Servicios",
     "explore": "Explorar",
@@ -338,9 +347,9 @@
     "networkError": "Error de red. Por favor, verifica tu conexión."
   },
   "serviceCleanup": {
-    "label": "Preparación y limpieza después del servicio (min)",
+    "label": "Limpieza después del servicio",
     "help": "Tiempo adicional reservado después de cada cita, dentro del horario de trabajo y fuera de los descansos. Los clientes solo ven la duración del servicio. Use 0 si no es necesario.",
-    "invalid": "Introduzca un número entero de 0 a 1440 para el tiempo de preparación y limpieza."
+    "invalid": "Introduzca un tiempo de preparación y limpieza de 0 a 1 día (24 horas), equivalente a un número entero de minutos."
   },
   "storefront": {
     "title": "Escaparate",

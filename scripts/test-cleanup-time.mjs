@@ -73,7 +73,7 @@ const { act, create } = renderer;
 let component;
 await act(async () => { component = create(React.createElement(QueryClientProvider, { client: queryClient }, React.createElement(Router, { hook: memoryLocation({ path: "/edit" }).hook }, React.createElement(ServiceEditor, { service, employees: [], company: false })))); });
 const field = () => component.root.findAllByType("input").find(node => node.props.id === "cleanupTime");
-assert.equal(field().props.value, 15);
+assert.equal(field().props.value, "15");
 assert.equal(field().props["aria-describedby"], "cleanupTime-help");
 await act(async () => i18next.changeLanguage("lv"));
 assert.ok(component.root.findAllByType("label").some(node => node.children.includes(resources.lv.translation.serviceCleanup.label)));
@@ -96,7 +96,7 @@ for (const value of ["", "-1", "1.5", "1441"]) {
   assert.ok(component.root.findAllByType("a").some(node => node.children.includes(resources.lv.translation.serviceCleanup.invalid)));
 }
 await change("25"); failSave = true; await save();
-assert.equal(field().props.value, 25, "Failed saves preserve extra time");
+assert.equal(field().props.value, "25", "Failed saves preserve extra time");
 failSave = false; await save(); assert.equal(writes.at(-1).cleanupTime, 25);
 await change("0"); await save(); assert.equal(writes.at(-1).cleanupTime, 0);
 await act(async () => component.unmount()); queryClient.clear();

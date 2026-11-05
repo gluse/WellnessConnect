@@ -1,4 +1,13 @@
 {
+  "serviceDuration": {
+    "label": "Ilgums",
+    "unit": "Mērvienība",
+    "minute": "Minūtes",
+    "hour": "Stundas",
+    "day": "Dienas",
+    "help": "1 diena = 24 stundas. Daļskaitļi ir atļauti, ja ilgums ir vesels minūšu skaits.",
+    "invalid": "Ievadiet ilgumu, kas ir vismaz 1 minūte un vesels minūšu skaits."
+  },
   "mobileNavigation": {
     "services": "Pakalpojumi",
     "explore": "Izpētīt",
@@ -338,9 +347,9 @@
     "networkError": "Tīkla kļūda. Lūdzu, pārbaudiet interneta savienojumu."
   },
   "serviceCleanup": {
-    "label": "Sagatavošanās un uzkopšana pēc pakalpojuma (min)",
+    "label": "Uzkopšana pēc pakalpojuma",
     "help": "Papildu laiks pēc katra pieraksta darba laikā un ārpus pārtraukumiem. Klienti redz tikai pakalpojuma ilgumu. Ja nav nepieciešams, ievadiet 0.",
-    "invalid": "Ievadiet veselu skaitli no 0 līdz 1440 sagatavošanās un uzkopšanas laikam."
+    "invalid": "Ievadiet sagatavošanās un uzkopšanas laiku no 0 līdz 1 dienai (24 stundām), kas atbilst veselam minūšu skaitam."
   },
   "storefront": {
     "title": "Pakalpojumu lapa",

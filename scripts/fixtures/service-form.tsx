@@ -9,14 +9,16 @@ import ServiceEditPage from "../../client/src/pages/provider/service-edit";
 import ServicesPage from "../../client/src/pages/provider/services";
 import { installServiceNavigationTracking, requestServiceEditorExit } from "../../client/src/components/provider/service-navigation-guard";
 import { queryClient } from "../../client/src/lib/queryClient";
-import type { Service } from "../../shared/schema";
+import type { Service, ServiceWithProvider } from "../../shared/schema";
+import ServiceResultCard from "../../client/src/components/service-result-card";
+import SearchServiceDetails from "../../client/src/components/search-service-details";
 
 declare const __SERVICE_FORM_RESOURCES__: Record<string, { translation: object }>;
 const parameters = new URLSearchParams(location.search);
 const syntheticService = {
   id: 7, providerId: "synthetic-provider", companyId: null, employeeId: null,
   name: "Synthetic service", description: "Synthetic description", category: "education", serviceType: "one_to_one",
-  price: "25.00", duration: 45, cleanupTime: 15, maxCapacity: 1, ageGroups: ["adults"], targetGender: "both",
+  price: "25.00", duration: Number(parameters.get("duration") || 45), cleanupTime: Number(parameters.get("cleanupTime") ?? 15), maxCapacity: 1, ageGroups: ["adults"], targetGender: "both",
   instantBooking: false, advancePaymentPercent: 30, addressId: 3, imageUrl: "", externalUrl: "", isActive: parameters.get("mode") !== "inactive",
 } as Service;
 const permissions = { manageServices: parameters.get("mode") !== "denied", manageSchedules: true, manageBookings: true, manageTeam: true, isOwner: true, readAll: true };
@@ -54,6 +56,9 @@ function Fixture() {
   const { t } = useTranslation();
   const [, navigate] = useLocation();
   const [theme, setTheme] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const previewService = { ...syntheticService, provider: { firstName: "Synthetic", lastName: "Provider" }, employee: null } as ServiceWithProvider;
+  useEffect(() => { Object.assign(window, { phase2Fixture: { ready: true } }); }, []);
   useEffect(() => { document.documentElement.classList.toggle("dark", theme); }, [theme]);
   return <div className="bg-background min-h-screen text-foreground">
     <nav aria-label="Fixture controls" className="flex flex-wrap gap-3 border-b p-4">
@@ -75,6 +80,10 @@ function Fixture() {
         <Route>{parameters.get("mode") === "denied" ? <ServiceEditPage /> : <ServiceEditor service={parameters.get("mode") === "new" ? undefined : syntheticService} company employees={[{ id: 5, name: "Synthetic employee" } as never]} />}</Route>
       </Switch>
     </main>
+    {parameters.has("durationPreview") && <div className="search-design p-4">
+      <ServiceResultCard service={syntheticService} provider="Synthetic provider" onViewDetails={() => setDetailsOpen(true)} />
+      <SearchServiceDetails service={previewService} open={detailsOpen} onClose={() => setDetailsOpen(false)} onBook={() => {}} />
+    </div>}
     <p className="p-4" data-testid="fixture-saved-label">{t("serviceForm.saved")}</p>
   </div>;
 }

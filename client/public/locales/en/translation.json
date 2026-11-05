@@ -1,4 +1,13 @@
 {
+  "serviceDuration": {
+    "label": "Duration",
+    "unit": "Unit",
+    "minute": "Minutes",
+    "hour": "Hours",
+    "day": "Days",
+    "help": "1 day = 24 hours. Fractions are allowed if the duration equals a whole number of minutes.",
+    "invalid": "Enter a duration of at least 1 minute, equal to a whole number of minutes."
+  },
   "mobileNavigation": {
     "services": "Services",
     "explore": "Explore",
@@ -338,9 +347,9 @@
     "networkError": "Network error. Please check your connection."
   },
   "serviceCleanup": {
-    "label": "Preparation and cleanup after service (min)",
+    "label": "Cleanup after service",
     "help": "Extra time reserved after each appointment, within working hours and outside breaks. Customers still see only the service duration. Use 0 for none.",
-    "invalid": "Enter a whole number from 0 to 1440 for preparation and cleanup time."
+    "invalid": "Enter preparation and cleanup time from 0 to 1 day (24 hours), equal to a whole number of minutes."
   },
   "storefront": {
     "title": "Storefront",

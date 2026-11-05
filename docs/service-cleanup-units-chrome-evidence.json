@@ -1,0 +1,91 @@
+{
+  "date": "2026-11-05",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/156.0.8078.80",
+    "revision": "@fb096c0011f9d50f0a264a9376420cdea9c421e3",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "jsVersion": "15.6.75.27"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "height": 900
+    }
+  ],
+  "checks": [
+    "initial values and zero",
+    "unit switches preserve minute payload and clean draft",
+    "fractional hours/days and decimal comma",
+    "integer-minute 0–1440 validation with linked errors",
+    "failed save retention and pending controls",
+    "duration remains independent",
+    "locale switch and keyboard focus",
+    "labelled aligned controls and responsive layout"
+  ],
+  "network": [],
+  "blocked": [],
+  "errors": [],
+  "limits": "Mocked APIs only. No connected writes, physical devices or screen reader. ar (including RTL), zh, fr, de, hi, ja, pt, es deferred."
+}

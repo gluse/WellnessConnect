@@ -7,6 +7,7 @@ import { serviceAmount } from "@/components/forms-locale";
 import { getProviderName } from "@shared/provider";
 import type { ServiceWithProvider } from "@shared/schema";
 import WishlistHeart from "@/components/wishlist-heart";
+import { formatServiceDuration } from "@/lib/service-duration";
 
 export default function SearchServiceDetails({ service, open, onClose, onBook, onViewProvider }: {
   service: ServiceWithProvider; open: boolean; onClose: () => void; onBook: () => void; onViewProvider?: () => void;
@@ -21,7 +22,7 @@ export default function SearchServiceDetails({ service, open, onClose, onBook, o
       {service.description && <section><h3>{t("searchPage.about")}</h3><p data-testid="text-description">{service.description}</p></section>}
       <dl className="search-detail-grid">
         <div><dt>{t("searchPage.price")}</dt><dd>{serviceAmount(Number(service.price), i18n.resolvedLanguage || i18n.language)} {service.serviceType === "group" && t("searchPage.perPerson")}</dd></div>
-        <div><dt>{t("searchPage.duration")}</dt><dd>{t("searchPage.durationValue", { duration: service.duration })}</dd></div>
+        <div><dt>{t("searchPage.duration")}</dt><dd>{formatServiceDuration(service.duration, i18n.resolvedLanguage || i18n.language)}</dd></div>
         <div><dt>{t("searchPage.sessionType")}</dt><dd>{t(service.serviceType === "group" ? "searchPage.group" : "searchPage.individual")}</dd></div>
         {service.serviceType === "group" && <div>
           <dt>{t("searchPage.maxGroupCapacity")}</dt>

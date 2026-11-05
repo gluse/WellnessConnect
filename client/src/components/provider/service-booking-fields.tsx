@@ -5,17 +5,17 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "react-i18next";
 import { fieldFeedback, ServiceFieldError, type ServiceErrors } from "./service-field-feedback";
+import ServiceDurationField from "./service-duration-field";
 
 type Props = { newService: ServiceDraft; setNewService: Dispatch<SetStateAction<ServiceDraft>>; errors?: ServiceErrors };
 export default function ServiceBookingFields({ newService, setNewService, errors = {} }: Props) {
   const { t } = useTranslation();
-  const numeric = (field: "duration" | "cleanupTime" | "maxCapacity" | "advancePaymentPercent", id: string, label: string, min: number, max?: number) => <div className="space-y-2">
-    <Label htmlFor={id}>{label}{field === "cleanupTime" && " *"}</Label>
+  const numeric = (field: "maxCapacity" | "advancePaymentPercent", id: string, label: string, min: number, max?: number) => <div className="space-y-2">
+    <Label htmlFor={id}>{label}</Label>
     <Input id={id} className="min-h-11" type="number" min={min} max={max} step="1" required={field !== "advancePaymentPercent"}
-      value={Number.isNaN(newService[field]) ? "" : newService[field]} {...fieldFeedback(errors, field, field === "cleanupTime" ? "cleanupTime-help" : undefined)}
+      value={Number.isNaN(newService[field]) ? "" : newService[field]} {...fieldFeedback(errors, field)}
       onChange={event => setNewService(prev => ({ ...prev, [field]: event.target.value === "" ? (field === "advancePaymentPercent" ? 0 : NaN) : Number(event.target.value) }))}
-      data-testid={field === "cleanupTime" ? "input-cleanup-time" : field === "advancePaymentPercent" ? "input-advance-payment" : undefined} />
-    {field === "cleanupTime" && <p id="cleanupTime-help" className="text-sm text-muted-foreground">{t("serviceCleanup.help")}</p>}
+      data-testid={field === "advancePaymentPercent" ? "input-advance-payment" : undefined} />
     <ServiceFieldError errors={errors} field={field} />
   </div>;
   return <div className="space-y-4">
@@ -29,8 +29,8 @@ export default function ServiceBookingFields({ newService, setNewService, errors
     </fieldset>
     {newService.serviceType === "group" && numeric("maxCapacity", "maxCapacity", `${t("service.capacity")} *`, 1)}
     <div className="grid sm:grid-cols-2 gap-4">
-      {numeric("duration", "duration", `${t("serviceForm.duration")} *`, 1)}
-      {numeric("cleanupTime", "cleanupTime", t("serviceCleanup.label"), 0, 1440)}
+      <ServiceDurationField newService={newService} setNewService={setNewService} errors={errors} />
+      <ServiceDurationField field="cleanupTime" newService={newService} setNewService={setNewService} errors={errors} />
     </div>
     <div className="grid sm:grid-cols-2 gap-4">
       <div className="space-y-2"><Label htmlFor="price">{t("serviceForm.price")} *</Label>

@@ -7,6 +7,7 @@ import { createMapPreview } from "@/lib/map-preview";
 import type { ServiceWithProvider } from "@shared/schema";
 import { currentLocation } from "@shared/locations";
 import { useTranslation } from "react-i18next";
+import { formatServiceDuration } from "@/lib/service-duration";
 
 interface GoogleMapProps {
   services: ServiceWithProvider[];
@@ -16,7 +17,8 @@ interface GoogleMapProps {
 }
 
 export default function GoogleMap({ services, userLocation, onServiceSelect, onShowList }: GoogleMapProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage || i18n.language;
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
@@ -164,7 +166,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect, onS
           const card = createMapPreview({ name: service.name, description: service.description,
             fallback: t("mapPreview.noDescription"), detailsLabel: t("mapPreview.viewDetails"), closeLabel: t("mapPreview.close"),
             imageUrl: service.imageUrl,
-            metadata: [t("searchPage.durationValue", { duration: service.duration }), t(service.serviceType === "group" ? "searchPage.group" : "searchPage.individual"), t(service.instantBooking ? "searchPage.instant" : "searchPage.approval")],
+            metadata: [formatServiceDuration(service.duration, language), t(service.serviceType === "group" ? "searchPage.group" : "searchPage.individual"), t(service.instantBooking ? "searchPage.instant" : "searchPage.approval")],
             onDetails: latestSelect.current ? selectService : undefined, onClose: closePreview });
           const art = card.querySelector<HTMLElement>(".search-service-art");
           if (art) {
@@ -226,7 +228,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect, onS
       google.maps.event.clearInstanceListeners(preview);
       if (userInfoWindow) google.maps.event.clearInstanceListeners(userInfoWindow);
     };
-  }, [services, userLocation, mapReady, error, t]);
+  }, [services, userLocation, mapReady, error, t, language]);
 
   return (
     <div className="relative w-full h-full rounded-xl overflow-hidden" style={{ minHeight: "400px" }}>

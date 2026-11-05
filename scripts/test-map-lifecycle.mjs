@@ -24,12 +24,30 @@ assert.ok(previewDescription("Massage and relaxation ".repeat(20)).endsWith("…
 
 // Minimal DOM text/event support; any HTML interpolation fails this test.
 class FakeElement {
-  constructor(tagName) { this.tagName = tagName; this.children = []; this.attributes = {}; this.listeners = new Map(); this.value = ""; }
+  constructor(tagName) { this.tagName = tagName; this.nodeType = 1; this.parentElement = null; this.children = []; this.attributes = {}; this.listeners = new Map(); this.value = ""; }
   set textContent(value) { this.value = value; this.children = []; }
   get textContent() { return this.value + this.children.map(child => child.textContent).join(""); }
   set innerHTML(_value) { throw new Error("Map previews must never assign HTML"); }
   get innerHTML() { throw new Error("Map previews must not interpolate HTML"); }
-  append(...nodes) { this.children.push(...nodes); }
+  append(...nodes) {
+    for (const node of nodes) {
+      if (node.parentElement) node.parentElement.children = node.parentElement.children.filter(child => child !== node);
+      node.parentElement = this; this.children.push(node);
+    }
+  }
+  before(node) {
+    assert.ok(this.parentElement);
+    const index = this.parentElement.children.indexOf(this);
+    this.parentElement.children.splice(index, 0, node); node.parentElement = this.parentElement;
+  }
+  querySelector(selector) {
+    assert.ok(selector.startsWith("."), "FakeElement supports class queries only");
+    for (const child of this.children) {
+      if (child.className?.split(" ").includes(selector.slice(1))) return child;
+      const nested = child.querySelector(selector); if (nested) return nested;
+    }
+    return null;
+  }
   setAttribute(key, value) { this.attributes[key] = value; }
   addEventListener(name, callback) { this.listeners.set(name, callback); }
   emit(name, event = {}) { this.listeners.get(name)?.(event); }
@@ -101,6 +119,7 @@ globalThis.window = { google: api,
   clearTimeout(id) { timers.delete(id); },
 };
 globalThis.document = { activeElement: null, createElement: name => new FakeElement(name),
+  querySelector(selector) { assert.equal(selector, '[role="dialog"]'); return null; },
   addEventListener(name, callback) { documentEvents.set(name, callback); },
   removeEventListener(name, callback) { if (documentEvents.get(name) === callback) documentEvents.delete(name); },
 };
@@ -122,8 +141,8 @@ assert.ok(markers.some(marker => marker.options.position.lat === initialLocation
 
 const updatedLocation = { lat: 57.5, lng: 25.4 };
 const offers = [
-  { id: 1, latitude: 0, longitude: 0, name: '<img src=x onerror="alert(1)">', description: 'A short <script>alert(1)</script> description.', price: "10", provider: null, duration: 60, serviceType: "group", instantBooking: true, imageUrl: "/synthetic-image.png" },
-  { id: 2, latitude: 56, longitude: 24, name: "Yoga", description: " \n ", price: "20", provider: null },
+  { id: 1, latitude: 0, longitude: 0, name: '<img src=x onerror="alert(1)">', description: 'A short <script>alert(1)</script> description.', price: "10", provider: null, duration: 1501, serviceType: "group", instantBooking: true, imageUrl: "/synthetic-image.png" },
+  { id: 2, latitude: 56, longitude: 24, name: "Yoga", description: " \n ", price: "20", provider: null, duration: 90 },
   { id: 3, latitude: null, longitude: null, name: "Unlocated", price: "20", provider: null },
   { id: 4, latitude: 55, longitude: 22, name: "Expired Google location", locationSource: "google", locationExpiresAt: "2000-01-01T00:00:00Z", price: "20", provider: null },
 ];
@@ -155,11 +174,13 @@ assert.equal(preview.options.disableAutoPan, true);
 assert.equal(card.children[0].children[0].textContent, offers[0].name);
 assert.equal(card.children[1].textContent, offers[0].description, "Markup is rendered as literal text");
 assert.equal(card.children[2].textContent, english.mapPreview.viewDetails);
-assert.equal(card.children[3].children[0].attributes.src, offers[0].imageUrl);
+const cardArt = card.querySelector(".search-service-art");
+assert.equal(cardArt.children[0].attributes.src, offers[0].imageUrl);
+assert.equal(card.querySelector(".search-map-preview-meta").children[0].textContent, "1 day, 1 hour, 1 minute");
 assert.ok(card.children[4].textContent.includes(english.searchPage.group));
 assert.ok(card.children[4].textContent.includes(english.searchPage.instant));
-card.children[3].children[0].emit("error");
-assert.equal(card.children[3].textContent, "◇", "A broken map image has a placeholder");
+cardArt.children[0].emit("error");
+assert.equal(cardArt.textContent, "◇", "A broken map image has a placeholder");
 assert.deepEqual(selections, [], "Hover does not open details or bookings");
 first.emit("mouseout"); advance(100); card.emit("mouseenter"); advance(500);
 assert.equal(preview.opened, true, "Moving into the preview keeps it open");
@@ -191,6 +212,7 @@ first = activeMarkers().find(marker => marker.options.title === offers[0].name);
 second = activeMarkers().find(marker => marker.options.title === "Yoga");
 preview = windows.findLast(info => info.options.headerDisabled);
 assert.equal(show(second).children[2].textContent, latvian.mapPreview.viewDetails);
+assert.equal(preview.content.querySelector(".search-map-preview-meta").children[0].textContent, "1 stunda un 30 minūšu");
 assert.equal(preview.content.children[1].textContent, latvian.mapPreview.noDescription);
 assert.equal(maps.length, 1); assert.equal(configurationRequests, 1);
 await act(async () => component.update(React.createElement(GoogleMap, { services: [], userLocation: updatedLocation })));

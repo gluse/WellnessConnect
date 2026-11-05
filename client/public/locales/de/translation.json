@@ -1,4 +1,13 @@
 {
+  "serviceDuration": {
+    "label": "Dauer",
+    "unit": "Einheit",
+    "minute": "Minuten",
+    "hour": "Stunden",
+    "day": "Tage",
+    "help": "1 Tag = 24 Stunden. Dezimalzahlen sind erlaubt, wenn die Dauer einer ganzen Anzahl von Minuten entspricht.",
+    "invalid": "Geben Sie eine Dauer von mindestens 1 Minute in ganzen Minuten ein."
+  },
   "mobileNavigation": {
     "services": "Dienstleistungen",
     "explore": "Entdecken",
@@ -338,9 +347,9 @@
     "networkError": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung."
   },
   "serviceCleanup": {
-    "label": "Vorbereitung und Reinigung nach dem Service (Min.)",
+    "label": "Reinigung nach dem Service",
     "help": "Zusätzliche Zeit nach jedem Termin, innerhalb der Arbeitszeit und außerhalb der Pausen. Kunden sehen nur die Servicedauer. Geben Sie 0 ein, wenn keine zusätzliche Zeit nötig ist.",
-    "invalid": "Geben Sie für die Vorbereitungs- und Reinigungszeit eine ganze Zahl von 0 bis 1440 ein."
+    "invalid": "Geben Sie eine Vorbereitungs- und Reinigungszeit von 0 bis 1 Tag (24 Stunden) in ganzen Minuten ein."
   },
   "storefront": {
     "title": "Anbieterseite",

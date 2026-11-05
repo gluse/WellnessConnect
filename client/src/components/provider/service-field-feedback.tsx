@@ -22,7 +22,7 @@ export function validateServiceDraft(draft: ServiceDraft): Partial<Record<keyof 
   if (!draft.name.trim()) errors.name = "serviceForm.nameRequired";
   if (!draft.category) errors.category = "serviceForm.categoryRequired";
   if (!draft.price.trim() || !Number.isFinite(Number(draft.price)) || Number(draft.price) < 0) errors.price = "serviceForm.priceInvalid";
-  if (!Number.isInteger(draft.duration) || draft.duration < 1) errors.duration = "serviceForm.positiveWhole";
+  if (!Number.isSafeInteger(draft.duration) || draft.duration < 1) errors.duration = "serviceDuration.invalid";
   if (!Number.isInteger(draft.cleanupTime) || draft.cleanupTime < 0 || draft.cleanupTime > 1440) errors.cleanupTime = "serviceCleanup.invalid";
   if (!Number.isInteger(draft.maxCapacity) || draft.maxCapacity < 1) errors.maxCapacity = "serviceForm.positiveWhole";
   if (!Number.isInteger(draft.advancePaymentPercent) || draft.advancePaymentPercent < 0 || draft.advancePaymentPercent > 100) errors.advancePaymentPercent = "serviceForm.advanceInvalid";

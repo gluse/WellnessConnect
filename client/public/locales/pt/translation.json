@@ -1,4 +1,13 @@
 {
+  "serviceDuration": {
+    "label": "Duração",
+    "unit": "Unidade",
+    "minute": "Minutos",
+    "hour": "Horas",
+    "day": "Dias",
+    "help": "1 dia = 24 horas. São permitidos valores decimais se a duração corresponder a um número inteiro de minutos.",
+    "invalid": "Insira uma duração de pelo menos 1 minuto, correspondente a um número inteiro de minutos."
+  },
   "mobileNavigation": {
     "services": "Serviços",
     "explore": "Explorar",
@@ -338,9 +347,9 @@
     "networkError": "Erro de rede. Por favor, verifique sua conexão."
   },
   "serviceCleanup": {
-    "label": "Preparação e limpeza após o serviço (min)",
+    "label": "Limpeza após o serviço",
     "help": "Tempo adicional reservado após cada atendimento, dentro do horário de trabalho e fora dos intervalos. Os clientes veem apenas a duração do serviço. Use 0 se não for necessário.",
-    "invalid": "Insira um número inteiro de 0 a 1440 para o tempo de preparação e limpeza."
+    "invalid": "Insira um tempo de preparação e limpeza de 0 a 1 dia (24 horas), correspondente a um número inteiro de minutos."
   },
   "storefront": {
     "title": "Vitrine",
