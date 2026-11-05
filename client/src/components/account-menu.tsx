@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { LogOut, UserRound, Shield } from "lucide-react";
+import { LogOut, UserRound, Shield, Heart } from "lucide-react";
 import type { WorkspaceContext } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppAdmin } from "@/hooks/use-app-admin";
@@ -35,10 +35,8 @@ export default function AccountMenu() {
 
   return <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="w-8 h-8 p-0" aria-label="Open account menu" disabled={!user || signingOut}>
-          <span className="w-6 h-6 bg-white/15 rounded-full flex items-center justify-center">
-            <UserRound className="w-4 h-4" aria-hidden="true" />
-          </span>
+        <Button variant="ghost" size="sm" className="header-icon-button h-11 w-11 p-0" aria-label="Open account menu" disabled={!user || signingOut}>
+          <UserRound className="h-5 w-5" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-72 max-w-[calc(100vw-2rem)]">
@@ -50,6 +48,9 @@ export default function AccountMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/account"><UserRound aria-hidden="true" /> Account details</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="min-h-11 whitespace-normal break-words">
+          <Link href="/wishlist"><Heart aria-hidden="true" />{t("wishlist.title")}</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="min-h-11 whitespace-normal break-words">
           <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer"><Shield aria-hidden="true" />{t("legal.privacyPolicyNewTab")}</a>

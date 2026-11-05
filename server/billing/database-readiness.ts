@@ -1,7 +1,7 @@
 // DB owner prepared this injected metadata guard under Backend's explicit local
 // delegation. It never imports server/db, reads configuration or opens a socket.
-import { BILLING_APPLICATION_READINESS_SQL, billingApplicationReadinessArguments,
-  assertBillingApplicationReadiness, BILLING_APPLICATION_READINESS_KEYS } from "../../migrations/billing/application-readiness.mjs";
+import { WISHLIST_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL, wishlistApplicationReadinessArguments as billingApplicationReadinessArguments,
+  assertWishlistApplicationReadiness as assertBillingApplicationReadiness, WISHLIST_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS } from "../../migrations/wishlist/application-readiness.mjs";
 
 export type BillingReadinessQuery = (text: string, values?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }>;
 export class BillingDatabaseReadinessError extends Error {

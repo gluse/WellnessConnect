@@ -1,5 +1,7 @@
 /// <reference types="@types/google.maps" />
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import WishlistHeart from "@/components/wishlist-heart";
 import { loadMapLibraries } from "@/lib/google-maps";
 import { createMapPreview } from "@/lib/map-preview";
 import type { ServiceWithProvider } from "@shared/schema";
@@ -21,6 +23,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect, onS
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [mapReady, setMapReady] = useState(false);
+  const [wishlistMount, setWishlistMount] = useState<{ serviceId: number; element: HTMLElement } | null>(null);
   const latestLocation = useRef(userLocation);
   latestLocation.current = userLocation;
   const latestSelect = useRef(onServiceSelect);
@@ -89,16 +92,18 @@ export default function GoogleMap({ services, userLocation, onServiceSelect, onS
     const clearTimers = () => { window.clearTimeout(openTimer); window.clearTimeout(closeTimer); openTimer = closeTimer = undefined; };
     const closePreview = () => {
       clearTimers(); preview.close(); preview.setContent(""); activeMarker = hoveredMarker = null; activeCard = null;
+      setWishlistMount(null);
     };
     const dismiss = () => { closePreview(); userInfoWindow?.close(); };
     const scheduleClose = () => {
       window.clearTimeout(closeTimer);
       closeTimer = window.setTimeout(() => {
         closeTimer = undefined;
+        if (document.querySelector('[role="dialog"]')) return;
         if (!activeCard?.contains(document.activeElement)) closePreview();
       }, 250);
     };
-    const onEscape = (event: KeyboardEvent) => { if (event.key === "Escape") dismiss(); };
+    const onEscape = (event: KeyboardEvent) => { if (event.key === "Escape" && !event.defaultPrevented && !document.querySelector('[role="dialog"]')) dismiss(); };
     document.addEventListener("keydown", onEscape);
     const dismissListeners = ["click", "dragstart", "zoom_changed"].map(event => map.addListener(event, dismiss));
 
@@ -153,6 +158,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect, onS
 
         const selectService = () => { closePreview(); latestSelect.current?.(service); };
         const showPreview = () => {
+          if (document.querySelector('[role="dialog"]')) return;
           clearTimers();
           userInfoWindow?.close();
           const card = createMapPreview({ name: service.name, description: service.description,
@@ -160,6 +166,13 @@ export default function GoogleMap({ services, userLocation, onServiceSelect, onS
             imageUrl: service.imageUrl,
             metadata: [t("searchPage.durationValue", { duration: service.duration }), t(service.serviceType === "group" ? "searchPage.group" : "searchPage.individual"), t(service.instantBooking ? "searchPage.instant" : "searchPage.approval")],
             onDetails: latestSelect.current ? selectService : undefined, onClose: closePreview });
+          const art = card.querySelector<HTMLElement>(".search-service-art");
+          if (art) {
+            const wrapper = document.createElement("div"), mount = document.createElement("div");
+            wrapper.className = "wishlist-image relative";
+            art.before(wrapper); wrapper.append(art, mount);
+            setWishlistMount({ serviceId: service.id, element: mount });
+          }
           card.addEventListener("mouseenter", () => { if (activeCard === card) clearTimers(); });
           card.addEventListener("mouseleave", () => { if (activeCard === card) scheduleClose(); });
           card.addEventListener("focusin", () => { if (activeCard === card) clearTimers(); });
@@ -172,6 +185,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect, onS
 
         marker.addListener("mouseover", () => {
           clearTimers(); hoveredMarker = marker;
+          if (document.querySelector('[role="dialog"]') || activeCard?.contains(document.activeElement)) return;
           if (activeMarker !== marker) openTimer = window.setTimeout(showPreview, 150);
         });
         marker.addListener("mouseout", () => {
@@ -217,6 +231,7 @@ export default function GoogleMap({ services, userLocation, onServiceSelect, onS
   return (
     <div className="relative w-full h-full rounded-xl overflow-hidden" style={{ minHeight: "400px" }}>
       <div ref={mapRef} className="absolute inset-0" />
+      {wishlistMount && createPortal(<WishlistHeart serviceId={wishlistMount.serviceId} />, wishlistMount.element)}
       {(isLoading || error) && <div className="absolute inset-0 bg-neutral-100 flex items-center justify-center">
         <div className="text-center p-6" role={error ? "alert" : "status"}>
           {isLoading && !error && <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />}

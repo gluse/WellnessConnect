@@ -77,6 +77,18 @@ function SearchPage({ userId }: { userId: string | null }) {
   const [providerSource, setProviderSource] = useState<ServiceWithProvider | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const resumeId = new URLSearchParams(window.location.search).get("service");
+  const validResumeId = resumeId && /^[1-9]\d{0,9}$/.test(resumeId) && Number(resumeId) <= 2147483647 ? resumeId : null;
+  const [resumeDismissed, setResumeDismissed] = useState(false);
+  const resume = useQuery<ServiceWithProvider>({
+    queryKey: ["wishlist-resume-service", userId, validResumeId], enabled: !!validResumeId && !resumeDismissed,
+    queryFn: async ({ signal }) => (await apiRequest("GET", `/api/services/${validResumeId}`, undefined, signal)).json(),
+    retry: false, staleTime: 0, gcTime: 0,
+  });
+  useEffect(() => {
+    // Authentication continuation is a read-only resume, not an explicit service view.
+    if (resume.data && !resumeDismissed) { setSelectedService(resume.data); setShowDetailModal(true); }
+  }, [resume.data, resumeDismissed]);
 
   useEffect(() => {
     // Location is optional. Only close an explicitly opened picker after a
@@ -329,9 +341,10 @@ function SearchPage({ userId }: { userId: string | null }) {
         {showResults && services.length > 0 && <p className="search-footer">{t("searchPage.footer")}</p>}
       </section></div>
     </main>
+    {validResumeId && !resumeDismissed && resume.isError && <div role="alert" className="max-w-5xl mx-auto p-4"><p>{t("wishlist.unavailableHelp")}</p><Button variant="outline" onClick={() => void resume.refetch()}>{t("wishlist.retry")}</Button></div>}
     {showBookingModal && selectedService && <BookingModal service={selectedService} onClose={() => setShowBookingModal(false)} />}
     <ProviderServicesDialog source={providerSource} open={providerSource !== null && !showDetailModal && !showBookingModal} onClose={() => setProviderSource(null)} onBook={book} onViewDetails={details} />
-    <ServiceDetailModal service={selectedService} searchLayout open={showDetailModal} onViewProvider={() => { if (selectedService) setProviderSource(selectedService); setShowDetailModal(false); }} onClose={() => { setShowDetailModal(false); setSelectedService(null); }} onBook={() => { setShowDetailModal(false); setShowBookingModal(true); }} />
+    <ServiceDetailModal service={selectedService} searchLayout open={showDetailModal} onViewProvider={() => { if (selectedService) setProviderSource(selectedService); setShowDetailModal(false); setResumeDismissed(true); }} onClose={() => { setShowDetailModal(false); setSelectedService(null); setResumeDismissed(true); }} onBook={() => { setShowDetailModal(false); setShowBookingModal(true); setResumeDismissed(true); }} />
     {!userId && <div className="search-bottom-navigation"><BottomNavigation /></div>}
   </div>;
 }

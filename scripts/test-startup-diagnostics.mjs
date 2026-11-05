@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { startupFailureDiagnostic, startupStages } from "../server/startup-diagnostics.ts";
 import { BillingDatabaseReadinessError, verifyBillingDatabaseReadiness } from "../server/billing/database-readiness.ts";
-import { BILLING_APPLICATION_READINESS_KEYS, BILLING_APPLICATION_READINESS_SQL, billingApplicationReadinessArguments } from "../migrations/billing/application-readiness.mjs";
+import { WISHLIST_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS, WISHLIST_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL,
+  wishlistApplicationReadinessArguments as billingApplicationReadinessArguments } from "../migrations/wishlist/application-readiness.mjs";
 
 // Pure diagnostics and injected metadata queries; no server/db/env/provider import.
 const canary = "PRIVATE_CONFIG_DRIVER_BODY_STACK_CANARY";

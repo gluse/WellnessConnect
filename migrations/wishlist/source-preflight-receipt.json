@@ -1,0 +1,72 @@
+{
+  "task": "TASK-042",
+  "project": "hbkooiknruimukkhshrk",
+  "executor": "/root/wishlist_database_plan",
+  "startedAt": "2026-11-04T20:23:17.771Z",
+  "state": "stopped",
+  "scripts": [
+    {
+      "name": "0018_wishlist.sql",
+      "sha256": "4abd4acdcce0d83016c5f7466708bc98a996aa34378c2cd24e20a452a6651beb",
+      "attempted": false,
+      "committed": false
+    },
+    {
+      "name": "0019_wishlist_runtime.sql",
+      "sha256": "bb4c08065166c800f62cde02161428247cab28bd4dddcffce0eef99a005555c3",
+      "attempted": false,
+      "committed": false
+    }
+  ],
+  "sourceOnly": true,
+  "readOnly": true,
+  "retry": false,
+  "backupCreated": false,
+  "backupVerified": false,
+  "ddlAttempted": false,
+  "stage": "verified_recovery_gate",
+  "baselineVerification": {
+    "restricted_principal": true,
+    "expected_version": true,
+    "expected_table_count": true,
+    "required_dml": true,
+    "no_destructive_billing_access": true,
+    "exact_public_dml": true,
+    "expected_audit_parsers": true,
+    "immutable_guards": true,
+    "notification_columns": true,
+    "notification_constraints": true,
+    "notification_indexes": true,
+    "notification_private_acl": true,
+    "notification_policies": true,
+    "notification_schema_access": true,
+    "appointment_columns": true,
+    "appointment_constraints": true,
+    "appointment_indexes": true,
+    "appointment_private_acl": true,
+    "appointment_policies": true,
+    "appointment_schema_access": true
+  },
+  "sourceMetadata": {
+    "expected_principal": true,
+    "expected_database": true,
+    "expected_version": true,
+    "read_only": true,
+    "wishlist_tables_absent": true,
+    "archive_command_configured": true,
+    "backup_function_present": true,
+    "public_table_count": 35,
+    "other_application_connections": 0,
+    "archive_mode": "on"
+  },
+  "recovery": {
+    "verifiedRecoverable": false,
+    "localArchiveVerified": false,
+    "pgDumpRecoveryCapabilityVerified": false,
+    "managedBackupRestoreVerified": false,
+    "priorTaskWaiverReusable": false,
+    "reason": "No independently verified current source backup and restore path available to this executor"
+  },
+  "safeCode": "TASK042_RECOVERABLE_BACKUP_NOT_VERIFIED",
+  "stoppedAt": "2026-11-04T20:23:21.253Z"
+}

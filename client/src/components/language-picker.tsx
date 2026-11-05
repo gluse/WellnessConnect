@@ -26,12 +26,12 @@ export function LanguagePicker() {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="gap-2"
+          className="header-icon-button gap-2"
           data-testid="button-language-picker"
           aria-label={`Change language (${currentLanguage.nativeName})`}
         >
-          <Globe className="h-4 w-4" />
-          <span className="hidden sm:inline">{currentLanguage.nativeName}</span>
+          <Globe className="h-5 w-5" aria-hidden="true" />
+          <span className="hidden lg:inline">{currentLanguage.nativeName}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">

@@ -55,10 +55,10 @@ export function StorefrontView({ page, preview = false }: { page: PublicStorefro
       </div>
       <p role="status" className="text-sm text-neutral-500">{t("catalog.count", { count: services.length })}</p>
       {!services.length ? <p className="rounded-xl border bg-white p-6">{t("storefront.empty")}</p> : <div className="grid gap-4 lg:grid-cols-2">
-        {services.map(service => <ServiceCard key={service.id} service={service} onBook={() => setBooking(service)} onViewDetails={() => setDetail(service)} />)}
+        {services.map(service => <ServiceCard key={service.id} service={service} wishlistEnabled={!preview} onBook={() => setBooking(service)} onViewDetails={() => setDetail(service)} />)}
       </div>}
     </section>
-    <ServiceDetailModal service={detail} open={detail !== null} onClose={() => setDetail(null)} onBook={() => { setBooking(detail); setDetail(null); }} />
+    <ServiceDetailModal service={detail} open={detail !== null} wishlistEnabled={!preview} onClose={() => setDetail(null)} onBook={() => { setBooking(detail); setDetail(null); }} />
     {booking && <BookingModal service={booking} returnTo={`/providers/${page.slug}?book=${booking.id}`} onClose={() => {
       setBooking(null);
       if (!preview && new URLSearchParams(window.location.search).has("book")) window.history.replaceState(null, "", `/providers/${page.slug}`);

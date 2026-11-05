@@ -1,0 +1,3 @@
+# Preserve byte-stable LF for applied SQL and hash-pinned execution receipts.
+*.sql text eol=lf
+source-*-receipt.json text eol=lf

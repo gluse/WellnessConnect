@@ -33,6 +33,10 @@ import { AuditCaptureUnavailable } from "./audit/capture";
 import { setupServiceViewRoutes } from "./serviceViewRoutes";
 import { setupNotificationRoutes } from "./notifications/routes";
 import { setupAppointmentRoutes } from "./appointments/routes";
+import { setupWishlistRoutes } from "./wishlist/routes";
+import { createWishlistStore } from "./wishlist/postgres";
+import { createWishlistService } from "./wishlist/service";
+import { createInboxService } from "./wishlist/inbox";
 import { bookingReminderSummaries } from "./notifications/repository";
 import { notificationConfig } from "./notifications/transports";
 import { NotificationError, notificationTimezoneSchema } from "@shared/notifications";
@@ -107,6 +111,8 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
   setupCompanyRoutes(app);
   setupNotificationRoutes(app);
   setupAppointmentRoutes(app);
+  const wishlist = createWishlistService(createWishlistStore(db), id => storage.getServiceById(id));
+  setupWishlistRoutes(app, isAuthenticated, wishlist, createInboxService(db, id => storage.getBookingById(id)), id => storage.getUser(id));
   billing?.mountAuthenticated(app);
   setupSchedulingRoutes(app);
   setupReviewRoutes(app);
@@ -121,6 +127,7 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
   setupSearchLocationRoutes(app, isAuthenticated, searchLocationStore);
   setupServiceViewRoutes(app, {
     getService: id => storage.getServiceById(id),
+    recordProductView: process.env.PRODUCT_ACTIVITY_ENABLED === "true" ? (id, userId) => wishlist.recordView(id, userId) : undefined,
     verifyActor: async (token, expectedUserId) => {
       const { data, error } = await createAuthClient().auth.getUser(token);
       if (error || !data.user || data.user.id !== expectedUserId) return { kind: "anonymous" };

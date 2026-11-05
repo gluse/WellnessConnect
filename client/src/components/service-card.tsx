@@ -10,6 +10,7 @@ import { useCategories } from "@/hooks/use-categories";
 import { useTranslation } from "react-i18next";
 import { Link } from "wouter";
 import SearchServiceCard from "@/components/search-service-card";
+import WishlistHeart from "@/components/wishlist-heart";
 
 interface ServiceCardProps {
   service: ServiceWithProvider;
@@ -18,9 +19,10 @@ interface ServiceCardProps {
   onViewProvider?: () => void;
   searchLayout?: boolean;
   hasLocation?: boolean;
+  wishlistEnabled?: boolean;
 }
 
-export default function ServiceCard({ service, onBook, onViewDetails, onViewProvider, searchLayout, hasLocation = false }: ServiceCardProps) {
+export default function ServiceCard({ service, onBook, onViewDetails, onViewProvider, searchLayout, hasLocation = false, wishlistEnabled = true }: ServiceCardProps) {
   service = currentLocation(service);
   const { t } = useTranslation();
   const categories = useCategories();
@@ -33,10 +35,11 @@ export default function ServiceCard({ service, onBook, onViewDetails, onViewProv
       <CardContent className="p-4">
         <div className="flex space-x-3">
           {/* Service Image Placeholder */}
-          <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg flex items-center justify-center">
+          <div className="relative w-16 h-16 shrink-0 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg flex items-center justify-center">
             {service.imageUrl ? <img src={service.imageUrl} alt={service.name} className="w-16 h-16 rounded-lg object-cover" loading="lazy" /> : <span className="text-2xl">
               {categories.data?.find(category => category.key === service.category)?.icon || "📋"}
             </span>}
+            {wishlistEnabled && <WishlistHeart serviceId={service.id} />}
           </div>
           
           <div className="min-w-0 flex-1">

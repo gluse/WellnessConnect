@@ -1,4 +1,4 @@
-import { BILLING_APPLICATION_READINESS_KEYS } from "../migrations/billing/application-readiness.mjs";
+import { WISHLIST_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS } from "../migrations/wishlist/application-readiness.mjs";
 
 export const startupStages = ["initialization", "audit_principal", "billing_configuration", "billing_runtime", "billing_database",
   "billing_account", "billing_portal", "routes", "billing_worker", "assets", "listen"] as const;

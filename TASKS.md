@@ -608,18 +608,53 @@ See [business scenarios](docs/payment-business-plan.md),
 
 ## Header messages and notifications
 
-- [ ] **TASK-042 — Add message and notification icons beside language selection.**
-  **Status, 4 November 2026:** Planning completed following the user's `/plan`
-  request and “proceed”; implementation not started. Two authenticated header
+- [ ] **TASK-042 — Add wishlists and message/notification header controls.**
+  **Status, 4 November 2026:** User approved the expanded wishlist plan;
+  local implementation and offline/mocked verification completed. Two authenticated header
   buttons with red unread badges, linked conversation lists and grouped activity
-  notifications. Existing messages need durable reader state; service-view counts
-  need agreed metric semantics; wishlist notifications need a new save/unsave
-  feature. See [behavior, contracts, phases, decisions and acceptance](docs/header-messages-notifications-plan.md).
-  Frontend, Backend and DB owner assignments/acceptance follow implementation
-  selection. User selected daily grouped view counts excluding provider/team views
-  ("Your Yoga class received 9 views"). Proposed new-data lifetimes remain decisions;
+  notifications. Durable message receipts, private wishlist APIs/hearts/page and
+  grouped view/wishlist activity are implemented. See
+  [behavior, contracts, phases, decisions and acceptance](docs/header-messages-notifications-plan.md).
+  Frontend `/root/wishlist_frontend`, Backend `/root/wishlist_backend_plan` and DB
+  `/root/wishlist_database_plan` accepted local scopes. One private wishlist per
+  account, image-overlay hearts, guest sign-in/manual save and retained unavailable
+  entries. Selected daily UTC view counts exclude provider/team views; activity,
+  notifications and dedup retain 90 days. See [implementation status](docs/wishlist-handoff.md);
   existing message privacy/retention and connected-operation/deployment holds stay.
-  Repository review/documentation only; no app or connected checks. Test en/lv/ru;
+  Initial implementation used local changes and offline/mocked checks; connected
+  activation is recorded below. Test en/lv/ru;
   ar/RTL, zh, fr, de, hi, ja, pt and es deferred.
+  Chrome/Firefox/WebKit wishlist flows, native Chrome 400% zoom, affected Chrome
+  regressions, TypeScript, isolated build and backend/DB offline checks pass.
+  Five-table expansion/runtime SQL 0018/0019 is now **applied and verified** on the
+  named development project; the compatible runtime expects 40 tables. Task remains
+  unchecked for user/live workflow acceptance; no deployment occurred.
+  **Connected approval:** user subsequently authorized DB executor
+  `/root/wishlist_database_plan` to activate TASK-042 on development project
+  `hbkooiknruimukkhshrk`, checking backup/recovery first and stopping on any failure.
+  Owner accepted target/schema/recovery preflight, conditional once-only 0018/0019
+  application and restricted read-only postflight. Earlier no-backup exceptions
+  do not transfer. No app/worker startup, flag/configuration edits, live workflow
+  writes or deployment included. See [authorization and actual status](docs/wishlist-handoff.md#connected-authorization--4-november-2026).
+  **Preflight result:** exact-target TLS/read-only PostgreSQL 17 and all 20 current
+  35-table runtime checks passed; no new tables and zero other app connections at
+  inspection. Stopped at unverified current backup/recovery, with 0018/0019 both
+  unattempted. No DDL/grants or retry. Await verified recovery evidence or explicit
+  TASK-042 no-backup selection; earlier waivers remain out of scope.
+  **Recovery decision resolved:** user explicitly selected proceeding with
+  0018/0019 without a verified backup on this development project, retaining
+  stop-on-failure. Routed to the same DB executor for fresh guards, once-only
+  application and restricted postflight. No verified backup is claimed; actual
+  migration results pending. Historical preflight receipt remains unchanged.
+  **Applied and verified:** DB executor ran the reviewed single attempt: fresh
+  35-table/identity/zero-app-connection guards passed, pinned 0018 then 0019 each
+  committed once, all 26 restricted 40-table postflight checks passed. Exit 0,
+  no retry or uncertain COMMIT. Root independently verified receipt/hash/waiver
+  evidence without connecting. No backup claimed, app/worker/configuration change,
+  workflow writes or deployment. Do not reapply or remove activation receipts.
+  **5 November badge fix:** header feeds now use global own-customer plus selected
+  provider-workspace counts on every route, with deduplication and explicit
+  conversation targets. Three-browser en/lv/ru regression, Backend 80+16 scenarios,
+  TypeScript and isolated build pass. No schema or connected changes required.
 
 <!-- Add the next task here using TASK-043, or place it in the relevant section. -->

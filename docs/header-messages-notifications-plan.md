@@ -1,10 +1,50 @@
 # Header messages and notifications plan — TASK-042
 
 Prepared 4 November 2026 from the user's `/plan` request and subsequent
-“proceed”. Status: planning complete; implementation has not started. This
-document proposes behavior and dependencies. The user selected the service-view
-metric below; remaining proposed data, retention and access choices are not recorded
-as already approved. No connected operation is included.
+“proceed”. User approved the expanded wishlist implementation on 4 November 2026.
+Status: implemented and verified locally; migrations 0018/0019 applied once on
+development project `hbkooiknruimukkhshrk`, with all 26 restricted runtime checks
+passing. App/worker startup and live workflow acceptance remain unperformed.
+The selected wishlist behavior and
+90-day/UTC activity policy are recorded below. No connected operation is included.
+
+## Approved wishlist expansion — 4 November 2026
+
+One private, implicit wishlist belongs to every authenticated account across roles,
+workspaces and devices. Small outlined/filled-red hearts overlay public service
+images/placeholders with a 44px accessible target. Controls are siblings of image
+buttons and do not open details/book or emit a view event. Include search, catalog,
+storefront, details and wishlist; exclude provider editing/unpublished previews.
+Serialize mutations, synchronize instances and restore/retry after failures.
+
+Guests sign in, return to `/search?service=<id>` via a strict allowlist and click
+again. The read-only loader uses public service GET without recording a view.
+No automatic save or guest/device wishlist. `/wishlist` appears in account/mobile
+menus, newest saves first, with pagination, details/booking/removal and honest
+loading/empty/error states. Unpublished entries remain safely removable unavailable
+placeholders; republishing restores them. Hard service/account deletion removes them.
+
+Private APIs: GET `/api/wishlist/services` (default 24/max 50, newest-first cursor),
+GET `/api/wishlist/membership?serviceIds=...` (max 100 distinct IDs), PUT/DELETE
+`/api/wishlist/services/:id` (idempotent 204). Derive identity server-side, use private
+no-store responses, same-origin protection, validation and bounded limits. Public
+DTOs stay unpersonalized; membership is batched. Membership key `(user_id,service_id)`
+has a saved timestamp and listing/service indexes. Atomic addition events deduplicate
+per user/service/UTC day. Own/team saves are allowed but excluded from counts;
+unsave does not decrement history. Snapshot seller scope and expose counts only.
+
+A bounded 15-minute worker processes completed UTC days and updates daily totals,
+recipient read versions and source processing state transactionally. Retries and
+late commits cannot double-count. User selected UTC reporting and 90-day activity,
+notification and private dedup history, including after unsave. Membership lasts
+until removal/account/service deletion. Existing message retention stays unchanged.
+
+Local owners accepted: Frontend `/root/wishlist_frontend`, Backend
+`/root/wishlist_backend_plan`, DB `/root/wishlist_database_plan`. Additive SQL and
+compatible versioned runtime readiness are prepared locally; no connected execution
+or deployment followed from local preparation. Later exact-target database
+authorization, the explicit TASK-042 no-backup exception and actual successful
+activation are recorded in [integrated status and recovery](wishlist-handoff.md).
 
 ## Requested result
 
@@ -49,10 +89,14 @@ changes. Preserve those edits and historical verification artifacts.
 
 ## Message behavior and read state
 
-Recommended scope: show the customer's own conversations in customer mode; show
-only accessible conversations in the active personal/provider workspace in provider
-mode. Label the scope in the panel. Switching role/workspace changes the count;
-do not silently combine other workspaces or change workspace from a link.
+Updated by the user's 5 November badge bug report: the header combines the user's
+own customer conversations with authorized provider conversations/activity in the
+selected personal/company workspace, independently of the current route. Label
+the scope in the panel. Navigation does not change the count; changing the selected
+workspace changes only its provider portion. Do not include other provider workspaces
+or change workspace from a link. Feed rows link to explicit authorized conversation
+scopes. Global unread counts deduplicate messages and honor the same user's read
+receipt from either role; explicit customer/provider projections remain scoped.
 
 Track read progress per authenticated user, booking and viewing context. One team
 member reading a conversation must not clear another member's unread messages.
@@ -97,15 +141,15 @@ be attributed to a team member, so owners must document that measurement limit.
 Recommend a separate minimal product-activity pipeline/aggregate instead of treating
 the security audit store as a provider analytics API. Backend/DB owners must review
 the source contract, idempotency, self-view filtering, bounded processing and day
-boundary before implementation. Use the provider/workspace reporting timezone and
+boundary before implementation. Use the selected UTC reporting day and
 show the period; do not infer event semantics from language selection. Only use
 historical data if provenance, permissions and selected counting rules support it;
 otherwise start collecting on activation and show no fabricated historical totals.
 
-Wishlist scope requires save/unsave controls, a customer Saved services destination,
-idempotent membership keyed by customer/service and server authorization. Proposed
-v1: signed-in customers only; one qualifying addition per customer/service/day;
-no anonymous tracking, saver identities, ranking or recommendation algorithm.
+Wishlist scope includes save/unsave controls, the account-owned Wishlist destination,
+idempotent membership keyed by user/service and server authorization. Approved
+v1: every signed-in user across roles; one qualifying addition per user/service/day;
+no anonymous wishlist, saver identities, ranking or recommendation algorithm.
 The notification describes additions during the period, not current wishlist size.
 
 Notifications have per-recipient read state. Opening an item marks that item read;
@@ -161,17 +205,17 @@ Recorded selection and remaining recommendations before collecting new data:
 - **View metric — selected:** view events, excluding provider/team views and grouped
   daily. User confirmed the recommended “Your Yoga class received 9 views” option
   on 4 November 2026. This selection does not authorize connected collection.
-- **New-data lifecycle:** recommend 90 days for in-app notification history and
+- **New-data lifecycle — selected:** 90 days for in-app notification history and
   service/day aggregates; keep minimal deduplication data only as long as needed
   for that reporting window. Wishlist membership lasts until unsaved/account or
   service deletion. Reader state follows existing conversation deletion. These
-  are proposed lifetimes, not an extension of audit or message retention policy.
-- **Feature scope:** the full request includes a new wishlist feature. Recommend
-  the narrow signed-in save/unsave flow above and daily activity grouping.
+  are user-selected lifetimes, not an extension of audit or message retention policy.
+- **Feature scope — approved:** one wishlist for every signed-in account, guest
+  sign-in/manual save, retained unpublished entries, daily view/wishlist bell items
+  and real message unread state. New booking-status bell producers remain future work.
 
-This plan grants no implementation or connected-operation approval. Once work is
-selected, owners may accept reversible local dependencies under AGENTS.md without
-repeated local permission requests. Exact-target DB/service execution, private
+The user's explicit implementation instruction authorizes owner-accepted reversible
+local work and offline/mocked checks. Exact-target DB/service execution, private
 configuration changes, deployment and publishing retain their separate holds.
 Do not reuse another task's executor-specific database approvals for this feature.
 
@@ -199,8 +243,10 @@ Do not reuse another task's executor-specific database approvals for this featur
   Separate offline proof, connected migration/readiness, live workflow evidence
   and deployment. Required unavailable/failed checks keep implementation incomplete.
 
-Planning validation: repository inspection and documentation checks only; no app,
-browser, database, service, credentials or private configuration exercised.
+Initial planning validation used repository inspection and documentation checks
+only. Subsequent approved implementation and passing offline/mocked verification
+are recorded in [the integrated handoff](wishlist-handoff.md); connected activation
+remains unperformed.
 Recovery for future implementation: disable new producers/UI capabilities first,
 preserve conversations and additive stored data, revert only attributable local
 changes, and use the DB owner's reviewed recovery plan for any later migration.

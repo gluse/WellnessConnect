@@ -25,7 +25,7 @@ async function load(path, dependencies) {
     : await readFile(new URL(`../${path}`, import.meta.url), "utf8");
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const module = { exports: {} };
-  vm.runInNewContext(`(function(require,module,exports){${compiled}\n})`, { Date, Map, Set, console: { error() {} } }, { filename: path })(
+  vm.runInNewContext(`(function(require,module,exports){${compiled}\n})`, { Date, Map, Set, process: { env: {} }, console: { error() {} } }, { filename: path })(
     name => { assert.ok(Object.hasOwn(dependencies, name), `Blocked external import: ${path} -> ${name}`); return dependencies[name]; }, module, module.exports,
   );
   return module.exports;
@@ -201,6 +201,8 @@ for (const method of ["get", "post", "patch", "put", "delete"]) app[method] = (p
 const noop = () => {};
 class ProviderError extends Error {}
 const routeDependencies = { ...dependencies, http: { createServer: () => ({ close() {} }) }, "./storage": { ...storageModule, storage },
+  "./wishlist/routes": { setupWishlistRoutes: noop }, "./wishlist/postgres": { createWishlistStore: () => ({}) },
+  "./wishlist/service": { createWishlistService: () => ({}) }, "./wishlist/inbox": { createInboxService: () => ({}) },
   "./auth": { setupAuth: noop, isAuthenticated: noop }, zod: { z }, "./companyAccess": access, "./schedulingRoutes": schedulingRoutes,
   "./supabase": {}, "./imageStorage": { ImageStorageError: ProviderError }, "./embeddings": {}, "./geocoding": { GeocodingError: ProviderError },
   "./registeredLocations": {}, "./searchLocations": {}, "./categories": {}, "@shared/categories": { CategoryError: ProviderError }, "./audit/http": {},

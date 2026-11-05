@@ -130,6 +130,12 @@ try {
   const previewText = await evaluate(() => document.querySelector('.search-map-preview').textContent);
   assert.ok(previewText.includes(en.searchPage.group)); assert.ok(previewText.includes(en.searchPage.instant));
   assert.ok(await evaluate(() => !!document.querySelector('.search-map-preview img')));
+  await until(() => !!document.querySelector('.search-map-preview [data-wishlist-heart="1"]:not(:disabled)'), 'map image heart');
+  await click('.search-map-preview [data-wishlist-heart="1"]');
+  await until(() => !!document.querySelector('[role="dialog"] a[href^="/login?"]'), 'guest map save sign-in prompt');
+  await fixture.settle(); await key('Escape');
+  await until(() => !document.querySelector('[role="dialog"]'), 'map sign-in prompt dismisses');
+  await until(() => !!document.querySelector('.search-map-preview') && document.activeElement?.getAttribute('data-wishlist-heart') === '1', 'map heart and preview retain focus after prompt');
   await capture('map-preview');
   await key('Escape'); await until(() => !document.querySelector('.search-map-preview'), 'map preview Escape');
   await click('.search-map-help button'); assert.equal(await count(), 9);

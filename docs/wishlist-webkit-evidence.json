@@ -1,0 +1,98 @@
+{
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "browsers": [
+    "webkit/27.2"
+  ],
+  "viewportCases": [
+    {
+      "language": "en",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 375,
+      "height": 700
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 375,
+      "height": 700
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 375,
+      "height": 700
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "height": 300
+    }
+  ],
+  "checks": [
+    "en/lv/ru hearts, batched membership, duplicate instances, pointer/keyboard toggle, no nested buttons or details/booking/view side effects, 15 viewport cases",
+    "failed-save rollback/manual retry, pending duplicate prevention, account change and late result isolation",
+    "guest dialog, focus restore, exact login return, no automatic save/view, manual save after sign-in",
+    "en/lv/ru wishlist page, retained unavailable entries, safe removal, empty state and 320px reflow",
+    "wishlist read error and manual retry",
+    "en/lv/ru actual header badges, keyboard/mobile dialog focus, no message previews, linked conversation and displayed-ID receipts",
+    "inner/outer dialog scroll clipping preserves unread hidden messages; own messages never acknowledged; failed receipts retain unread until explicit retry; removal focus",
+    "desktop bell, reporting UTC, read failure/manual retry, snapshot revisions, 99+ visual/exact accessible count and zero badges",
+    "membership error retry does not save unknown state; unpublish hides details and republish restores membership"
+  ]
+}

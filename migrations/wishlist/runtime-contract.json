@@ -1,0 +1,764 @@
+{
+  "version": "wishlist-runtime-v1",
+  "tables": [
+    "wishlist_services",
+    "product_activity_events",
+    "service_activity_groups",
+    "service_activity_reads",
+    "booking_message_reads"
+  ],
+  "columns": [
+    {
+      "table": "wishlist_services",
+      "name": "user_id",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "wishlist_services",
+      "name": "service_id",
+      "type": "integer",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "wishlist_services",
+      "name": "saved_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "product_activity_events",
+      "name": "id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "kind",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "user_id",
+      "type": "character varying",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "service_id",
+      "type": "integer",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "provider_id",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "company_id",
+      "type": "integer",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "reporting_day",
+      "type": "date",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "occurred_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "product_activity_events",
+      "name": "expires_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "processed_at",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "kind",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_id",
+      "type": "integer",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "provider_id",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "company_id",
+      "type": "integer",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "scope_key",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "reporting_day",
+      "type": "date",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "count",
+      "type": "integer",
+      "notNull": true,
+      "default": "1"
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "revision",
+      "type": "integer",
+      "notNull": true,
+      "default": "1"
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "expires_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "service_activity_reads",
+      "name": "user_id",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "service_activity_reads",
+      "name": "group_id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "service_activity_reads",
+      "name": "read_revision",
+      "type": "integer",
+      "notNull": true,
+      "default": "0"
+    },
+    {
+      "table": "booking_message_reads",
+      "name": "user_id",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_message_reads",
+      "name": "message_id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_message_reads",
+      "name": "context_key",
+      "type": "character varying(100)",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "booking_message_reads",
+      "name": "read_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    }
+  ],
+  "constraints": [
+    {
+      "table": "wishlist_services",
+      "name": "wishlist_services_user_id_service_id_pk",
+      "type": "p",
+      "columns": [
+        "user_id",
+        "service_id"
+      ]
+    },
+    {
+      "table": "wishlist_services",
+      "name": "wishlist_services_user_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "user_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "wishlist_services",
+      "name": "wishlist_services_service_id_services_id_fk",
+      "type": "f",
+      "columns": [
+        "service_id"
+      ],
+      "referenceTable": "services",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_shape",
+      "type": "c",
+      "expression": "kind=anyarray['wishlist_additions','service_views']andkind<>'wishlist_additions'oruser_idisnotnullandreporting_day=occurred_atattimezone'utc'::dateandexpires_at>occurred_atandexpires_at<=occurred_at+'2160:00:00'::intervalandprocessed_atisnullorprocessed_at>=occurred_at"
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_events_pkey",
+      "type": "p",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_events_user_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "user_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_events_service_id_services_id_fk",
+      "type": "f",
+      "columns": [
+        "service_id"
+      ],
+      "referenceTable": "services",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_events_provider_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "provider_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_events_company_id_companies_id_fk",
+      "type": "f",
+      "columns": [
+        "company_id"
+      ],
+      "referenceTable": "companies",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_activity_group_shape",
+      "type": "c",
+      "expression": "kind=anyarray['wishlist_additions','service_views']andcount>0andrevision>0andexpires_at>updated_atandscope_key=casewhencompany_idisnullthen'provider:'||provider_idelse'company:'||company_idend"
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_activity_groups_pkey",
+      "type": "p",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_activity_groups_service_id_services_id_fk",
+      "type": "f",
+      "columns": [
+        "service_id"
+      ],
+      "referenceTable": "services",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_activity_groups_provider_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "provider_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_activity_groups_company_id_companies_id_fk",
+      "type": "f",
+      "columns": [
+        "company_id"
+      ],
+      "referenceTable": "companies",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "service_activity_reads",
+      "name": "service_activity_read_revision_check",
+      "type": "c",
+      "expression": "read_revision>=0"
+    },
+    {
+      "table": "service_activity_reads",
+      "name": "service_activity_reads_user_id_group_id_pk",
+      "type": "p",
+      "columns": [
+        "user_id",
+        "group_id"
+      ]
+    },
+    {
+      "table": "service_activity_reads",
+      "name": "service_activity_reads_user_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "user_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "service_activity_reads",
+      "name": "service_activity_reads_group_id_service_activity_groups_id_fk",
+      "type": "f",
+      "columns": [
+        "group_id"
+      ],
+      "referenceTable": "service_activity_groups",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "booking_message_reads",
+      "name": "booking_message_read_context_check",
+      "type": "c",
+      "expression": "context_key=anyarray['customer','provider:personal']orcontext_key~'^provider:company:[1-9][0-9]*$'"
+    },
+    {
+      "table": "booking_message_reads",
+      "name": "booking_message_reads_user_id_message_id_context_key_pk",
+      "type": "p",
+      "columns": [
+        "user_id",
+        "message_id",
+        "context_key"
+      ]
+    },
+    {
+      "table": "booking_message_reads",
+      "name": "booking_message_reads_user_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "user_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "booking_message_reads",
+      "name": "booking_message_reads_message_id_booking_messages_id_fk",
+      "type": "f",
+      "columns": [
+        "message_id"
+      ],
+      "referenceTable": "booking_messages",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    }
+  ],
+  "indexes": [
+    {
+      "table": "wishlist_services",
+      "name": "wishlist_services_user_id_service_id_pk",
+      "unique": true,
+      "columns": [
+        "user_id",
+        "service_id"
+      ],
+      "descending": [
+        false,
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "wishlist_services",
+      "name": "wishlist_user_saved_idx",
+      "unique": false,
+      "columns": [
+        "user_id",
+        "saved_at",
+        "service_id"
+      ],
+      "descending": [
+        false,
+        true,
+        true
+      ],
+      "predicate": null
+    },
+    {
+      "table": "wishlist_services",
+      "name": "wishlist_service_idx",
+      "unique": false,
+      "columns": [
+        "service_id"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_events_pkey",
+      "unique": true,
+      "columns": [
+        "id"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_wishlist_daily_identity",
+      "unique": true,
+      "columns": [
+        "user_id",
+        "service_id",
+        "reporting_day"
+      ],
+      "descending": [
+        false,
+        false,
+        false
+      ],
+      "predicate": "kind='wishlist_additions'"
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_pending_idx",
+      "unique": false,
+      "columns": [
+        "reporting_day",
+        "occurred_at",
+        "id"
+      ],
+      "descending": [
+        false,
+        false,
+        false
+      ],
+      "predicate": "processed_atisnull"
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_expiry_idx",
+      "unique": false,
+      "columns": [
+        "expires_at"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_user_idx",
+      "unique": false,
+      "columns": [
+        "user_id"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_service_idx",
+      "unique": false,
+      "columns": [
+        "service_id"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_provider_idx",
+      "unique": false,
+      "columns": [
+        "provider_id"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "product_activity_events",
+      "name": "product_activity_company_idx",
+      "unique": false,
+      "columns": [
+        "company_id"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_activity_groups_pkey",
+      "unique": true,
+      "columns": [
+        "id"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_activity_group_identity",
+      "unique": true,
+      "columns": [
+        "kind",
+        "service_id",
+        "reporting_day",
+        "scope_key"
+      ],
+      "descending": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_activity_scope_day_idx",
+      "unique": false,
+      "columns": [
+        "scope_key",
+        "reporting_day",
+        "id"
+      ],
+      "descending": [
+        false,
+        true,
+        true
+      ],
+      "predicate": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_activity_group_expiry_idx",
+      "unique": false,
+      "columns": [
+        "expires_at"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_activity_group_service_idx",
+      "unique": false,
+      "columns": [
+        "service_id"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_activity_group_provider_idx",
+      "unique": false,
+      "columns": [
+        "provider_id"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "service_activity_groups",
+      "name": "service_activity_group_company_idx",
+      "unique": false,
+      "columns": [
+        "company_id"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "service_activity_reads",
+      "name": "service_activity_reads_user_id_group_id_pk",
+      "unique": true,
+      "columns": [
+        "user_id",
+        "group_id"
+      ],
+      "descending": [
+        false,
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "service_activity_reads",
+      "name": "service_activity_read_group_idx",
+      "unique": false,
+      "columns": [
+        "group_id"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "booking_message_reads",
+      "name": "booking_message_reads_user_id_message_id_context_key_pk",
+      "unique": true,
+      "columns": [
+        "user_id",
+        "message_id",
+        "context_key"
+      ],
+      "descending": [
+        false,
+        false,
+        false
+      ],
+      "predicate": null
+    },
+    {
+      "table": "booking_message_reads",
+      "name": "booking_message_read_message_idx",
+      "unique": false,
+      "columns": [
+        "message_id"
+      ],
+      "descending": [
+        false
+      ],
+      "predicate": null
+    }
+  ]
+}

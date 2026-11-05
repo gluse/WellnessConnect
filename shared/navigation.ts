@@ -5,7 +5,7 @@ const providerDestinations = new Set([
 ]);
 
 export function isAllowedAuthReturnTo(value: unknown): value is string {
-  return typeof value === "string" && (value === "/search" || value === "/account" || value === "/my-bookings" || value === "/administration" || providerDestinations.has(value)
+  return typeof value === "string" && (value === "/search" || value === "/wishlist" || value === "/inbox" || /^\/search\?service=[1-9]\d{0,9}$/.test(value) && Number(value.split("=")[1]) <= 2147483647 || value === "/account" || value === "/my-bookings" || value === "/administration" || providerDestinations.has(value)
     || /^\/providers\/(?=[a-z0-9-]{3,64}(?:\?|$))[a-z0-9]+(?:-[a-z0-9]+)*(?:\?book=[1-9]\d{0,9})?$/.test(value)
     || /^\/my-services\/services\/\d+\/edit$/.test(value) || /^\/invite(?:\?|$)/.test(value));
 }

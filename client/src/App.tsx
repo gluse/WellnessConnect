@@ -17,6 +17,9 @@ import AppHeader from "@/components/app-header";
 import MobileNavigationLayout from "@/components/mobile-navigation";
 import StorefrontPage from "@/pages/storefront";
 import { BillingRuntimeProvider } from "@/components/billing-runtime";
+import { WishlistProvider } from "@/components/wishlist-provider";
+import Wishlist from "@/pages/wishlist";
+import Inbox from "@/pages/inbox";
 import type { ReactNode } from "react";
 
 function AuthenticatedBillingRuntime({ children }: { children: ReactNode }) {
@@ -34,6 +37,8 @@ function Router() {
       <Route path="/account" component={Account} />
       <Route path="/administration" component={Administration} />
       <Route path="/my-bookings" component={MyBookings} />
+      <Route path="/wishlist" component={Wishlist} />
+      <Route path="/inbox" component={Inbox} />
       <Route path="/my-services/*?" component={MyServices} />
       <Route path="/dashboard"><Redirect to="/my-services" /></Route>
       <Route path="/search" component={Home} />
@@ -48,6 +53,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthenticatedBillingRuntime>
+      <WishlistProvider>
       <TooltipProvider>
         <Toaster />
         <MobileNavigationLayout>
@@ -55,6 +61,7 @@ function App() {
           <Router />
         </MobileNavigationLayout>
       </TooltipProvider>
+      </WishlistProvider>
       </AuthenticatedBillingRuntime>
     </QueryClientProvider>
   );

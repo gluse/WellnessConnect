@@ -6,6 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Router } from "wouter";
 import Home from "../../client/src/pages/home";
 import { queryClient } from "../../client/src/lib/queryClient";
+import { WishlistProvider } from "../../client/src/components/wishlist-provider";
 import type { ServiceWithProvider } from "../../shared/schema";
 
 declare const __FORM_RESOURCES__: Record<string, { translation: object }>;
@@ -78,6 +79,8 @@ window.fetch = async (input, options = {}) => {
     }
   }
   if (method !== "GET") { fixture.unexpected.push(method + " " + path); throw new Error("Writes are not allowed in this fixture"); }
+  if (path.startsWith("/api/wishlist/membership?")) return Response.json({ serviceIds: [] });
+  if (path.startsWith("/api/inbox/summary?")) return Response.json({ unreadMessages: 0, unreadNotifications: 0 });
   if (path === "/api/auth/user") return Response.json(savedFixture.authUser);
   if (path === "/api/categories") return Response.json([{ key: "health_wellness", name: "Health & wellness", icon: "" }, { key: "fitness", name: "Fitness", icon: "" }], { status: fixture.categoriesError ? 503 : 200 });
   if (path === "/api/config/maps") {
@@ -115,4 +118,4 @@ function Fixture() {
   useEffect(() => { document.documentElement.classList.toggle("dark", dark); }, [dark]);
   return <><nav aria-label="Fixture controls" className="flex flex-wrap gap-4 p-3"><label>Language <select id="fixture-language" onChange={event => void i18next.changeLanguage(event.target.value)}><option value="en">English</option><option value="lv">Latviešu</option><option value="ru">Русский</option></select></label><button id="fixture-theme" onClick={() => setDark(!dark)}>Toggle fixture theme</button></nav>{Header && <Header />}<Home /></>;
 }
-createRoot(document.getElementById("root")!).render(<QueryClientProvider client={queryClient}><Router><Fixture /></Router></QueryClientProvider>);
+createRoot(document.getElementById("root")!).render(<QueryClientProvider client={queryClient}><Router><WishlistProvider><Fixture /></WishlistProvider></Router></QueryClientProvider>);

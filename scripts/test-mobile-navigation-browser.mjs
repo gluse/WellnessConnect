@@ -68,7 +68,7 @@ try {
         assert.ok(state.targets.every(target => target.width >= 44 && target.height >= 44 && !target.clipped), JSON.stringify(state.targets));
         assert.equal(state.desktopWorkspace, false); assert.equal(state.clearance, true);
         await openMenu();
-        assert.deepEqual(await evaluate(() => [...document.querySelectorAll('[role="menuitem"]')].map(node => node.textContent.trim())), [labels.providerNavigation.upcomingAppointments, labels.providerNavigation.pastAppointments, labels.mobileNavigation.services, labels.mobileNavigation.availability, labels.mobileNavigation.settings, labels.providerNavigation.workspace, labels.legal.privacyPolicyNewTab]);
+        assert.deepEqual(await evaluate(() => [...document.querySelectorAll('[role="menuitem"]')].map(node => node.textContent.trim())), [labels.providerNavigation.upcomingAppointments, labels.providerNavigation.pastAppointments, labels.mobileNavigation.services, labels.mobileNavigation.availability, labels.mobileNavigation.settings, labels.providerNavigation.workspace, labels.wishlist.title, labels.legal.privacyPolicyNewTab]);
         assert.deepEqual(await evaluate(() => {
           const link = document.querySelector('[role="menuitem"][href="/privacy-policy.html"]');
           return { target: link.target, rel: link.rel };
@@ -181,17 +181,17 @@ try {
   assert.equal(await evaluate(() => /Viewer|You can view appointments assigned to you/.test(document.querySelector('main').textContent)), false, "viewer role and role notice absent above content");
   await checkWorkspace("3");
   await openMenu();
-  assert.deepEqual(await evaluate(() => [...document.querySelectorAll('[role="menuitem"]')].map(node => node.textContent.trim())), ["Upcoming Appointments", "Past & Cancelled Appointments", "Services", "Workspace", resources.en.translation.legal.privacyPolicyNewTab], "viewer keeps appointment lists, workspace and public policy but cannot access restricted tools");
+  assert.deepEqual(await evaluate(() => [...document.querySelectorAll('[role="menuitem"]')].map(node => node.textContent.trim())), ["Upcoming Appointments", "Past & Cancelled Appointments", "Services", "Workspace", resources.en.translation.wishlist.title, resources.en.translation.legal.privacyPolicyNewTab], "viewer keeps appointment lists, workspace, personal wishlist and public policy but cannot access restricted tools");
   await key("Escape");
   checks.push("personal-only, company/personal/viewer switching; roles only in Workspace selection; failure retention and pending/duplicate/navigation protection");
 
   for (const context of ["pending", "error"]) {
     await open("/search", `context=${context}`); await openMenu();
-    assert.deepEqual(await evaluate(() => [...document.querySelectorAll('[role="menuitem"]')].map(node => node.textContent.trim())), ["Upcoming Appointments", "Past & Cancelled Appointments", "Services", resources.en.translation.legal.privacyPolicyNewTab]);
+    assert.deepEqual(await evaluate(() => [...document.querySelectorAll('[role="menuitem"]')].map(node => node.textContent.trim())), ["Upcoming Appointments", "Past & Cancelled Appointments", "Services", resources.en.translation.wishlist.title, resources.en.translation.legal.privacyPolicyNewTab]);
     assert.equal(await evaluate(() => document.querySelector('[role="menu"] [role="status"]').textContent.trim()), resources.en.translation.mobileNavigation[context === "pending" ? "workspaceLoading" : "workspaceError"]);
     if (context === "pending") {
       await evaluate(() => { window.phase2Fixture.contextResult = "success"; window.phase2Fixture.releaseContext(); });
-      await until(() => document.querySelectorAll('[role="menuitem"]').length === 7, "permissions load into menu");
+      await until(() => document.querySelectorAll('[role="menuitem"]').length === 8, "permissions load into menu");
     }
     await key("Escape");
   }

@@ -38,6 +38,7 @@ window.fetch = async (input, options = {}) => {
     if (locale) return Response.json(__FORM_RESOURCES__[locale[1]].translation);
     if (path === "/api/admin/access") return Response.json({ isAdmin: false });
     if (path === "/api/auth/user") return Response.json(user);
+    if (path.startsWith("/api/inbox/summary?")) return Response.json({ unreadMessages: 0, unreadNotifications: 0 });
     if (path === "/api/company/context") return Response.json(context);
     if (path === "/api/bookings/provider" || path === "/api/bookings/seeker") {
       if (fixture.state === "loading") await new Promise<void>(resolve => { fixture.release = resolve; });

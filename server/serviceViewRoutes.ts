@@ -10,6 +10,7 @@ type Dependencies = {
   getService(id: number): Promise<Service | undefined>;
   // Uses server Auth verification and the confirmed profile only, never req.user/body claims.
   verifyActor(token: string, expectedUserId: string): Promise<ServiceViewActor>;
+  recordProductView?(serviceId: number, userId: string | null): Promise<void>;
 };
 
 /** Kept separate from GET/cache/prefetch/book paths: this receives explicit details clicks. */
@@ -28,14 +29,20 @@ export function setupServiceViewRoutes(app: Express, dependencies: Dependencies)
     if (!service || service.id !== id || !service.isActive || !service.companyActive) {
       return void res.status(404).json({ message: "Service not found" });
     }
-    if (serviceViewAuditEnabled()) {
+    if (serviceViewAuditEnabled() || dependencies.recordProductView) {
       let actor: ServiceViewActor = { kind: "anonymous" };
       const auth = req.session?.auth;
       if (typeof auth?.accessToken === "string" && auth.accessToken && typeof auth.userId === "string") {
         try { actor = await dependencies.verifyActor(auth.accessToken, auth.userId); }
         catch { /* Public requests with unverifiable optional identity remain anonymous. */ }
       }
-      await recordServiceView(req, id, actor);
+      if (serviceViewAuditEnabled()) await recordServiceView(req, id, actor);
+      // Product aggregates are independent of the audit store and public viewing.
+      // A failed capture never blocks details or triggers a browser retry.
+      if (dependencies.recordProductView) {
+        try { await dependencies.recordProductView(id, actor.kind === "user" ? actor.userId : null); }
+        catch { console.error("Product service-view capture unavailable."); }
+      }
     }
     res.sendStatus(204);
   });

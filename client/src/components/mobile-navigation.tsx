@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Link, useLocation } from "wouter";
-import { Building2, Calendar, CalendarDays, Menu, Search, Shield } from "lucide-react";
+import { Building2, Calendar, CalendarDays, Menu, Search, Shield, Heart } from "lucide-react";
 import { useIsMutating, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import type { WorkspaceContext } from "@shared/schema";
@@ -115,6 +115,10 @@ function MobileNavigation({ barRef }: { barRef: RefObject<HTMLElement> }) {
             onSelect={event => { event.preventDefault(); pendingWorkspace.current = true; setOpen(false); }}>
             <Building2 aria-hidden="true" />{t("providerNavigation.workspace")}
           </DropdownMenuItem>}
+          <DropdownMenuItem disabled={busy} className="min-h-11 whitespace-normal break-words" aria-current={location === "/wishlist" ? "page" : undefined}
+            onSelect={event => { event.preventDefault(); pendingNavigation.current = "/wishlist"; setOpen(false); }}>
+            <Heart aria-hidden="true" />{t("wishlist.title")}
+          </DropdownMenuItem>
           <DropdownMenuItem asChild className="min-h-11 whitespace-normal break-words">
             <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer"><Shield aria-hidden="true" />{t("legal.privacyPolicyNewTab")}</a>
           </DropdownMenuItem>

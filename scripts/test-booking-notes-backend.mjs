@@ -24,7 +24,7 @@ async function load(file, dependencies) {
   const source = await readFile(new URL(`../${file}`, import.meta.url), "utf8");
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const module = { exports: {} };
-  vm.runInNewContext(`(function(require,module,exports){${compiled}\n})`, { Date, Map, Set, console: { error(...args) { logs.push(args); } } }, { filename: file })(name => {
+  vm.runInNewContext(`(function(require,module,exports){${compiled}\n})`, { Date, Map, Set, process: { env: {} }, console: { error(...args) { logs.push(args); } } }, { filename: file })(name => {
     assert.ok(Object.hasOwn(dependencies, name), `Blocked external import: ${file} -> ${name}`);
     return dependencies[name];
   }, module, module.exports);
@@ -106,6 +106,8 @@ const noop = () => {};
 const isAuthenticated = (req, res, next) => req.user?.claims?.sub ? next() : res.status(401).json({ message: "Unauthorized" });
 class ProviderError extends Error {}
 const routeDependencies = { ...dependencies, http: { createServer: () => ({ close() {} }) }, "./storage": { ...storageModule, storage },
+  "./wishlist/routes": { setupWishlistRoutes: noop }, "./wishlist/postgres": { createWishlistStore: () => ({}) },
+  "./wishlist/service": { createWishlistService: () => ({}) }, "./wishlist/inbox": { createInboxService: () => ({}) },
   "./auth": { setupAuth: noop, isAuthenticated }, zod: { z }, "./companyAccess": access,
   "./supabase": {}, "./imageStorage": { ImageStorageError: ProviderError }, "./embeddings": {}, "./geocoding": { GeocodingError: ProviderError },
   "./registeredLocations": {}, "./searchLocations": {}, "./categories": {}, "@shared/categories": { CategoryError: ProviderError }, "./audit/http": {},

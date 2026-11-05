@@ -43,6 +43,7 @@ window.fetch = async (input, options = {}) => {
     return Response.json(context);
   }
   if (method === "GET") {
+    if (path.startsWith("/api/inbox/summary?")) return Response.json({ unreadMessages: 0, unreadNotifications: 0 });
     if (["/api/bookings/provider", "/api/bookings/seeker", "/api/provider/employees", "/api/services/provider", "/api/addresses", "/api/availability/provider", "/api/categories"].includes(path)) return Response.json([]);
     if (path.startsWith("/api/services/search?")) return Response.json([]);
     if (path === "/api/account/search-location") return Response.json(null);

@@ -1,0 +1,75 @@
+{
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "browsers": [
+    "Chrome/156.0.8078.79"
+  ],
+  "viewportCases": [
+    {
+      "language": "en",
+      "width": 315,
+      "dpr": 4,
+      "fits": true,
+      "cssZoom": "1",
+      "scale": 1
+    },
+    {
+      "language": "en",
+      "route": "/wishlist?seed=true",
+      "headerPosition": "static",
+      "reflow": true
+    },
+    {
+      "language": "en",
+      "route": "/inbox?scope=customer",
+      "headerPosition": "static",
+      "reflow": true
+    },
+    {
+      "language": "lv",
+      "width": 315,
+      "dpr": 4,
+      "fits": true,
+      "cssZoom": "1",
+      "scale": 1
+    },
+    {
+      "language": "lv",
+      "route": "/wishlist?seed=true",
+      "headerPosition": "static",
+      "reflow": true
+    },
+    {
+      "language": "lv",
+      "route": "/inbox?scope=customer",
+      "headerPosition": "static",
+      "reflow": true
+    },
+    {
+      "language": "ru",
+      "width": 315,
+      "dpr": 4,
+      "fits": true,
+      "cssZoom": "1",
+      "scale": 1
+    },
+    {
+      "language": "ru",
+      "route": "/wishlist?seed=true",
+      "headerPosition": "static",
+      "reflow": true
+    },
+    {
+      "language": "ru",
+      "route": "/inbox?scope=customer",
+      "headerPosition": "static",
+      "reflow": true
+    }
+  ],
+  "checks": [
+    "native Chrome400% zoom (DPR4, CSSzoom1, viewport scale1), en/lv/ru reflow, header message operation/focus and text contrast; wishlist/inbox static header in short viewport"
+  ]
+}

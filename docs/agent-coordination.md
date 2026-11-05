@@ -1534,3 +1534,87 @@ prepared/applied/verified/active states separately. TASK-014 stays open until it
 required delivery/runtime evidence passes. Frontend can continue isolated UI and
 mocked-contract work while the runtime dependency is unresolved. Test languages
 remain en/lv/ru; ar/RTL, zh, fr, de, hi, ja, pt and es are deferred.
+
+## TASK-042 wishlist and header inboxes — 4 November 2026
+
+**Completed locally; connected activation pending:** user explicitly approved the expanded plan.
+Requester/coordinator `/root` assigned Frontend `/root/wishlist_frontend`, Backend
+`/root/wishlist_backend_plan` and DB `/root/wishlist_database_plan`; each accepted
+its local scope. Owners are reachable in this thread and coordinated contracts
+directly. See [plan](header-messages-notifications-plan.md) and
+[scope, verification and recovery](wishlist-handoff.md).
+
+Frontend owns hearts, account-wide wishlist, menus/header inboxes, all supported
+translations and isolated UI checks. Backend owns shared contracts/navigation,
+private APIs/query logic and bounded UTC activity worker. DB owns five additive
+private schema tables, versioned runtime/readiness expansion and offline checks.
+Frontend delegated root's wishlist browser fixture/test work; root retains docs
+and independent integration review. Root does not inherit connected permissions.
+
+Approved selections: guest sign-in then click again; retained unavailable entries;
+one list per account across roles/workspaces; daily UTC activity, 90-day private
+source/dedup/notification retention. Only view/wishlist bell producers and actual
+message unread state are included, not new booking-status bell producers.
+
+Local files and offline/mocked tests only. No app/DB/service startup, connected
+writes, private configuration, deployment or publishing. Keep historical applied
+migrations immutable; compatible runtime profile expands 35 to 40 tables. Current
+next action is separately authorized database activation/live acceptance. Local
+implementation and integrated checks are complete: three-browser en/lv/ru wishlist
+flows, native 400% zoom, affected Chrome regressions, TypeScript/build, Backend 74
+and DB 268 new offline checks pass. DB SQL 0018/0019 remains prepared, not applied.
+Frontend delegated root's final focus/cache/receipt/map review/fixes and new-route
+short-screen header adjustment; Backend returned final review. Its default-seeker
+personal-owner inbox compatibility finding was corrected and verified. The separate
+frontend handoff write did not execute when its owner's usage limit prevented
+approval review; it was not retried. Root's existing integrated handoff contains
+the returned evidence and scoped completion. Fresh
+testing en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es are deferred. Revert
+only attributable changes; preserve pre-existing scratch and message/privacy work.
+
+**Connected request accepted, 4 November:** user explicitly authorized DB-role
+activation for development project `hbkooiknruimukkhshrk`, checking backup/recovery
+first and stopping on any failure. Executor `/root/wishlist_database_plan` accepted
+the named-target preflight, conditional once-only 0018 then 0019 application and
+restricted 40-table read-only postflight. Necessary access stays with that DB
+executor. Backend `/root/wishlist_backend_plan` is requested for offline runner/
+security review; root owns coordination and sanitized receipt review. No previous
+task's no-backup waiver is assumed. No other target, app/worker startup, product
+flag/private configuration edits, workflow writes or deployment. Actual execution
+results pending; see [approval record](wishlist-handoff.md#connected-authorization--4-november-2026).
+
+**Connected result — stopped:** the single reviewed source-only read-only preflight
+verified target/TLS/PG17, all 20 restricted 35-table checks, five new tables absent
+and zero other app connections. Recovery could not be independently verified;
+`TASK042_RECOVERABLE_BACKUP_NOT_VERIFIED` stopped the operation. No migration/DDL/
+grant was attempted and no retry occurred. DB owns the sanitized preflight receipt;
+root independently checked its target/executor, SQL hashes, checks and zero-attempt
+flags offline. Backend returned read-only runner clearance and 140 synthetic checks.
+Missing decision: verify a current backup/restore path or explicitly accept this
+TASK-042 package without a verified backup on the same development project. The
+original activation authorization persists within scope; no old waiver transfers.
+
+**TASK-042 recovery choice accepted:** user explicitly chose “Proceed with
+0018/0019 without a verified backup on this development project, retaining
+stop-on-failure.” Routed to executor `/root/wishlist_database_plan` for the same
+development target `hbkooiknruimukkhshrk`. This resolves only the recorded recovery
+stop. Fresh target/schema guards, single attempts of pinned SQL and restricted
+read-only postflight are required. Separate activation receipt; preserve the
+historical preflight receipt. Backend resumes offline runner review. No verified
+backup, blind retry, reapply, privilege repair, other-target access, app/worker
+startup, configuration/flag edits, workflow writes or deployment is authorized
+by this choice. Actual execution results pending.
+
+**Activated and verified, 4 November:** assigned DB executor ran one reviewed
+activation on the same development target. Fresh 20-check restricted35 and owner/
+PG17/zero-app-connection guards passed; unchanged pinned 0018 and 0019 each committed
+once, then all 26 restricted40 postflight checks passed. Exit 0; no uncertain
+COMMIT/retry. The earlier stopped preflight receipt is preserved. Root independently
+validated the new sanitized receipt, script hashes/order, explicit TASK-042 backup
+exception and passing checks offline. Backend independently reviewed the guarded
+runner and passed 204 synthetic checks. See [applied/verified record](wishlist-handoff.md#applied-and-verified--4-november-2026).
+No backup is claimed. No destination, existing-row backfill, cleanup, app/worker
+startup, configuration/flag edit, live workflow write or deployment occurred.
+Next: user starts the compatible updated application and reviews the live flow;
+activity worker/configuration remain separate operations. Never rerun the activation
+or remove its receipt to force another attempt.

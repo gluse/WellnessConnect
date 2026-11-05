@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useWishlist } from "@/components/wishlist-provider";
+import ConversationReadState from "@/components/conversation-read-state";
 
 const root = "appointmentCollaboration.";
 const timezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -58,6 +60,7 @@ export function BookingConversationDialog({ booking, scope, viewer, canSend = tr
 }) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient(), alive = useMounted();
+  const wishlist = useWishlist(), historyContainer = useRef<HTMLDivElement>(null);
   const [body, setBody] = useState("");
   const id = useRef(crypto.randomUUID());
   const submitting = useRef(false);
@@ -74,6 +77,7 @@ export function BookingConversationDialog({ booking, scope, viewer, canSend = tr
       if (!alive.current) return;
       setBody(""); id.current = crypto.randomUUID();
       await queryClient.invalidateQueries({ queryKey: collaborationKey(scope, booking.id) });
+      await queryClient.invalidateQueries({ queryKey: ["inbox"] });
     },
     onSettled: () => { submitting.current = false; },
   });
@@ -86,14 +90,15 @@ export function BookingConversationDialog({ booking, scope, viewer, canSend = tr
     {messages.isPending && <p role="status">{t(root + "loading")}</p>}
     {messages.isError && <div role="alert">{t(root + "loadFailed")} <Button variant="outline" onClick={() => void messages.refetch()}>{t(root + "retry")}</Button></div>}
     {messages.hasNextPage && <Button variant="outline" disabled={messages.isFetchingNextPage} onClick={() => void messages.fetchNextPage()}>{t(root + "olderMessages")}</Button>}
-    <div className="space-y-3 max-h-[35dvh] overflow-y-auto" aria-label={t(root + "messages")}>
+    <div ref={historyContainer} className="space-y-3 max-h-[35dvh] overflow-y-auto" aria-label={t(root + "messages")}>
       {messages.isSuccess && !denied && !history.length && <p className="text-sm text-muted-foreground">{t(root + "emptyMessages")}</p>}
-      {history.map(message => <article key={message.id} className={`rounded-lg border p-3 space-y-1 ${message.authorRole === "provider" ? "bg-indigo-50" : "bg-neutral-50"}`}>
+      {history.map(message => <article key={message.id} data-conversation-message={message.id} className={`rounded-lg border p-3 space-y-1 ${message.authorRole === "provider" ? "bg-indigo-50" : "bg-neutral-50"}`}>
         <p className="text-sm font-semibold"><bdi>{message.authorName}</bdi> · {t(root + message.authorRole)}</p>
         <p dir="auto" className="whitespace-pre-wrap [overflow-wrap:anywhere]">{message.body}</p>
         <p className="text-xs text-muted-foreground"><time dateTime={message.createdAt}>{appointmentTime(message.createdAt, i18n.language)}</time> · {t(root + "saved")}</p>
       </article>)}
     </div>
+    {wishlist && messages.isSuccess && !denied && <ConversationReadState bookingId={booking.id} viewer={viewer} messages={history} container={historyContainer} />}
     {canSend ? <form className="space-y-3" onSubmit={event => { event.preventDefault(); if (!submitting.current && body.trim() && messages.isSuccess) { submitting.current = true; send.mutate(); } }}>
       <Label htmlFor="booking-message-body">{t(root + "message")}</Label>
       <Textarea id="booking-message-body" dir="auto" maxLength={4000} value={body} placeholder={t(root + "writeMessage")} disabled={send.isPending || denied} onChange={event => { setBody(event.target.value); if (send.isError) { id.current = crypto.randomUUID(); send.reset(); } }} className="min-h-24" />

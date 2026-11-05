@@ -3,6 +3,7 @@ import {
   text,
   varchar,
   timestamp,
+  date,
   jsonb,
   index,
   serial,
@@ -512,6 +513,93 @@ export const bookingRescheduleRequests = pgTable("booking_reschedule_requests", 
 ]).enableRLS();
 
 export type BookingMessage = typeof bookingMessages.$inferSelect;
+
+// One implicit private wishlist belongs to each account, across all role/workspace
+// contexts. No container row, public saver list or copied service content is needed.
+export const wishlistServices = pgTable("wishlist_services", {
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  serviceId: integer("service_id").notNull().references(() => services.id, { onDelete: "cascade" }),
+  savedAt: timestamp("saved_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  primaryKey({ columns: [table.userId, table.serviceId] }),
+  index("wishlist_user_saved_idx").on(table.userId, table.savedAt.desc(), table.serviceId.desc()),
+  index("wishlist_service_idx").on(table.serviceId),
+]).enableRLS();
+
+// Private transactional source/outbox, separate from security auditing and external
+// notification delivery. Wishlist identities survive unsave for at most 90 days to
+// deduplicate a user's additions within a UTC day; providers receive aggregates.
+export const productActivityEvents = pgTable("product_activity_events", {
+  id: uuid("id").primaryKey(),
+  kind: varchar("kind", { enum: ["wishlist_additions", "service_views"] }).notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
+  serviceId: integer("service_id").notNull().references(() => services.id, { onDelete: "cascade" }),
+  providerId: varchar("provider_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  companyId: integer("company_id").references(() => companies.id, { onDelete: "cascade" }),
+  reportingDay: date("reporting_day", { mode: "string" }).notNull(),
+  occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  processedAt: timestamp("processed_at", { withTimezone: true }),
+}, table => [
+  uniqueIndex("product_wishlist_daily_identity").on(table.userId, table.serviceId, table.reportingDay).where(sql`${table.kind} = 'wishlist_additions'`),
+  index("product_activity_pending_idx").on(table.reportingDay, table.occurredAt, table.id).where(sql`${table.processedAt} IS NULL`),
+  index("product_activity_expiry_idx").on(table.expiresAt),
+  index("product_activity_user_idx").on(table.userId),
+  index("product_activity_service_idx").on(table.serviceId),
+  index("product_activity_provider_idx").on(table.providerId),
+  index("product_activity_company_idx").on(table.companyId),
+  check("product_activity_shape", sql`${table.kind} IN ('wishlist_additions','service_views') AND (${table.kind} <> 'wishlist_additions' OR ${table.userId} IS NOT NULL) AND ${table.reportingDay} = (${table.occurredAt} AT TIME ZONE 'UTC')::date AND ${table.expiresAt} > ${table.occurredAt} AND ${table.expiresAt} <= ${table.occurredAt} + '2160:00:00'::interval AND (${table.processedAt} IS NULL OR ${table.processedAt} >= ${table.occurredAt})`),
+]).enableRLS();
+
+export const serviceActivityGroups = pgTable("service_activity_groups", {
+  id: uuid("id").primaryKey(),
+  kind: varchar("kind", { enum: ["wishlist_additions", "service_views"] }).notNull(),
+  serviceId: integer("service_id").notNull().references(() => services.id, { onDelete: "cascade" }),
+  providerId: varchar("provider_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  companyId: integer("company_id").references(() => companies.id, { onDelete: "cascade" }),
+  scopeKey: varchar("scope_key").notNull(),
+  reportingDay: date("reporting_day", { mode: "string" }).notNull(),
+  count: integer("count").notNull().default(1),
+  revision: integer("revision").notNull().default(1),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+}, table => [
+  uniqueIndex("service_activity_group_identity").on(table.kind, table.serviceId, table.reportingDay, table.scopeKey),
+  index("service_activity_scope_day_idx").on(table.scopeKey, table.reportingDay.desc(), table.id.desc()),
+  index("service_activity_group_expiry_idx").on(table.expiresAt),
+  index("service_activity_group_service_idx").on(table.serviceId),
+  index("service_activity_group_provider_idx").on(table.providerId),
+  index("service_activity_group_company_idx").on(table.companyId),
+  check("service_activity_group_shape", sql`${table.kind} IN ('wishlist_additions','service_views') AND ${table.count} > 0 AND ${table.revision} > 0 AND ${table.expiresAt} > ${table.updatedAt} AND ${table.scopeKey} = CASE WHEN ${table.companyId} IS NULL THEN 'provider:' || ${table.providerId} ELSE 'company:' || ${table.companyId}::text END`),
+]).enableRLS();
+
+export const serviceActivityReads = pgTable("service_activity_reads", {
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  groupId: uuid("group_id").notNull().references(() => serviceActivityGroups.id, { onDelete: "cascade" }),
+  readRevision: integer("read_revision").notNull().default(0),
+}, table => [
+  primaryKey({ columns: [table.userId, table.groupId] }),
+  index("service_activity_read_group_idx").on(table.groupId),
+  check("service_activity_read_revision_check", sql`${table.readRevision} >= 0`),
+]).enableRLS();
+
+// Explicit per-message receipts avoid a watermark clearing unseen older pages or
+// late-committing messages. Existing message deletion cascades receipt cleanup;
+// message bodies, sender-visible seen receipts and retention are unchanged.
+export const bookingMessageReads = pgTable("booking_message_reads", {
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  messageId: uuid("message_id").notNull().references(() => bookingMessages.id, { onDelete: "cascade" }),
+  contextKey: varchar("context_key", { length: 100 }).notNull(),
+  readAt: timestamp("read_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  primaryKey({ columns: [table.userId, table.messageId, table.contextKey] }),
+  index("booking_message_read_message_idx").on(table.messageId),
+  check("booking_message_read_context_check", sql`${table.contextKey} IN ('customer','provider:personal') OR ${table.contextKey} ~ '^provider:company:[1-9][0-9]*$'`),
+]).enableRLS();
+
+export type WishlistService = typeof wishlistServices.$inferSelect;
+export type ProductActivityEvent = typeof productActivityEvents.$inferSelect;
+export type ServiceActivityGroup = typeof serviceActivityGroups.$inferSelect;
 export type BookingRescheduleRequest = typeof bookingRescheduleRequests.$inferSelect;
 
 // Private server-only data: never join these into public users/provider payloads.

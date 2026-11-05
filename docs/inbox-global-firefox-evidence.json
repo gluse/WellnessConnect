@@ -1,0 +1,160 @@
+{
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "browsers": [
+    "firefox/157.0"
+  ],
+  "viewportCases": [
+    {
+      "language": "en",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 1024,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 1023,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 640,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 639,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 375,
+      "height": 700
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 1024,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 1023,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 640,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 639,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 375,
+      "height": 700
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 1024,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 1023,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 640,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 639,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 375,
+      "height": 700
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "height": 300
+    }
+  ],
+  "checks": [
+    "global header badges persist across appointments/search/wishlist/account/customer bookings/inbox for default-seeker owner; popup both roles, selected-workspace refresh, explicit target scopes and account isolation",
+    "en/lv/ru hearts and one-line brand/header controls, consistent20px icons/44px targets at27 viewport cases including breakpoints; batching, duplicate instances, pointer/keyboard and no details/booking/view side effects",
+    "failed-save rollback/manual retry, pending duplicate prevention, account change and late result isolation",
+    "guest dialog, focus restore, exact login return, no automatic save/view, manual save after sign-in",
+    "en/lv/ru signed-out general/search headers retain browse/login actions in one line at320px",
+    "en/lv/ru wishlist page, retained unavailable entries, safe removal, empty state and 320px reflow",
+    "wishlist read error and manual retry",
+    "en/lv/ru actual header badges, keyboard/mobile dialog focus, no message previews, linked conversation and displayed-ID receipts",
+    "inner/outer dialog scroll clipping preserves unread hidden messages; own messages never acknowledged; failed receipts retain unread until explicit retry; removal focus",
+    "desktop bell, reporting UTC, read failure/manual retry, snapshot revisions, 99+ visual/exact accessible count and zero badges",
+    "membership error retry does not save unknown state; unpublish hides details and republish restores membership"
+  ]
+}
