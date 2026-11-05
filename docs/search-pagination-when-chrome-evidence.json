@@ -1,0 +1,58 @@
+{
+  "date": "2026-11-05",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/156.0.8078.80",
+    "revision": "@fb096c0011f9d50f0a264a9376420cdea9c421e3",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "jsVersion": "15.6.75.27"
+  },
+  "matrix": [
+    {
+      "language": "en",
+      "width": 390
+    },
+    {
+      "language": "en",
+      "width": 1280
+    },
+    {
+      "language": "lv",
+      "width": 390
+    },
+    {
+      "language": "lv",
+      "width": 1280
+    },
+    {
+      "language": "ru",
+      "width": 390
+    },
+    {
+      "language": "ru",
+      "width": 1280
+    }
+  ],
+  "checks": [
+    "enabled on each opening",
+    "unfiltered initial catalog",
+    "opening/cancelling does not search",
+    "cancel restores focus",
+    "required date validation",
+    "explicit opt-out applies",
+    "applied date preserved",
+    "enabled availability sent on Apply",
+    "modal reflow"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Installed headless Chrome with synthetic API mocks and external traffic blocked. No connected services/database/session writes, physical-device or screen-reader verification."
+}

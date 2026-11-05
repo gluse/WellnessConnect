@@ -28,12 +28,12 @@ const publicService = { id: 1, providerId: "fixture-provider", name: "Fixture se
 globalThis.fetch = async (url, options = {}) => {
   if (String(url).startsWith("/locales/")) return new Response(await readFile(`client/public${url}`, "utf8"));
   if (url === "/api/categories") return new Response(JSON.stringify(categoryFixtures));
-  if (String(url).startsWith("/api/services/search?") || String(url).startsWith("/api/services/semantic-search?")) {
+  if (String(url).startsWith("/api/services/search/page?") || String(url).startsWith("/api/services/semantic-search/page?")) {
     searchRequests.push({ url: String(url), signal: options.signal });
     if (holdSearch) return new Promise((resolve, reject) => {
       options.signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), { once: true });
     });
-    return new Response(JSON.stringify(status === 200 ? [publicService] : { message: "Untrusted server error text" }), { status, headers: { "X-Search-Truncated": String(truncated) } });
+    return new Response(JSON.stringify(status === 200 ? { services: [publicService], nextCursor: null, mode: truncated ? "text-fallback" : "text" } : { message: "Untrusted server error text" }), { status });
   }
   throw new Error(`Unexpected offline request: ${url}`);
 };
@@ -45,6 +45,7 @@ assert.equal(params.get("query"), "yoga");
 assert.equal(params.get("date"), "2026-10-01");
 assert.equal(params.get("ageGroups"), "adults");
 assert.equal(params.get("radius"), "50");
+assert.equal(params.get("limit"), "24"); assert.equal(params.get("sort"), "default");
 assert.equal(request.signal, controller.signal);
 for (const [failureStatus, key] of [[400, "invalidFilters"], [422, "tooBroad"], [429, "rateLimited"], [503, "loadError"]]) {
   status = failureStatus; searchRequests = [];
@@ -117,11 +118,11 @@ status = 200; truncated = true;
 const retry = component.root.findAllByType("button").find(node => node.children.includes(english.retry));
 await act(async () => retry.props.onClick()); await flush(30);
 assert.equal(searchRequests.length,beforeRetry+1,"Only the explicit retry issues another request");
-assert.ok(text().includes(english.truncated));
+assert.ok(text().includes(i18n.t("searchPage.semanticFallback")));
 await i18n.changeLanguage("ru"); await flush(20);
-assert.ok(text().includes(i18n.t("publicSearch.truncated")));
+assert.ok(text().includes(i18n.t("searchPage.semanticFallback")));
 await i18n.changeLanguage("lv"); await flush(20);
-assert.ok(text().includes(i18n.t("publicSearch.truncated")));
+assert.ok(text().includes(i18n.t("searchPage.semanticFallback")));
 holdSearch = true;
 await editQuery("slow first"); await submit();
 const obsoleteRequest = searchRequests.at(-1);
@@ -134,4 +135,4 @@ const currentRequest = searchRequests.at(-1);
 await act(async () => component.unmount());
 assert.equal(currentRequest.signal.aborted, true, "Leaving search cancels its active request");
 queryClient.clear();
-console.log("Public search UI: separate query/filter drafts, explicit apply, validation retention, cancellation, errors/retry, truncation and en/lv/ru passed (offline).");
+console.log("Public search UI: paged requests, separate query/filter drafts, explicit apply, validation retention, cancellation, errors/retry, fallback and en/lv/ru passed (offline).");

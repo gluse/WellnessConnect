@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-05",
+  "engine": "webkit",
+  "version": {
+    "product": "webkit/27.2"
+  },
+  "groups": [
+    "en/lv/ru first-page24, keyboard append, concurrent input guard, retained cards on next-page failure and explicit retry",
+    "All157 matches accessible across seven pages; duplicate overlap removed; final page ends continuation",
+    "Sort and applied query restart continuation; server-global price ordering spans pages including matches outside former50",
+    "Filter/account changes cancel stale requests and restart at first page without mixed results",
+    "Semantic search uses paged endpoint; expired continuation retains cards and refreshes explicitly from first page",
+    "Invalid/restarted-process continuation offers a fresh search instead of retrying a rejected cursor",
+    "Real IntersectionObserver loads another page when scrolling near results end",
+    "Map manual continuation and switching back to list retain the same loaded services"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "viewport": [
+        390,
+        820
+      ],
+      "keyboardAppend": true,
+      "retainedErrorCards": 48,
+      "afterRetry": 72
+    },
+    {
+      "language": "lv",
+      "viewport": [
+        390,
+        820
+      ],
+      "keyboardAppend": true,
+      "retainedErrorCards": 48,
+      "afterRetry": 72
+    },
+    {
+      "language": "ru",
+      "viewport": [
+        390,
+        820
+      ],
+      "keyboardAppend": true,
+      "retainedErrorCards": 48,
+      "afterRetry": 72
+    }
+  ],
+  "limits": "Synthetic static fixture; real client/query/scroll behavior, mocked APIs/auth/Maps. No connected DB/session writes, embeddings, live-service or physical-device coverage.",
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ]
+}

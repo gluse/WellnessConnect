@@ -17,6 +17,7 @@
     "activity:worker": "node --import tsx server/wishlist/run-worker.ts",
     "activity:worker:production": "node dist/activity-worker.js",
     "test:wishlist": "node --import tsx scripts/test-wishlist-backend.mjs && node --import tsx scripts/test-global-inbox-backend.mjs",
+    "test:search-pagination": "node --import tsx scripts/test-search-pagination-backend.mjs",
     "notifications:worker": "node --import tsx server/notifications/run-worker.ts",
     "notifications:worker:production": "node dist/notification-worker.js",
     "test:notifications": "node --import tsx scripts/test-notifications.mjs && node --import tsx scripts/test-notification-worker.mjs && node --import tsx scripts/test-notification-scheduling.mjs && node --import tsx scripts/test-notification-retention.mjs && node --import tsx scripts/test-notification-bootstrap.mjs && node --import tsx scripts/test-notification-routes.mjs",

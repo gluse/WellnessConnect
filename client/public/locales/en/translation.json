@@ -941,7 +941,17 @@
     "gender_female": "Women only",
     "gender_both": "All genders",
     "advancePayment": "Advance payment: {{percent}}% required upfront.",
-    "clear": "Clear filters"
+    "clear": "Clear filters",
+    "loadMore": "Load more services",
+    "loadingMore": "Loading more services…",
+    "moreFailed": "More services could not be loaded. Your current results are still available.",
+    "endResults": "You have reached the end of these results.",
+    "refreshResults": "Refresh results",
+    "expiredResults": "These results have expired. Refresh to start a new search.",
+    "semanticFallback": "AI search is unavailable. Showing keyword matches instead.",
+    "mapPaginationHelp": "The map shows loaded services. Use Load more below to add more results.",
+    "loadedCount_one": "{{count}} service loaded",
+    "loadedCount_other": "{{count}} services loaded"
   },
   "searchLocation": {
     "browseWithout": "Browse without location",

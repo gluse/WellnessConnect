@@ -1,5 +1,7 @@
 import type { SearchFilters } from "../components/service-filters";
 import type { ServiceWithProvider } from "@shared/schema";
+import type { SearchPage } from "@shared/search-pagination";
+import type { ServiceSort } from "@/lib/service-sort";
 
 export const SEARCH_QUERY_LIMIT = 200;
 export const SEARCH_DATE_LIMIT_DAYS = 31;
@@ -34,14 +36,14 @@ export function searchErrorKey(error: unknown): string {
   return "publicSearch.loadError";
 }
 
-export interface PublicSearchResult {
-  services: ServiceWithProvider[];
-  truncated: boolean;
-}
+export type PublicSearchResult = SearchPage;
 
-export async function fetchPublicSearch(filters: SearchFilters, location: { lat: number; lng: number } | null, signal?: AbortSignal): Promise<PublicSearchResult> {
+export async function fetchPublicSearch(filters: SearchFilters, location: { lat: number; lng: number } | null, signal?: AbortSignal,
+  options: { sort?: ServiceSort; cursor?: string | null } = {}): Promise<PublicSearchResult> {
   const params = new URLSearchParams();
-  params.set("limit", "50");
+  params.set("limit", "24");
+  params.set("sort", options.sort ?? "default");
+  if (options.cursor) params.set("cursor", options.cursor);
   const semantic = filters.searchMode === "semantic" && Boolean(filters.searchQuery.trim());
   if (filters.searchQuery.trim()) params.set(semantic ? "query" : "searchQuery", filters.searchQuery.trim());
   for (const key of ["category", "serviceType", "date", "dateEnd", "time", "timeEnd"] as const) {
@@ -54,7 +56,7 @@ export async function fetchPublicSearch(filters: SearchFilters, location: { lat:
     params.set("longitude", String(location.lng));
     params.set("radius", String(filters.distance));
   }
-  const response = await fetch(`/api/services/${semantic ? "semantic-search" : "search"}?${params}`, { signal });
+  const response = await fetch(`/api/services/${semantic ? "semantic-search" : "search"}/page?${params}`, { signal });
   if (!response.ok) throw new PublicSearchError(response.status);
-  return { services: await response.json(), truncated: response.headers.get("X-Search-Truncated") === "true" };
+  return response.json();
 }

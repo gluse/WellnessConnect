@@ -942,7 +942,18 @@
     "gender_female": "Tikai sievietēm",
     "gender_both": "Visiem dzimumiem",
     "advancePayment": "Priekšapmaksa: {{percent}}% jāapmaksā iepriekš.",
-    "clear": "Notīrīt filtrus"
+    "clear": "Notīrīt filtrus",
+    "loadMore": "Ielādēt vairāk pakalpojumu",
+    "loadingMore": "Ielādē vairāk pakalpojumu…",
+    "moreFailed": "Neizdevās ielādēt vairāk pakalpojumu. Pašreizējie rezultāti joprojām ir pieejami.",
+    "endResults": "Sasniegtas šo rezultātu beigas.",
+    "refreshResults": "Atjaunināt rezultātus",
+    "expiredResults": "Šo rezultātu derīgums ir beidzies. Atjauniniet, lai sāktu jaunu meklēšanu.",
+    "semanticFallback": "MI meklēšana nav pieejama. Tiek rādītas atbilstības pēc atslēgvārdiem.",
+    "mapPaginationHelp": "Kartē ir redzami ielādētie pakalpojumi. Lai pievienotu vairāk rezultātu, izmantojiet pogu zem kartes.",
+    "loadedCount_zero": "Ielādēti {{count}} pakalpojumi",
+    "loadedCount_one": "Ielādēts {{count}} pakalpojums",
+    "loadedCount_other": "Ielādēti {{count}} pakalpojumi"
   },
   "searchLocation": {
     "browseWithout": "Pārlūkot bez atrašanās vietas",

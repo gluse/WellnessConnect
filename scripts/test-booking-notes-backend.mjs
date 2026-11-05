@@ -106,6 +106,7 @@ const noop = () => {};
 const isAuthenticated = (req, res, next) => req.user?.claims?.sub ? next() : res.status(401).json({ message: "Unauthorized" });
 class ProviderError extends Error {}
 const routeDependencies = { ...dependencies, http: { createServer: () => ({ close() {} }) }, "./storage": { ...storageModule, storage },
+  "./search-pagination/store": { createSearchPageStore: () => ({}) },
   "./wishlist/routes": { setupWishlistRoutes: noop }, "./wishlist/postgres": { createWishlistStore: () => ({}) },
   "./wishlist/service": { createWishlistService: () => ({}) }, "./wishlist/inbox": { createInboxService: () => ({}) },
   "./auth": { setupAuth: noop, isAuthenticated }, zod: { z }, "./companyAccess": access,

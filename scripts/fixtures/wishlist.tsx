@@ -88,7 +88,7 @@ window.fetch = async (input, options = {}) => {
   if (path === "/api/admin/access") return Response.json({ isAdmin: false });
   if (path === "/api/categories") return Response.json([{ key: "yoga", name: "Yoga", icon: "Y" }]);
   if (path === "/api/account/search-location") return Response.json(null);
-  if (path === "/api/services/search") return Response.json(services);
+  if (path === "/api/services/search/page") return Response.json({ services, nextCursor: null, mode: "text" });
   if (path === "/api/wishlist/membership") {
     if (!actor) return Response.json({}, { status: 401 });
     const ids = (url.searchParams.get("serviceIds") || "").split(",").map(Number);

@@ -945,7 +945,17 @@
     "resultsCount_two": "सेवाएं: {{count}}",
     "resultsCount_few": "सेवाएं: {{count}}",
     "resultsCount_many": "सेवाएं: {{count}}",
-    "clear": "फ़िल्टर साफ़ करें"
+    "clear": "फ़िल्टर साफ़ करें",
+    "loadMore": "और सेवाएँ लोड करें",
+    "loadingMore": "और सेवाएँ लोड हो रही हैं…",
+    "moreFailed": "और सेवाएँ लोड नहीं हो सकीं। मौजूदा परिणाम उपलब्ध हैं।",
+    "endResults": "आप इन परिणामों के अंत तक पहुँच गए हैं।",
+    "refreshResults": "परिणाम ताज़ा करें",
+    "expiredResults": "इन परिणामों की अवधि समाप्त हो गई है। नई खोज के लिए ताज़ा करें।",
+    "semanticFallback": "AI खोज उपलब्ध नहीं है। कीवर्ड के परिणाम दिखाए जा रहे हैं।",
+    "mapPaginationHelp": "मानचित्र लोड की गई सेवाएँ दिखाता है। और परिणाम जोड़ने के लिए नीचे का बटन दबाएँ।",
+    "loadedCount_one": "{{count}} सेवा लोड हुई",
+    "loadedCount_other": "{{count}} सेवाएँ लोड हुईं"
   },
   "searchLocation": {
     "browseWithout": "स्थान के बिना ब्राउज़ करें",

@@ -37,6 +37,7 @@ import { setupWishlistRoutes } from "./wishlist/routes";
 import { createWishlistStore } from "./wishlist/postgres";
 import { createWishlistService } from "./wishlist/service";
 import { createInboxService } from "./wishlist/inbox";
+import { createSearchPageStore } from "./search-pagination/store";
 import { bookingReminderSummaries } from "./notifications/repository";
 import { notificationConfig } from "./notifications/transports";
 import { NotificationError, notificationTimezoneSchema } from "@shared/notifications";
@@ -119,6 +120,7 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
   setupProviderCatalogRoutes(app);
   setupStorefrontRoutes(app);
   setupPublicSearchRoutes(app, {
+    searchPageStore: createSearchPageStore(db, ids => storage.searchServices({serviceIds: ids})),
     searchServices: filters => storage.searchServices(filters),
     getPublicServiceEmbeddings: filters => storage.getPublicServiceEmbeddings(filters),
     generateEmbedding,

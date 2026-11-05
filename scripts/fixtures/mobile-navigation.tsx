@@ -45,7 +45,7 @@ window.fetch = async (input, options = {}) => {
   if (method === "GET") {
     if (path.startsWith("/api/inbox/summary?")) return Response.json({ unreadMessages: 0, unreadNotifications: 0 });
     if (["/api/bookings/provider", "/api/bookings/seeker", "/api/provider/employees", "/api/services/provider", "/api/addresses", "/api/availability/provider", "/api/categories"].includes(path)) return Response.json([]);
-    if (path.startsWith("/api/services/search?")) return Response.json([]);
+    if (path.startsWith("/api/services/search/page?")) return Response.json({ services: [], nextCursor: null, mode: "text" });
     if (path === "/api/account/search-location") return Response.json(null);
     if (path === "/api/admin/access") return Response.json({ isAdmin: false });
     if (path === "/api/auth/providers") return Response.json({ google: false, facebook: false, apple: false, microsoft: false });

@@ -4,8 +4,11 @@ import { z } from "zod";
 import type { ServiceWithProvider } from "@shared/schema";
 import { cosineSimilarity } from "./vectors";
 import { assertSearchSize, MAX_SEMANTIC_RESULTS, publicSearchSchema, SearchError, semanticSearchSchema, type SearchFilters } from "./searchInput";
+import { setupSearchPageRoutes } from "./search-pagination/routes";
+import type { SearchPageStore } from "./search-pagination/service";
 
 export interface PublicSearchDependencies {
+  searchPageStore?: SearchPageStore;
   searchServices(filters: SearchFilters): Promise<ServiceWithProvider[]>;
   getPublicServiceEmbeddings(filters: SearchFilters): Promise<{ serviceId: number; embedding: number[] }[]>;
   generateEmbedding(text: string, options: { timeout: number; maxRetries: number; signal: AbortSignal }): Promise<number[]>;
@@ -33,6 +36,11 @@ export function setupPublicSearchRoutes(app: Express, dependencies: PublicSearch
   const readLimit = limiter(policy.readsPerIp), processReadLimit = limiter(policy.readsPerProcess, true);
   const semanticLimit = limiter(policy.semanticPerIp), processSemanticLimit = limiter(policy.semanticPerProcess, true);
   const noStore: RequestHandler = (_req, res, next) => { res.set("Cache-Control", "no-store"); next(); };
+  let activeEmbeddings = 0;
+  setupSearchPageRoutes(app, {...dependencies,generateEmbedding:async(text,options)=>{
+    if(activeEmbeddings>=policy.concurrentEmbeddings)throw new SearchError(429,"SEARCH_RATE_LIMITED","Search is busy. Please try again shortly.");
+    activeEmbeddings++;try{return await dependencies.generateEmbedding(text,options);}finally{activeEmbeddings--;}
+  }}, policy, [noStore, readLimit, processReadLimit], [semanticLimit, processSemanticLimit]);
   app.get("/api/services/search", noStore, readLimit, processReadLimit, async (req, res) => {
     try {
       const filters = { limit: 50, ...publicSearchSchema.parse(req.query) };
@@ -42,7 +50,6 @@ export function setupPublicSearchRoutes(app: Express, dependencies: PublicSearch
     } catch (error) { failure(error, res); }
   });
 
-  let activeEmbeddings = 0;
   app.get("/api/services/semantic-search", noStore, readLimit, processReadLimit, semanticLimit, processSemanticLimit, async (req, res) => {
     const parsed = semanticSearchSchema.safeParse(req.query);
     if (!parsed.success) return failure(parsed.error, res);

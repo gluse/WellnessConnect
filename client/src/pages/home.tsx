@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MapPin, List, LayoutGrid, CalendarDays, Map as MapIcon, Search, Target, X, SlidersHorizontal } from "lucide-react";
 import ServiceFilters, { type SearchFilters } from "@/components/service-filters";
 import SearchDateFields, { searchDates } from "@/components/search-date-fields";
 import ServiceCard from "@/components/service-card";
 import ProviderServicesDialog from "@/components/provider-services-dialog";
 import SearchResultsSort from "@/components/search-results-sort";
-import { serviceRating, sortServices, type ServiceSort } from "@/lib/service-sort";
+import { serviceRating, type ServiceSort } from "@/lib/service-sort";
+import SearchPagination from "@/components/search-pagination";
 import GoogleMap from "@/components/google-map";
 import { resolveSearchLocation, type ResolvedSearchLocation } from "@/lib/saved-search-location";
 import { useSearchLocation } from "@/hooks/use-search-location";
@@ -104,17 +105,27 @@ function SearchPage({ userId }: { userId: string | null }) {
 
   useEffect(() => { alive.current = true; return () => { alive.current = false; locationCleanup.current?.(); }; }, []);
   const searchEnabled = !savedLocation.loading || browsingWithoutLocation;
-  const search = useQuery({
-    queryKey: ["/api/services/search", userId, filters, location?.coords ?? null],
-    queryFn: ({ signal }) => fetchPublicSearch(filters, location?.coords ?? null, signal),
-    retry: false,
+  const effectiveSort = sort.startsWith("distance-") && !location ? "default" : sort;
+  const searchKey = ["/api/services/search", userId, filters, location?.coords ?? null, effectiveSort];
+  const searchIdentity = JSON.stringify(searchKey);
+  const search = useInfiniteQuery({
+    queryKey: searchKey, initialPageParam: null as string | null,
+    queryFn: ({ signal, pageParam }) => fetchPublicSearch(filters, location?.coords ?? null, signal, { sort: effectiveSort, cursor: pageParam }),
+    getNextPageParam: page => page.nextCursor || undefined,
+    retry: false, staleTime: Infinity, gcTime: 0, refetchOnWindowFocus: false, refetchOnReconnect: false,
     enabled: searchEnabled,
   });
-  const effectiveSort = sort.startsWith("distance-") && !location ? "default" : sort;
-  const services = useMemo(() => sortServices(!searchEnabled || search.isError ? [] : search.data?.services ?? [], effectiveSort, location?.coords ?? null), [search.data, search.isError, effectiveSort, location, searchEnabled]);
-  const errorKey = search.isError ? searchErrorKey(search.error) : undefined;
-  const loading = restoringLocation || (searchEnabled && (search.isPending || search.isFetching));
+  const services = useMemo(() => {
+    const seen = new Set<number>();
+    return !searchEnabled ? [] : (search.data?.pages.flatMap(page => page.services) ?? []).filter(service => {
+      if (seen.has(service.id)) return false;
+      seen.add(service.id); return true;
+    });
+  }, [search.data, searchEnabled]);
+  const errorKey = search.isError && !search.data ? searchErrorKey(search.error) : undefined;
+  const loading = restoringLocation || (searchEnabled && search.isPending);
   const showResults = searchEnabled && !loading && !errorKey;
+  const refreshSearch = () => { resultsHeading.current?.focus(); void queryClient.resetQueries({ queryKey: searchKey, exact: true }); };
 
   function rejectQuery(key: string) {
     setQueryError(key);
@@ -323,10 +334,10 @@ function SearchPage({ userId }: { userId: string | null }) {
       </Dialog>
       <div className="search-workspace"><section className="search-results" aria-labelledby="search-results-title" aria-busy={loading}>
         <div className="search-results-controls">
-        <div className="search-results-head"><h2 id="search-results-title" ref={resultsHeading} tabIndex={-1} aria-live="polite">{loading ? t("publicSearch.loading") : errorKey ? t("searchPage.navSearch") : t("searchPage.resultsCount", { count: services.length })}</h2></div>
+        <div className="search-results-head"><h2 id="search-results-title" ref={resultsHeading} tabIndex={-1} aria-live="polite">{loading ? t("publicSearch.loading") : errorKey ? t("searchPage.navSearch") : t("searchPage.loadedCount", { count: services.length })}</h2></div>
         <div className="search-results-toolbar">
           <div className="search-view-actions">
-            <SearchResultsSort value={effectiveSort} onChange={setSort} hasLocation={!!location} hasRatings={services.some(service => serviceRating(service) !== undefined)} compact mobileLayout={isMobile} />
+            <SearchResultsSort value={effectiveSort} onChange={setSort} hasLocation={!!location} hasRatings={search.hasNextPage || services.some(service => serviceRating(service) !== undefined)} compact mobileLayout={isMobile} />
             <Dialog open={filtersOpen} onOpenChange={setFiltersOpen}><DialogTrigger asChild><Button type="button" variant="ghost" className="search-mobile-filter-trigger"><SlidersHorizontal aria-hidden="true" />{t(isMobile ? "searchPage.filterAction" : "searchPage.filters")}</Button></DialogTrigger><DialogContent className="search-design search-filter-dialog" closeLabel={t("searchPage.close")}><DialogHeader className="sr-only"><DialogTitle>{t("searchPage.filters")}</DialogTitle><DialogDescription>{t("searchPage.filterHelp")}</DialogDescription></DialogHeader><ServiceFilters {...filterProps} /></DialogContent></Dialog>
           </div>
           <div className="search-view-toggle" role="group" aria-label={t("searchPage.resultView")}>{(["grid", "list", "map"] as const).map(value => <Button key={value} variant="ghost" type="button" data-testid={`button-view-${value}`} aria-label={t(`views.${value}`)} aria-pressed={viewMode === value} onClick={() => setViewMode(value)}>{value === "grid" ? <LayoutGrid aria-hidden="true" /> : value === "list" ? <List aria-hidden="true" /> : <MapIcon aria-hidden="true" />}{!isMobile && <span>{t(`views.${value}`)}</span>}</Button>)}</div>
@@ -334,9 +345,11 @@ function SearchPage({ userId }: { userId: string | null }) {
         </div>
         {!!chips.length && <div className="search-chips">{chips.map(chip => <button type="button" className="search-chip" key={chip.key} disabled={locationBusy || restoringLocation || savedLocation.saving} onClick={chip.action} aria-label={t("searchPage.remove", { filter: chip.label })}><bdi>{chip.label}</bdi><X aria-hidden="true" /></button>)}<button type="button" className="search-text-button" onClick={clearAll} disabled={locationBusy || restoringLocation || savedLocation.saving}>{t("searchPage.clear")}</button></div>}
         {!searchEnabled && !loading ? <div className="search-state" role="status"><p>{t("searchLocation.intro")}</p><Button type="button" variant="outline" onClick={browseWithoutLocation}>{t("searchLocation.browseWithout")}</Button></div> : loading ? <div className="search-loading" role="status"><p>{t("publicSearch.loading")}</p><div /><div /></div> : errorKey ? <div className="search-state" role="alert"><h3>{t("searchPage.errorTitle")}</h3><p>{t(errorKey)}</p><Button variant="outline" onClick={() => void search.refetch()} disabled={search.isFetching}>{t("publicSearch.retry")}</Button></div> : <>
-          {search.data?.truncated && <p className="search-truncated" role="status">{t("publicSearch.truncated")}</p>}
+          {search.data?.pages[0]?.mode === "text-fallback" && <p className="search-truncated" role="status">{t("searchPage.semanticFallback")}</p>}
           {viewMode !== "map" && (services.length ? <div className={`search-cards search-cards-${viewMode}`}>{services.map(service => <ServiceCard key={service.id} service={service} searchLayout hasLocation={!!location} onBook={() => book(service)} onViewDetails={() => details(service)} onViewProvider={() => setProviderSource(service)} />)}</div> : <div className="search-state" role="status"><MapPin aria-hidden="true" /><h3>{t("searchPage.emptyTitle")}</h3><p>{t("publicSearch.empty")}</p><Button onClick={clearAll} disabled={busy}>{t("searchPage.clear")}</Button></div>)}
-          {viewMode === "map" && <div><p className="search-map-help">{t("searchPage.mapHelp")} <button type="button" className="search-text-button" onClick={() => setViewMode("list")}>{t("searchPage.backList")}</button></p>{services.length || location ? <div className="search-map"><GoogleMap services={services} userLocation={location?.coords ?? null} onServiceSelect={details} onShowList={() => setViewMode("list")} /></div> : <div className="search-state"><h3>{t("searchPage.emptyTitle")}</h3><p>{t("searchPage.anyLocation")}</p><Button variant="outline" onClick={() => setViewMode("list")}>{t("searchPage.backList")}</Button></div>}</div>}
+          {viewMode === "map" && <div><p className="search-map-help">{t("searchPage.mapHelp")} <button type="button" className="search-text-button" onClick={() => setViewMode("list")}>{t("searchPage.backList")}</button></p>{search.hasNextPage && <p className="search-map-help">{t("searchPage.mapPaginationHelp")}</p>}{services.length || location ? <div className="search-map"><GoogleMap services={services} userLocation={location?.coords ?? null} onServiceSelect={details} onShowList={() => setViewMode("list")} /></div> : <div className="search-state"><h3>{t("searchPage.emptyTitle")}</h3><p>{t("searchPage.anyLocation")}</p><Button variant="outline" onClick={() => setViewMode("list")}>{t("searchPage.backList")}</Button></div>}</div>}
+          <SearchPagination key={`${searchIdentity}:${viewMode}`} hasNextPage={search.hasNextPage} fetching={search.isFetching} failed={search.isFetchNextPageError} error={search.error} hasResults={services.length > 0}
+            onLoad={() => { if (!search.isFetching && search.hasNextPage) void search.fetchNextPage({ cancelRefetch: false }); }} onRefresh={refreshSearch} />
         </>}
         {showResults && services.length > 0 && <p className="search-footer">{t("searchPage.footer")}</p>}
       </section></div>

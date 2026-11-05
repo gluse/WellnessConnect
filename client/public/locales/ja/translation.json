@@ -945,7 +945,17 @@
     "resultsCount_two": "サービス {{count}}件",
     "resultsCount_few": "サービス {{count}}件",
     "resultsCount_many": "サービス {{count}}件",
-    "clear": "フィルターを解除"
+    "clear": "フィルターを解除",
+    "loadMore": "サービスをさらに読み込む",
+    "loadingMore": "追加のサービスを読み込み中…",
+    "moreFailed": "追加のサービスを読み込めませんでした。現在の結果は引き続き利用できます。",
+    "endResults": "検索結果の最後に到達しました。",
+    "refreshResults": "結果を更新",
+    "expiredResults": "結果の有効期限が切れました。更新して検索をやり直してください。",
+    "semanticFallback": "AI検索を利用できません。代わりにキーワードの一致を表示しています。",
+    "mapPaginationHelp": "地図には読み込み済みのサービスが表示されます。下のボタンで追加できます。",
+    "loadedCount_one": "{{count}} 件のサービスを読み込み済み",
+    "loadedCount_other": "{{count}} 件のサービスを読み込み済み"
   },
   "searchLocation": {
     "browseWithout": "場所を指定せずに閲覧",

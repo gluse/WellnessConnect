@@ -945,7 +945,17 @@
     "resultsCount_two": "Services : {{count}}",
     "resultsCount_few": "Services : {{count}}",
     "resultsCount_many": "Services : {{count}}",
-    "clear": "Effacer les filtres"
+    "clear": "Effacer les filtres",
+    "loadMore": "Charger plus de services",
+    "loadingMore": "Chargement de services supplémentaires…",
+    "moreFailed": "Impossible de charger plus de services. Vos résultats restent disponibles.",
+    "endResults": "Vous avez atteint la fin des résultats.",
+    "refreshResults": "Actualiser les résultats",
+    "expiredResults": "Ces résultats ont expiré. Actualisez pour lancer une nouvelle recherche.",
+    "semanticFallback": "La recherche IA est indisponible. Les résultats par mots-clés sont affichés.",
+    "mapPaginationHelp": "La carte affiche les services chargés. Utilisez le bouton ci-dessous pour en ajouter.",
+    "loadedCount_one": "{{count}} service chargé",
+    "loadedCount_other": "{{count}} services chargés"
   },
   "searchLocation": {
     "browseWithout": "Parcourir sans localisation",

@@ -945,7 +945,17 @@
     "resultsCount_two": "Dienste: {{count}}",
     "resultsCount_few": "Dienste: {{count}}",
     "resultsCount_many": "Dienste: {{count}}",
-    "clear": "Filter zurücksetzen"
+    "clear": "Filter zurücksetzen",
+    "loadMore": "Weitere Angebote laden",
+    "loadingMore": "Weitere Angebote werden geladen…",
+    "moreFailed": "Weitere Angebote konnten nicht geladen werden. Bisherige Ergebnisse bleiben verfügbar.",
+    "endResults": "Du hast das Ende dieser Ergebnisse erreicht.",
+    "refreshResults": "Ergebnisse aktualisieren",
+    "expiredResults": "Diese Ergebnisse sind abgelaufen. Aktualisiere sie für eine neue Suche.",
+    "semanticFallback": "KI-Suche ist nicht verfügbar. Stattdessen werden Stichworttreffer angezeigt.",
+    "mapPaginationHelp": "Die Karte zeigt geladene Angebote. Lade unten weitere Ergebnisse.",
+    "loadedCount_one": "{{count}} Angebot geladen",
+    "loadedCount_other": "{{count}} Angebote geladen"
   },
   "searchLocation": {
     "browseWithout": "Ohne Standort durchsuchen",

@@ -60,9 +60,10 @@ try {
   await key('Home'); await key('ArrowDown');
   if (engine === 'webkit') await key('Enter');
   await until(() => document.querySelector('#service-sort').value === 'price-asc', 'native keyboard sort commits selection');
+  await settled();
   assert.equal(await evaluate(() => document.querySelector('#service-sort').value), 'price-asc', 'native keyboard sort skips unavailable distance options');
   assert.equal(await evaluate(() => document.activeElement.id), 'service-sort');
-  await set('service-sort', 'price-desc');
+  await set('service-sort', 'price-desc'); await settled();
   const sorted = await evaluate(() => [...document.querySelectorAll('.search-service-title')].map(node => node.textContent));
   const beforeViews = await requestCount();
   await click('[data-testid="button-view-grid"]');
@@ -244,7 +245,7 @@ try {
   assert.deepEqual(await evaluate(() => window.savedLocationFixture.writes), [], 'no mocked account-preference writes in this flow');
   assert.deepEqual(fixture.errors, []); assert.deepEqual(fixture.network, []); assert.deepEqual(fixture.blocked, []);
   checks.push('Mobile-only reference layout below 1024px; desktop original presentation restored and breakpoint edges checked, including live resize with applied filters/sort/view state retained');
-  const evidence = { date: '2026-11-04', browser: await fixture.api('Browser.getVersion'), checks, matrix, screenshots: captures, contrast, darkContrast, unexpectedNetwork: fixture.network, blocked: fixture.blocked, runtimeErrors: fixture.errors, deferredLanguages: ['ar','zh','fr','de','hi','ja','pt','es'], limits: 'Synthetic local static fixture; mocked APIs/auth/geocoding/geolocation/Maps and images. No connected application server, database writes, paid Maps calls or deployment. Browser emulation does not establish physical-device or screen-reader coverage.' };
+  const evidence = { date: new Date().toISOString().slice(0, 10), browser: await fixture.api('Browser.getVersion'), checks, matrix, screenshots: captures, contrast, darkContrast, unexpectedNetwork: fixture.network, blocked: fixture.blocked, runtimeErrors: fixture.errors, deferredLanguages: ['ar','zh','fr','de','hi','ja','pt','es'], limits: 'Synthetic local static fixture; mocked APIs/auth/geocoding/geolocation/Maps and images. No connected application server, database writes, paid Maps calls or deployment. Browser emulation does not establish physical-device or screen-reader coverage.' };
   await writeFile(`docs/${artifactPrefix}-${engine}-evidence.json`, JSON.stringify(evidence, null, 2) + '\n');
   console.log(`Search redesign: ${checks.length} behavior groups; ${matrix.length} locale/viewport/view cases passed in ${engine}.`);
 } finally { await fixture.close(); }

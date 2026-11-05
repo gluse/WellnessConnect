@@ -68,8 +68,10 @@ let requests = [], responseRows = rows, component;
 globalThis.fetch = async url => {
   if (url === "/api/categories") return new Response(JSON.stringify(categoryFixtures));
   requests.push(url);
-  assert.ok(url.startsWith("/api/services/search?") || url.startsWith("/api/services/semantic-search?"), `Unexpected request: ${url}`);
-  return new Response(JSON.stringify(responseRows));
+  assert.ok(url.startsWith("/api/services/search/page?") || url.startsWith("/api/services/semantic-search/page?"), `Unexpected request: ${url}`);
+  const params = new URL(url, 'https://fixture.invalid').searchParams;
+  const location = params.has('latitude') ? { lat: Number(params.get('latitude')), lng: Number(params.get('longitude')) } : null;
+  return new Response(JSON.stringify({ services: sortServices(responseRows, params.get('sort') ?? 'default', location), nextCursor: null, mode: 'text' }));
 };
 const flush = async (milliseconds = 40) => act(async () => { await new Promise(resolve => setTimeout(resolve, milliseconds)); });
 const flushSearch = async () => { await flush(450); await flush(); };
@@ -99,7 +101,8 @@ for (const [sort, expected] of [["price-asc", [2, 4, 3, 1]], ["price-desc", [1, 
   await changeSort(sort);
   assert.deepEqual(renderedIds(), expected);
 }
-assert.equal(requests.length, requestCount, "Changing sort must reuse fetched results");
+assert.equal(requests.length, requestCount + 4, "Changing sort requests a new globally ordered first page");
+assert.deepEqual(requests.slice(requestCount).map(url => new URL(url, 'https://fixture.invalid').searchParams.get('sort')), ['price-asc', 'price-desc', 'rating-asc', 'rating-desc']);
 await act(async () => useLocation());
 await flush();
 assert.equal(dropdown().findAllByType("option").find(node => node.props.value === "distance-asc").props.disabled, false, "Current location immediately enables nearest-first without Search");
@@ -116,7 +119,7 @@ await act(async () => useLocation());
 await submitQuery("fixture");
 await flushSearch();
 await changeSort("distance-asc");
-assert.ok(requests.some(url => url.startsWith("/api/services/semantic-search?")));
+assert.ok(requests.some(url => url.startsWith("/api/services/semantic-search/page?")));
 assert.deepEqual(renderedIds(), [6, 5, 7]);
 assert.equal(component.root.findAllByType(ServiceCard)[0].props.service.distance, 0);
 assert.ok(component.root.findByProps({ id: "service-sort-help" }).children.join("").includes(translation.sorting.ratingsUnavailable));

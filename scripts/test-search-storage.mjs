@@ -36,6 +36,7 @@ const db = { select() {
   return query;
 } };
 const dependencies = {
+  "node:crypto": { randomUUID() { throw new Error("Unexpected booking identity creation during search"); } },
   "@shared/schema": schema, "./db": { db }, "drizzle-orm": drizzle,
   "@shared/provider": provider,
   "./storefronts": { storefrontStore: { async slugs() { slugsLoaded++; return new Map(); } } },

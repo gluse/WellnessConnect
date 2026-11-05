@@ -55,7 +55,7 @@ try {
   await click('.search-filter-dialog button[type="submit"]'); assert.equal((await requests()).length, beforeInvalid);
   await choose('.search-filter-dialog [data-testid="search-date"]', ''); await choose('.search-filter-dialog [data-testid="search-dateEnd"]', '');
   await set('service-query',''); await submit(); await until(() => document.querySelectorAll('.search-service-card').length === 3,'cleared query');
-  await set('service-sort','price-asc'); assert.equal(await evaluate(() => document.querySelector('.search-service-title').textContent), 'Restorative yoga');
+  await set('service-sort','price-asc'); await until(() => document.querySelector('.search-results').getAttribute('aria-busy') === 'false', 'server sort settled'); assert.equal(await evaluate(() => document.querySelector('.search-service-title').textContent), 'Restorative yoga');
   checks.push('invalid radius/date range retains prior results, focuses feedback; existing price sort');
 
   await set('search-location','Synthetic city'); await submit(); assert.ok((await requests()).at(-1).includes('latitude=0')); assert.ok((await requests()).at(-1).includes('radius=25'));

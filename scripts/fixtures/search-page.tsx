@@ -7,6 +7,7 @@ import { Router } from "wouter";
 import Home from "../../client/src/pages/home";
 import { queryClient } from "../../client/src/lib/queryClient";
 import { WishlistProvider } from "../../client/src/components/wishlist-provider";
+import { sortServices, type ServiceSort } from "../../client/src/lib/service-sort";
 import type { ServiceWithProvider } from "../../shared/schema";
 
 declare const __FORM_RESOURCES__: Record<string, { translation: object }>;
@@ -58,7 +59,8 @@ window.fetch = async (input, options = {}) => {
   if (method === "POST" && /^\/api\/services\/\d+\/view$/.test(path)) return new Response(null, { status: 204 });
   if (new URLSearchParams(location.search).has("redesign")) {
     if (method === "GET" && path === "/api/admin/access") return Response.json({ isAdmin: false });
-    if (method === "GET" && path === "/api/company/context") return Response.json({ company: null, workspaces: [] });
+    if (method === "GET" && path === "/api/company/context") return Response.json({ company: null, membership: null, workspaces: [], invalid: false,
+      permissions: { manageCompany: false, manageTeam: false, manageServices: false, manageSchedules: false, manageBookings: false, readAll: false, isOwner: false } });
   }
   if (path === "/api/account/search-location" || path === "/api/account/search-location/adopt") {
     if (savedFixture.preferenceError) return Response.json({}, { status: 503 });
@@ -89,7 +91,7 @@ window.fetch = async (input, options = {}) => {
     if (fixture.mapsConfig === "error") return Response.json({}, { status: 503 });
     return Response.json({ apiKey: "synthetic-key" });
   }
-  if (/^\/api\/services\/(search|semantic-search)\?/.test(path)) {
+  if (/^\/api\/services\/(search|semantic-search)\/page\?/.test(path)) {
     fixture.requests.push(path);
     if (fixture.result === "pending") await new Promise<void>((resolve, reject) => {
       fixture.resolve = resolve;
@@ -100,7 +102,9 @@ window.fetch = async (input, options = {}) => {
     const params = new URL(path, location.origin).searchParams;
     const query = (params.get("searchQuery") || params.get("query") || "").toLowerCase();
     const found = rows.filter(row => (!params.get("category") || row.category === params.get("category")) && (!params.get("serviceType") || row.serviceType === params.get("serviceType")) && (!query || row.name.toLowerCase().includes(query)));
-    return Response.json(fixture.result === "empty" ? [] : found, { headers: { "X-Search-Truncated": String(fixture.result === "truncated") } });
+    const coordinates = params.has("latitude") ? { lat: Number(params.get("latitude")), lng: Number(params.get("longitude")) } : null;
+    const services = sortServices(fixture.result === "empty" ? [] : found, (params.get("sort") || "default") as ServiceSort, coordinates);
+    return Response.json({ services, nextCursor: null, mode: fixture.result === "truncated" ? "text-fallback" : "text" });
   }
   if (/^\/api\/services\/\d+\/reviews\?/.test(path)) return Response.json({ reviews: [], page: 1, hasMore: false });
   fixture.unexpected.push(method + " " + path); throw new Error("Unexpected fixture request");

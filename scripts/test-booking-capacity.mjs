@@ -201,6 +201,7 @@ for (const method of ["get", "post", "patch", "put", "delete"]) app[method] = (p
 const noop = () => {};
 class ProviderError extends Error {}
 const routeDependencies = { ...dependencies, http: { createServer: () => ({ close() {} }) }, "./storage": { ...storageModule, storage },
+  "./search-pagination/store": { createSearchPageStore: () => ({}) },
   "./wishlist/routes": { setupWishlistRoutes: noop }, "./wishlist/postgres": { createWishlistStore: () => ({}) },
   "./wishlist/service": { createWishlistService: () => ({}) }, "./wishlist/inbox": { createInboxService: () => ({}) },
   "./auth": { setupAuth: noop, isAuthenticated: noop }, zod: { z }, "./companyAccess": access, "./schedulingRoutes": schedulingRoutes,

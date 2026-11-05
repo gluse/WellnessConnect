@@ -127,6 +127,8 @@
 .search-sort-row>p{color:var(--search-muted);font-size:.75rem;max-width:160px;text-align:end;line-height:1.6}
 .search-sort-row #service-sort-help{color:var(--search-muted);font-size:.75rem}
 .search-cards{display:grid;gap:0}
+.search-pagination{display:flex;flex-direction:column;align-items:center;gap:.75rem;padding:1.25rem 0;text-align:center;color:var(--search-muted);font-size:.875rem;overflow-anchor:none}
+.search-pagination>button{min-height:44px;max-width:100%;white-space:normal}
 .search-service-card{display:grid;grid-template-columns:88px minmax(0,1fr);align-items:start;gap:1rem;border-bottom:1px solid var(--search-line);padding:1rem 0;background:var(--search-surface);color:var(--search-ink);min-width:0}
 .search-design .search-service-art,.search-map-preview .search-service-art{background:#e6eee8;display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1;height:auto;min-height:0;position:relative;overflow:hidden;border:0;border-radius:.75rem;padding:0}
 .search-service-art>svg{width:40%;height:40%;stroke-width:1;color:#537660}

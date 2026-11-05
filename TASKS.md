@@ -657,4 +657,20 @@ See [business scenarios](docs/payment-business-plan.md),
   conversation targets. Three-browser en/lv/ru regression, Backend 80+16 scenarios,
   TypeScript and isolated build pass. No schema or connected changes required.
 
-<!-- Add the next task here using TASK-043, or place it in the relevant section. -->
+- [x] **TASK-043 — Load additional service search results on scroll.**
+  **Assignment, 5 November 2026:** user requested infinite scrolling and review of
+  the fixed 50-result limit. Frontend `/root/wishlist_frontend` and Backend
+  `/root/wishlist_backend_plan` accepted local implementation; DB
+  `/root/wishlist_database_plan` accepted local query review. Root coordinates
+  integration and specifically delegated isolated pagination browser checks.
+  Start with 24 services/page (maximum 50/request), server-global ordering,
+  opaque continuation, automatic scroll loading and accessible manual retry.
+  **Status:** local implementation and verification complete; all owners accepted.
+  New Backend 48 scenario groups, DB 31 SQL compilation checks, three-browser
+  pagination eight-group checks (en/lv/ru), affected Search/wishlist/booking
+  regressions, TypeScript and isolated frontend/backend builds passed. No schema
+  changes or connected operations occurred; startup/deployment remain separate.
+  See [scope, contract and verification](docs/search-pagination-handoff.md).
+  Fresh testing en/lv/ru only; other languages and RTL remain deferred.
+
+<!-- Add the next task here using TASK-044, or place it in the relevant section. -->

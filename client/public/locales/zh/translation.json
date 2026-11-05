@@ -945,7 +945,17 @@
     "resultsCount_two": "{{count}}项服务",
     "resultsCount_few": "{{count}}项服务",
     "resultsCount_many": "{{count}}项服务",
-    "clear": "清除筛选"
+    "clear": "清除筛选",
+    "loadMore": "加载更多服务",
+    "loadingMore": "正在加载更多服务…",
+    "moreFailed": "无法加载更多服务，当前结果仍可查看。",
+    "endResults": "已到达这些结果的末尾。",
+    "refreshResults": "刷新结果",
+    "expiredResults": "这些结果已过期，请刷新以重新搜索。",
+    "semanticFallback": "AI 搜索暂不可用，现显示关键词匹配结果。",
+    "mapPaginationHelp": "地图显示已加载的服务，请使用下方按钮加载更多结果。",
+    "loadedCount_one": "已加载 {{count}} 项服务",
+    "loadedCount_other": "已加载 {{count}} 项服务"
   },
   "searchLocation": {
     "browseWithout": "不设置位置浏览",

@@ -945,7 +945,21 @@
     "resultsCount_two": "الخدمات: {{count}}",
     "resultsCount_few": "الخدمات: {{count}}",
     "resultsCount_many": "الخدمات: {{count}}",
-    "clear": "مسح التصفية"
+    "clear": "مسح التصفية",
+    "loadMore": "تحميل المزيد من الخدمات",
+    "loadingMore": "جارٍ تحميل المزيد من الخدمات…",
+    "moreFailed": "تعذر تحميل المزيد من الخدمات. تبقى نتائجك الحالية متاحة.",
+    "endResults": "وصلت إلى نهاية هذه النتائج.",
+    "refreshResults": "تحديث النتائج",
+    "expiredResults": "انتهت صلاحية هذه النتائج. حدّثها لبدء بحث جديد.",
+    "semanticFallback": "البحث بالذكاء الاصطناعي غير متاح. تُعرض نتائج الكلمات المفتاحية بدلًا منه.",
+    "mapPaginationHelp": "تعرض الخريطة الخدمات المحمّلة. استخدم الزر أدناه لإضافة المزيد.",
+    "loadedCount_zero": "تم تحميل {{count}} خدمات",
+    "loadedCount_one": "تم تحميل {{count}} خدمة",
+    "loadedCount_two": "تم تحميل {{count}} خدمات",
+    "loadedCount_few": "تم تحميل {{count}} خدمات",
+    "loadedCount_many": "تم تحميل {{count}} خدمات",
+    "loadedCount_other": "تم تحميل {{count}} خدمات"
   },
   "searchLocation": {
     "browseWithout": "التصفح دون تحديد الموقع",
