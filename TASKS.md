@@ -509,7 +509,7 @@ See [business scenarios](docs/payment-business-plan.md),
 ## Terms of Use
 ## AWS hosting
 
-- [ ] **TASK-036 — Deploy a restricted AWS staging site.** User requested AWS
+- [x] **TASK-036 — Deploy a restricted AWS staging site.** User requested AWS
   publishing on 31 October 2026 and selected restricted staging with High guidance.
   Root owns infrastructure preparation; Backend and DB owners accepted and
   completed repository-only compatibility review through live agent tools.
@@ -526,7 +526,32 @@ See [business scenarios](docs/payment-business-plan.md),
   once for Linux/Small in Stockholm; AWS status CASE_OPENED, Support case
   179346682900519. Await effective capacity
   before any build retry; no plan upgrade or additional quota requested.
-  Docker is unavailable; actual Linux image/audit delivery/live acceptance remain.
+  **6November local-PC route selected:** Docker Desktop4.98/CLI29.9 and WSL3.0.3
+  installed successfully; user restarted and Linux engine verified.
+  Production Vite/DB-contract bundling fixes and integrated regressions pass.
+  Reviewed snapshot built locally; isolated Linux proxy/artifact checks pass.
+  Assigned DB owner `/root/aws_pc_db_release` passed current41-table/all34-gate
+  connected preflight once, with zero competing connections observed; no writes.
+  Earlier33-table evidence is historical. User approved same-profile renewal;
+  identity verified. Local image was pushed to native Lightsail registry as
+  `:fitsmytime-staging.app.1`; exact deployment1 ACTIVE/RUNNING on micro/scale1.
+  Live HTTPS/password-gateway/sanitized-readiness checks pass, audit worker
+  healthy with no source/destination failures. Assigned frontend owner passed
+  live en/lv/ru guest/login smoke at320/390/1280 and visual phone/desktop review.
+  Staging is published; no successful application-account login/email/OAuth
+  claim. Supabase's exact staging callback allowlist remains unverified. User
+  selected unused builder cleanup; CodeBuild/S3/ECR/logs/dedicated role deleted
+  and absence verified. Build-log KMS key PendingDeletion for13November2026;
+  running staging and native registry preserved, post-cleanup checks pass. See
+  [PC build handoff](docs/aws-staging-pc-build-handoff.md) and
+  [DB release evidence](docs/aws-staging-pc-db-handoff.md) and
+  [live frontend acceptance](docs/aws-staging-pc-live-frontend-handoff.md).
+  **Gateway follow-up:** user authorized publishing the staging credential fix;
+  signed secure1hour gateway session now deployed as version4 ACTIVE. Live
+  cookie-after-app401/tamper checks and exactly1prompt Chrome en/lv/ru guest
+  smoke pass; app/audit config preserved from version2. Local browser expiry/
+  repeatedPOST401 proof passes. See
+  [session release](docs/aws-staging-session-release.md).
   See [deployment preparation and scope](docs/aws-staging-deployment.md).
   Public release/privacy holds remain; tests cover en/lv/ru when performed,
   with other supported languages/RTL deferred.

@@ -1,10 +1,89 @@
 # AWS restricted staging deployment — 31 October 2026
 
-Status: selected Lightsail deployment in progress. Owner DB preflight passed;
-protected runtime handoff and filtered source prepared. Supporting AWS build
-resources created; AWS refused build start because the project has zero build
-queue capacity. No build ran; Lightsail app/worker not started.
+Status: local-PC Linux image built on6November after restart; isolated proxy and
+production-artifact tests passed. Current DB owner connected preflight passed
+41 tables/all34 gates once. AWS CLI/MCP sign-in renewed after explicit approval;
+one selected micro/scale1 Lightsail service created in Stockholm. Exact image
+`:fitsmytime-staging.app.1` published; deployment1 ACTIVE/RUNNING with gateway8080 as
+the sole public endpoint. Live HTTPS/password restriction/sanitized readiness
+checks pass; app listening and audit worker healthy. Frontend owner passed live
+guest/login UI en/lv/ru desktop/phone acceptance. Selected restricted publication
+complete; successful account login/callback allowlist are unverified. User-approved
+unused cloud builder cleanup is complete and verified: project/bucket/ECR/logs/
+dedicated role deleted; build-log KMS key PendingDeletion for13November2026.
+Post-cleanup staging checks pass. Historical resource/quota records remain below. See the
+[current build checkpoint](aws-staging-pc-build-handoff.md#ready-continuation--6-november-2026)
+and [DB release evidence](aws-staging-pc-db-handoff.md).
 Requester: user. Coordinator/infrastructure executor: Codex `/root`.
+
+Latest follow-up: user requested publication of the repeated-password-prompt fix.
+Deployment4 is ACTIVE with a secure signed one-hour gateway session; live
+cookie/tamper/app401 checks and exactly-one-prompt Chrome guest smoke pass.
+Application/audit configuration was preserved from live version2. See the
+[gateway session release record](aws-staging-session-release.md).
+
+## Local-PC build continuation — 6 November 2026
+
+The user explicitly requested **build and publish using my PC while waiting
+for AWS**. This selects the previously explained local Docker build path and
+necessary Docker/WSL setup on this PC, retaining the selected restricted Lightsail
+micro/one-node USD 10/month staging target. Root owns local tooling/infrastructure;
+current Backend/DB compatibility is routed to assigned owners. No restart,
+Windows security-policy bypass, broad cleanup or release-scope expansion is
+authorized. Administrator consent, if requested by Windows, is performed by the
+user; never automate a security dialog.
+
+Read-only PC inspection: Windows 11 Pro build26300, Intel x86-64,31.7GB RAM,
+17.2GB free on C at that snapshot; HypervisorPresent=true. WMI virtualization/SLAT
+flags report false while a hypervisor is active, so this is not treated as proof
+of disabled firmware virtualization. Docker was not found on PATH or the checked
+global/per-user installation paths. WSL reports not installed. Initial sandbox
+CIM reads were refused; the approved read-only outside-sandbox check succeeded.
+
+Official Docker Desktop installer4.98.0.245422 downloaded to ignored build output:
+623,748,528bytes, valid Authenticode signature by Docker Inc, SHA256
+CD6273D9EAA4F07FA7593FC6813D37E1004381CEBC3F26047A2554FA5DB24388.
+No installer license/subscription was accepted by download/verification.
+Reviewed local helper [install-local-wsl.ps1](../deploy/aws/install-local-wsl.ps1)
+requests only `wsl --install --no-distribution --web-download`, records before/after
+feature states and exit/log evidence, creates no Linux account/distribution and
+never restarts Windows. User approved elevation; helper exited0, installed
+WSL3.0.3, and changed VirtualMachinePlatform Disabled -> EnablePending. Windows
+explicitly requires a restart. Docker's per-user WSL2 install also exited0;
+Desktop4.98.0.245422 and CLI29.9.2 are verified. Fresh boot inspection shows the PC
+has not restarted since14October, so the Linux engine remains unavailable.
+
+Root assigned fresh owners `/root/aws_pc_backend` and `/root/aws_pc_database`
+after the live roster showed no reachable prior owner. Both accepted current
+repository review. Current code has41 tables/34 readiness gates (currency plus
+workspace pricing), so October's33-table evidence must not authorize this current
+runtime. Existing6Nov TASK-044 applied receipts are preserved; no migration retry.
+Backend fixed dev-only Vite imports hoisted into the production bundle. DB
+separated pure location constants from installer imports, preventing bundled
+CLI guards from running. Integrated production-import and inert-readiness
+regressions pass, as do current mocked41-table/32-flag pricing and2-flag currency
+readiness. DB owns a new scoped preflight script, preserving the historical
+one; no fresh DB connection released yet.
+Activity/notification/payment activation remains outside this staging scope.
+Current booking-message retention is hourly and can delete expired messages;
+the already selected12-month policy is preserved. Root records the current-app
+publishing request as covering this bounded existing lifecycle on the approved
+development source, without a new policy, schema change or cleanup run.
+
+The frontend owner passed its current isolated production build/TypeScript and
+delegated reproduction inside the reviewed Docker image to Root. See the
+[current integrated build handoff](aws-staging-pc-build-handoff.md) for owner
+evidence, source manifest, exact build command, unavailable checks and recovery.
+Owner follow-up finalization hit the agent service usage limit; Root preserved
+delivered results and performed integrated packaging/contract checks directly.
+
+Next: user saves work/restarts Windows, opens Docker Desktop and completes its
+first-run terms if prompted. Then verify Linux Docker engine, build/test the
+reviewed snapshot, perform current
+owner DB preflight, authenticate the same AWS project, then publish/deploy with
+password restriction in place. No current image build or Lightsail activation is
+claimed by this continuation. Protected Stripe/other dotenv inputs are excluded
+from image context and must not be read just because they are open in the IDE.
 
 ## User choices and authority
 

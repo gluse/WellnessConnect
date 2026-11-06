@@ -1,13 +1,12 @@
 // Opt-in TASK-026 profile. Preserve the active TASK-014 sixteen-table package.
 // Import is inert: no files, credentials, clients or network are accessed.
 import {APP_TABLES, APP_SEQUENCES, ROLES} from './runtime-contract.mjs';
+import {LOCATION_TABLE, LOCATION_TABLES, LOCATION_RIGHTS} from './search-location-contract.mjs';
+export {LOCATION_TABLE, LOCATION_TABLES, LOCATION_RIGHTS} from './search-location-contract.mjs';
 import {requireThat} from './runtime-support.mjs';
 import {INSTALL_SQL, roleContracts, relationContracts, entryContracts,
   installedFunctionContracts, requireBooleans, readonly, verifyInstalled} from './execute-runtime-disabled.mjs';
 
-export const LOCATION_TABLE='user_search_locations';
-export const LOCATION_TABLES=Object.freeze([...APP_TABLES,LOCATION_TABLE]);
-export const LOCATION_RIGHTS=Object.freeze(['SELECT','INSERT','UPDATE','DELETE']);
 export function locationRelationContracts() {
   return relationContracts('source').concat(['fm_app_runtime',ROLES.app].map(role=>({
     role,schema:'public',name:LOCATION_TABLE,rights:[...LOCATION_RIGHTS],

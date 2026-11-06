@@ -1,6 +1,6 @@
 // TASK-024 choice-2 opt-in manifest. Inert: no files, environment or connections.
 import {APP_SEQUENCES,ROLES} from '../audit/runtime-contract.mjs';
-import {LOCATION_TABLES} from '../audit/search-location-runtime.mjs';
+import {LOCATION_TABLES} from '../audit/search-location-contract.mjs';
 export const BILLING_EXPORTS=Object.freeze([
   'billingAccounts','billingSubscriptions','billingInvoices','billingOperations','billingEvents','manualProGrants',
 ]);

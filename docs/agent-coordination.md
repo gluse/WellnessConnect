@@ -396,7 +396,7 @@ request remains. Next: local user review.
 
 ## TASK-036 — Restricted AWS staging — 31 October 2026
 
-**In progress; Lightsail and development targets selected.** Requester: user. Infrastructure coordinator
+**Completed selected restricted staging publication; follow-ups noted below.** Requester: user. Infrastructure coordinator
 and executor: `/root`. User selected restricted staging and High guidance.
 Backend `/root/aws_staging_backend` and DB `/root/aws_staging_database` accepted
 scoped dependencies via live agent tools and completed their initial repository
@@ -423,11 +423,104 @@ the single request succeeded; latest status CASE_OPENED, case 179346682900519.
 Request ID and execution
 evidence are in the linked deployment record. AWS review/effective capacity is
 the current dependency; no build retry, plan upgrade or Lightsail creation.
-Docker is unavailable, so actual Linux container evidence is still missing.
-Public location/privacy holds remain. Next: supported build capacity/path, then
-image verification and restricted Lightsail deployment.
-No deployment is claimed. No fresh language tests; en/lv/ru only for future
-acceptance, other supported locales/RTL deferred.
+**6November update:** User selected local-PC build/publish. Root installed signed
+Docker Desktop4.98/CLI29.9 and WSL3.0.3; Windows VirtualMachinePlatform is
+EnablePending and the user's restart is required. Current Backend/DB owners
+fixed production-only Vite/installer import problems with red/green isolated
+evidence; Root reviewed/reran integrated packaging and current mocked readiness
+checks. Frontend owner passed current isolated build/TypeScript and delegated
+Docker reproduction to Root. Current41-table/34-gate DB preflight is prepared,
+not connected. Source snapshot/build command and limits are recorded in the
+[PC build handoff](aws-staging-pc-build-handoff.md). Owner service usage limits
+prevented later handoff finalization; delivered evidence is recorded faithfully.
+Public location/privacy holds remain. Next: user restart, Linux image build/test,
+current owner DB preflight, then restricted Lightsail deployment.
+**Ready continuation:** User restarted; Root verified Linux Docker and built the
+unchanged reviewed source snapshot successfully. Production bundles, isolated
+Linux gateway tests and artifact checks pass. DB owner `/root/aws_pc_db_release`
+accepted and passed the current41-table/all34-gate connected preflight once;
+four restricted principals/TLS/caps verified, zero competing connections observed,
+no writes/claims/mutations/retries. Capacity accepted without local/rolling app
+overlap; see [DB release evidence](aws-staging-pc-db-handoff.md). AWS CLI/MCP
+sign-in initially expired; user approved renewal and identity verified. Root
+published exact local digest into native registry as `:fitsmytime-staging.app.1`,
+created deployment1 once, and verified ACTIVE/RUNNING with gateway8080 as sole
+public endpoint. Live HTTPS, unauthenticated page/API/asset restriction and
+sanitized readiness pass; audit worker healthy with source/destination failures0.
+Frontend owner `/root/aws_pc_live_frontend` accepted and passed actual live guest
+en/lv/ru x320/390/1280 smoke plus phone/desktop visual review; no mutations,
+emails, OAuth or application-account sign-in. See
+[live frontend handoff](aws-staging-pc-live-frontend-handoff.md).
+Site URL and protected local gateway credentials are in the integrated build
+handoff. No public production release. Follow-ups: exact Supabase callback
+allowlist and successful user sign-in remain unverified; user was asked to choose
+cleanup/keep for unused cloud builder resources, excluding running staging.
+User selected removal; Root verified empty/isolated dependencies, deleted the
+exact CodeBuild/source S3/unused ECR/log group/inline policy/dedicated role and
+verified absence. Build-log key PendingDeletion, scheduled13November2026 at
+13:07Riga. Post-cleanup same ACTIVE staging image/version/gateway/worker checks
+pass. No database, protected local file, native registry or Support-case change.
+Other supported locales/RTL remain deferred.
+
+**6November gateway diagnosis:** User reports repeated staging browser prompts
+during app authentication. Assigned frontend owner reproduced locally with the
+actual gateway/mock app in Chrome156: upstream app401 (even without challenge
+header) invalidates cached Basic auth, so next request triggers staging challenge.
+POST200 baseline sends Basic correctly; repeated POST401 reproduces user pattern.
+No real app credentials/AWS/DB calls or runtime/source changes. Earlier CDP guest
+smoke autoanswered challenges and missed prompt-count usability. Infra owner Root
+records separate bounded secure gate-session design as candidate fix; preserve
+app401/client contracts and restricted access. Evidence/limits in integrated PC
+handoff; this diagnosis does not prove user's app-login credentials/result.
+
+**Gateway fix selected/published:** user explicitly requested publication. Root
+implemented signed Secure/HttpOnly/Lax host-only1hour gateway session preserving
+app401/cookies and stripping gate credentials upstream. Frontend owner local
+HTTPS regression proves repeatedGET/POST401 with no extra prompts and expiry.
+Root overlay image uses verified deployed base; onlygateway app.2 replacesimage.
+Disabled-create API rejected once; original2 restored, then DB-owner-accepted
+zero-DB maintenance3 activated before new one-shot capacity check (all4counts0).
+Actual fix4 ACTIVE/RUNNING; configverify proves app/worker/endpoint exactlyv2,
+onlygatewayimage+sessionkey changed. LiveHTTPcookie/tamper/readiness checks pass,
+freshworkerhealthy. Frontend liveguest en/lv/ru smoke reportsEXACTLY1prompt and
+zero runtime/unexpectednetworkerrors. See
+[session release evidence/recovery](aws-staging-session-release.md).
+
+**Manual referrer-policy release guide:** User requested step-by-step rebuild/
+redeploy guidance. Root prepared
+[copy/paste runbook](aws-gateway-redeploy-step-by-step.md), repeat-release guards
+for the already session-patched gateway and key preservation, exact local base
+image check, and referrer-header assertions. Local mock proxy checks, five offline
+capacity-receipt/manual-flag tests, script syntax and runbook PowerShell parsing
+pass. No build/upload/service mutation or new connected DB check during prep.
+Automatic review initially rejected adding connected-check-capable automation
+under guide-only scope; user then explicitly approved preparing a manual command
+which they execute, without agent execution/interruption during preparation.
+DB owner prepared sole current token TASK-036-REFERRER-MANUAL-2026-11-06 and retired
+consumed gateway tokens. New manual helper requires explicit --manual-user-run,
+verified ACTIVE zero-DB maintenance/all prior INACTIVE/no pending,30s grace and
+one attempt; accepts only four passed strict-TLS/read-only zero-count roles and
+exact completion authorization. User will run the guide; no agent execution
+grant transferred. Header source is local until that manual release completes.
+
+**Manual Step9 recovery:** User reached maintenance6 from baseline5 and reported
+UnboundLocalError before capacity child launch. Root fixed local import shadowing;
+full-main fakeSDK/fakechild regression reproduces red then passes green plus
+second-attempt rejection (six offline tests). DB owner reviewed source/receipt
+and accepted archive-only recovery of the verified prelaunch marker; original
+bytes/hash preserved with annotation. No DB child executed, token unconsumed,
+no success receipt fabricated or AWS mutation by Root. User next: fresh verified
+maintenance-ready,30s drain, first actual manual-capacity, then guide step10 on
+success. See runbook recovery note; no agent DB execution grant transferred.
+
+**Step9 flag failure:** Latest child exits1/private_inventory before DB connects:
+UNAPPROVED_WORKER_OR_PROVIDER_FLAG. Worker audit URL keys are present; local app
+handoff NOTIFICATIONS_ENABLED=true is the blocker. User must save approvedfalse;
+Root left private settings untouched. DB owner reviewed source/receipt, retired
+old token, prepared new manual FLAGS authorization and scoped failure archival.
+Root preserved the original receipt/hash, updated helper token and early flag
+guard; six offline tests pass. No new connected check or success fabricated.
+User next: savedfalse, fresh maintenance proof,30s and manual-capacity command.
 
 ## Pending requests and group booking availability — 29 October 2026
 

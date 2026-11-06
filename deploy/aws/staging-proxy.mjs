@@ -1,17 +1,49 @@
 import http from 'node:http';
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 
 const hopHeaders = ['connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailer', 'transfer-encoding', 'upgrade'];
+const sessionCookie = '__Host-fmt-staging';
+const sessionSeconds = 3600;
 
 export function readProxyConfig(env) {
   const origin = new URL(env.STAGING_ORIGIN || '');
   if (origin.protocol !== 'https:' || origin.username || origin.password || origin.pathname !== '/' || origin.search || origin.hash ||
-      !/^[a-f0-9]{64}$/.test(env.STAGING_PASSWORD_SHA256 || '') || !/^[a-zA-Z0-9_-]{1,64}$/.test(env.STAGING_USERNAME || '')) {
+      !/^[a-f0-9]{64}$/.test(env.STAGING_PASSWORD_SHA256 || '') || !/^[a-f0-9]{64}$/.test(env.STAGING_SESSION_SECRET || '') ||
+      !/^[a-zA-Z0-9_-]{1,64}$/.test(env.STAGING_USERNAME || '')) {
     throw Error('Invalid staging proxy configuration');
   }
   return { origin: origin.origin, host: origin.host, username: env.STAGING_USERNAME,
-    digest: Buffer.from(env.STAGING_PASSWORD_SHA256, 'hex') };
+    digest: Buffer.from(env.STAGING_PASSWORD_SHA256, 'hex'), sessionKey: Buffer.from(env.STAGING_SESSION_SECRET, 'hex') };
+}
+
+function sessionMac(body, config) {
+  return createHmac('sha256', config.sessionKey)
+    .update(`${config.origin}\n${config.username}\n${config.digest.toString('hex')}\n${body}`).digest();
+}
+
+function sessionAllowed(header, config, now) {
+  if (typeof header !== 'string' || header.length > 8192) return false;
+  const values = header.split(';').filter(part => part.slice(0, part.indexOf('=')).trim() === sessionCookie);
+  if (values.length !== 1) return false;
+  const value = values[0].slice(values[0].indexOf('=') + 1).trim();
+  const match = /^(v1\.(\d{1,12}))\.([A-Za-z0-9_-]{43})$/.exec(value);
+  if (!match) return false;
+  const issued = Number(match[2]), current = Math.floor(now / 1000);
+  if (!Number.isSafeInteger(issued) || issued > current || current - issued >= sessionSeconds) return false;
+  const signature = Buffer.from(match[3], 'base64url');
+  return signature.length === 32 && signature.toString('base64url') === match[3] && timingSafeEqual(signature, sessionMac(match[1], config));
+}
+
+function issueSession(config, now) {
+  const issued = Math.floor(now / 1000), body = `v1.${issued}`;
+  const token = `${body}.${sessionMac(body, config).toString('base64url')}`;
+  return `${sessionCookie}=${token}; Path=/; Max-Age=${sessionSeconds}; Expires=${new Date((issued + sessionSeconds) * 1000).toUTCString()}; Secure; HttpOnly; SameSite=Lax`;
+}
+
+function appCookieHeader(header) {
+  if (typeof header !== 'string') return undefined;
+  return header.split(';').filter(part => part.slice(0, part.indexOf('=')).trim() !== sessionCookie).map(part => part.trim()).filter(Boolean).join('; ') || undefined;
 }
 
 function allowed(header, config) {
@@ -46,7 +78,7 @@ export function createStagingProxy(config, { appPort = 5000, request = http.requ
   const server = http.createServer({ maxHeaderSize: 16384 }, (req, res) => {
     res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Strict-Transport-Security', 'max-age=31536000');
 
@@ -58,16 +90,24 @@ export function createStagingProxy(config, { appPort = 5000, request = http.requ
       });
       return;
     }
-    if (!allowed(req.headers.authorization, config)) {
+    const hasSession = sessionAllowed(req.headers.cookie, config, now());
+    const hasPassword = allowed(req.headers.authorization, config);
+    if (!hasSession && !hasPassword) {
       res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="FitsMyTime staging", charset="UTF-8"', 'Content-Type': 'text/plain; charset=utf-8' });
       res.end('Staging access requires a username and password.');
       return;
     }
+    // The staging session survives application401 responses that clear browser Basic auth.
+    // It has a fixed lifetime and is renewed only by presenting the correct password.
+    const newSession = !hasSession && hasPassword ? issueSession(config, now()) : undefined;
     // Forward origin-form URLs only; the target is fixed and can never be selected by a client.
     if (!req.url?.startsWith('/') || req.url.startsWith('//') || /[\r\n]/.test(req.url)) {
       res.writeHead(400); res.end('Invalid request'); return;
     }
     const headers = { ...req.headers };
+    const appCookies = appCookieHeader(headers.cookie);
+    if (appCookies) headers.cookie = appCookies;
+    else delete headers.cookie;
     const connectionTokens = String(headers.connection || '').toLowerCase().split(',').map(value => value.trim());
     for (const name of Object.keys(headers)) {
       if (hopHeaders.includes(name) || connectionTokens.includes(name) || name === 'authorization' || name === 'forwarded' ||
@@ -81,7 +121,13 @@ export function createStagingProxy(config, { appPort = 5000, request = http.requ
     const upstream = request({ hostname: '127.0.0.1', port: appPort, method: req.method, path: req.url, headers, timeout: 30000 }, incoming => {
       const responseHeaders = { ...incoming.headers };
       const responseConnection = String(responseHeaders.connection || '').toLowerCase().split(',').map(value => value.trim());
-      for (const name of [...hopHeaders, ...responseConnection, 'server', 'x-powered-by', 'cache-control', 'x-robots-tag', 'strict-transport-security']) delete responseHeaders[name];
+      for (const name of [...hopHeaders, ...responseConnection, 'server', 'x-powered-by', 'cache-control', 'x-robots-tag', 'strict-transport-security', 'referrer-policy']) delete responseHeaders[name];
+      // The app cannot overwrite the gateway's reserved cookie. Preserve its own cookies.
+      const cookies = (Array.isArray(responseHeaders['set-cookie']) ? responseHeaders['set-cookie'] : [])
+        .filter(value => value.split('=', 1)[0].trim() !== sessionCookie);
+      if (newSession) cookies.push(newSession);
+      if (cookies.length) responseHeaders['set-cookie'] = cookies;
+      else delete responseHeaders['set-cookie'];
       res.writeHead(incoming.statusCode || 502, responseHeaders);
       incoming.on('error', () => res.destroy());
       incoming.pipe(res);

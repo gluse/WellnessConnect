@@ -17,7 +17,10 @@ export function log(message: string, source = "express") {
 
 export async function setupVite(app: Express, server: Server) {
   const [{ createServer: createViteServer, createLogger }, { default: viteConfig }] = await Promise.all([
-    import("vite"), import("../vite.config"),
+    import("vite"),
+    // Keep development config out of the production bundle: bundling it would
+    // hoist its static Vite/plugin imports into production startup.
+    import(new URL("../vite.config.ts", import.meta.url).href),
   ]);
   const viteLogger = createLogger();
   const serverOptions = {
