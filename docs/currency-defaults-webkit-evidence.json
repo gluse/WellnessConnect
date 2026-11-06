@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-06",
+  "browser": {
+    "product": "webkit/27.2"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    "en: workspace prefill/source, inferred-country suggestion, explicit location, amount locking, preference refresh, manual selection and enlarged-text reflow",
+    "en: country fallback, settings-error manual recovery, late default and cross-workspace isolation",
+    "en: saved-service protection/dirty guard, settings failed-save/CAS retention, explicit reload and scoped revision save with keyboard-sized controls/reflow",
+    "lv: workspace prefill/source, inferred-country suggestion, explicit location, amount locking, preference refresh, manual selection and enlarged-text reflow",
+    "lv: country fallback, settings-error manual recovery, late default and cross-workspace isolation",
+    "lv: saved-service protection/dirty guard, settings failed-save/CAS retention, explicit reload and scoped revision save with keyboard-sized controls/reflow",
+    "ru: workspace prefill/source, inferred-country suggestion, explicit location, amount locking, preference refresh, manual selection and enlarged-text reflow",
+    "ru: country fallback, settings-error manual recovery, late default and cross-workspace isolation",
+    "ru: saved-service protection/dirty guard, settings failed-save/CAS retention, explicit reload and scoped revision save with keyboard-sized controls/reflow",
+    "read-only settings remain non-editable"
+  ],
+  "screenshots": [
+    "docs/currency-defaults-webkit-en-service-360.png",
+    "docs/currency-defaults-webkit-en-settings-360.png",
+    "docs/currency-defaults-webkit-lv-service-360.png",
+    "docs/currency-defaults-webkit-lv-settings-360.png",
+    "docs/currency-defaults-webkit-ru-service-360.png",
+    "docs/currency-defaults-webkit-ru-settings-360.png"
+  ],
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "boundaries": "Synthetic data and in-memory API mocks; isolated loopback fixtures; no connected database/services or credentials"
+}

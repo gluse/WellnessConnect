@@ -14,6 +14,7 @@ import { useFormLocale } from "@/components/forms-locale";
 import AccountPasswordForm from "@/components/account-password-form";
 import AccountAddresses from "@/components/account-addresses";
 import AccountCommunication from "@/components/account-communication";
+import AccountPricingSettings from "@/components/account-pricing-settings";
 
 function AccountDetailsForm({ user }: { user: User }) {
   const { t } = useFormLocale();
@@ -82,10 +83,11 @@ export default function Account() {
       <Button variant="ghost" asChild><Link href="/"><ArrowLeft className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />{t("accountForm.back")}</Link></Button>
       <div><h1 className="text-2xl font-semibold">{t("accountForm.title")}</h1><p className="mt-2 text-muted-foreground">{t("accountForm.intro")}</p></div>
       <nav aria-label={t("accountForm.sections")} className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-        <a className="underline py-3" href="#personal">{t("accountForm.personal")}</a><a className="underline py-3" href="#communication">{t("notifications.settingsTitle")}</a><a className="underline py-3" href="#addresses">{t("addressForm.title")}</a><a className="underline py-3" href="#password">{t("passwordForm.title")}</a>
+        <a className="underline py-3" href="#personal">{t("accountForm.personal")}</a><a className="underline py-3" href="#communication">{t("notifications.settingsTitle")}</a><a className="underline py-3" href="#pricing-settings">{t("pricingSettings.title")}</a><a className="underline py-3" href="#addresses">{t("addressForm.title")}</a><a className="underline py-3" href="#password">{t("passwordForm.title")}</a>
       </nav>
       <AccountDetailsForm key={user.id} user={user} />
       <AccountCommunication key={`communication-${user.id}`} actorId={user.id} />
+      <AccountPricingSettings key={`pricing-${user.id}`} actorId={user.id} />
       <AccountAddresses key={`addresses-${user.id}`} />
       <AccountPasswordForm key={`password-${user.id}`} />
     </main>

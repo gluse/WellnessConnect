@@ -1,10 +1,10 @@
-import { WISHLIST_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS } from "../migrations/wishlist/application-readiness.mjs";
+import { WORKSPACE_PRICING_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS } from "../migrations/workspace-pricing/application-readiness.mjs";
 import { CURRENCY_READINESS_KEYS } from "../migrations/currencies/application-readiness.mjs";
 
-export const startupStages = ["initialization", "audit_principal", "currency_database", "billing_configuration", "billing_runtime", "billing_database",
+export const startupStages = ["initialization", "audit_principal", "currency_database", "workspace_pricing_database", "billing_configuration", "billing_runtime", "billing_database",
   "billing_account", "billing_portal", "routes", "billing_worker", "assets", "listen"] as const;
 export type StartupStage = typeof startupStages[number];
-const errorCodes = ["BILLING_DB_NOT_READY", "CURRENCY_DB_NOT_READY", "EADDRINUSE", "EACCES", "ECONNREFUSED", "ECONNRESET", "ETIMEDOUT", "ENOTFOUND", "EAI_AGAIN",
+const errorCodes = ["BILLING_DB_NOT_READY", "CURRENCY_DB_NOT_READY", "WORKSPACE_PRICING_DB_NOT_READY", "EADDRINUSE", "EACCES", "ECONNREFUSED", "ECONNRESET", "ETIMEDOUT", "ENOTFOUND", "EAI_AGAIN",
   "ERR_TLS_CERT_ALTNAME_INVALID", "CERT_HAS_EXPIRED", "DEPTH_ZERO_SELF_SIGNED_CERT", "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
   "INVALID_INPUT", "BINDING_MISMATCH", "CONFLICT", "UNAVAILABLE", "POLICY_REVIEW", "UNTRUSTED_PROVIDER", "FORBIDDEN", "MANUAL_GRANT_ACTIVE"] as const;
 const readinessChecks: readonly string[] = [...BILLING_APPLICATION_READINESS_KEYS, "metadata_query", "readiness_result_shape"];
@@ -27,7 +27,7 @@ export function startupFailureDiagnostic(stage: unknown, error: unknown): { even
     } else if (details.type === "StripeAuthenticationError" || details.type === "StripePermissionError") output.code = "STRIPE_AUTHENTICATION_OR_PERMISSION";
     else if (details.type === "StripeConnectionError") output.code = "STRIPE_NETWORK_OR_TIMEOUT";
     const suppliedChecks = details.checks;
-    if (output.code === "BILLING_DB_NOT_READY" && Array.isArray(suppliedChecks)) {
+    if ((output.code === "BILLING_DB_NOT_READY" || output.code === "WORKSPACE_PRICING_DB_NOT_READY") && Array.isArray(suppliedChecks)) {
       const checks = readinessChecks.filter(key => suppliedChecks.includes(key));
       if (checks.length) output.checks = checks;
     }

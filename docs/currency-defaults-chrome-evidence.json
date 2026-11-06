@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-06",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/156.0.8078.80",
+    "revision": "@fb096c0011f9d50f0a264a9376420cdea9c421e3",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "jsVersion": "15.6.75.27"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    "en: workspace prefill/source, inferred-country suggestion, explicit location, amount locking, preference refresh, manual selection and enlarged-text reflow",
+    "en: country fallback, settings-error manual recovery, late default and cross-workspace isolation",
+    "en: saved-service protection/dirty guard, settings failed-save/CAS retention, explicit reload and scoped revision save with keyboard-sized controls/reflow",
+    "lv: workspace prefill/source, inferred-country suggestion, explicit location, amount locking, preference refresh, manual selection and enlarged-text reflow",
+    "lv: country fallback, settings-error manual recovery, late default and cross-workspace isolation",
+    "lv: saved-service protection/dirty guard, settings failed-save/CAS retention, explicit reload and scoped revision save with keyboard-sized controls/reflow",
+    "ru: workspace prefill/source, inferred-country suggestion, explicit location, amount locking, preference refresh, manual selection and enlarged-text reflow",
+    "ru: country fallback, settings-error manual recovery, late default and cross-workspace isolation",
+    "ru: saved-service protection/dirty guard, settings failed-save/CAS retention, explicit reload and scoped revision save with keyboard-sized controls/reflow",
+    "read-only settings remain non-editable"
+  ],
+  "screenshots": [
+    "docs/currency-defaults-chrome-en-service-360.png",
+    "docs/currency-defaults-chrome-en-settings-360.png",
+    "docs/currency-defaults-chrome-lv-service-360.png",
+    "docs/currency-defaults-chrome-lv-settings-360.png",
+    "docs/currency-defaults-chrome-ru-service-360.png",
+    "docs/currency-defaults-chrome-ru-settings-360.png"
+  ],
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "boundaries": "Synthetic data and in-memory API mocks; isolated loopback fixtures; no connected database/services or credentials"
+}

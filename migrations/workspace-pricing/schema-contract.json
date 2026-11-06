@@ -1,0 +1,159 @@
+{
+  "version": "workspace-pricing-v1",
+  "table": "workspace_pricing_settings",
+  "columns": [
+    {
+      "table": "workspace_pricing_settings",
+      "name": "id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "user_id",
+      "type": "character varying",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "company_id",
+      "type": "integer",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "default_currency",
+      "type": "character varying(3)",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "business_country_code",
+      "type": "character varying(2)",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "revision",
+      "type": "integer",
+      "notNull": true,
+      "default": "1"
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "addresses",
+      "name": "pricing_currency",
+      "type": "character varying(3)",
+      "notNull": false,
+      "default": null
+    }
+  ],
+  "constraints": [
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_owner_check",
+      "expression": "(\"user_id\" IS NOT NULL) <> (\"company_id\" IS NOT NULL)",
+      "canonical": "user_idisnotnull<>company_idisnotnull"
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_currency_check",
+      "expression": "\"default_currency\" IS NULL OR \"default_currency\" IN ('AED', 'AFN', 'ALL', 'AMD', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BRL', 'BSD', 'BTN', 'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHF', 'CLP', 'CNY', 'COP', 'CRC', 'CUP', 'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD', 'FKP', 'GBP', 'GEL', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL', 'HTG', 'HUF', 'IDR', 'ILS', 'INR', 'IQD', 'IRR', 'ISK', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LYD', 'MAD', 'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MXN', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF', 'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SLE', 'SOS', 'SRD', 'SSP', 'STN', 'SYP', 'SZL', 'THB', 'TJS', 'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'UZS', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XCD', 'XCG', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWG')",
+      "canonical": "default_currencyisnullordefault_currency=anyarray['aed','afn','all','amd','aoa','ars','aud','awg','azn','bam','bbd','bdt','bhd','bif','bmd','bnd','bob','brl','bsd','btn','bwp','byn','bzd','cad','cdf','chf','clp','cny','cop','crc','cup','cve','czk','djf','dkk','dop','dzd','egp','ern','etb','eur','fjd','fkp','gbp','gel','ghs','gip','gmd','gnf','gtq','gyd','hkd','hnl','htg','huf','idr','ils','inr','iqd','irr','isk','jmd','jod','jpy','kes','kgs','khr','kmf','kpw','krw','kwd','kyd','kzt','lak','lbp','lkr','lrd','lsl','lyd','mad','mdl','mga','mkd','mmk','mnt','mop','mru','mur','mvr','mwk','mxn','myr','mzn','nad','ngn','nio','nok','npr','nzd','omr','pab','pen','pgk','php','pkr','pln','pyg','qar','ron','rsd','rub','rwf','sar','sbd','scr','sdg','sek','sgd','shp','sle','sos','srd','ssp','stn','syp','szl','thb','tjs','tmt','tnd','top','try','ttd','twd','tzs','uah','ugx','usd','uyu','uzs','ves','vnd','vuv','wst','xaf','xcd','xcg','xof','xpf','yer','zar','zmw','zwg']"
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_country_check",
+      "expression": "\"business_country_code\" IS NULL OR \"business_country_code\" IN ('AD', 'AE', 'AF', 'AG', 'AI', 'AL', 'AM', 'AO', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AW', 'AX', 'AZ', 'BA', 'BB', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BL', 'BM', 'BN', 'BO', 'BQ', 'BR', 'BS', 'BT', 'BV', 'BW', 'BY', 'BZ', 'CA', 'CC', 'CD', 'CF', 'CG', 'CH', 'CI', 'CK', 'CL', 'CM', 'CN', 'CO', 'CR', 'CU', 'CV', 'CW', 'CX', 'CY', 'CZ', 'DE', 'DJ', 'DK', 'DM', 'DO', 'DZ', 'EC', 'EE', 'EG', 'EH', 'ER', 'ES', 'ET', 'FI', 'FJ', 'FK', 'FM', 'FO', 'FR', 'GA', 'GB', 'GD', 'GE', 'GF', 'GG', 'GH', 'GI', 'GL', 'GM', 'GN', 'GP', 'GQ', 'GR', 'GS', 'GT', 'GU', 'GW', 'GY', 'HK', 'HM', 'HN', 'HR', 'HT', 'HU', 'ID', 'IE', 'IL', 'IM', 'IN', 'IO', 'IQ', 'IR', 'IS', 'IT', 'JE', 'JM', 'JO', 'JP', 'KE', 'KG', 'KH', 'KI', 'KM', 'KN', 'KP', 'KR', 'KW', 'KY', 'KZ', 'LA', 'LB', 'LC', 'LI', 'LK', 'LR', 'LS', 'LT', 'LU', 'LV', 'LY', 'MA', 'MC', 'MD', 'ME', 'MF', 'MG', 'MH', 'MK', 'ML', 'MM', 'MN', 'MO', 'MP', 'MQ', 'MR', 'MS', 'MT', 'MU', 'MV', 'MW', 'MX', 'MY', 'MZ', 'NA', 'NC', 'NE', 'NF', 'NG', 'NI', 'NL', 'NO', 'NP', 'NR', 'NU', 'NZ', 'OM', 'PA', 'PE', 'PF', 'PG', 'PH', 'PK', 'PL', 'PM', 'PN', 'PR', 'PS', 'PT', 'PW', 'PY', 'QA', 'RE', 'RO', 'RS', 'RU', 'RW', 'SA', 'SB', 'SC', 'SD', 'SE', 'SG', 'SH', 'SI', 'SJ', 'SK', 'SL', 'SM', 'SN', 'SO', 'SR', 'SS', 'ST', 'SV', 'SX', 'SY', 'SZ', 'TC', 'TD', 'TF', 'TG', 'TH', 'TJ', 'TK', 'TL', 'TM', 'TN', 'TO', 'TR', 'TT', 'TV', 'TW', 'TZ', 'UA', 'UG', 'UM', 'US', 'UY', 'UZ', 'VA', 'VC', 'VE', 'VG', 'VI', 'VN', 'VU', 'WF', 'WS', 'YE', 'YT', 'ZA', 'ZM', 'ZW')",
+      "canonical": "business_country_codeisnullorbusiness_country_code=anyarray['ad','ae','af','ag','ai','al','am','ao','aq','ar','as','at','au','aw','ax','az','ba','bb','bd','be','bf','bg','bh','bi','bj','bl','bm','bn','bo','bq','br','bs','bt','bv','bw','by','bz','ca','cc','cd','cf','cg','ch','ci','ck','cl','cm','cn','co','cr','cu','cv','cw','cx','cy','cz','de','dj','dk','dm','do','dz','ec','ee','eg','eh','er','es','et','fi','fj','fk','fm','fo','fr','ga','gb','gd','ge','gf','gg','gh','gi','gl','gm','gn','gp','gq','gr','gs','gt','gu','gw','gy','hk','hm','hn','hr','ht','hu','id','ie','il','im','in','io','iq','ir','is','it','je','jm','jo','jp','ke','kg','kh','ki','km','kn','kp','kr','kw','ky','kz','la','lb','lc','li','lk','lr','ls','lt','lu','lv','ly','ma','mc','md','me','mf','mg','mh','mk','ml','mm','mn','mo','mp','mq','mr','ms','mt','mu','mv','mw','mx','my','mz','na','nc','ne','nf','ng','ni','nl','no','np','nr','nu','nz','om','pa','pe','pf','pg','ph','pk','pl','pm','pn','pr','ps','pt','pw','py','qa','re','ro','rs','ru','rw','sa','sb','sc','sd','se','sg','sh','si','sj','sk','sl','sm','sn','so','sr','ss','st','sv','sx','sy','sz','tc','td','tf','tg','th','tj','tk','tl','tm','tn','to','tr','tt','tv','tw','tz','ua','ug','um','us','uy','uz','va','vc','ve','vg','vi','vn','vu','wf','ws','ye','yt','za','zm','zw']"
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_revision_check",
+      "expression": "\"revision\" > 0",
+      "canonical": "revision>0"
+    },
+    {
+      "table": "addresses",
+      "name": "addresses_pricing_currency_check",
+      "expression": "\"pricing_currency\" IS NULL OR \"pricing_currency\" IN ('AED', 'AFN', 'ALL', 'AMD', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BRL', 'BSD', 'BTN', 'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHF', 'CLP', 'CNY', 'COP', 'CRC', 'CUP', 'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD', 'FKP', 'GBP', 'GEL', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL', 'HTG', 'HUF', 'IDR', 'ILS', 'INR', 'IQD', 'IRR', 'ISK', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LYD', 'MAD', 'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MXN', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF', 'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SLE', 'SOS', 'SRD', 'SSP', 'STN', 'SYP', 'SZL', 'THB', 'TJS', 'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'UZS', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XCD', 'XCG', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWG')",
+      "canonical": "pricing_currencyisnullorpricing_currency=anyarray['aed','afn','all','amd','aoa','ars','aud','awg','azn','bam','bbd','bdt','bhd','bif','bmd','bnd','bob','brl','bsd','btn','bwp','byn','bzd','cad','cdf','chf','clp','cny','cop','crc','cup','cve','czk','djf','dkk','dop','dzd','egp','ern','etb','eur','fjd','fkp','gbp','gel','ghs','gip','gmd','gnf','gtq','gyd','hkd','hnl','htg','huf','idr','ils','inr','iqd','irr','isk','jmd','jod','jpy','kes','kgs','khr','kmf','kpw','krw','kwd','kyd','kzt','lak','lbp','lkr','lrd','lsl','lyd','mad','mdl','mga','mkd','mmk','mnt','mop','mru','mur','mvr','mwk','mxn','myr','mzn','nad','ngn','nio','nok','npr','nzd','omr','pab','pen','pgk','php','pkr','pln','pyg','qar','ron','rsd','rub','rwf','sar','sbd','scr','sdg','sek','sgd','shp','sle','sos','srd','ssp','stn','syp','szl','thb','tjs','tmt','tnd','top','try','ttd','twd','tzs','uah','ugx','usd','uyu','uzs','ves','vnd','vuv','wst','xaf','xcd','xcg','xof','xpf','yer','zar','zmw','zwg']"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "workspace_pricing_settings_pkey",
+      "columns": [
+        "id"
+      ],
+      "unique": true,
+      "primary": true
+    },
+    {
+      "name": "workspace_pricing_personal_identity",
+      "columns": [
+        "user_id"
+      ],
+      "unique": true,
+      "primary": false
+    },
+    {
+      "name": "workspace_pricing_company_identity",
+      "columns": [
+        "company_id"
+      ],
+      "unique": true,
+      "primary": false
+    }
+  ],
+  "foreignKeys": [
+    {
+      "name": "workspace_pricing_settings_user_id_users_id_fk",
+      "columns": [
+        "user_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "cascade"
+    },
+    {
+      "name": "workspace_pricing_settings_company_id_companies_id_fk",
+      "columns": [
+        "company_id"
+      ],
+      "referenceTable": "companies",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "cascade"
+    }
+  ],
+  "runtimeRights": {
+    "name": "workspace_pricing_settings",
+    "rights": [
+      "SELECT",
+      "INSERT",
+      "UPDATE"
+    ]
+  }
+}

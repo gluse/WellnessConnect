@@ -1,0 +1,14 @@
+import assert from "node:assert/strict";
+import { resolveCurrencyDefault } from "../shared/currency-defaults.ts";
+const settings = { defaultCurrency: "EUR", businessCountryCode: "CA" };
+assert.deepEqual(resolveCurrencyDefault({ settings }), { currency: "EUR", source: "workspace" });
+assert.deepEqual(resolveCurrencyDefault({ location: { pricingCurrency: "GBP", countryCode: "LV" }, settings }), { currency: "GBP", source: "location" });
+assert.deepEqual(resolveCurrencyDefault({ selected: { currency: "JPY", source: "manual" }, location: { pricingCurrency: "GBP" }, settings }), { currency: "JPY", source: "manual" });
+assert.deepEqual(resolveCurrencyDefault({ selected: { currency: "USD", source: "saved" }, settings }), { currency: "USD", source: "saved" });
+assert.deepEqual(resolveCurrencyDefault({ selected: { currency: "", source: "manual" }, settings }), { currency: null, source: "manual" }, "Explicitly cleared choice does not guess another currency");
+assert.deepEqual(resolveCurrencyDefault({ location: { countryCode: "GB" }, settings: { businessCountryCode: "LV" } }), { currency: "GBP", source: "serviceCountry" });
+assert.deepEqual(resolveCurrencyDefault({ location: { countryCode: "PA" }, settings: { businessCountryCode: "LV" } }), { currency: "EUR", source: "businessCountry" });
+assert.deepEqual(resolveCurrencyDefault({ settings: { businessCountryCode: "CA" } }), { currency: "CAD", source: "businessCountry" });
+assert.deepEqual(resolveCurrencyDefault({ settings: { defaultCurrency: "XXX", businessCountryCode: "ZZ" }, location: { pricingCurrency: "XTS", countryCode: "ZW" } }), { currency: null, source: "none" });
+assert.deepEqual(resolveCurrencyDefault({}), { currency: null, source: "none" });
+console.log("PASS: saved/manual/location/workspace/country priority, deliberate clearing, ambiguous/unknown country and no implicit EUR fallback.");

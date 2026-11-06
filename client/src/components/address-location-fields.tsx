@@ -7,12 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { SUPPORTED_COUNTRIES } from "@shared/currencies";
+import { SUPPORTED_COUNTRIES, SUPPORTED_CURRENCIES } from "@shared/currencies";
 
 export function createLocationDraft(address?: Address) {
   const location = address ? currentLocation(address) : undefined;
   return {
-    address: location?.address ?? "", countryCode: location?.countryCode ?? null, latitude: location?.latitude ?? null, longitude: location?.longitude ?? null,
+    address: location?.address ?? "", countryCode: location?.countryCode ?? null, pricingCurrency: location?.pricingCurrency ?? null, latitude: location?.latitude ?? null, longitude: location?.longitude ?? null,
     locationSource: location?.locationSource ?? "legacy", locationKey: location?.locationKey ?? null,
     locationExpiresAt: location?.locationExpiresAt ? new Date(location.locationExpiresAt).toISOString() : null,
     locationAddressSource: location?.locationAddressSource ?? "user",
@@ -25,6 +25,7 @@ export default function AddressLocationFields({ newService, setNewService, addre
   const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage || i18n.language;
   const countryNames = new Intl.DisplayNames([language], { type: "region" });
+  const currencyNames = new Intl.DisplayNames([language], { type: "currency" });
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -77,6 +78,14 @@ export default function AddressLocationFields({ newService, setNewService, addre
         {SUPPORTED_COUNTRIES.map(code => <option key={code} value={code}>{countryNames.of(code) || code}</option>)}
       </select>
       <p id="address-country-help" className="text-sm text-muted-foreground">{t("currency.countryHelp")}</p>
+    </div>
+    <div className="space-y-2"><Label htmlFor="address-pricing-currency">{t("currency.locationOverride")}</Label>
+      <select id="address-pricing-currency" className="w-full min-h-11 rounded-md border bg-background px-3 py-2 text-base" value={newService.pricingCurrency ?? ""}
+        aria-describedby="address-pricing-currency-help" onChange={event => setNewService(prev => ({ ...prev, pricingCurrency: event.target.value || null }))}>
+        <option value="">{t("currency.useWorkspaceDefault")}</option>
+        {SUPPORTED_CURRENCIES.map(code => <option key={code} value={code}>{code} — {currencyNames.of(code) || code}</option>)}
+      </select>
+      <p id="address-pricing-currency-help" className="text-sm text-muted-foreground">{t("currency.locationOverrideHelp")}</p>
     </div>
     <div className="space-y-2">
       <Label htmlFor="address">{t("addressForm.address")} *</Label>

@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-06",
+  "engine": "chrome",
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    "en: country suggestion/manual override/unknown, immutable saved currency, localized input, precision, failed save retention, currency-change review/focus and 200% reflow",
+    "lv: country suggestion/manual override/unknown, immutable saved currency, localized input, precision, failed save retention, currency-change review/focus and 200% reflow",
+    "ru: country suggestion/manual override/unknown, immutable saved currency, localized input, precision, failed save retention, currency-change review/focus and 200% reflow",
+    "en: exact booking quote, price-change re-review/no retry, message retention, new quote payload, zero/three-decimal currencies and unknown-currency block",
+    "lv: exact booking quote, price-change re-review/no retry, message retention, new quote payload, zero/three-decimal currencies and unknown-currency block",
+    "ru: exact booking quote, price-change re-review/no retry, message retention, new quote payload, zero/three-decimal currencies and unknown-currency block",
+    "address country saved with manual location, no geocoding required",
+    "en/360: exact code displays, mixed totals, disabled price sort and reflow",
+    "en/1280: exact code displays, mixed totals, disabled price sort and reflow",
+    "lv/360: exact code displays, mixed totals, disabled price sort and reflow",
+    "lv/1280: exact code displays, mixed totals, disabled price sort and reflow",
+    "ru/360: exact code displays, mixed totals, disabled price sort and reflow",
+    "ru/1280: exact code displays, mixed totals, disabled price sort and reflow"
+  ],
+  "screenshots": [
+    "docs/currency-defaults-regression-chrome-en-form.png",
+    "docs/currency-defaults-regression-chrome-lv-form.png",
+    "docs/currency-defaults-regression-chrome-ru-form.png",
+    "docs/currency-defaults-regression-chrome-en-booking.png",
+    "docs/currency-defaults-regression-chrome-lv-booking.png",
+    "docs/currency-defaults-regression-chrome-ru-booking.png",
+    "docs/currency-defaults-regression-chrome-en-360.png",
+    "docs/currency-defaults-regression-chrome-lv-360.png",
+    "docs/currency-defaults-regression-chrome-ru-360.png"
+  ],
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "boundaries": "Synthetic data, in-memory fetch mocks, isolated loopback static fixtures; no connected APIs/database"
+}

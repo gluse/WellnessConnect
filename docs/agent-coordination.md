@@ -1,5 +1,28 @@
 # Cross-role dependency queue
 
+## TASK-044 workspace pricing currency defaults — 5 November 2026
+
+**Completed / local implementation and development DB verified.** User approved the recommended default currency update.
+Requester/coordinator/frontend integration `/root`; Backend `/root/currency_backend`,
+DB `/root/currency_db`, frontend settings/address/locales `/root/currency_money`
+accepted through live tools. Initial local implementation and mocked/offline checks
+inferred no connected/private configuration/migration execution authority.
+Existing TASK-039 no-backup exception does not transfer. See
+[scope, contracts, owners and next actions](currency-defaults-handoff.md).
+Owners returned complete local implementation and contract reviews. Types,
+isolated builds, mocked backend/component/schema checks and Chrome/Firefox/WebKit
+en/lv/ru defaults/settings checks pass; existing Chrome currency and
+account/address/booking regressions pass. On 6 November the user approved one development-target
+`hbkooiknruimukkhshrk` preflight/apply/postflight without a verified backup by DB
+owner `/root/currency_db`, stopping on first failure. Owner accepted through live
+tools and committed migration 0021 once: 14 personal and 4 company EUR defaults;
+all counts and existing money/currency/address fingerprints preserved; all 34
+readiness gates pass. Root independently reviewed the sanitized execution receipt
+and unchanged TASK-039 receipt hashes. This is a fresh TASK-044 waiver, not reuse
+of 0020 approval. No retry/startup/workflow write/deployment. See the handoff for
+command, receipt, check limitations and recovery. No outstanding owner dependency.
+Other languages/RTL deferred; unrelated work and TASK-039 receipts preserved.
+
 ## TASK-039 service currencies — 5 November 2026
 
 **Completed / local implementation and development DB verified.** User approved the currency plan for local implementation.

@@ -677,4 +677,40 @@ See [business scenarios](docs/payment-business-plan.md),
   See [scope, contract and verification](docs/search-pagination-handoff.md).
   Fresh testing en/lv/ru only; other languages and RTL remain deferred.
 
-<!-- Add the next task here using TASK-044, or place it in the relevant section. -->
+- [x] **TASK-044 — Prefill service currency from workspace and location settings.**
+  **Accepted, 5 November 2026:** User approved suggested workspace pricing defaults.
+  Saved/manual service choice wins, then configured location override, workspace
+  currency, service country and confirmed business country; unresolved cases ask.
+  Existing workspaces initially EUR; existing service/booking amounts and currencies
+  preserved. Root and assigned Frontend/Backend/DB owners accepted local code,
+  schema/migration preparation and mocked checks. See
+  [scope, contracts, evidence and recovery](docs/currency-defaults-handoff.md).
+  **6 November: implemented and verified locally.** Types/build, owner offline
+  tests and Chrome/Firefox/WebKit en/lv/ru defaults/settings checks pass, plus
+  existing Chrome currency/account/address/booking regressions. User subsequently
+  approved migration0021 once on development `hbkooiknruimukkhshrk` without a
+  verified backup, stop on first failure. DB owner committed and verified once:
+  14 personal/4 company EUR defaults, existing counts and money/currency/address
+  fingerprints preserved, all 34 readiness gates pass. Root reviewed the execution
+  receipt and preserved TASK-039 receipt hashes. No retry/startup/workflow writes/
+  deployment; no outstanding owner dependency.
+  Tests en/lv/ru only; other locales/RTL deferred.
+
+## Gift cards
+
+- [ ] **TASK-045 — Add provider-specific and FitsMyTime-wide gift cards.**
+  **Planning, 6 November 2026:** User selected both card scopes, online purchases
+  only and money balances for both. See [the implementation plan](docs/gift-cards-plan.md).
+  Proposed delivery: confirm issuer/processor eligibility and commercial rules;
+  build exact balance/purchase/redemption records; integrate booking reservations
+  and reversals; add delivery/customer/provider/operator UI; implement approved
+  provider settlement, refunds, reconciliation and verification. Platform-wide
+  acceptance is limited to participating eligible providers. Stripe subscription
+  selection does not establish gift-card approval. Issuer/seller, funds arrangement,
+  currencies/limits, expiry/refunds, participation/fees and retention remain open.
+  No implementing role assignment or code, connected-operation, spending or launch
+  authority is granted by this planning request. Test en/lv/ru only; other supported
+  languages/RTL remain deferred. Next: feasibility and policy decisions, then scoped
+  owner assignment/local implementation approval.
+
+<!-- Add the next task here using TASK-046, or place it in the relevant section. -->

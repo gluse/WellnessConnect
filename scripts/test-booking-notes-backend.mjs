@@ -18,6 +18,7 @@ import * as auditCapture from "../server/audit/capture.ts";
 import * as customerBookings from "../server/customerBookings.ts";
 import * as notifications from "../shared/notifications.ts";
 import * as money from "../server/money.ts";
+import * as workspacePricing from "../shared/workspace-pricing.ts";
 
 // Production route/storage logic runs with explicit in-memory boundaries. Never
 // import DB clients, auth providers, dotenv, notification transports or startup.
@@ -107,7 +108,7 @@ const access = await load("server/companyAccess.ts", { "./db": { db }, "drizzle-
 const noop = () => {};
 const isAuthenticated = (req, res, next) => req.user?.claims?.sub ? next() : res.status(401).json({ message: "Unauthorized" });
 class ProviderError extends Error {}
-const routeDependencies = { ...dependencies, http: { createServer: () => ({ close() {} }) }, "./storage": { ...storageModule, storage },
+const routeDependencies = { ...dependencies, "@shared/workspace-pricing": workspacePricing, "./workspace-pricing/routes": { setupWorkspacePricingRoutes() {} }, "./workspace-pricing/store": { createWorkspacePricingStore: () => ({}) }, http: { createServer: () => ({ close() {} }) }, "./storage": { ...storageModule, storage },
   "./search-pagination/store": { createSearchPageStore: () => ({}) },
   "./wishlist/routes": { setupWishlistRoutes: noop }, "./wishlist/postgres": { createWishlistStore: () => ({}) },
   "./wishlist/service": { createWishlistService: () => ({}) }, "./wishlist/inbox": { createInboxService: () => ({}) },

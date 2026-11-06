@@ -1,0 +1,134 @@
+<div id="fm-directory">
+<div class="viz-carousel viz-dotted-background" aria-label="Directory search layouts">
+<section data-variant="Search sections" aria-label="Search sections"><div class="fd-stage" data-layout="sections"></div></section>
+<section data-variant="Businesses tab" aria-label="Businesses tab" hidden><div class="fd-stage" data-layout="tabs"></div></section>
+</div>
+<style>
+#fm-directory {color-scheme:light dark;--fd-bg:light-dark(#fff,#151927);--fd-ink:light-dark(#202738,#f1f2f7);--fd-muted:light-dark(#596274,#b8bed0);--fd-line:light-dark(#dfe3ed,#3a435a);--fd-soft:light-dark(#f4f4ff,#252541);--fd-purple:light-dark(#504ded,#aaa5ff);--fd-on-purple:light-dark(#fff,#17152d);--fd-navy:light-dark(#111b31,#0d1221);--fd-green:light-dark(#21634d,#94dab9);--fd-green-bg:light-dark(#edf7f1,#19372d);--fd-cream:light-dark(#f8f5ee,#342e24);--fd-cream-ink:light-dark(#69532b,#e6d2a7);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fd-ink)}
+#fm-directory *{box-sizing:border-box} #fm-directory [hidden]{display:none!important}
+#fm-directory .fd-stage{padding:20px 10px 24px;min-height:1100px}
+#fm-directory .fd-caption{text-align:center;font-size:11px;letter-spacing:.08em;color:var(--fd-muted);margin-bottom:16px}
+#fm-directory .fd-phone{max-width:430px;width:100%;margin:auto;border:1px solid var(--fd-line);border-radius:24px;background:var(--fd-bg);box-shadow:0 16px 48px light-dark(#17254a15,#00000028);overflow:hidden}
+#fm-directory :is(h1,h2,h3,p){margin:0} #fm-directory h1{font-size:28px;font-weight:500;letter-spacing:-1px;line-height:1.2} #fm-directory h2{font-size:17px;font-weight:500;letter-spacing:-.3px} #fm-directory h3{font-size:18px;font-weight:500;letter-spacing:-.35px} #fm-directory strong{font-weight:500}
+#fm-directory button{font:inherit;color:inherit;border:0;background:none;text-align:inherit;min-height:44px} #fm-directory button:hover{filter:brightness(.95)} #fm-directory :is(button,input,select,textarea):focus-visible{outline:3px solid var(--fd-purple);outline-offset:3px}
+#fm-directory svg{width:18px;height:18px;flex-shrink:0;stroke-width:1.8}
+#fm-directory header{background:var(--fd-navy);color:#f5f6ff;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+#fm-directory .fd-brand{display:flex;align-items:center;gap:9px;padding:0;font-size:18px;font-weight:500;letter-spacing:-.5px} #fm-directory .fd-brand span{display:grid;place-items:center;width:30px;height:30px;background:#655dff;color:#fff;border-radius:10px;font-size:24px}
+#fm-directory main{min-height:800px} #fm-directory .fd-search{background:var(--fd-navy);color:#f5f6ff;padding:3px 20px 22px} #fm-directory .fd-search h1{margin-bottom:20px}
+#fm-directory .fd-query{background:var(--fd-bg);color:var(--fd-ink);padding:13px 14px;display:flex;align-items:center;gap:10px;border-radius:10px;font-size:15px}
+#fm-directory .fd-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center} #fm-directory .fd-sub{color:#d3d8e9;font-size:12px;margin-top:12px}
+#fm-directory .fd-content{padding:20px;display:flex;flex-direction:column;gap:23px} #fm-directory .fd-muted{color:var(--fd-muted)} #fm-directory .fd-small{font-size:12px} #fm-directory .fd-spaced{margin-top:6px} #fm-directory .fd-grow{flex:1;min-width:0}
+#fm-directory .fd-content>.fd-row{font-size:12px} #fm-directory .fd-check{display:flex;align-items:center;gap:6px;min-height:36px;font-size:12px;color:var(--fd-muted)}
+#fm-directory input[type=checkbox]{width:18px;height:18px;accent-color:var(--fd-purple);flex-shrink:0;margin:0}
+#fm-directory .fd-section-label{font-size:13px;color:var(--fd-muted);margin-bottom:15px} #fm-directory .fd-service{display:flex;gap:14px} #fm-directory .fd-art{background:light-dark(#e6eee8,#263b32);color:light-dark(#48705b,#a2c9b2);width:76px;min-width:76px;height:100px;border-radius:12px;display:grid;place-items:center} #fm-directory .fd-art svg{width:32px;height:32px}
+#fm-directory .fd-eyebrow{display:block;font-size:10px;letter-spacing:.1em;font-weight:500;color:var(--fd-muted)} #fm-directory .fd-service h3{font-size:17px;margin-top:3px} #fm-directory .fd-service p{margin-top:3px;font-size:12px} #fm-directory .fd-service strong{font-size:18px}
+#fm-directory .fd-link{display:inline-flex;gap:5px;align-items:center;color:var(--fd-purple);font-size:12px;padding:0}
+#fm-directory .fd-directory{border-top:1px solid var(--fd-line);padding-top:20px} #fm-directory .fd-business{padding:17px;border:1px solid var(--fd-line);border-radius:14px;background:var(--fd-bg);margin-top:16px}
+#fm-directory .fd-identity{display:flex;gap:12px;align-items:center} #fm-directory .fd-monogram{width:44px;height:44px;min-width:44px;display:grid;place-items:center;border-radius:12px;background:var(--fd-soft);color:var(--fd-purple);font-size:23px;font-weight:500}
+#fm-directory .fd-location{display:flex;align-items:center;gap:6px;color:var(--fd-muted);font-size:12px;margin:15px 0 12px} #fm-directory .fd-location svg{width:15px;height:15px}
+#fm-directory .fd-unavailable{display:flex;gap:7px;align-items:flex-start;color:var(--fd-cream-ink);background:var(--fd-cream);border-radius:7px;padding:9px 10px;font-size:11px;margin-bottom:8px} #fm-directory .fd-unavailable svg{width:15px;height:15px;margin-top:1px}
+#fm-directory .fd-actions{display:flex;gap:8px;margin-top:17px;flex-wrap:wrap}
+#fm-directory .fd-primary{display:flex;justify-content:center;align-items:center;gap:8px;background:var(--fd-purple);color:var(--fd-on-purple);border-radius:9px;padding:12px 14px;font-size:13px;font-weight:500;width:100%}
+#fm-directory .fd-actions .fd-primary{flex:1;width:auto;min-width:165px} #fm-directory .fd-secondary{border:1px solid var(--fd-line);padding:10px 12px;border-radius:9px;font-size:12px}
+#fm-directory .fd-owner{font-size:11px;margin-top:8px;color:var(--fd-muted);flex-wrap:wrap;column-gap:4px} #fm-directory .fd-owner span{color:var(--fd-purple)}
+#fm-directory .fd-tabs{display:flex;border-bottom:1px solid var(--fd-line);gap:20px} #fm-directory .fd-tabs button{padding:8px 0;font-size:14px;color:var(--fd-muted);border-bottom:2px solid transparent;display:flex;align-items:center;gap:7px} #fm-directory .fd-tabs button[aria-pressed=true]{color:var(--fd-purple);border-color:var(--fd-purple)} #fm-directory .fd-tabs span{background:var(--fd-soft);border-radius:5px;padding:1px 5px;font-size:11px}
+#fm-directory .fd-back{color:var(--fd-muted);font-size:12px;padding:0;align-self:flex-start} #fm-directory .fd-hero{display:flex;flex-direction:column;align-items:flex-start;gap:6px} #fm-directory .fd-large{width:64px;height:64px;font-size:34px;margin-bottom:6px}
+#fm-directory .fd-notice{display:flex;align-items:flex-start;gap:11px;padding:15px;background:var(--fd-soft);border-radius:12px;font-size:13px} #fm-directory .fd-notice>svg{color:var(--fd-purple);margin-top:2px} #fm-directory .fd-notice p{margin-top:5px;font-size:12px;color:var(--fd-muted)}
+#fm-directory .fd-stack{display:flex;flex-direction:column;gap:18px;font-size:13px} #fm-directory .fd-stack p{margin-top:5px} #fm-directory .fd-interest-box{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--fd-line);padding-top:22px;font-size:13px}
+#fm-directory .fd-owner-box{display:flex;gap:12px;padding:17px;border:1px solid var(--fd-line);border-radius:12px;font-size:13px} #fm-directory .fd-owner-box>svg{color:var(--fd-muted);margin-top:2px} #fm-directory .fd-owner-box p{margin-top:3px} #fm-directory .fd-center{align-self:center;text-decoration:underline;text-underline-offset:3px}
+#fm-directory .fd-success{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:14px 0 6px} #fm-directory .fd-success-icon{display:grid;place-items:center;width:76px;height:76px;border-radius:50%;color:var(--fd-green);background:var(--fd-green-bg);margin-bottom:8px} #fm-directory .fd-success-icon svg{width:32px;height:32px}
+#fm-directory .fd-notify{display:flex;align-items:flex-start;gap:12px;border:1px solid var(--fd-line);border-radius:12px;padding:18px;font-size:13px} #fm-directory .fd-notify input{margin-top:3px} #fm-directory .fd-notify span span{display:block;margin-top:5px} #fm-directory .fd-notify>svg{color:var(--fd-muted);margin-top:3px} #fm-directory .fd-status{color:var(--fd-green);font-size:12px}
+#fm-directory .fd-step{color:var(--fd-purple);font-size:12px} #fm-directory .fd-step span{color:var(--fd-muted)} #fm-directory .fd-step+div h1{margin-top:8px}
+#fm-directory form{display:flex;flex-direction:column;gap:18px} #fm-directory form>label{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:500}
+#fm-directory :is(input[type=email],select,textarea){font:inherit;font-size:16px;color:var(--fd-ink);background:var(--fd-bg);border:1px solid var(--fd-line);border-radius:8px;padding:12px;min-width:0;width:100%} #fm-directory textarea{resize:vertical}
+#fm-directory form>label.fd-attest{flex-direction:row;gap:10px;font-weight:400} #fm-directory .fd-attest input{margin-top:2px}
+#fm-directory .fd-timeline{margin:4px 0;padding-left:24px;display:flex;flex-direction:column;gap:24px;font-size:14px} #fm-directory .fd-timeline p{margin-top:5px;font-size:12px;color:var(--fd-muted)}
+#fm-directory nav{border-top:1px solid var(--fd-line);display:flex;align-items:center;justify-content:space-around;padding:10px 14px;color:var(--fd-muted);font-size:11px} #fm-directory nav>*{display:flex;flex-direction:column;gap:4px;align-items:center;padding:5px;font-size:11px} #fm-directory nav button{color:var(--fd-purple)}
+#fm-directory .fd-eyebrow{font-size:11px}
+@media(max-width:380px){#fm-directory .fd-stage{padding:12px 0 20px;min-height:1180px} #fm-directory .fd-content{padding:16px} #fm-directory .fd-business{padding:13px} #fm-directory .fd-actions .fd-primary{min-width:0;flex-basis:100%} #fm-directory .fd-actions .fd-secondary{width:100%;text-align:center}}
+</style>
+<template data-template="shell">
+<div class="fd-caption">MOBILE CONCEPT · EXAMPLE DATA · SIGNED IN AS ALEX</div>
+<div class="fd-phone" aria-label="FitsMyTime mobile business directory"><header><button type="button" class="fd-brand cursor-interaction" data-go="search"><span>f.</span>FitsMyTime</button><i data-lucide="user-round" aria-hidden="true"></i></header><main></main><nav aria-label="App navigation"><button type="button" class="cursor-interaction" data-go="search"><i data-lucide="search" aria-hidden="true"></i>Explore</button><span><i data-lucide="calendar-days" aria-hidden="true"></i>Bookings</span><span><i data-lucide="user-round" aria-hidden="true"></i>Profile</span></nav></div>
+</template>
+<template data-template="search">
+<div class="fd-search"><h1>Find your next<br>little moment.</h1><div class="fd-query"><i data-lucide="search" aria-hidden="true"></i>Beauty services</div><div class="fd-row fd-sub"><span>Skulte & Mārupes novads</span><span>Any date</span></div></div>
+<div class="fd-content"><div class="fd-row"><span class="fd-muted">Beauty services</span><label class="fd-check cursor-interaction"><input type="checkbox" data-control="available">Available only</label></div>
+<div class="fd-tabs" hidden><button type="button" class="cursor-interaction" data-go="services-tab">Services <span>1</span></button><button type="button" class="cursor-interaction" data-go="businesses-tab">Businesses <span>1</span></button></div>
+<section data-part="services"><h2 class="fd-section-label">Bookable on FitsMyTime</h2><article class="fd-service"><div class="fd-art"><i data-lucide="sparkles" aria-hidden="true"></i></div><div class="fd-grow"><span class="fd-eyebrow">BEAUTY & CARE</span><h3>Classic manicure</h3><p class="fd-muted">Example beauty studio</p><p class="fd-small">45 min · Individual session</p><div class="fd-row"><strong>€30</strong><button type="button" class="fd-link cursor-interaction" data-go="sample">View service ↗</button></div></div></article></section>
+<section class="fd-directory" data-part="businesses"><div class="fd-row"><h2>Other businesses</h2><span class="fd-muted fd-small">1 listing</span></div><p class="fd-muted fd-small fd-spaced">Help bring your favourite businesses to FitsMyTime.</p><article class="fd-business"><div class="fd-identity"><div class="fd-monogram">J</div><div><span class="fd-eyebrow">BUSINESS DIRECTORY</span><h3>SIA “JURMILA”</h3><p class="fd-muted fd-small">Skaistumkopšanas pakalpojumi</p></div></div><p class="fd-location"><i data-lucide="map-pin" aria-hidden="true"></i>Registered in Skulte</p><div class="fd-unavailable"><i data-lucide="clock-3" aria-hidden="true"></i>Booking on FitsMyTime is not available</div><p class="fd-small fd-muted">Prices and availability not provided.</p><div class="fd-actions"><button type="button" class="fd-primary cursor-interaction" data-go="interest"><i data-lucide="heart" aria-hidden="true"></i><span data-interest>I’d like to book here</span></button><button type="button" class="fd-secondary cursor-interaction" data-go="detail">Details</button></div><button type="button" class="fd-link fd-owner cursor-interaction" data-go="claim">Is this your business? <span>Manage it</span></button></article></section>
+<p class="fd-small fd-muted" data-part="excluded" hidden>Business listings are hidden because their availability is unknown.</p></div>
+</template>
+<template data-template="detail"><div class="fd-content">
+<button type="button" class="fd-back cursor-interaction" data-go="search">← Search results</button><div class="fd-hero"><div class="fd-monogram fd-large">J</div><span class="fd-eyebrow">BUSINESS DIRECTORY</span><h1>SIA “JURMILA”</h1><p class="fd-muted">Skaistumkopšanas pakalpojumi</p></div>
+<div class="fd-notice"><i data-lucide="info" aria-hidden="true"></i><div><strong>Not yet bookable on FitsMyTime</strong><p>This business has not joined FitsMyTime. Its details have not been confirmed by its owner.</p></div></div>
+<section class="fd-stack"><h2>Business information</h2><div><strong>Registered address</strong><p>Skultes iela 14–15, Skulte,<br>Mārupes pag., Mārupes nov., LV-2108</p><p class="fd-muted fd-small">A customer-facing location has not been confirmed.</p></div><div><strong>Prices & availability</strong><p class="fd-muted">Not provided by the business</p></div></section>
+<section class="fd-interest-box"><h2>Wish you could book here?</h2><p class="fd-muted">Your interest helps us invite businesses that people want to use.</p><button type="button" class="fd-primary cursor-interaction" data-go="interest"><i data-lucide="heart" aria-hidden="true"></i><span data-interest>I’d like to book here</span></button><p class="fd-small fd-muted">We share interest as totals. Your name and contact details stay private.</p></section>
+<div class="fd-owner-box"><i data-lucide="store" aria-hidden="true"></i><div><strong>Is this your business?</strong><p class="fd-small fd-muted">Verify your connection to manage this listing.</p><button type="button" class="fd-link cursor-interaction" data-go="claim">Manage this business →</button></div></div><button type="button" class="fd-link fd-center cursor-interaction" data-go="report">Report incorrect information</button></div></template>
+<template data-template="saved"><div class="fd-content"><button type="button" class="fd-back cursor-interaction" data-go="detail">← Business details</button>
+<div class="fd-success"><div class="fd-success-icon"><i data-lucide="heart" aria-hidden="true"></i></div><span class="fd-eyebrow">SIA “JURMILA”</span><h1>Your interest is saved.</h1><p class="fd-muted">You’ve let us know you’d like to book with this business through FitsMyTime.</p></div>
+<div class="fd-notice"><i data-lucide="info" aria-hidden="true"></i><div><strong>This is not a booking</strong><p>We may use aggregated interest to invite this business. Joining is their choice.</p></div></div>
+<label class="fd-notify cursor-interaction"><input type="checkbox" data-control="notify"><span><strong>Notify me when I can book</strong><span class="fd-small fd-muted">One email when this business becomes bookable on FitsMyTime.</span></span><i data-lucide="bell" aria-hidden="true"></i></label>
+<p class="fd-small fd-muted">Your name and contact details are not shared with the business.</p><button type="button" class="fd-primary cursor-interaction" data-go="search">Continue exploring →</button><button type="button" class="fd-link fd-center cursor-interaction" data-go="undo">Remove my interest</button><p class="fd-status" role="status" data-part="status"></p></div></template>
+<template data-template="claim"><div class="fd-content"><button type="button" class="fd-back cursor-interaction" data-go="detail">← Business details</button><p class="fd-step">① Request access <span>→ ② Verification</span></p><div><span class="fd-eyebrow">FOR BUSINESS OWNERS</span><h1>Manage your<br>business listing.</h1><p class="fd-muted fd-spaced">Confirm that you’re authorised to represent SIA “JURMILA”.</p></div><div class="fd-owner-box fd-identity"><div class="fd-monogram">J</div><div><strong>SIA “JURMILA”</strong><p class="fd-small fd-muted">Beauty services · Registered in Skulte</p></div></div>
+<form data-form="claim"><label>Your connection to the business<select required><option>Owner / director</option><option>Authorised representative</option></select></label><label>Verification method<select data-control="method"><option value="email">Company email + review</option><option value="manual">Manual verification</option></select></label><label data-part="email">Business email<input type="email" name="email" value="alex@example.com" placeholder="you@yourcompany.lv" required autocomplete="off"></label><p class="fd-small fd-muted" data-part="help">We’ll verify your email and review your authority. Email access alone does not grant control.</p><label class="fd-attest cursor-interaction"><input type="checkbox" required><span>I’m authorised to represent this business and request management access.</span></label><button type="submit" class="fd-primary cursor-interaction">Request verification →</button></form><p class="fd-small fd-muted">Submitting a request does not give immediate access or make this business bookable.</p></div></template>
+<template data-template="pending"><div class="fd-content"><button type="button" class="fd-back cursor-interaction" data-go="detail">← Business details</button><div class="fd-success"><div class="fd-success-icon"><i data-lucide="shield-check" aria-hidden="true"></i></div><span class="fd-eyebrow">MANAGEMENT REQUEST</span><h1>Verification requested.</h1><p class="fd-muted">Access to SIA “JURMILA” stays restricted while your request is reviewed.</p></div><ol class="fd-timeline"><li><strong>Verify your connection</strong><p>Confirm your email or use the manual review process.</p></li><li><strong>We review your authority</strong><p>We may request further evidence before approving access.</p></li><li><strong>Complete your business profile</strong><p>After approval, add services, prices and schedules to enable bookings.</p></li></ol><div class="fd-notice"><i data-lucide="lock-keyhole" aria-hidden="true"></i><div><strong>Your listing stays protected</strong><p>No management access is granted until verification is approved.</p></div></div><button type="button" class="fd-primary cursor-interaction" data-go="search">Back to search</button></div></template>
+<template data-template="report"><div class="fd-content"><button type="button" class="fd-back cursor-interaction" data-go="detail">← Business details</button><h1>Help keep this<br>listing accurate.</h1><form data-form="report"><label>What needs attention?<select><option>Incorrect business details</option><option>Business has closed</option><option>Duplicate listing</option><option>Privacy or removal request</option></select></label><label>Details<textarea rows="4" placeholder="Tell us what should be reviewed." required></textarea></label><button type="submit" class="fd-primary cursor-interaction">Send for review</button></form><p class="fd-small fd-muted">You don’t need to claim a business to report a problem.</p><p class="fd-status" role="status" data-part="status"></p></div></template>
+<template data-template="sample"><div class="fd-content"><button type="button" class="fd-back cursor-interaction" data-go="search">← Search results</button><span class="fd-eyebrow">EXAMPLE BOOKABLE SERVICE</span><h1>Classic manicure</h1><p class="fd-muted">Example beauty studio</p><div class="fd-notice"><i data-lucide="calendar-check" aria-hidden="true"></i><div><strong>€30 · 45 minutes</strong><p>This continues into the app’s existing service details and booking flow.</p></div></div><button type="button" class="fd-primary cursor-interaction" data-go="search">Back to search</button></div></template>
+</div>
+<script>
+(() => {
+ const root=document.getElementById('fm-directory');
+ const templates=new Map(Array.from(root.querySelectorAll('template')).map(t=>[t.dataset.template,t]));
+ const initial=window.openai?.widgetState?.privateContent||{};
+ const shared={interested:!!initial.interested,notify:!!initial.notify};
+ const controllers=[];
+ const pages=['search','detail','saved','claim','pending','report','sample'];
+ function persist(){if(window.openai?.setWidgetState)window.openai.setWidgetState({modelContent:{concept:'FitsMyTime business directory',interested:shared.interested,notifications:shared.notify},privateContent:{...shared,screens:controllers.map(c=>c.state.screen)}}).catch(()=>{});}
+ function icons(){if(globalThis.lucide)lucide.createIcons({attrs:{width:18,height:18}});}
+ root.querySelectorAll('.fd-stage').forEach((stage,index)=>{
+  stage.append(templates.get('shell').content.cloneNode(true));
+  const main=stage.querySelector('main');
+  const state={screen:pages.includes(initial.screens?.[index])?initial.screens[index]:'search',tab:'services',available:false,cta:'I’d like to book here'};
+  function sync(){
+   main.querySelectorAll('[data-interest]').forEach(l=>l.textContent=shared.interested?'Interest saved':state.cta);
+   const notify=main.querySelector('[data-control=notify]');if(notify)notify.checked=shared.notify;
+   if(state.screen==='search'){
+    const tabs=stage.dataset.layout==='tabs';
+    main.querySelector('.fd-tabs').hidden=!tabs;
+    main.querySelector('[data-control=available]').checked=state.available;
+    main.querySelector('[data-part=services]').hidden=tabs&&state.tab==='businesses';
+    main.querySelector('[data-part=businesses]').hidden=state.available||(tabs&&state.tab!=='businesses');
+    main.querySelector('[data-part=excluded]').hidden=!state.available;
+    main.querySelectorAll('.fd-tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.go===state.tab+'-tab')));
+   }
+  }
+  function render(){main.replaceChildren(templates.get(state.screen).content.cloneNode(true));sync();icons();}
+  function navigate(screen){state.screen=screen;render();persist();}
+  stage.addEventListener('click',event=>{
+   const target=event.target.closest('[data-go]');if(!target)return;const action=target.dataset.go;
+   if(action==='interest'){shared.interested=true;controllers.forEach(c=>c.sync());navigate('saved');}
+   else if(action==='undo'){shared.interested=false;shared.notify=false;controllers.forEach(c=>c.sync());navigate('detail');}
+   else if(action==='services-tab'||action==='businesses-tab'){state.tab=action.split('-')[0];sync();persist();}
+   else if(pages.includes(action))navigate(action);
+  });
+  stage.addEventListener('change',event=>{
+   const control=event.target.dataset.control;
+   if(control==='available'){state.available=event.target.checked;sync();}
+   if(control==='notify'){shared.notify=event.target.checked;main.querySelector('[data-part=status]').textContent=shared.notify?'Notification preference saved.':'Notifications are off.';controllers.forEach(c=>c.sync());persist();}
+   if(control==='method'){
+    const manual=event.target.value==='manual';main.querySelector('[data-part=email]').hidden=manual;main.querySelector('[name=email]').required=!manual;
+    main.querySelector('[data-part=help]').textContent=manual?'We’ll arrange a manual review of your authority. You can discuss suitable evidence with the review team.':'We’ll verify your email and review your authority. Email access alone does not grant control.';
+   }
+  });
+  stage.addEventListener('submit',event=>{
+   event.preventDefault();
+   if(event.target.dataset.form==='claim')navigate('pending');
+   if(event.target.dataset.form==='report')main.querySelector('[data-part=status]').textContent='Preview: this report would be sent for review.';
+  });
+  controllers.push({state,sync,render});render();
+  if(globalThis.Tweak){const tweak=new Tweak({container:stage.querySelector('.fd-phone'),onChange:sync});tweak.addSelect(state,'cta',{label:'Interest button wording',options:['I’d like to book here','Bring this business to FitsMyTime','I’m interested']});}
+ });
+ window.addEventListener('openai:set_globals',event=>{const incoming=event.detail?.globals?.widgetState?.privateContent;if(!incoming)return;shared.interested=!!incoming.interested;shared.notify=!!incoming.notify;controllers.forEach((c,index)=>{if(pages.includes(incoming.screens?.[index]))c.state.screen=incoming.screens[index];c.render();});});
+})();
+</script>

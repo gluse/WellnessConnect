@@ -17,6 +17,7 @@ import { mountNotificationWebhooks } from "./notifications/webhooks";
 import { startupFailureDiagnostic, type StartupStage } from "./startup-diagnostics";
 import { startBookingMessageRetention } from "./appointments/retention";
 import { verifyCurrencyDatabaseReadiness } from "../migrations/currencies/application-readiness.mjs";
+import { verifyWorkspacePricingDatabaseReadiness } from "../migrations/workspace-pricing/application-readiness.mjs";
 
 assertAuditActivation(process.env);
 const app = express();
@@ -59,6 +60,11 @@ app.use((req, res, next) => {
   await verifyAuditApplicationPool(pool, process.env);
   startupStage = "currency_database";
   await verifyCurrencyDatabaseReadiness((text, values) => {
+    const query: QueryConfig & Pick<ClientConfig, "query_timeout"> = { text, values, query_timeout: 5000 };
+    return pool.query(query);
+  });
+  startupStage = "workspace_pricing_database";
+  await verifyWorkspacePricingDatabaseReadiness((text, values) => {
     const query: QueryConfig & Pick<ClientConfig, "query_timeout"> = { text, values, query_timeout: 5000 };
     return pool.query(query);
   });

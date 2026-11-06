@@ -393,6 +393,27 @@ export const categories = pgTable("categories", {
 }, table => [uniqueIndex("categories_name_idx").on(sql`lower(${table.name})`)]).enableRLS();
 export type Category = typeof categories.$inferSelect;
 
+// Private workspace preferences; never join into public users/provider payloads.
+export const workspacePricingSettings = pgTable("workspace_pricing_settings", {
+  id: uuid("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
+  companyId: integer("company_id").references(() => companies.id, { onDelete: "cascade" }),
+  defaultCurrency: varchar("default_currency", { length: 3 }),
+  businessCountryCode: varchar("business_country_code", { length: 2 }),
+  revision: integer("revision").notNull().default(1),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  uniqueIndex("workspace_pricing_personal_identity").on(table.userId),
+  uniqueIndex("workspace_pricing_company_identity").on(table.companyId),
+  check("workspace_pricing_owner_check", sql`(${table.userId} IS NOT NULL) <> (${table.companyId} IS NOT NULL)`),
+  check("workspace_pricing_currency_check", sql`${table.defaultCurrency} IS NULL OR ${currencyCodeCheck(table.defaultCurrency)}`),
+  check("workspace_pricing_country_check", sql`${table.businessCountryCode} IS NULL OR ${table.businessCountryCode} IN (${codeLiterals(SUPPORTED_COUNTRIES)})`),
+  check("workspace_pricing_revision_check", sql`${table.revision} > 0`),
+]).enableRLS();
+export type WorkspacePricingSettings = typeof workspacePricingSettings.$inferSelect;
+export type InsertWorkspacePricingSettings = typeof workspacePricingSettings.$inferInsert;
+
 // Locations are saved once per personal or company workspace.
 export const addresses = pgTable("addresses", {
   id: serial("id").primaryKey(),
@@ -402,6 +423,7 @@ export const addresses = pgTable("addresses", {
   longitude: doublePrecision("longitude"),
   address: text("address"),
   countryCode: varchar("country_code", { length: 2 }),
+  pricingCurrency: varchar("pricing_currency", { length: 3 }),
   locationSource: varchar("location_source", { enum: ["legacy", "manual", "google"] }).notNull().default("legacy"),
   locationKey: varchar("location_key"),
   locationPlaceId: text("location_place_id"),
@@ -411,7 +433,8 @@ export const addresses = pgTable("addresses", {
   updatedAt: timestamp("updated_at").defaultNow(),
 }, table => [index("addresses_workspace_idx").on(table.providerId, table.companyId),
   index("addresses_google_expiry_idx").on(table.locationExpiresAt).where(sql`${table.locationSource} = 'google'`),
-  check("addresses_country_code_check", sql`${table.countryCode} IS NULL OR ${table.countryCode} IN (${codeLiterals(SUPPORTED_COUNTRIES)})`)]).enableRLS();
+  check("addresses_country_code_check", sql`${table.countryCode} IS NULL OR ${table.countryCode} IN (${codeLiterals(SUPPORTED_COUNTRIES)})`),
+  check("addresses_pricing_currency_check", sql`${table.pricingCurrency} IS NULL OR ${currencyCodeCheck(table.pricingCurrency)}`)]).enableRLS();
 export type Address = typeof addresses.$inferSelect;
 export type AddressLocation = Pick<Address, "address" | "countryCode" | "latitude" | "longitude" | "locationSource" | "locationKey" | "locationPlaceId" | "locationExpiresAt" | "locationAddressSource">;
 export const addressInputSchema = createInsertSchema(addresses, {
@@ -419,7 +442,8 @@ export const addressInputSchema = createInsertSchema(addresses, {
   latitude: z.number().finite().min(-90).max(90),
   longitude: z.number().finite().min(-180).max(180),
   countryCode: countryInput.nullable().optional(),
-}).pick({ address: true, latitude: true, longitude: true, countryCode: true });
+  pricingCurrency: currencyInput.nullable().optional(),
+}).pick({ address: true, latitude: true, longitude: true, countryCode: true, pricingCurrency: true });
 
 // Services table
 export const services = pgTable("services", {

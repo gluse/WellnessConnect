@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { startupFailureDiagnostic, startupStages } from "../server/startup-diagnostics.ts";
 import { BillingDatabaseReadinessError, verifyBillingDatabaseReadiness } from "../server/billing/database-readiness.ts";
 import { CurrencyDatabaseReadinessError } from "../migrations/currencies/application-readiness.mjs";
-import { WISHLIST_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS, WISHLIST_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL,
-  wishlistApplicationReadinessArguments as billingApplicationReadinessArguments } from "../migrations/wishlist/application-readiness.mjs";
+import { WORKSPACE_PRICING_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS, WORKSPACE_PRICING_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL,
+  workspacePricingApplicationReadinessArguments as billingApplicationReadinessArguments, WorkspacePricingDatabaseReadinessError } from "../migrations/workspace-pricing/application-readiness.mjs";
 
 // Pure diagnostics and injected metadata queries; no server/db/env/provider import.
 const canary = "PRIVATE_CONFIG_DRIVER_BODY_STACK_CANARY";
@@ -36,6 +36,9 @@ for (const type of ["StripeAuthenticationError", "StripePermissionError"])
   check(() => assert.equal(startupFailureDiagnostic("billing_portal", { type }).code, "STRIPE_AUTHENTICATION_OR_PERMISSION"));
 check(() => assert.equal(startupFailureDiagnostic("billing_portal", { type: "StripeConnectionError" }).code, "STRIPE_NETWORK_OR_TIMEOUT"));
 let calls = 0;
+check(() => assert.deepEqual(startupFailureDiagnostic("workspace_pricing_database", new WorkspacePricingDatabaseReadinessError(["workspace_pricing_private_acl", canary])), {
+  event: "application_startup_refused", stage: "workspace_pricing_database", code: "WORKSPACE_PRICING_DB_NOT_READY", checks: ["workspace_pricing_private_acl"],
+}));
 check(() => assert.deepEqual(startupFailureDiagnostic("currency_database", new CurrencyDatabaseReadinessError(["currency_columns", canary])), {
   event: "application_startup_refused", stage: "currency_database", code: "CURRENCY_DB_NOT_READY", checks: ["currency_columns"],
 }));

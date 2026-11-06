@@ -5,7 +5,7 @@ import { WORKSPACE_CHANGE_KEY } from "./use-provider-workspace";
 import { useToast } from "./use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
-const workspaceQueries = (key: unknown) => /^\/api\/(addresses|provider|company\/team|services\/provider|bookings\/provider|availability\/provider|notifications)/.test(String(key)) || key === "notification-preview";
+const workspaceQueries = (key: unknown) => /^\/api\/(addresses|workspace\/pricing-settings|provider|company\/team|services\/provider|bookings\/provider|availability\/provider|notifications)/.test(String(key)) || key === "notification-preview";
 
 /** Shared by the desktop workspace control and the mobile Menu. */
 export function useWorkspaceChange() {

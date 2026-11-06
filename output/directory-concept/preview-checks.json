@@ -1,0 +1,28 @@
+{
+  "layouts": [
+    {
+      "width": 736,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "overflow": false
+    }
+  ],
+  "flows": [
+    "availability separation",
+    "details",
+    "interest",
+    "notification preference",
+    "undo",
+    "claim required authority",
+    "claim review",
+    "businesses tab"
+  ],
+  "runtimeErrors": [],
+  "externalRequests": []
+}

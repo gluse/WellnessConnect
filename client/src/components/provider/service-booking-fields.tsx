@@ -8,8 +8,8 @@ import { fieldFeedback, ServiceFieldError, type ServiceErrors } from "./service-
 import { SUPPORTED_CURRENCIES, isSupportedCurrency, currencyDigits } from "@shared/currencies";
 import ServiceDurationField from "./service-duration-field";
 
-type Props = { newService: ServiceDraft; setNewService: Dispatch<SetStateAction<ServiceDraft>>; errors?: ServiceErrors; onCurrencyChoice?: () => void };
-export default function ServiceBookingFields({ newService, setNewService, errors = {}, onCurrencyChoice }: Props) {
+type Props = { newService: ServiceDraft; setNewService: Dispatch<SetStateAction<ServiceDraft>>; errors?: ServiceErrors; onCurrencyChoice?: (currency: string) => void; onPriceChange?: (price: string) => void };
+export default function ServiceBookingFields({ newService, setNewService, errors = {}, onCurrencyChoice, onPriceChange }: Props) {
   const { t, i18n } = useTranslation();
   const currencyNames = new Intl.DisplayNames([i18n.resolvedLanguage || i18n.language], { type: "currency" });
   const numeric = (field: "maxCapacity" | "advancePaymentPercent", id: string, label: string, min: number, max?: number) => <div className="space-y-2">
@@ -37,14 +37,14 @@ export default function ServiceBookingFields({ newService, setNewService, errors
     <div className="grid sm:grid-cols-2 gap-4">
       <div className="space-y-2"><Label htmlFor="price">{t("serviceForm.price")} *</Label>
         <Input id="price" className="min-h-11" type="text" inputMode="decimal" required value={newService.price} {...fieldFeedback(errors, "price", "service-price-help")}
-          onChange={event => setNewService(prev => ({ ...prev, price: event.target.value }))} />
+          onChange={event => { const price = event.target.value; if (onPriceChange) onPriceChange(price); else setNewService(prev => ({ ...prev, price })); }} />
         <p id="service-price-help" className="text-sm text-muted-foreground">{t("currency.precision", { digits: isSupportedCurrency(newService.currency) ? currencyDigits(newService.currency) : "—" })}</p>
         <ServiceFieldError errors={errors} field="price" />
       </div>
       <div className="space-y-2"><Label htmlFor="service-currency">{t("currency.label")} *</Label>
         <select id="service-currency" required className="w-full min-h-11 rounded-md border bg-background px-3 py-2 text-base" value={newService.currency}
           {...fieldFeedback(errors, "currency", "service-currency-help")}
-          onChange={event => { onCurrencyChoice?.(); setNewService(prev => ({ ...prev, currency: event.target.value })); }}>
+          onChange={event => { const currency = event.target.value; onCurrencyChoice?.(currency); setNewService(prev => ({ ...prev, currency })); }}>
           <option value="">{t("currency.choose")}</option>
           {SUPPORTED_CURRENCIES.map(code => <option key={code} value={code}>{code} — {currencyNames.of(code) || code}</option>)}
         </select>

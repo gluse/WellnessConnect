@@ -1,9 +1,9 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-import type { Employee, Service } from "@shared/schema";
+import type { Address, Employee, Service } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +18,10 @@ import ServiceReminderFields from "./service-reminder-fields";
 import { serviceControlIds, validateServiceDraft, type ServiceErrors } from "./service-field-feedback";
 import { registerServiceExitBlocker, requestServiceEditorExit } from "./service-navigation-guard";
 import { parseMoneyInput } from "@/lib/money-input";
+import { useAuth } from "@/hooks/useAuth";
+import { useWorkspacePricing } from "@/hooks/use-workspace-pricing";
+import { resolveCurrencyDefault, type CurrencyDefaultSource } from "@shared/currency-defaults";
+import { suggestedCurrency } from "@shared/currencies";
 
 const actionClass = "min-h-11 h-auto whitespace-normal py-3 text-center";
 const dialogClass = "service-editor max-w-[calc(100%-2rem)] sm:max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl motion-reduce:animate-none";
@@ -30,6 +34,15 @@ function FormSection({ number, title, children }: { number: number; title: strin
   </section>;
 }
 export default function ServiceEditor({ service, employees, company }: { service?: Service; employees: Employee[]; company: boolean }) {
+  const { user, isLoading } = useAuth();
+  const pricing = useWorkspacePricing(user?.id, !service);
+  const { t } = useTranslation();
+  if (isLoading || pricing.switching || pricing.context.isPending) return <p role="status">{t("currency.defaultsLoading")}</p>;
+  if (pricing.context.isError) return <div role="alert">{t("currency.defaultsLoadError")} <Button onClick={pricing.retry}>{t("publicSearch.retry")}</Button></div>;
+  if (!pricing.allowed || !user || !pricing.scope) return <p role="alert">{t("serviceForm.denied")}</p>;
+  return <ServiceEditorContent key={`${user.id}:${pricing.scope}:${service?.id ?? "new"}`} service={service} employees={employees} company={company} pricing={pricing} actorId={user.id} />;
+}
+function ServiceEditorContent({ service, employees, company, pricing, actorId }: { service?: Service; employees: Employee[]; company: boolean; pricing: ReturnType<typeof useWorkspacePricing>; actorId: string }) {
   const { t, i18n } = useTranslation();
   const [newService, setNewService] = useState(() => createServiceDraft(service));
   const [error, setError] = useState("");
@@ -37,7 +50,14 @@ export default function ServiceEditor({ service, employees, company }: { service
   const [exit, setExit] = useState<{ proceed: () => unknown } | null>(null);
   const [hideConfirmation, setHideConfirmation] = useState(false);
   const [currencyConfirmation, setCurrencyConfirmation] = useState<boolean | null>(null);
-  const [currencyChosen, setCurrencyChosen] = useState(Boolean(service));
+  const [currencySelection, setCurrencySelection] = useState<{ currency: string; source: CurrencyDefaultSource } | null>(service ? { currency: service.currency, source: "saved" } : null);
+  const addresses = useQuery<Address[]>({ queryKey: ["/api/addresses", actorId, pricing.scope], refetchOnWindowFocus: "always", gcTime: 0 });
+  const selectedAddress = addresses.data?.find(address => address.id === newService.addressId);
+  const resolved = resolveCurrencyDefault({ location: selectedAddress, settings: pricing.settings.data });
+  const availableDefault = (!pricing.settings.data || pricing.settings.isError) && resolved.source !== "location" ? { currency: null, source: "none" as const } : resolved;
+  const choice = currencySelection ?? availableDefault;
+  const draft = { ...newService, currency: choice.currency ?? "" };
+  const localSuggestion = suggestedCurrency(selectedAddress?.countryCode);
   const [savingAs, setSavingAs] = useState<boolean | null>(null);
   const summary = useRef<HTMLDivElement>(null);
   const lastExitTrigger = useRef<HTMLElement | null>(null);
@@ -88,7 +108,7 @@ export default function ServiceEditor({ service, employees, company }: { service
   }, [dirty]);
   const save = useMutation({
     mutationFn: async (isActive: boolean) => (await apiRequest(service ? "PATCH" : "POST", service ? `/api/services/${service.id}` : "/api/services", {
-      ...newService, price: parseMoneyInput(newService.price, newService.currency, i18n.resolvedLanguage || i18n.language), isActive,
+      ...draft, price: parseMoneyInput(draft.price, draft.currency, i18n.resolvedLanguage || i18n.language), isActive,
     })).json(),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ predicate: query => String(query.queryKey[0]).startsWith("/api/services/") });
@@ -109,10 +129,10 @@ export default function ServiceEditor({ service, employees, company }: { service
   });
   const submit = (isActive: boolean, confirmed = false, currencyConfirmed = false) => {
     if (submitting.current || save.isPending) return;
-    const nextErrors = validateServiceDraft(newService, i18n.resolvedLanguage || i18n.language);
+    const nextErrors = validateServiceDraft(draft, i18n.resolvedLanguage || i18n.language);
     setFieldErrors(nextErrors); setError("");
     if (Object.keys(nextErrors).length) { queueMicrotask(() => summary.current?.focus()); return; }
-    if (service && newService.currency !== service.currency && !currencyConfirmed) { setCurrencyConfirmation(isActive); return; }
+    if (service && draft.currency !== service.currency && !currencyConfirmed) { setCurrencyConfirmation(isActive); return; }
     if (!isActive && service?.isActive && !confirmed) { lastHideTrigger.current = activeFocus(); setHideConfirmation(true); return; }
     submitting.current = true; setSavingAs(isActive); save.mutate(isActive);
   };
@@ -138,11 +158,24 @@ export default function ServiceEditor({ service, employees, company }: { service
       </div>}
       <fieldset disabled={save.isPending} className="space-y-6 min-w-0">
         <FormSection number={1} title={t("serviceForm.details")}><ServiceDetailsFields newService={newService} setNewService={setNewService} employees={employees} company={company} errors={errors} /></FormSection>
-        <FormSection number={2} title={t("serviceForm.sessionPrice")}><ServiceBookingFields newService={newService} setNewService={setNewService} errors={errors} onCurrencyChoice={() => setCurrencyChosen(true)} /></FormSection>
+        <FormSection number={2} title={t("serviceForm.sessionPrice")}>
+          <ServiceBookingFields newService={draft} setNewService={setNewService} errors={errors}
+            onCurrencyChoice={currency => setCurrencySelection({ currency, source: "manual" })}
+            onPriceChange={price => {
+              if (price.trim() && choice.currency) setCurrencySelection(previous => previous ?? { currency: choice.currency!, source: choice.source });
+              if (!price.trim() && currencySelection && !["saved", "manual"].includes(currencySelection.source)) setCurrencySelection(null);
+              setNewService(previous => ({ ...previous, price }));
+            }} />
+          {choice.currency && <p className="text-sm text-muted-foreground" data-testid="currency-default-source" role="status">{t(`currency.defaultSource_${choice.source}`, { currency: choice.currency })}</p>}
+          {!service && pricing.settings.isPending && !currencySelection && <p role="status">{t("currency.defaultsLoading")}</p>}
+          {!service && pricing.settings.isError && <p role="alert">{t("currency.defaultsLoadError")} <button type="button" className="underline min-h-11" onClick={pricing.retry}>{t("publicSearch.retry")}</button></p>}
+          {!service && currencySelection && !["saved", "manual"].includes(currencySelection.source) && <p className="text-sm text-muted-foreground">{t("currency.amountLocked")}</p>}
+          {localSuggestion && choice.currency && localSuggestion !== choice.currency && <div className="text-sm space-y-1"><p>{t("currency.suggestLocal", { currency: localSuggestion })}</p><Button type="button" variant="outline" className="max-w-full min-h-11 h-auto whitespace-normal" onClick={() => { setCurrencySelection({ currency: localSuggestion, source: "manual" }); setNewService(previous => ({ ...previous, currency: localSuggestion })); }}>{t("currency.useSuggested", { currency: localSuggestion })}</Button></div>}
+        </FormSection>
         <FormSection number={3} title={t("serviceForm.audience")}><ServiceAudienceFields newService={newService} setNewService={setNewService} /></FormSection>
         <FormSection number={4} title={t("serviceForm.bookingLocation")}>
           <ServiceInstantBookingField newService={newService} setNewService={setNewService} />
-          <ServiceLocationFields newService={newService} setNewService={setNewService} errors={errors} allowCurrencySuggestion={!currencyChosen} />
+          <ServiceLocationFields newService={draft} setNewService={setNewService} errors={errors} addresses={addresses} />
         </FormSection>
         <FormSection number={5} title={t("serviceForm.media")}><ServiceMediaFields newService={newService} setNewService={setNewService} errors={errors} /></FormSection>
         <FormSection number={6} title={t("notifications.reminderSettings")}><ServiceReminderFields draft={newService} setDraft={setNewService} errors={errors} /></FormSection>
@@ -161,7 +194,7 @@ export default function ServiceEditor({ service, employees, company }: { service
     <AlertDialog open={currencyConfirmation !== null} onOpenChange={open => { if (!open) setCurrencyConfirmation(null); }}>
       <AlertDialogContent dir={i18n.dir()} className={dialogClass} onCloseAutoFocus={event => { event.preventDefault(); document.getElementById("service-currency")?.focus(); }}>
         <AlertDialogHeader className="text-start sm:text-start"><AlertDialogTitle>{t("currency.changeTitle")}</AlertDialogTitle>
-          <AlertDialogDescription>{t("currency.changeHelp", { currency: newService.currency, price: newService.price })}</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogDescription>{t("currency.changeHelp", { currency: draft.currency, price: draft.price })}</AlertDialogDescription></AlertDialogHeader>
         <AlertDialogFooter className="gap-2 sm:space-x-0"><AlertDialogCancel className={actionClass}>{t("serviceForm.keepEditing")}</AlertDialogCancel>
           <AlertDialogAction className={actionClass} onClick={() => { const active = currencyConfirmation; setCurrencyConfirmation(null); if (active !== null) submit(active, false, true); }}>{t("currency.confirmChange")}</AlertDialogAction>
         </AlertDialogFooter>

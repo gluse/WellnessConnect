@@ -3,6 +3,8 @@ import { readFile, writeFile } from "node:fs/promises";
 import { browserFixture } from "./fixtures/browser-harness.mjs";
 import { formatMoney } from "../client/src/lib/money.ts";
 const languages = ["en", "lv", "ru"], engine = process.env.FORMS_BROWSER || "chrome";
+const evidencePrefix = process.env.CURRENCY_EVIDENCE_PREFIX || "currency";
+assert.match(evidencePrefix, /^[a-z0-9-]+$/);
 const resources = Object.fromEntries(await Promise.all(languages.map(async language => [language, { translation: JSON.parse(await readFile(`client/public/locales/${language}/translation.json`, "utf8")) }])));
 for (const language of languages) for (const [key, value] of Object.entries(resources.en.translation.currency)) {
   const translated = resources[language].translation.currency[key];
@@ -52,7 +54,7 @@ try {
     await forms.click('[data-testid="button-save-service"]'); await forms.button(t.currency.confirmChange);
     await forms.until(() => window.serviceFormFixture.writes.length === 2 && !document.querySelector('form[aria-busy="true"]'));
     assert.deepEqual(await forms.evaluate(() => { const p = window.serviceFormFixture.writes[1]; return [p.price, p.currency]; }), ["1.005", "KWD"]);
-    const formImage = `docs/currency-${engine}-${language}-form.png`; await forms.screenshot(formImage); screenshots.push(formImage);
+    const formImage = `docs/${evidencePrefix}-${engine}-${language}-form.png`; await forms.screenshot(formImage); screenshots.push(formImage);
     await reflow(forms);
     await forms.evaluate(() => { document.documentElement.style.fontSize = "200%"; }); await reflow(forms);
     await forms.viewport(1280, 900); await reflow(forms);
@@ -85,7 +87,7 @@ try {
     await bookings.button(t.bookingForm.continue); await bookings.until(() => !!document.getElementById("booking-participants"));
     assert.equal(await bookings.evaluate(() => document.getElementById("booking-initial-message").value), "Synthetic note");
     assert.ok((await bookings.evaluate(() => document.querySelector('[role="dialog"] dl:last-of-type').textContent)).includes(formatMoney("0.00", "GBP", language)), "updated 100% advance leaves zero balance");
-    const bookingImage = `docs/currency-${engine}-${language}-booking.png`; await bookings.screenshot(bookingImage); screenshots.push(bookingImage);
+    const bookingImage = `docs/${evidencePrefix}-${engine}-${language}-booking.png`; await bookings.screenshot(bookingImage); screenshots.push(bookingImage);
     await bookings.evaluate(() => { window.phase2Fixture.bookingResult = "success"; }); await bookings.button(t.bookingForm.requestBooking);
     await bookings.until(() => document.querySelector('[role="status"]')?.textContent.length > 0 && !document.getElementById("booking-initial-message"), "booking accepted");
     assert.deepEqual(await bookings.evaluate(() => { const p = window.phase2Fixture.writes.filter(w => w.path === "/api/bookings").at(-1).body; return [p.expectedPrice, p.expectedCurrency, p.participantCount, p.expectedAdvancePaymentPercent]; }), ["35.00", "GBP", 2, 100]);
@@ -122,10 +124,10 @@ try {
     assert.ok(!summary.includes("999"));
     assert.ok(await preview.evaluate(() => document.querySelector('#service-sort option[value="price-asc"]').disabled));
     assert.equal(await preview.evaluate(() => document.querySelector('[data-testid="large-money"]').textContent), formatMoney("9007199254740993.05", "EUR", language));
-    if (width === 360) { const file = `docs/currency-${engine}-${language}-360.png`; await preview.screenshot(file); screenshots.push(file); }
+    if (width === 360) { const file = `docs/${evidencePrefix}-${engine}-${language}-360.png`; await preview.screenshot(file); screenshots.push(file); }
     checks.push(`${language}/${width}: exact code displays, mixed totals, disabled price sort and reflow`);
   }
   assert.deepEqual(preview.errors, []); assert.deepEqual(preview.network, []);
 } finally { await preview.close(); }
-await writeFile(`docs/currency-${engine}-evidence.json`, JSON.stringify({ date: "2026-11-05", engine, languages, checks, screenshots, deferred: ["ar/RTL", "zh", "fr", "de", "hi", "ja", "pt", "es"], boundaries: "Synthetic data, in-memory fetch mocks, isolated loopback static fixtures; no connected APIs/database" }, null, 2) + "\n");
+await writeFile(`docs/${evidencePrefix}-${engine}-evidence.json`, JSON.stringify({ date: process.env.CURRENCY_VERIFICATION_DATE || "2026-11-05", engine, languages, checks, screenshots, deferred: ["ar/RTL", "zh", "fr", "de", "hi", "ja", "pt", "es"], boundaries: "Synthetic data, in-memory fetch mocks, isolated loopback static fixtures; no connected APIs/database" }, null, 2) + "\n");
 console.log(`PASS: ${engine} currency browser (${checks.length} behavior/viewport groups), en/lv/ru only.`);

@@ -29,10 +29,11 @@ export const addressStore = {
     if (!row) throw new AccessError(403, "Choose an address from this workspace.");
     return currentLocation(row);
   },
-  async save(location: AddressLocation, owner: Owner, id?: number) {
-    const values: AddressLocation = {
+  async save(location: AddressLocation & { pricingCurrency?: string | null }, owner: Owner, id?: number) {
+    const values: AddressLocation & { pricingCurrency?: string | null } = {
       address: location.address, latitude: location.latitude, longitude: location.longitude,
       countryCode: location.countryCode ?? null,
+      ...(location.pricingCurrency !== undefined ? { pricingCurrency: location.pricingCurrency } : {}),
       locationSource: location.locationSource, locationKey: location.locationKey,
       locationPlaceId: location.locationPlaceId, locationExpiresAt: location.locationExpiresAt,
       locationAddressSource: location.locationAddressSource,

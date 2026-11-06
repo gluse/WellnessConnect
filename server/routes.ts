@@ -42,6 +42,9 @@ import { bookingReminderSummaries } from "./notifications/repository";
 import { notificationConfig } from "./notifications/transports";
 import { NotificationError, notificationTimezoneSchema } from "@shared/notifications";
 import { bookingMoneyDto, bookingPriceSnapshot, expectedPriceSchema, MoneyInputError, PriceChangedError } from "./money";
+import { setupWorkspacePricingRoutes } from "./workspace-pricing/routes";
+import { createWorkspacePricingStore } from "./workspace-pricing/store";
+import { WorkspacePricingError } from "@shared/workspace-pricing";
 
 // Older booking clients send `notes`; both inputs start the same conversation.
 const initialBookingMessageSchema = z.object({
@@ -112,6 +115,16 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
   setupAdminRoutes(app);
   setupCategoryRoutes(app);
   setupCompanyRoutes(app);
+  setupWorkspacePricingRoutes(app, { authenticate: isAuthenticated, store: createWorkspacePricingStore(db), currentWorkspace(req, write) {
+    try {
+      const current = scope(req, "manageServices");
+      if (write && current.companyId != null && !current.ctx.permissions.manageCompany) throw new AccessError(403, "Your access level does not allow this action.");
+      return { userId: current.userId, companyId: current.companyId };
+    } catch (error) {
+      if (error instanceof AccessError) throw new WorkspacePricingError(403, "WORKSPACE_PRICING_FORBIDDEN", error.message);
+      throw error;
+    }
+  } });
   setupNotificationRoutes(app);
   setupAppointmentRoutes(app);
   const wishlist = createWishlistService(createWishlistStore(db), id => storage.getServiceById(id));

@@ -1,0 +1,166 @@
+{
+  "version": "workspace-pricing-v1",
+  "tables": [
+    "workspace_pricing_settings"
+  ],
+  "columns": [
+    {
+      "table": "workspace_pricing_settings",
+      "name": "id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "user_id",
+      "type": "character varying",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "company_id",
+      "type": "integer",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "default_currency",
+      "type": "character varying(3)",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "business_country_code",
+      "type": "character varying(2)",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "revision",
+      "type": "integer",
+      "notNull": true,
+      "default": "1"
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "addresses",
+      "name": "pricing_currency",
+      "type": "character varying(3)",
+      "notNull": false,
+      "default": null
+    }
+  ],
+  "constraints": [
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_owner_check",
+      "type": "c",
+      "expression": "user_idisnotnull<>company_idisnotnull"
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_currency_check",
+      "type": "c",
+      "expression": "default_currencyisnullordefault_currency=anyarray['aed','afn','all','amd','aoa','ars','aud','awg','azn','bam','bbd','bdt','bhd','bif','bmd','bnd','bob','brl','bsd','btn','bwp','byn','bzd','cad','cdf','chf','clp','cny','cop','crc','cup','cve','czk','djf','dkk','dop','dzd','egp','ern','etb','eur','fjd','fkp','gbp','gel','ghs','gip','gmd','gnf','gtq','gyd','hkd','hnl','htg','huf','idr','ils','inr','iqd','irr','isk','jmd','jod','jpy','kes','kgs','khr','kmf','kpw','krw','kwd','kyd','kzt','lak','lbp','lkr','lrd','lsl','lyd','mad','mdl','mga','mkd','mmk','mnt','mop','mru','mur','mvr','mwk','mxn','myr','mzn','nad','ngn','nio','nok','npr','nzd','omr','pab','pen','pgk','php','pkr','pln','pyg','qar','ron','rsd','rub','rwf','sar','sbd','scr','sdg','sek','sgd','shp','sle','sos','srd','ssp','stn','syp','szl','thb','tjs','tmt','tnd','top','try','ttd','twd','tzs','uah','ugx','usd','uyu','uzs','ves','vnd','vuv','wst','xaf','xcd','xcg','xof','xpf','yer','zar','zmw','zwg']"
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_country_check",
+      "type": "c",
+      "expression": "business_country_codeisnullorbusiness_country_code=anyarray['ad','ae','af','ag','ai','al','am','ao','aq','ar','as','at','au','aw','ax','az','ba','bb','bd','be','bf','bg','bh','bi','bj','bl','bm','bn','bo','bq','br','bs','bt','bv','bw','by','bz','ca','cc','cd','cf','cg','ch','ci','ck','cl','cm','cn','co','cr','cu','cv','cw','cx','cy','cz','de','dj','dk','dm','do','dz','ec','ee','eg','eh','er','es','et','fi','fj','fk','fm','fo','fr','ga','gb','gd','ge','gf','gg','gh','gi','gl','gm','gn','gp','gq','gr','gs','gt','gu','gw','gy','hk','hm','hn','hr','ht','hu','id','ie','il','im','in','io','iq','ir','is','it','je','jm','jo','jp','ke','kg','kh','ki','km','kn','kp','kr','kw','ky','kz','la','lb','lc','li','lk','lr','ls','lt','lu','lv','ly','ma','mc','md','me','mf','mg','mh','mk','ml','mm','mn','mo','mp','mq','mr','ms','mt','mu','mv','mw','mx','my','mz','na','nc','ne','nf','ng','ni','nl','no','np','nr','nu','nz','om','pa','pe','pf','pg','ph','pk','pl','pm','pn','pr','ps','pt','pw','py','qa','re','ro','rs','ru','rw','sa','sb','sc','sd','se','sg','sh','si','sj','sk','sl','sm','sn','so','sr','ss','st','sv','sx','sy','sz','tc','td','tf','tg','th','tj','tk','tl','tm','tn','to','tr','tt','tv','tw','tz','ua','ug','um','us','uy','uz','va','vc','ve','vg','vi','vn','vu','wf','ws','ye','yt','za','zm','zw']"
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_revision_check",
+      "type": "c",
+      "expression": "revision>0"
+    },
+    {
+      "table": "addresses",
+      "name": "addresses_pricing_currency_check",
+      "type": "c",
+      "expression": "pricing_currencyisnullorpricing_currency=anyarray['aed','afn','all','amd','aoa','ars','aud','awg','azn','bam','bbd','bdt','bhd','bif','bmd','bnd','bob','brl','bsd','btn','bwp','byn','bzd','cad','cdf','chf','clp','cny','cop','crc','cup','cve','czk','djf','dkk','dop','dzd','egp','ern','etb','eur','fjd','fkp','gbp','gel','ghs','gip','gmd','gnf','gtq','gyd','hkd','hnl','htg','huf','idr','ils','inr','iqd','irr','isk','jmd','jod','jpy','kes','kgs','khr','kmf','kpw','krw','kwd','kyd','kzt','lak','lbp','lkr','lrd','lsl','lyd','mad','mdl','mga','mkd','mmk','mnt','mop','mru','mur','mvr','mwk','mxn','myr','mzn','nad','ngn','nio','nok','npr','nzd','omr','pab','pen','pgk','php','pkr','pln','pyg','qar','ron','rsd','rub','rwf','sar','sbd','scr','sdg','sek','sgd','shp','sle','sos','srd','ssp','stn','syp','szl','thb','tjs','tmt','tnd','top','try','ttd','twd','tzs','uah','ugx','usd','uyu','uzs','ves','vnd','vuv','wst','xaf','xcd','xcg','xof','xpf','yer','zar','zmw','zwg']"
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_settings_pkey",
+      "type": "p",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_settings_user_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "user_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_settings_company_id_companies_id_fk",
+      "type": "f",
+      "columns": [
+        "company_id"
+      ],
+      "referenceTable": "companies",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    }
+  ],
+  "indexes": [
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_settings_pkey",
+      "unique": true,
+      "columns": [
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_personal_identity",
+      "unique": true,
+      "columns": [
+        "user_id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "workspace_pricing_settings",
+      "name": "workspace_pricing_company_identity",
+      "unique": true,
+      "columns": [
+        "company_id"
+      ],
+      "predicate": null
+    }
+  ]
+}

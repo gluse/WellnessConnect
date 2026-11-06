@@ -16,6 +16,7 @@ import * as auditCapture from "../server/audit/capture.ts";
 import * as customerBookings from "../server/customerBookings.ts";
 import * as notifications from "../shared/notifications.ts";
 import * as money from "../server/money.ts";
+import * as workspacePricing from "../shared/workspace-pricing.ts";
 
 // Never import server/db, dotenv, Auth, external providers or server startup.
 // --original demonstrates the regression against tracked pre-fix modules.
@@ -202,7 +203,7 @@ app.use = app.set = () => app;
 for (const method of ["get", "post", "patch", "put", "delete"]) app[method] = (path, ...handlers) => { routes.push({ method, path, handlers }); return app; };
 const noop = () => {};
 class ProviderError extends Error {}
-const routeDependencies = { ...dependencies, http: { createServer: () => ({ close() {} }) }, "./storage": { ...storageModule, storage },
+const routeDependencies = { ...dependencies, "@shared/workspace-pricing": workspacePricing, "./workspace-pricing/routes": { setupWorkspacePricingRoutes() {} }, "./workspace-pricing/store": { createWorkspacePricingStore: () => ({}) }, http: { createServer: () => ({ close() {} }) }, "./storage": { ...storageModule, storage },
   "./search-pagination/store": { createSearchPageStore: () => ({}) },
   "./wishlist/routes": { setupWishlistRoutes: noop }, "./wishlist/postgres": { createWishlistStore: () => ({}) },
   "./wishlist/service": { createWishlistService: () => ({}) }, "./wishlist/inbox": { createInboxService: () => ({}) },

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import React from "react";
 import renderer from "react-test-renderer";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { readFile } from "node:fs/promises";
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
@@ -42,7 +42,8 @@ await act(async () => component.unmount());
 let selected;
 function Harness() {
   const [draft, setDraft] = React.useState(createServiceDraft()); selected = draft;
-  return React.createElement(ServiceLocationFields, { newService: draft, setNewService: setDraft });
+  const addresses = useQuery({ queryKey: ["/api/addresses"] });
+  return React.createElement(ServiceLocationFields, { newService: draft, setNewService: setDraft, addresses });
 }
 await act(async () => { component = create(React.createElement(QueryClientProvider, { client }, React.createElement(Harness))); });
 await flush();

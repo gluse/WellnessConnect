@@ -1,23 +1,19 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
 import type { Address } from "@shared/schema";
 import type { ServiceDraft } from "./service-draft";
 import { Label } from "@/components/ui/label";
 import { fieldFeedback, ServiceFieldError, type ServiceErrors } from "./service-field-feedback";
-import { suggestedCurrency } from "@shared/currencies";
 
-export default function ServiceLocationFields({ newService, setNewService, errors = {}, allowCurrencySuggestion = false }: { newService: ServiceDraft; setNewService: Dispatch<SetStateAction<ServiceDraft>>; errors?: ServiceErrors; allowCurrencySuggestion?: boolean }) {
+export default function ServiceLocationFields({ newService, setNewService, errors = {}, addresses }: { newService: ServiceDraft; setNewService: Dispatch<SetStateAction<ServiceDraft>>; errors?: ServiceErrors; addresses: { data?: Address[]; isLoading: boolean; isError: boolean; refetch: () => unknown } }) {
   const { t } = useTranslation();
-  const addresses = useQuery<Address[]>({ queryKey: ["/api/addresses"], refetchOnWindowFocus: "always" });
   return <div className="space-y-2">
     <Label htmlFor="service-address">{t("serviceForm.address")} *</Label>
     <select id="service-address" className="w-full min-h-11 rounded-md border bg-background px-3 py-2 text-base" value={newService.addressId ?? ""}
       disabled={addresses.isLoading || addresses.isError} data-testid="select-service-address" {...fieldFeedback(errors, "addressId", "service-address-help service-address-status")}
       onChange={event => {
         const addressId = event.target.value ? Number(event.target.value) : null;
-        const country = addresses.data?.find(address => address.id === addressId)?.countryCode;
-        setNewService(prev => ({ ...prev, addressId, currency: allowCurrencySuggestion ? suggestedCurrency(country) || "" : prev.currency }));
+        setNewService(prev => ({ ...prev, addressId }));
       }}>
       <option value="">{t(addresses.isLoading ? "serviceForm.addressesLoading" : "serviceForm.chooseAddress")}</option>
       {addresses.data?.map(address => <option key={address.id} value={address.id} dir="auto" disabled={!address.address}>{address.address || t("serviceForm.addressNeedsUpdate")}</option>)}

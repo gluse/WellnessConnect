@@ -56,6 +56,7 @@ window.fetch = async (input, options = {}) => {
     return Response.json(fixture.signedIn ? user : null);
   }
   if (path === "/api/company/context") return Response.json({ company: null, workspaces: [], permissions: { manageServices: params.get("denied") !== "true", manageBookings: false, manageSchedules: false, manageTeam: false, isOwner: false, readAll: true } });
+  if (path === "/api/workspace/pricing-settings") return Response.json({ workspace: { kind: "user", id: user.id }, defaultCurrency: "EUR", businessCountryCode: "LV", revision: 1, canEdit: true });
   if (path === "/api/account/communication") return Response.json({ phone: null, phoneVerified: false, preferredMethod: null, language: "en", smsOptIn: false, whatsappOptIn: false, verificationAvailable: false });
   if (path === "/api/auth/password") {
     if (fixture.passwordResult === "pending") await held();
