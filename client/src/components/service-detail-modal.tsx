@@ -1,4 +1,5 @@
 import { formatMoney } from "@/lib/money";
+import { formatServiceDuration } from "@/lib/service-duration";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -133,7 +134,7 @@ export default function ServiceDetailModal({ service, open, onClose, onBook, onV
                 <span className="text-sm font-medium">Duration</span>
               </div>
               <p className="text-lg font-semibold text-neutral-800" data-testid="text-duration">
-                {service.duration} minutes
+                {formatServiceDuration(service.duration, i18n.resolvedLanguage || i18n.language)}
               </p>
             </div>
 

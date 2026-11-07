@@ -17,6 +17,7 @@ import { useFormLocale } from "./forms-locale";
 import { calculateBookingAmounts, normalizeMoneyAmount } from "@shared/money";
 import { isSupportedCurrency } from "@shared/currencies";
 import { formatMoney } from "@/lib/money";
+import { formatServiceDuration } from "@/lib/service-duration";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -168,7 +169,7 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
         <aside className="p-4 pe-12 md:p-6 md:border-e bg-muted rounded-t-xl md:rounded-ss-xl md:rounded-es-xl md:rounded-se-none space-y-3 min-w-0">
           <DialogHeader className="text-start sm:text-start"><DialogDescription><bdi>{getProviderName(service.provider)}</bdi></DialogDescription><DialogTitle className="text-xl break-words"><bdi>{service.name}</bdi></DialogTitle></DialogHeader>
           {service.employee?.name && <p className="text-sm text-muted-foreground"><bdi>{service.employee.name}</bdi></p>}
-          <p className="hidden md:flex items-center gap-2 text-sm"><Clock className="w-4 h-4 shrink-0" aria-hidden="true" />{new Intl.NumberFormat(language, { style: "unit", unit: "minute", unitDisplay: "short" }).format(service.duration)}</p>
+          <p className="hidden md:flex items-center gap-2 text-sm"><Clock className="w-4 h-4 shrink-0" aria-hidden="true" />{formatServiceDuration(service.duration, language)}</p>
           {service.address && <p className="hidden md:flex items-start gap-2 text-sm"><MapPin className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" /><bdi>{service.address}</bdi></p>}
           <p className="font-semibold"><bdi>{service.serviceType === "group" ? t("bookingForm.perParticipant", { amount: amount(quote.price) }) : amount(quote.price)}</bdi></p>
           <p className="text-sm text-muted-foreground">{t(service.instantBooking ? "bookingForm.instantHelp" : "bookingForm.requestHelp")}</p>

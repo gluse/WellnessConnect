@@ -1,4 +1,5 @@
 import { formatMoney } from "@/lib/money";
+import { formatServiceDuration } from "@/lib/service-duration";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -85,7 +86,7 @@ export default function ServiceCard({ service, onBook, onViewDetails, onViewProv
               <div className="text-right">
                 <p className="text-lg font-semibold text-neutral-800">{formatMoney(service.price, service.currency, i18n.resolvedLanguage || i18n.language) ?? t("currency.unavailable")}</p>
                 <p className="text-xs text-neutral-500">
-                  {isGroupService ? "per person" : `${service.duration} min`}
+                  {isGroupService ? "per person" : formatServiceDuration(service.duration, i18n.resolvedLanguage || i18n.language)}
                 </p>
               </div>
             </div>

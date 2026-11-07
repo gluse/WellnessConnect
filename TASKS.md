@@ -738,4 +738,55 @@ See [business scenarios](docs/payment-business-plan.md),
   languages/RTL remain deferred. Next: feasibility and policy decisions, then scoped
   owner assignment/local implementation approval.
 
-<!-- Add the next task here using TASK-046, or place it in the relevant section. -->
+## Account deletion and history retention
+
+- [ ] **TASK-046 — Add self-service account deletion with a history-retention policy.**
+  **Backlog, 6 November 2026:** User requested account deletion for customers and
+  providers, including consideration of previous bookings/appointments needed for
+  reporting or legal obligations. Define and approve the retention policy before
+  implementing deletion; the discussed durations are candidates, not selected policy.
+  - Inventory personal data and dependencies across Auth, profiles, customer and
+    provider bookings, messages/notes, reviews, payments/refunds, subscriptions,
+    company ownership/memberships, files, notifications, audit records, external
+    processors, exports and backups. Identify FitsMyTime's and providers' respective
+    responsibilities, applicable countries and any health-data requirements.
+  - Specify each record category's purpose/legal basis, minimum necessary fields,
+    retention duration and start event, access permissions, deletion/anonymization
+    method and reviewed legal-hold exceptions. Confirm accounting classifications
+    and claims periods with an accountant/legal adviser. For Latvian operations,
+    assess [Accounting Law §28](https://likumi.lv/ta/id/324249-gramatvedibas-likums)
+    (other supporting documents: at least five years; accounting registers: ten
+    years) and [Commercial Law §406](https://likumi.lv/ta/id/5490-komerclikums)
+    (ordinary commercial claims: three years unless another period applies).
+    These do not establish blanket retention for all booking details; confirm
+    applicability, clock calculation and exceptions. Account deletion must not
+    automatically restart retention clocks.
+  - Preserve reporting through genuinely anonymous aggregates where feasible;
+    replacing names with linkable IDs is not anonymization. Reconcile deletion
+    with TASK-037's selected 12-month message history and the existing
+    [90/365-day audit classes](docs/audit-event-catalog.md#proposed-retention-and-safe-field-profiles)
+    without silently extending or overriding those policies. Decide whether earlier
+    erasure is required and what evidence may remain under a documented basis.
+  - Add Account settings deletion with recent identity verification, clear
+    consequences/retention disclosure and explicit confirmation. Define handling
+    of future bookings, open disputes/refunds, subscriptions and company ownership;
+    retain only justified evidence with restricted access. Remove sign-in access,
+    revoke sessions and clear client caches. Handle duplicate requests and partial
+    failures truthfully, with recoverable progress across local/external operations.
+  - Define automatic expiry, processor deletion propagation, backup expiry and
+    restore safeguards so erased/expired data does not reappear. Update privacy
+    disclosures and deletion completion/status messages to explain what remains,
+    why and until when, consistent with
+    [GDPR Articles 5 and 17](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32016R0679).
+  **Owners when assigned:** Frontend (account flow), Backend (identity/deletion
+  orchestration), DB (retention/integrity/migrations), CI/CD (backup/processor
+  operations). Acceptance includes mocked authorization, reauthentication,
+  expiry/holds, retained-history/report integrity, session/cache revocation,
+  duplicate/partial-failure recovery and responsive/accessibility checks.
+  Test en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred.
+  This entry records backlog scope only; no policy selection, implementation
+  assignment, real account/data deletion, connected operation or deployment is
+  authorized. Next: map records and propose the concrete retention/deletion policy
+  for user selection before scoped implementation.
+
+<!-- Add the next task here using TASK-047, or place it in the relevant section. -->

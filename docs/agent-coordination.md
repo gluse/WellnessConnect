@@ -1,5 +1,20 @@
 # Cross-role dependency queue
 
+## Search map requires selected location — 6 November 2026
+
+**Completed / verified locally.** User
+requested preventing Map view before selecting location. Requester `/root` assigned
+Frontend owner `/root/map_location_frontend`, who accepted through live tools under
+standing cooperation. Scope: local search view/location guard and mocked frontend
+checks only; no private config, connected service/database execution or deployment.
+Map is disabled without applied location; clearing location returns to List without
+automatic map restoration. Grid/List remain available. TypeScript and isolated
+frontend build pass; six Chrome mocked en/lv/ru phone/desktop cases pass with exit 0,
+including saved-location restoration, every clear path and keyboard behavior. See
+[scope, evidence, limits and recovery](search-map-location-handoff.md).
+Testing only en/lv/ru; other supported languages/RTL deferred. Unrelated work is
+preserved. Next: root checks the integrated contract; user can review locally.
+
 ## TASK-044 workspace pricing currency defaults — 5 November 2026
 
 **Completed / local implementation and development DB verified.** User approved the recommended default currency update.
@@ -1790,3 +1805,23 @@ Chrome/Firefox/WebKit eight-group pagination checks with en/lv/ru coverage,
 affected regressions, TypeScript and isolated frontend/backend builds passed.
 No connected operations, private config, schema activation, startup or deployment.
 See [assignment, validation and recovery](search-pagination-handoff.md).
+
+## Provider-page duration display — 6 November 2026
+
+**Completed locally:** user reports `/providers/teskaistumam` showing long
+service durations only in minutes (for example 240 minutes). Root assigned
+Front End Developer `/root/provider_duration_frontend` under AGENTS.md standing
+cooperation; no other reachable frontend owner was active. Scope is reversible
+local frontend formatting and offline/mocked checks for the provider cards,
+details and booking summary. Reuse the existing localized duration formatter;
+240 minutes must read as 4 hours, with short/mixed durations preserved.
+No backend/database/configuration changes, connected operations or deployment.
+Owner accepted and implemented the three shared-formatter replacements; root
+reviewed the integrated route/components and focused regression assertions.
+Existing duration tests, TypeScript, isolated frontend production build and
+Chrome's 24 card/detail cases plus three booking summaries passed. Browser
+coverage includes 390/1280 widths, wrapping and live language switching, using
+synthetic responses with zero writes/external requests. See
+[acceptance, checks and recovery](provider-duration-handoff.md). Test only
+en/lv/ru; ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred. Recovery: revert
+only this task's frontend hunks. No connected verification or deployment occurred.

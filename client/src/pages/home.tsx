@@ -45,7 +45,7 @@ function SearchPage({ userId }: { userId: string | null }) {
   }, [queryClient, userId]);
   const { t, language } = useFormLocale();
   const categories = useCategories();
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("list");
+  const [requestedViewMode, setViewMode] = useState<"grid" | "list" | "map">("list");
   const [sort, setSort] = useState<ServiceSort>("default");
   const [filters, setFilters] = useState<SearchFilters>(defaults);
   const [draft, setDraft] = useState<SearchFilters>(defaults);
@@ -57,6 +57,11 @@ function SearchPage({ userId }: { userId: string | null }) {
   // Browsing is session-only; an outage must never delete a remembered preference.
   const [browsingWithoutLocation, setBrowsingWithoutLocation] = useState(false);
   const location = browsingWithoutLocation ? null : savedLocation.location;
+  const viewMode = requestedViewMode === "map" && !location ? "list" : requestedViewMode;
+  useEffect(() => {
+    // Clearing the applied location leaves map mode, including after a new choice.
+    if (!location) setViewMode(current => current === "map" ? "list" : current);
+  }, [location]);
   const restoringLocation = savedLocation.loading && !browsingWithoutLocation;
   const [locationBusy, setLocationBusy] = useState(false);
   const [queryError, setQueryError] = useState<string>();
@@ -344,7 +349,7 @@ function SearchPage({ userId }: { userId: string | null }) {
             <SearchResultsSort value={priceSortAvailable ? effectiveSort : effectiveSort.startsWith("price-") ? "default" : effectiveSort} onChange={setSort} hasLocation={!!location} hasRatings={search.hasNextPage || services.some(service => serviceRating(service) !== undefined)} priceSortAvailable={priceSortAvailable} compact mobileLayout={isMobile} />
             <Dialog open={filtersOpen} onOpenChange={setFiltersOpen}><DialogTrigger asChild><Button type="button" variant="ghost" className="search-mobile-filter-trigger"><SlidersHorizontal aria-hidden="true" />{t(isMobile ? "searchPage.filterAction" : "searchPage.filters")}</Button></DialogTrigger><DialogContent className="search-design search-filter-dialog" closeLabel={t("searchPage.close")}><DialogHeader className="sr-only"><DialogTitle>{t("searchPage.filters")}</DialogTitle><DialogDescription>{t("searchPage.filterHelp")}</DialogDescription></DialogHeader><ServiceFilters {...filterProps} /></DialogContent></Dialog>
           </div>
-          <div className="search-view-toggle" role="group" aria-label={t("searchPage.resultView")}>{(["grid", "list", "map"] as const).map(value => <Button key={value} variant="ghost" type="button" data-testid={`button-view-${value}`} aria-label={t(`views.${value}`)} aria-pressed={viewMode === value} onClick={() => setViewMode(value)}>{value === "grid" ? <LayoutGrid aria-hidden="true" /> : value === "list" ? <List aria-hidden="true" /> : <MapIcon aria-hidden="true" />}{!isMobile && <span>{t(`views.${value}`)}</span>}</Button>)}</div>
+          <div className="search-view-toggle" role="group" aria-label={t("searchPage.resultView")}>{(["grid", "list", "map"] as const).map(value => <Button key={value} variant="ghost" type="button" data-testid={`button-view-${value}`} aria-label={t(`views.${value}`)} aria-pressed={viewMode === value} disabled={value === "map" && !location} onClick={() => { if (value !== "map" || location) setViewMode(value); }}>{value === "grid" ? <LayoutGrid aria-hidden="true" /> : value === "list" ? <List aria-hidden="true" /> : <MapIcon aria-hidden="true" />}{!isMobile && <span>{t(`views.${value}`)}</span>}</Button>)}</div>
         </div>
         </div>
         {!!chips.length && <div className="search-chips">{chips.map(chip => <button type="button" className="search-chip" key={chip.key} disabled={locationBusy || restoringLocation || savedLocation.saving} onClick={chip.action} aria-label={t("searchPage.remove", { filter: chip.label })}><bdi>{chip.label}</bdi><X aria-hidden="true" /></button>)}<button type="button" className="search-text-button" onClick={clearAll} disabled={locationBusy || restoringLocation || savedLocation.saving}>{t("searchPage.clear")}</button></div>}
