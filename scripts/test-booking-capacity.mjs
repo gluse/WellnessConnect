@@ -16,6 +16,8 @@ import * as auditCapture from "../server/audit/capture.ts";
 import * as customerBookings from "../server/customerBookings.ts";
 import * as notifications from "../shared/notifications.ts";
 import * as money from "../server/money.ts";
+import * as serviceImages from "../server/serviceImages.ts";
+import * as storefront from "../shared/storefront.ts";
 import * as workspacePricing from "../shared/workspace-pricing.ts";
 
 // Never import server/db, dotenv, Auth, external providers or server startup.
@@ -116,6 +118,7 @@ const db = { select,
   async transaction(work) { const before = rows.map(row => ({ ...row })); lock = false; transactionActive = true; try { return await work(db); } catch (error) { rows = before; throw error; } finally { lock = false; transactionActive = false; } },
 };
 const dependencies = {
+  "./serviceImages": serviceImages, "@shared/storefront": storefront,
   "./money": money,
   "node:crypto": await import("node:crypto"),
   "@shared/schema": schema, "./db": { db }, "drizzle-orm": drizzle, "@shared/provider": provider,
@@ -210,6 +213,17 @@ const routeDependencies = { ...dependencies, "@shared/workspace-pricing": worksp
   "./auth": { setupAuth: noop, isAuthenticated: noop }, zod: { z }, "./companyAccess": access, "./schedulingRoutes": schedulingRoutes,
   "./supabase": {}, "./imageStorage": { ImageStorageError: ProviderError }, "./embeddings": {}, "./geocoding": { GeocodingError: ProviderError },
   "./registeredLocations": {}, "./searchLocations": {}, "./categories": {}, "@shared/categories": { CategoryError: ProviderError }, "./audit/http": {},
+  // Account/profile provider operations are outside this booking fixture.
+  // Keep them explicit and fail closed rather than loading real audit/runtime clients.
+  "./audit/remote": { async auditRemoteOperation() { throw new Error("Unexpected auth provider operation in booking capacity fixture"); } },
+  // These independently tested route/middleware registrations are not exercised
+  // by the direct booking-handler calls below; never initialize their live stores.
+  "./audit/reads": { protectedReadAudit: () => noop, auditResponseDenials: () => noop },
+  "./audit/viewer": { setupAuditViewerRoutes: noop }, "./audit/viewer-runtime": { auditViewerStore: {} },
+  "./audit/location": { setupLocationAuditRoutes: noop },
+  "./service-view-report/routes": { setupServiceViewReportRoutes: noop },
+  "./service-view-report/store": { createServiceViewReportStore: () => ({}) },
+  "./service-view-report/service": { createServiceViewReportService: () => ({}), ServiceViewReportError: ProviderError },
   "./notifications/routes": { setupNotificationRoutes: noop }, "./appointments/routes": { setupAppointmentRoutes: noop }, "./notifications/transports": { notificationConfig: () => ({ enabled: false }) }, "@shared/notifications": notifications };
 for (const [module, method] of Object.entries({ publicSearch: "setupPublicSearchRoutes", searchLocationRoutes: "setupSearchLocationRoutes", payments: "setupPaymentRoutes",
   companyRoutes: "setupCompanyRoutes", adminRoutes: "setupAdminRoutes", categoryRoutes: "setupCategoryRoutes", reviewRoutes: "setupReviewRoutes",

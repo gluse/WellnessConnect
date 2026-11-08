@@ -11,7 +11,7 @@ phases:
     commands:
       - docker build --platform linux/amd64 --target runtime -t "$ECR_REPO_URI:$IMAGE_TAG" .
       - docker run --rm --network none -v "$PWD/deploy/aws/test-staging-proxy.mjs:/app/test-staging-proxy.mjs:ro" "$ECR_REPO_URI:$IMAGE_TAG" node test-staging-proxy.mjs
-      - docker run --rm --network none "$ECR_REPO_URI:$IMAGE_TAG" node -e 'const fs=require("node:fs"); for(const f of ["dist/index.js","dist/audit-worker.js","dist/notification-worker.js","dist/public/index.html","certs/supabase-ca.crt"]) if(!fs.existsSync(f)) process.exit(1); console.log("Production artifacts present")'
+      - docker run --rm --network none "$ECR_REPO_URI:$IMAGE_TAG" node -e 'const fs=require("node:fs"); for(const f of ["dist/index.js","dist/audit-worker.js","dist/notification-worker.js","dist/activity-worker.js","dist/public/index.html","certs/supabase-ca.crt"]) if(!fs.existsSync(f)) process.exit(1); console.log("Production artifacts present")'
   post_build:
     on-failure: ABORT
     commands:

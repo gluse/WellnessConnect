@@ -4,7 +4,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
-import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
@@ -28,8 +27,6 @@ function AuthenticatedBillingRuntime({ children }: { children: ReactNode }) {
 }
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
-
   return (
     <Switch>
       <Route path="/login" component={Login} />
@@ -43,7 +40,7 @@ function Router() {
       <Route path="/dashboard"><Redirect to="/my-services" /></Route>
       <Route path="/search" component={Home} />
       <Route path="/providers/:slug" component={StorefrontPage} />
-      <Route path="/" component={isLoading || !isAuthenticated ? Landing : Home} />
+      <Route path="/" component={Home} />
       <Route component={NotFound} />
     </Switch>
   );

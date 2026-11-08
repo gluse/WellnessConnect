@@ -59,6 +59,7 @@ function ServiceEditorContent({ service, employees, company, pricing, actorId }:
   const draft = { ...newService, currency: choice.currency ?? "" };
   const localSuggestion = suggestedCurrency(selectedAddress?.countryCode);
   const [savingAs, setSavingAs] = useState<boolean | null>(null);
+  const [uploading, setUploading] = useState(false);
   const summary = useRef<HTMLDivElement>(null);
   const lastExitTrigger = useRef<HTMLElement | null>(null);
   const lastHideTrigger = useRef<HTMLElement | null>(null);
@@ -128,7 +129,7 @@ function ServiceEditorContent({ service, employees, company, pricing, actorId }:
     onSettled: () => { submitting.current = false; setSavingAs(null); },
   });
   const submit = (isActive: boolean, confirmed = false, currencyConfirmed = false) => {
-    if (submitting.current || save.isPending) return;
+    if (submitting.current || save.isPending || uploading) return;
     const nextErrors = validateServiceDraft(draft, i18n.resolvedLanguage || i18n.language);
     setFieldErrors(nextErrors); setError("");
     if (Object.keys(nextErrors).length) { queueMicrotask(() => summary.current?.focus()); return; }
@@ -177,7 +178,7 @@ function ServiceEditorContent({ service, employees, company, pricing, actorId }:
           <ServiceInstantBookingField newService={newService} setNewService={setNewService} />
           <ServiceLocationFields newService={draft} setNewService={setNewService} errors={errors} addresses={addresses} />
         </FormSection>
-        <FormSection number={5} title={t("serviceForm.media")}><ServiceMediaFields newService={newService} setNewService={setNewService} errors={errors} /></FormSection>
+        <FormSection number={5} title={t("serviceForm.media")}><ServiceMediaFields newService={newService} setNewService={setNewService} errors={errors} onBusyChange={setUploading} /></FormSection>
         <FormSection number={6} title={t("notifications.reminderSettings")}><ServiceReminderFields draft={newService} setDraft={setNewService} errors={errors} /></FormSection>
       </fieldset>
       <div className="bg-card text-card-foreground border rounded-xl p-4 sm:p-6 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-4">
@@ -186,8 +187,8 @@ function ServiceEditorContent({ service, employees, company, pricing, actorId }:
         <p role="status" aria-live="polite" className="text-sm">{save.isPending ? t(savingAs ? "serviceForm.publishing" : "serviceForm.savingInactive") : ""}</p>
         <div className="grid sm:grid-cols-3 gap-3">
           <Button type="button" variant="outline" className={actionClass} disabled={save.isPending} onClick={goBack}>{t("common.cancel")}</Button>
-          <Button type="button" variant="outline" className={actionClass} disabled={save.isPending} onClick={() => submit(false)} data-testid="button-save-inactive-service">{t("serviceForm.saveInactive")}</Button>
-          <Button type="submit" className={actionClass} disabled={save.isPending} data-testid="button-save-service">{t("serviceForm.publish")}</Button>
+          <Button type="button" variant="outline" className={actionClass} disabled={save.isPending || uploading} onClick={() => submit(false)} data-testid="button-save-inactive-service">{t("serviceForm.saveInactive")}</Button>
+          <Button type="submit" className={actionClass} disabled={save.isPending || uploading} data-testid="button-save-service">{t("serviceForm.publish")}</Button>
         </div>
       </div>
     </form>

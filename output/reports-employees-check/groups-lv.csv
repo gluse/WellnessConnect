@@ -1,0 +1,16 @@
+﻿"Pakalpojumi un ieņēmumi pa pakalpojumiem"
+"2026-11-01 — 2026-11-30 · UTC · Visi darbinieki"
+"Aprēķins pēc pierakstu datumiem un rezervāciju vērtībām, nevis saņemtajiem maksājumiem. Nopelnīts = pabeigtās; plānots = apstiprinātās; gaida = vēl neapstiprinātās; zaudējumi = atcelto rezervāciju potenciālie ieņēmumi, nevis grāmatvedības peļņa. Valūtas tiek rādītas atsevišķi. Iekļautas tikai jūsu darbvietā redzamās rezervācijas. Katrs nosauktais pakalpojums ir parādīts atsevišķi, ieskaitot pašreizējos aktīvos un neaktīvos pakalpojumus bez rezervācijām. Skaits attiecas uz rezervācijām atlasītajā periodā, nevis skatījumiem vai interesi. Tiek saglabātas rezervāciju valūtas un darbinieku piesaistes. Summas ir rezervāciju vērtības, nevis peļņa."
+
+"Valūta","Nopelnītie ieņēmumi","Plānotie ienākumi","Gaida","Zaudētā peļņa"
+"EUR","13","20","30","40"
+"USD","7","0","0","0"
+
+"Pakalpojums","Pakalpojuma ID","Valūta","Rezervācijas","Rezervācijas: Pabeigta","Rezervācijas: Apstiprināta","Rezervācijas: Gaida","Rezervācijas: Atcelta","Nopelnītie ieņēmumi","Plānotie ienākumi","Gaida","Zaudētā peļņa"
+"Inactive treatment","104","EUR","0","0","0","0","0","0","0","0","0"
+"Shared treatment","105","EUR","0","0","0","0","0","0","0","0","0"
+"Unused treatment","103","EUR","0","0","0","0","0","0","0","0","0"
+"Historical treatment","999","EUR","1","0","0","0","1","0","0","0","40"
+"Massage","101","USD","1","1","0","0","0","7","0","0","0"
+"Massage","101","EUR","2","1","0","1","0","10","0","30","0"
+"Massage","102","EUR","2","1","1","0","0","3","20","0","0"

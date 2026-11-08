@@ -1,3 +1,5 @@
+import { auditIntegration } from "./audit/integrations";
+
 export class GeocodingError extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }
 }
@@ -14,8 +16,17 @@ async function lookup(input: unknown, request: typeof fetch) {
   let response: Response;
   let data;
   try {
-    response = await request(url, { signal: AbortSignal.timeout(15_000) });
-    data = await response.json();
+    const observed = await auditIntegration("geocoding", async () => {
+      const response = await request(url, { signal: AbortSignal.timeout(15_000) });
+      return { response, data: await response.json() };
+    }, result => {
+      const location = result.data?.results?.[0]?.geometry?.location;
+      return result.response.ok && result.data?.status === "OK" && Array.isArray(result.data?.results) &&
+        Number.isFinite(location?.lat) && Number.isFinite(location?.lng) &&
+        Math.abs(location.lat) <= 90 && Math.abs(location.lng) <= 180;
+    });
+    response = observed.response;
+    data = observed.data;
   } catch {
     throw new GeocodingError(503, "UNAVAILABLE", "Address lookup is temporarily unavailable. Please try again.");
   }

@@ -13,6 +13,7 @@ assert.equal(auditApplicationConnection(url).user,'fmt_app_dev');
 assert.equal(auditApplicationConnection(url.replace(`db.${AUDIT_PROJECTS.source}.supabase.co`,'aws-0-eu.pooler.supabase.com').replace('fmt_app_dev:',`fmt_app_dev.${AUDIT_PROJECTS.source}:`)).user,`fmt_app_dev.${AUDIT_PROJECTS.source}`);
 for(const invalid of [url.replace('fmt_app_dev','postgres'),url.replace(AUDIT_PROJECTS.source,AUDIT_PROJECTS.destination),url+'&options=unsafe',url+'&sslmode=disable',url+'\n',url.replace('/postgres','/other')]) assert.throws(()=>auditApplicationConnection(invalid));
 assertAuditActivation(env);assertAuditActivation({});
+assertAuditActivation({...env,AUDIT_AUTH_EVENTS_ENABLED:'true',AUDIT_PRODUCER_CONTRACT:'completion-0008'});
 for(const patch of [{AUDIT_AUTH_EVENTS_ENABLED:'true'},{AUDIT_AUTH_EVENTS_ENABLED:'FALSE'},{AUDIT_ENABLED:'1'},
  {AUDIT_WORKER_ENABLED:'yes'},{AUDIT_SERVICE_VIEWS_ENABLED:'yes'},{AUDIT_ENVIRONMENT:'production'},{AUDIT_ENVIRONMENT:undefined},{PGBINARY:'1'}]) assert.throws(()=>assertAuditActivation({...env,...patch}));
 for(const factory of [createCaptureRuntime,createWorkerRuntime]) await assert.rejects(()=>factory({...env,AUDIT_WORKER_ENABLED:'true',AUDIT_AUTH_EVENTS_ENABLED:'true'}),/Invalid audit runtime configuration/);

@@ -6,7 +6,7 @@ const roleSchema = z.enum(["seeker", "provider", "owner", "admin", "viewer", "su
 const actorSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("user"), userId: userIdSchema, effectiveRole: roleSchema }).strict(),
   z.object({ kind: z.literal("anonymous") }).strict(),
-  z.object({ kind: z.literal("service"), serviceId: z.literal("billing-worker") }).strict(),
+  z.object({ kind: z.literal("service"), serviceId: z.enum(["billing-worker", "database-runtime", "integration-runtime"]) }).strict(),
 ]);
 const scopeSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("personal"), workspaceId: userIdSchema }).strict(),
@@ -16,6 +16,7 @@ const scopeSchema = z.discriminatedUnion("kind", [
 ]);
 const targetSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("request") }).strict(),
+  z.object({ type: z.literal("database_record"), id: z.string().regex(/^[a-z][a-z_]{0,47}:[A-Za-z0-9_-]{1,100}(?:\|[A-Za-z0-9_-]{1,100})?$/) }).strict(),
   z.object({ type: z.literal("user"), id: userIdSchema }).strict(),
   z.object({ type: z.literal("membership"), id: userIdSchema }).strict(),
   z.object({ type: z.literal("company"), id: z.string().regex(/^[1-9][0-9]{0,9}$/) }).strict(),
@@ -35,7 +36,7 @@ export const auditContextSchema = z.object({
   source: z.object({
     application: z.literal("fitsmytime"),
     environment: z.string().regex(/^[a-z][a-z0-9-]{0,31}$/),
-    component: z.enum(["auth", "account", "company-access", "authorization", "service", "billing"]),
+    component: z.enum(["auth", "account", "company-access", "authorization", "service", "billing", "audit", "database", "location", "integration", "application"]),
     release: z.string().regex(/^[a-f0-9]{7,64}$/).optional(),
   }).strict(),
   requestId: z.string().uuid(),
@@ -45,13 +46,18 @@ export const auditContextSchema = z.object({
   const invalid = () => issue.addIssue({ code: "custom", message: "Invalid audit context" });
   const publicService = context.target.type === "service" && context.source.component === "service" && context.scope.kind === "unknown";
   const billing = context.source.component === "billing";
-  if (context.actor.kind === "service" && (!billing || context.scope.kind === "global" ||
+  const database = context.source.component === "database" && context.actor.kind === "service" &&
+    context.actor.serviceId === "database-runtime" && context.scope.kind === "unknown" && context.target.type === "database_record";
+  const integration = context.source.component === "integration" && context.actor.kind === "service" &&
+    context.actor.serviceId === "integration-runtime" && context.scope.kind === "unknown" && context.target.type === "request";
+  if (context.actor.kind === "service" && !database && !integration && (!billing || context.actor.serviceId !== "billing-worker" || context.scope.kind === "global" ||
     (context.scope.kind === "unknown" && context.target.type !== "billing_event"))) invalid();
   if (billing && context.actor.kind === "anonymous") invalid();
   if (context.actor.kind === "anonymous" && (context.scope.kind !== "unknown" || (context.target.type !== "request" && !publicService))) invalid();
-  if (context.scope.kind === "unknown" && context.target.type !== "request" && !publicService &&
+  if (context.scope.kind === "unknown" && context.target.type !== "request" && !publicService && !database &&
     !(billing && context.actor.kind === "service" && context.target.type === "billing_event")) invalid();
   if (context.target.type === "service" && !publicService) invalid();
+  if (context.target.type === "database_record" && !database) invalid();
   if (context.scope.kind === "global" && (context.actor.kind !== "user" || context.actor.effectiveRole !== "support")) invalid();
   if (context.scope.kind === "company" && context.actor.kind === "user" &&
     !["owner", "admin", "provider", "viewer"].includes(context.actor.effectiveRole) && !(billing && context.actor.effectiveRole === "support")) invalid();

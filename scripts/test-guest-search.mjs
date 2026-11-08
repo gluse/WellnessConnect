@@ -24,7 +24,9 @@ globalThis.fetch = async url => {
   if (url === "/api/auth/providers") return new Response("{}");
   if (url === "/api/account/search-location") return new Response(JSON.stringify({ source: "device", latitude: 56.95, longitude: 24.1 }));
   if (url === "/api/admin/access") return new Response('{"isAdmin":false}');
+  if (url === "/api/admin/audit/access") return Response.json({ canRead: false, canExport: false, available: false });
   if (url === "/api/config/maps") return new Response('{"apiKey":"fixture-key"}');
+  if (url.startsWith("/api/services/search/page?") || url.startsWith("/api/services/semantic-search/page?")) return Response.json({ services: [record], nextCursor: null, mode: "text" });
   if (url.startsWith("/api/services/search?") || url.startsWith("/api/services/semantic-search?") || url.startsWith("/api/services/catalog?")) return new Response(JSON.stringify([record]));
   if (url.startsWith("/api/services/1/reviews?")) return new Response(JSON.stringify({ reviews: [], page: 1, hasMore: false }));
   throw new Error(`Unexpected guest request: ${url}`);
@@ -36,6 +38,7 @@ await i18n.changeLanguage("en");
 for (const code of ["en", "lv", "ru"]) {
   const data = JSON.parse(await readFile(`client/public/locales/${code}/translation.json`, "utf8"));
   for (const key of Object.keys(i18n.getResourceBundle("en", "translation").guestSearch)) assert.ok(data.guestSearch[key], `${code}: missing guestSearch.${key}`);
+  i18n.addResourceBundle(code, "translation", data, true, true);
 }
 globalThis.window = {
   location: { pathname: "/", search: "", hash: "" }, setTimeout, clearTimeout, addEventListener() {}, removeEventListener() {},
@@ -66,11 +69,35 @@ async function mount(path, user = null, pendingAuth = false) {
   await flush();
 }
 await mount("/");
-assert.equal(component.root.findAllByType(Home).length, 0, "Keep the existing landing page for visitors");
-const browse = component.root.findAllByType("a").find(node => node.props["data-testid"] === "button-browse-services");
-assert.equal(browse.props.href, "/search");
-await act(async () => browse.props.onClick({ button: 0, preventDefault() {} })); await flush();
-assert.equal(location.history.at(-1), "/search");
+assert.equal(component.root.findAllByType(Home).length, 1, "Visitors open Search directly at the root");
+assert.equal(component.root.findAllByProps({ "data-testid": "button-get-started" }).length, 0, "The welcome page never appears");
+assert.equal(component.root.findByType("header").props.className.includes("search-app-header"), true);
+if (process.argv.includes("--entry-only")) {
+  for (const language of ["en", "lv", "ru"]) {
+    await act(async () => i18n.changeLanguage(language));
+    for (const path of ["/", "/search"]) {
+      await mount(path, null, true);
+      assert.equal(component.root.findAllByType(Home).length, 1, `${language}/${path}: Search mounts while identity loads`);
+      assert.equal(component.root.findAllByProps({ "data-testid": "button-get-started" }).length, 0);
+      assert.equal(component.root.findByType("header").props.className.includes("search-app-header"), true);
+      await act(async () => releaseAuth()); await flush();
+      for (let attempt = 0; attempt < 30 && component.root.findAllByType(ServiceCard).length === 0; attempt++) await flush();
+      assert.equal(component.root.findAllByType(ServiceCard).length, 1, `${language}/${path}: guest results load`);
+      assert.ok(component.root.findByProps({ id: "service-query" }));
+      assert.ok(component.root.findAllByType("a").some(node => node.props.href === "/login?returnTo=%2Fsearch"));
+      if (path === "/search") {
+        const brand = component.root.findAllByType("a").find(node => node.props["aria-label"] === "FitsMyTime");
+        await act(async () => brand.props.onClick({ button: 0, preventDefault() {} })); await flush();
+        assert.equal(location.history.at(-1), "/");
+        assert.equal(component.root.findAllByType(Home).length, 1, "Brand navigation keeps Search open");
+      }
+    }
+  }
+  await act(async () => component.unmount()); queryClient.clear();
+  console.log("Passed: direct Search at / and /search during/after identity loading, search header, guest results, login and brand navigation in en/lv/ru. Offline mocked frontend only.");
+  process.exit(0);
+}
+await mount("/search");
 assert.equal(component.root.findAllByType(Home).length, 1);
 assert.equal(component.root.findAllByType(ServiceCard).length, 1);
 assert.ok(component.root.findAllByType("a").some(node => node.props.href === "/login?returnTo=%2Fsearch"));

@@ -10,6 +10,7 @@ import ServicesPage from "@/pages/provider/services";
 import ServiceEditPage from "@/pages/provider/service-edit";
 import AvailabilityPage from "@/pages/provider/availability";
 import SettingsPage from "@/pages/provider/settings";
+import ReportsPage from "@/pages/provider/reports";
 import { requestServiceEditorExit } from "@/components/provider/service-navigation-guard";
 
 export default function MyServices() {
@@ -46,6 +47,7 @@ function ProviderLayout() {
             <Route path="/my-services/services/new" component={ServiceEditPage} />
             <Route path="/my-services/services/:id/edit" component={ServiceEditPage} />
             <Route path="/my-services/services" component={ServicesPage} />
+            <Route path="/my-services/reports" component={ReportsPage} />
             <Route path="/my-services/availability" component={AvailabilityPage} />
             <Route path="/my-services/settings/*?" component={SettingsPage} />
             <Route><div className="space-y-3"><h1 className="text-2xl font-semibold">Page not found</h1><Link href="/my-services/appointments" className="text-primary underline">Back to appointments</Link></div></Route>

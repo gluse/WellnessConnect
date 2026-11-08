@@ -10,6 +10,7 @@ import {
   availability,
   serviceEmbeddings,
   serviceReviews,
+  providerSubscriptions,
   type ServiceReview,
   type User,
   type UpsertUser,
@@ -42,8 +43,23 @@ import { statusAction } from "./notifications/policy";
 import type { NotificationSummary } from "@shared/notifications";
 import { randomUUID } from "node:crypto";
 import { bookingMoneyDto, bookingPriceSnapshot, serviceMoneyChanges, serviceMoneyDto, type ExpectedPrice } from "./money";
+import { hasPro } from "@shared/storefront";
+import { assertServiceImageEntitlement, serviceImageChanges, serviceImageList } from "./serviceImages";
 
 type NotificationBooking = Booking & { notification?: NotificationSummary };
+
+async function galleryProAccess(tx: Pick<typeof db, "select">, service: Pick<InsertService, "providerId" | "companyId">) {
+  // The subscription writer takes an update lock. Hold a shared lock until this
+  // service mutation commits so a concurrent downgrade cannot race this check.
+  const [subscription] = await tx.select().from(providerSubscriptions).where(service.companyId != null
+    ? eq(providerSubscriptions.companyId, service.companyId) : eq(providerSubscriptions.userId, service.providerId)).for("share");
+  return hasPro(subscription ?? null);
+}
+
+async function assertGalleryConfiguration(tx: Pick<typeof db, "select">, service: InsertService, previous?: Pick<Service, "imageUrl" | "imageUrls">) {
+  if (serviceImageList(service).length <= 1) return;
+  assertServiceImageEntitlement(service, await galleryProAccess(tx, service), previous);
+}
 
 function searchDurationLimit(filters: SearchFilters) {
   if (!filters.time && !filters.timeEnd) return undefined;
@@ -269,8 +285,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createService(service: InsertService): Promise<Service> {
-    service = { ...service, ...serviceMoneyChanges(service) };
+    service = { ...service, ...serviceMoneyChanges(service), ...serviceImageChanges(service) };
     const newService = await db.transaction(async tx => {
+      await assertGalleryConfiguration(tx, service);
       await assertReminderConfiguration(tx, service, service);
       const [created] = await tx.insert(services).values(service).returning();
       return created;
@@ -284,8 +301,11 @@ export class DatabaseStorage implements IStorage {
         .where(and(eq(services.id, serviceId), companyId != null ? eq(services.companyId, companyId) : and(eq(services.providerId, providerId), isNull(services.companyId))));
       if (!source) return undefined;
       const { id, createdAt, updatedAt, ...listing } = source;
+      let imageUrls = serviceImageList(source);
+      if (imageUrls.length > 1 && !await galleryProAccess(tx, source)) imageUrls = imageUrls.slice(0, 1);
       const [copy] = await tx.insert(services).values({
         ...listing,
+        ...serviceImageChanges({ imageUrls }),
         name: `${source.name} (copy)`,
         isActive: false,
         reminderEnabled: false,
@@ -335,7 +355,8 @@ export class DatabaseStorage implements IStorage {
     const service = await db.transaction(async tx => {
       const [previous] = await tx.select().from(services).where(eq(services.id, id)).for("update");
       if (!previous) throw new BookingConflictError("Service not found.");
-      updates = { ...updates, ...serviceMoneyChanges(updates, previous) };
+      updates = { ...updates, ...serviceMoneyChanges(updates, previous), ...serviceImageChanges(updates, previous) };
+      if (updates.imageUrls !== undefined) await assertGalleryConfiguration(tx, { ...previous, ...updates }, previous);
       await assertReminderConfiguration(tx, previous, updates, previous);
       const [updated] = await tx.update(services).set({ ...updates, updatedAt: new Date() }).where(eq(services.id, id)).returning();
       if (updated.reminderEnabled !== previous.reminderEnabled || updated.reminderMethod !== previous.reminderMethod || updated.reminderHours !== previous.reminderHours) await reconcileServiceReminders(tx, id);

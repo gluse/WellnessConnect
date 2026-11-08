@@ -1,0 +1,31 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { createServiceReport, groupServiceReport, sortServiceGroups } from "../client/src/lib/service-report.ts";
+import { dailyReportGraphs, serviceReportGraphs, formatReportGraphTick } from "../client/src/lib/report-graph.ts";
+const period = { from: "2026-11-01", to: "2026-11-30" };
+const booking = (id, status, totalAmount, currency = "EUR", day = 7, serviceId = 1, employeeId = 11) => ({ id, serviceId, employeeId, status, totalAmount, currency, scheduledDate: new Date(2026, 10, day, 12), service: { id: serviceId, name: "Same name", employeeId: 12 } });
+const bookings = [booking(1, "completed", "99999999.99"), booking(2, "completed", "99999999.99"), booking(3, "completed", "99999999.99"), booking(4, "confirmed", "20"), booking(5, null, "30"), booking(6, "cancelled", "40"), booking(7, "completed", "0.10", "EUR", 3, 2), booking(8, "completed", "0.20", "EUR", 3, 2), booking(9, "completed", "1.001", "KWD"), booking(10, "pending", "0.002", "KWD"), booking(11, "completed", "200", "JPY"), booking(12, "completed", "1.00", "EUR", 31)];
+const report = createServiceReport(bookings, period), daily = dailyReportGraphs(report.rows);
+assert.deepEqual(daily.map(panel => panel.currency), ["EUR", "JPY", "KWD"]);
+assert.deepEqual(daily[0].points.map(point => point.date), ["2026-11-03", "2026-11-07"]);
+assert.equal(daily[0].points[0].earned, "0.30");
+assert.deepEqual(daily[0].points[1], { key: "2026-11-07", date: "2026-11-07", bookingCount: 6, earned: "299999999.97", planned: "20.00", pending: "30.00", lost: "40.00" });
+assert.equal(daily[1].points[0].earned, "200"); assert.equal(daily[2].points[0].earned, "1.001"); assert.equal(daily[2].points[0].pending, "0.002");
+assert.deepEqual(dailyReportGraphs([]), []);
+const catalog = [{ id: 1, name: "Same name", employeeId: 12, currency: "EUR" }, { id: 2, name: "Same name", employeeId: 11, currency: "EUR" }, { id: 3, name: "Unbooked", employeeId: 11, currency: "EUR" }];
+const groups = groupServiceReport(report.rows, catalog), ranked = sortServiceGroups(groups, "earned");
+assert.equal(ranked[0].serviceId, 1); assert.equal(ranked[0].earned, "299999999.97", "Three maximum bookings aggregate and sort without applying single-booking cap");
+const services = serviceReportGraphs(groups);
+assert.deepEqual(services.map(panel => panel.currency), ["EUR", "JPY", "KWD"]);
+assert.equal(services[0].points.filter(point => point.service === "Same name").length, 2, "Duplicate service names retain distinct IDs");
+assert.equal(services[0].points.find(point => point.serviceId === 3).bookingCount, 0);
+assert.equal(services[0].points.find(point => point.serviceId === 3).earned, "0.00");
+assert.deepEqual(dailyReportGraphs(createServiceReport(bookings, period, "12").rows), [], "Graph consumes applied employee filtering");
+for (const language of ["en", "lv", "ru"]) {
+  for (const value of [0.001, 0.002, 0.00025]) assert.notEqual(formatReportGraphTick(value, language), formatReportGraphTick(0, language), `${language}: nonzero tiny ticks stay nonzero`);
+  assert.equal(formatReportGraphTick(0.001, language), language === "en" ? "0.001" : "0,001");
+  assert.equal(formatReportGraphTick(20, language), "20");
+  const reports = JSON.parse(await readFile(`client/public/locales/${language}/translation.json`, "utf8")).reports;
+  for (const key of ["graph", "dailyGraph", "serviceGraph", "graphLegend", "graphScroll", "graphData", "graphHelp", "dailyGraphHelp", "serviceGraphHelp"]) assert.ok(reports[key]?.trim(), `${language}/${key}`);
+}
+console.log("Passed exact daily/status/currency graph buckets, booking-cap-exceeding grouped totals and sort, zero services/stable IDs, applied employee data and en/lv/ru graph messages.");

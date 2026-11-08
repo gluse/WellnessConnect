@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { browserFixture } from './fixtures/browser-harness.mjs';
+const resources={}; for (const language of ['en','lv','ru']) resources[language]={translation:JSON.parse(await readFile(`client/public/locales/${language}/translation.json`,'utf8'))};
+const fixture=await browserFixture({entry:'scripts/fixtures/service-view-statistics.tsx',resources});
+const {evaluate,until,click,viewport}=fixture;
+const visit=async query=>{await fixture.visit(`/my-services/reports?report=serviceViews&${query}`);};
+const ready=()=>until(()=>document.querySelector('[data-testid="run-service-views"]')?.disabled===false);
+try {
+ await viewport(390); await visit('plan=free'); await until(()=>!!document.querySelector('[data-testid="service-views-locked"]'));
+ await fixture.screenshot('output/service-view-statistics-check/free-390.png');
+ await visit('workspace=company'); await ready(); await click('[data-testid="run-service-views"]'); await until(()=>!!document.querySelector('[data-testid="service-views-total"]'));
+ await click(`button[aria-label="${resources.en.translation.reports.graph}"]`);
+ await fixture.screenshot('output/service-view-statistics-check/all-services-390.png');
+ await viewport(1280); await fixture.screenshot('output/service-view-statistics-check/all-services-1280.png');
+ await evaluate(()=>{window.phase2Fixture.capabilityError=true;return window.phase2Fixture.refreshAccess();});
+ await until(()=>!!document.querySelector('[role="alert"]'));
+ assert.equal(await evaluate(()=>!!document.querySelector('[data-testid="service-views-total"]')),false,'Capability failure removes prior counts');
+ await visit('state=pending'); await ready(); await click('[data-testid="run-service-views"]'); await until(()=>!!window.phase2Fixture.resolveReport);
+ await evaluate(()=>{window.phase2Fixture.plan='free';return window.phase2Fixture.refreshAccess();});
+ await until(()=>!!document.querySelector('[data-testid="service-views-locked"]'));
+ await evaluate(()=>{window.phase2Fixture.reportState='success';window.phase2Fixture.resolveReport();});
+ assert.equal(await evaluate(()=>!!document.querySelector('[data-testid="service-views-total"]')),false,'In-flight counts cannot appear after entitlement revocation');
+ await visit('workspace=employee'); await ready(); await click('[data-testid="run-service-views"]'); await until(()=>!!document.querySelector('[data-testid="service-views-total"]'));
+ assert.deepEqual(await evaluate(()=>[...document.querySelectorAll('[data-service-view-row]')].map(row=>row.dataset.serviceId)),['101']);
+ assert.equal(await evaluate(()=>!!document.querySelector('#view-report-employee option[value="12"]')),false);
+ await visit('expiry=1'); await ready(); await click('[data-testid="run-service-views"]'); await until(()=>!!document.querySelector('[data-testid="service-views-total"]'));
+ await until(()=>!!document.querySelector('[data-testid="service-views-locked"]'));
+ const checksAfterExpiry=await evaluate(()=>window.phase2Fixture.requests.filter(path=>path.endsWith('/capabilities')).length);
+ await evaluate(()=>new Promise(resolve=>setTimeout(resolve,350)));
+ assert.ok(await evaluate(previous=>window.phase2Fixture.requests.filter(path=>path.endsWith('/capabilities')).length<=previous+1,checksAfterExpiry),'Expired lease does not repeat capability requests');
+ assert.equal(await evaluate(()=>!!document.querySelector('[data-testid="service-views-total"]')),false);
+ assert.deepEqual(await evaluate(()=>window.phase2Fixture.unexpected),[]); assert.deepEqual(await evaluate(()=>window.phase2Fixture.writes),[]);
+ assert.deepEqual(fixture.errors,[]); assert.deepEqual(fixture.network,[]); assert.deepEqual(fixture.blocked,[]);
+ console.log('Visual captures and capability-failure/in-flight-revocation/restricted-employee/expiry-request-bound checks passed.');
+} finally {await fixture.close();}

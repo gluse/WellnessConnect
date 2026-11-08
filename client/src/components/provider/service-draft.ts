@@ -1,4 +1,5 @@
 import type { Service } from "@shared/schema";
+import { imageDraft, serviceImages } from "@/lib/service-images";
 
 export function createServiceDraft(service?: Service) {
   return {
@@ -12,7 +13,7 @@ export function createServiceDraft(service?: Service) {
     ageGroups: service?.ageGroups ?? [] as string[], targetGender: service?.targetGender ?? "both",
     instantBooking: service?.instantBooking ?? false, advancePaymentPercent: service?.advancePaymentPercent ?? 50,
     addressId: service?.addressId ?? null,
-    imageUrl: service?.imageUrl ?? "", externalUrl: service?.externalUrl ?? "",
+    ...imageDraft(service ? serviceImages(service) : []), externalUrl: service?.externalUrl ?? "",
     isActive: service?.isActive ?? true, employeeId: service?.employeeId ?? null,
   };
 }

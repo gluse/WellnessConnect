@@ -466,6 +466,7 @@ export const services = pgTable("services", {
   instantBooking: boolean("instant_booking").default(false),
   advancePaymentPercent: integer("advance_payment_percent").default(50),
   imageUrl: text("image_url"),
+  imageUrls: text("image_urls").array().notNull().default(sql`ARRAY[]::text[]`),
   externalUrl: text("external_url"),
   reminderEnabled: boolean("reminder_enabled").notNull().default(false),
   reminderMethod: varchar("reminder_method", { enum: ["email", "sms", "whatsapp"] }).notNull().default("email"),
@@ -476,6 +477,8 @@ export const services = pgTable("services", {
 }, table => [index("services_address_idx").on(table.addressId), index("services_category_idx").on(table.category), check("services_cleanup_time_check", sql`${table.cleanupTime} BETWEEN 0 AND 1440`),
   check("services_reminder_settings_check", sql`${table.reminderMethod} IN ('email','sms','whatsapp') AND ${table.reminderHours} BETWEEN 1 AND 168`),
   check("services_currency_check", currencyCodeCheck(table.currency)),
+  check("services_image_urls_shape_check", sql`cardinality(${table.imageUrls}) <= 10 AND (cardinality(${table.imageUrls}) = 0 OR (array_ndims(${table.imageUrls}) = 1 AND array_lower(${table.imageUrls}, 1) = 1)) AND array_position(${table.imageUrls}, NULL) IS NULL AND NOT ('' = ANY(${table.imageUrls}))`),
+  check("services_image_urls_cover_check", sql`cardinality(${table.imageUrls}) = 0 OR (${table.imageUrl} IS NOT NULL AND ${table.imageUrl} = ${table.imageUrls}[1])`),
   check("services_advance_percent_check", sql`${table.advancePaymentPercent} IS NULL OR (${table.advancePaymentPercent} >= 0 AND ${table.advancePaymentPercent} <= 100)`),
   check("services_price_money_check", moneyAmountCheck(table.price, table.currency))]).enableRLS();
 
@@ -905,7 +908,8 @@ export const employeeSchema = z.object({
 });
 
 export type InsertService = typeof services.$inferInsert;
-export type Service = typeof services.$inferSelect & AddressLocation;
+// Older API payloads and cached listings carry only the single cover image.
+export type Service = Omit<typeof services.$inferSelect, "imageUrls"> & { imageUrls?: string[] } & AddressLocation;
 
 export type InsertBooking = typeof bookings.$inferInsert;
 export type Booking = typeof bookings.$inferSelect;
@@ -918,6 +922,8 @@ export type ServiceEmbedding = typeof serviceEmbeddings.$inferSelect;
 
 // Schemas
 export const insertServiceSchema = createInsertSchema(services, {
+  imageUrls: z.array(z.string().min(1).max(1024)).max(10)
+    .refine(paths => new Set(paths).size === paths.length, "Choose each image only once.").optional(),
   currency: currencyInput,
   advancePaymentPercent: z.number().int().min(0).max(100).nullable().optional(),
   reminderEnabled: z.boolean().optional(),

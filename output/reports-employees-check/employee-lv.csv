@@ -1,0 +1,13 @@
+﻿"Pakalpojumi un ieņēmumi"
+"2026-11-01 — 2026-11-30 · UTC · Anna Visible"
+"Aprēķins pēc pierakstu datumiem un rezervāciju vērtībām, nevis saņemtajiem maksājumiem. Nopelnīts = pabeigtās; plānots = apstiprinātās; gaida = vēl neapstiprinātās; zaudējumi = atcelto rezervāciju potenciālie ieņēmumi, nevis grāmatvedības peļņa. Valūtas tiek rādītas atsevišķi. Iekļautas tikai jūsu darbvietā redzamās rezervācijas."
+
+"Valūta","Nopelnītie ieņēmumi","Plānotie ienākumi","Gaida","Zaudētā peļņa"
+"EUR","13","0","0","40"
+"USD","7","0","0","0"
+
+"Pakalpojums","Darbinieks","Pieraksta datums","Statuss","Summa","Valūta"
+"Massage","Anna Visible","2026. gada 7. nov. 12:00","Pabeigta","10","EUR"
+"Historical treatment","Anna Visible","2026. gada 7. nov. 12:00","Atcelta","40","EUR"
+"Massage","Anna Visible","2026. gada 7. nov. 12:00","Pabeigta","7","USD"
+"Massage","Anna Visible","2026. gada 7. nov. 12:00","Pabeigta","3","EUR"

@@ -1,5 +1,135 @@
 # Cross-role dependency queue
 
+## TASK-048 Pro service photo galleries — 8 November 2026
+
+**Completed locally and development DB verified.** User requested multiple service photos
+for Pro users, size limits and left/right swiping. Requester/coordinator `/root`
+assigned Frontend `/root/service_photos_frontend`, Backend
+`/root/service_photos_backend`, and DB `/root/service_photos_database`; each
+accepted through live tools under standing cooperation. Scope is local editor,
+gallery, API authorization/validation and migration/schema preparation with
+offline/mocked checks. No connected database/service/private configuration,
+deployment or spending authorization. Contract: max ten Pro/one other plan,
+existing 10 MiB/image, ordered imageUrls plus imageUrl cover compatibility.
+See [scope, acceptance, owner evidence and recovery](service-photos-handoff.md).
+All owners returned final reviews and passing focused offline checks. Chrome six
+en/lv/ru phone/desktop cases, isolated builds and targeted app/server types pass;
+root reviewed integration/screenshots and independently checked the guarded
+executor. Full-project type check still fails on five unrelated native-proof
+errors; Firefox/WebKit unavailable. Test en/lv/ru; other languages/RTL deferred.
+User subsequently replied **"Permission granted. Go without DB backup"** to the
+concrete migration/checks request. Root routed the new TASK-048 development-only
+no-backup approval to assigned executor `/root/service_photos_database` through
+live tools for one source migration/preflight/postflight and bounded read-only
+audit readiness, including necessary protected target configuration reads.
+Backend verified exact project process identities/working directories and stopped
+only app/watch/audit trees, preserving terminals/unrelated processes; no respawn.
+DB guard confirmed zero other writers; the single approved attempt committed
+0022 and verified all 36 gates. All original fields/counts of 28 services/36
+bookings were preserved; 22 old covers backfilled exactly. Root independently
+reviewed receipt/digest and current SQL pin. No backup, ACL change, app/worker
+startup, audit delivery or deployment. The 22 expected redacted backfill events
+remain pending normal delivery. Next: restart updated app and audit worker under
+normal execution scope; no connected UI/upload or delivery coverage is claimed.
+
+## TASK-047 worldwide web/mobile release — 8 November 2026
+
+**In progress / scoped owner reviews accepted.** User
+set the active goal of a publishable, scalable worldwide application, continuous
+availability with a defined SLA, and one shared web/iOS/Android codebase. Root
+prepared [evidence, proposed owner contracts and release gates](worldwide-release-plan.md)
+and linked existing TASK-034/035 and relevant release dependencies. User selected
+99.9% monthly availability, EUR 100–300/month operating budget excluding
+development/store fees, and worldwide readiness with initial Latvia/EU launch.
+These planning choices do not authorize new spending or deployment. Root assigned
+fresh Frontend `/root/release_frontend_review`, Backend
+`/root/release_backend_review` and DB `/root/release_database_review`; all accepted
+through live agent tools. Historical sessions have not been contacted or assigned.
+
+Scope: source/handoff review, safe inspected offline/mocked checks and separate
+owner review documents. Initial booking-capacity checks stopped at a newly stale
+strict VM fixture (`./audit/remote` import). Backend accepted a narrow follow-up
+to repair `scripts/test-booking-capacity.mjs` without weakening assertions or
+unexpected-import/network guards, then rerun the relevant checks. No application
+or database implementation, private configuration, connected operations, spending,
+production deployment or store submission. Preserve existing staging
+authorization/holds and unrelated dirty work. Testing remains en/lv/ru; other
+supported languages/RTL deferred.
+
+Owner reviews completed: [Frontend](worldwide-mobile-frontend-review.md),
+[Backend](worldwide-backend-review.md), [DB](worldwide-database-review.md) and
+[CI/CD](worldwide-delivery-review.md). Backend repaired the stale fixture and
+reported capacity, audit remote, startup, protected-read and inert packaging
+checks passing. CI/CD repaired the activity-worker omission in the buildspec
+presence gate and verified its actual extracted payload with seven synthetic
+cases. No cloud buildspec was executed. Root prepared a public-price
+[operating/recovery comparison](worldwide-operating-costs.md).
+
+**Selected proof in progress:** user explicitly chose React/Vite + Capacitor for
+the local proof with explicit API endpoint, secure native sessions and
+system-browser sign-in returns, mocked services, no deployment/store submission.
+Frontend `/root/release_frontend_review` accepted `client/src/native/**`, shared
+public DTOs, isolated proof UI/client tests and native bridge behavior. Backend
+`/root/release_backend_review` accepted `server/native-proof/**`, synthetic
+protocol tests/fixtures and handoff. CI/CD `/root/release_delivery_review`
+accepted package/lock changes, Capacitor/platform build projects, isolated proof
+build tooling/cache exclusions and handoff. Owners agreed interfaces before
+edits; no shared package edits by other roles. The backend proof has synthetic
+in-memory state; it does not extend production Auth/DB. iOS compilation needs
+macOS/Xcode; current Windows tool availability does not satisfy that gate.
+
+Next: integrate and verify the proof, then prepare production storage, scale,
+recovery and full-app integration proposals under the selected requirements.
+No live service/DB/cloud/credential operations or spending are authorized by this
+local proof. Recovery: revert only attributable proof files/package changes,
+review documents/tracking and narrow fixture/artifact gate repairs; preserve
+unrelated work and historical evidence.
+
+## Audit review, viewer and startup fix — 7 November 2026
+
+**Requested → accepted → implemented/verified for the recorded development
+scope.** User authorized pending Audit review/completion and an understandable
+Audit section, with full permissions and **no DB backup**. Root coordinated
+assigned Frontend `/root/audit_frontend`, Backend `/root/audit_backend`, and DB
+`/root/audit_database`; each accepted its scope. Owners later hit a usage limit;
+Root finished viewer integration, read/denial instrumentation, translations,
+restricted runtime verification and the reported startup-readiness fix. Existing
+unrelated dirty work was preserved. No production deployment occurred.
+
+TASK-013 catalog/policies and TASK-018 viewer are completed for development;
+TASK-014 foundation remains completed. TASK-015/016/017/019/025 retain concrete
+acceptance gaps in TASKS.md. The viewer has named independent reader/exporter
+permissions, understandable queries/events and audited access; source/destination
+completion-0008,26 transactional triggers and SELECT-only reader are applied.
+Native fixed synthetic delivery/read/hash/idempotence passed with final queue0.
+All32 integrated startup and2 currency metadata gates passed after current
+readiness was updated to the new parser plus preserved legacy chain. No check
+was disabled and no backup was taken.
+
+An attempted temporary owner grant for Root's reconciliation was rejected by
+automatic approval review and abandoned. Root used existing restricted app/
+capture/worker/reader roles instead, with no ACL changes or repeated business
+mutations. Fixed synthetic evidence remains labeled and retained. Next action:
+restart the app and updated audit worker; remaining producer attribution,
+provider/Storage/maintenance sources, production monitoring/restore and location
+browser/legal acceptance must be assigned explicitly rather than marked covered.
+See [scope, evidence and recovery](audit-review-completion-2026-11-07.md),
+[producer gaps](audit-producers-completion.md), [database](audit-database-completion.md)
+and [frontend](audit-viewer-frontend-completion.md).
+
+## Service reports — 7 November 2026
+
+**Completed / verified locally.** User specifically authorized `/root` to
+implement Reports, including the mobile burger and desktop My Services entry,
+date filtering, status/value summaries and PDF/XLSX/CSV downloads. Executor
+accepted local frontend scope under that permission; existing authenticated
+booking APIs sufficed, with no cross-role implementation dependency. TypeScript,
+frontend build, focused report checks and six mocked Chrome en/lv/ru
+mobile/desktop cases passed. No connected database/service operation or
+deployment. Other supported locales/RTL remain deferred. See
+[approval, implementation, evidence, limits and recovery](service-reports-handoff.md).
+Next: user can review the local Reports feature.
+
 ## Search map requires selected location — 6 November 2026
 
 **Completed / verified locally.** User
@@ -1825,3 +1955,150 @@ synthetic responses with zero writes/external requests. See
 [acceptance, checks and recovery](provider-duration-handoff.md). Test only
 en/lv/ru; ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred. Recovery: revert
 only this task's frontend hunks. No connected verification or deployment occurred.
+
+## Separate Pending report total — 7 November 2026
+
+**Completed locally:** user requested Pending as a separate summable report
+value. Root reused assigned Front End Developer `/root/provider_duration_frontend`
+under standing cooperation for local report aggregation, summary cards, export
+summary columns, translations and focused mocked checks. Current reports combine
+pending and confirmed in Planned; requested result separates Pending and limits
+Planned to confirmed, preserving Earned/completed and Lost/cancelled. Each status
+must contribute once, separately per currency, within the applied period. Export
+summaries must include numeric Pending values in PDF/XLSX/CSV.
+Preserve existing uncommitted Reports implementation and unrelated changes. No
+backend/database/configuration or connected operations/deployment are included.
+Owner accepted and implemented the four separate per-currency buckets, responsive
+Pending card and numeric export column. Unit regressions, TypeScript, isolated
+frontend build and Chrome en/lv/ru 390/1280 checks passed, including pending-only/
+zero states and actual CSV/XLSX/PDF downloads. Root reviewed aggregation/export
+integration and inspected desktop/mobile screenshots. See
+[acceptance, checks and recovery](report-pending-handoff.md). No connected
+verification or deployment occurred.
+Test en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred.
+
+## Reports by employee and named service — 7 November 2026
+
+**Completed locally:** user requested company-workspace employee filtering
+(All employees/individual), employee names in report list/grid and a second
+Services & Revenue report grouped by service. User explicitly selected **each
+named service**, rather than Group/One-to-one booking formats. Root reused
+assigned Front End Developer `/root/provider_duration_frontend`, who accepted
+local frontend aggregation, filters/views, export adaptation, translations and
+offline/mocked verification under standing cooperation. Preserve all prior
+uncommitted report work, including separate Pending totals.
+Use authorized workspace-scoped bookings/employees/service catalog; filter booked
+employee snapshots, include permitted zero-booking services, keep currencies
+separate and show revenue/booking demand rather than unsupported cost-based profit
+or measured browsing interest. Employee scope, dates and report type must match
+downloads. Existing authenticated endpoint permission restrictions remain intact.
+Root reviewed endpoint contracts read-only; no backend/database change is needed.
+No connected operations, private configuration or deployment are authorized here.
+See [owner acceptance, validation and recovery](reports-employee-services-handoff.md).
+Owner completed company employee draft/applied filters and row labels, named-service
+counts/revenue/zero-booking groups, sorting and matching PDF/XLSX/CSV downloads.
+Unit regressions, TypeScript, isolated frontend build, new Chrome employee/group
+checks and prior report browser regressions all passed in en/lv/ru at 390/1280.
+Coverage includes exact sums, service IDs, historical assignments/currencies,
+numeric export cells/PDF bounds, restricted permissions, lookup recovery and late
+old-workspace response isolation. Root reviewed integrated contracts, tests and
+desktop/mobile screenshots plus actual grouped/employee PDF pages. No connected
+verification or deployment occurred. Tests en/lv/ru only; ar/RTL, zh, fr, de, hi,
+ja, pt and es remain deferred.
+
+## Compact mobile report totals — 7 November 2026
+
+**Completed locally:** user reports that Earned/Planned/Pending/Lost summaries
+consume too much mobile space and explicitly permits hiding descriptions. Root
+reused assigned Front End Developer `/root/provider_duration_frontend` for a
+compact two-column mobile summary, smaller spacing/type and hidden mobile helper
+descriptions, retaining visible full amounts and accessible metric labels.
+Scope is reversible report presentation and focused isolated checks only;
+preserve totals, employee/service filters, downloads, desktop descriptions and
+unrelated concurrent audit work. No connected operations, private configuration,
+backend/database or deployment. Owner records acceptance, browser evidence and
+recovery in [the mobile summary handoff](reports-mobile-summary-handoff.md).
+Owner accepted and implemented the compact presentation. TypeScript, isolated
+frontend build and 120 Chrome layout cases passed: en/lv/ru, 320/390/768/1280,
+both reports, single/multiple currencies and valid large/zero/empty sums. Root
+reviewed metrics-only markup and mobile/desktop/large-number screenshots. At
+390px the summary measures 154px with one currency and 207px with multiple;
+long values wrap fully. No clipping/page overflow; desktop descriptions remain.
+No aggregation/export changes, connected verification or deployment occurred.
+Test en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred.
+
+## Reports graph view replaces thumbnails — 7 November 2026
+
+**Completed locally:** user requested replacing Reports thumbnail/grid view
+with Graph view. Root reused assigned Front End Developer
+`/root/provider_duration_frontend` under standing cooperation. Scope: report-only
+List/Graph toggle, date-based revenue graph for original report and named-service
+comparisons for grouped report, chart data helpers, scoped report translations
+and isolated mocked verification. Preserve compact mobile summaries, applied
+date/employee/workspace filters, separate Pending totals, exact per-currency
+aggregation, zero-booking services and numeric downloads. Currencies must not be
+combined in chart scales; accessible labels/exact values and responsive behavior
+are required. No backend/database/private configuration/connected operations,
+deployment, unrelated audit work or broad dependency changes. Owner records
+acceptance/checks/recovery in [the graph handoff](reports-graph-view-handoff.md).
+Owner accepted and implemented List/Graph in both modes, replacing thumbnail
+branches. Daily/service graph helpers sum exact minor units; a necessary local
+report correction permits legitimate aggregate totals above a single-booking cap
+without changing shared price validation. Four patterned status series, separate
+currency panels and keyboard/touch exact-value disclosures are implemented.
+Root reviewed helpers/components/tests and desktop/mobile/long-name/tiny-currency
+screenshots. Mobile bars/scales fit; many-date/service scrolling remains bounded.
+Graph units, existing report/group units, Chrome en/lv/ru 320/390/768/1280 graph
+checks, tiny KWD precision checks and affected report/employee/export regressions
+passed. Final TypeScript, isolated frontend build and scoped whitespace checks
+passed. Existing report/filter/compact summary/numeric export behavior is retained.
+No connected verification or deployment occurred. Tests en/lv/ru only; ar/RTL,
+zh, fr, de, hi, ja, pt and es remain deferred.
+
+## Pro service-view statistics report — 7 November 2026
+
+**Completed locally, 8 November 2026:** user requested Service view statistics: per-service
+counts for a selected period, visible in Reports for all users but executable
+only with Pro. Root assigned/reused Frontend `/root/provider_duration_frontend`,
+Backend `/root/service_views_backend` and DB `/root/service_views_database_review`;
+owners accepted local implementation/review under standing cooperation. Visibility
+means Free and Pro users of the existing Reports area; no new anonymous/customer
+navigation or cross-workspace authority is implied.
+Reuse the existing approved explicit service-detail activity source and its
+90-day UTC retention, excluding identifiable owner/team views. Counts are recorded
+opens, including repeats, not unique people or guaranteed complete historical
+traffic. No new tracking identifiers or retention policy. DB recommends direct
+unexpired source-event counts rather than lagging worker groups; no schema change
+is expected. Backend owns authenticated workspace/employee authorization and a
+Pro gate before statistics queries; Frontend owns discoverable locked/available
+states, period filters, list/graph/count exports and truthful capture availability.
+Existing runtime flags/holds remain; no private configuration, connected access,
+database execution, deployment or spending is authorized. Preserve concurrent
+audit work and prior report behavior/evidence. Owners coordinate shared API
+contracts before mixed-file edits. Root owns integrated review and
+[the integration handoff](service-view-statistics-handoff.md); owner evidence is
+linked there. Tests en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es deferred.
+
+**Resume, 8 November 2026:** user requested finishing the work. Earlier workers
+are no longer reachable in the live inventory. Root assigned and received
+acceptance from `/root/service_views_frontend_finish` (Front End Developer) and
+`/root/service_views_backend_finish` (Back End Developer), with the same local
+implementation/offline-test limits. The completed DB review is retained. New
+backend regressions cover the report's actual Express URL matching so alternate
+case/trailing slash cannot bypass its durable successful-read audit. Frontend
+finishes scoped translations, isolated UI/capture checks and owner evidence.
+
+**Integrated completion:** both replacement owners completed and root accepted.
+The report is visible to Free/Pro Reports users, runnable only under server-checked
+active workspace Pro, with UTC dates, current-assignment employee filters, exact
+counts/zero-view services, List/Graph and numeric exports. Backend route variants
+require durable audit capture; frontend expiry/in-flight/workspace guards prevent
+stale results and an expired timer no longer polls repeatedly. Backend/unit/SQL
+checks, en/lv/ru Chrome320/390/768/1280 report checks, focused final expiry/revocation
+checks, affected existing report/storefront/duration regressions, final TypeScript
+and isolated Vite build passed. Root inspected mobile/desktop/Free/long-name Graph
+screenshots. Owner evidence and recovery are linked in the integration handoff.
+DB's existing-source query review remains approved without schema/grant changes.
+No live/private configuration/connected/deployment operation occurred. Runtime
+capture availability/live counts/plans remain unverified; deferred languages/RTL
+remain deferred. Authorized local implementation and verification are complete.

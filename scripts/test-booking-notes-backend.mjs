@@ -18,6 +18,8 @@ import * as auditCapture from "../server/audit/capture.ts";
 import * as customerBookings from "../server/customerBookings.ts";
 import * as notifications from "../shared/notifications.ts";
 import * as money from "../server/money.ts";
+import * as serviceImages from "../server/serviceImages.ts";
+import * as storefront from "../shared/storefront.ts";
 import * as workspacePricing from "../shared/workspace-pricing.ts";
 
 // Production route/storage logic runs with explicit in-memory boundaries. Never
@@ -93,6 +95,7 @@ const db = {
   },
 };
 const dependencies = {
+  "./serviceImages": serviceImages, "@shared/storefront": storefront,
   "./money": money,
   "@shared/schema": schema, "./db": { db }, "drizzle-orm": drizzle, "@shared/provider": provider, "node:crypto": { randomUUID },
   "./storefronts": {}, "./addresses": { serviceLocation: value => value }, "@shared/scheduling": scheduling,
@@ -115,6 +118,15 @@ const routeDependencies = { ...dependencies, "@shared/workspace-pricing": worksp
   "./auth": { setupAuth: noop, isAuthenticated }, zod: { z }, "./companyAccess": access,
   "./supabase": {}, "./imageStorage": { ImageStorageError: ProviderError }, "./embeddings": {}, "./geocoding": { GeocodingError: ProviderError },
   "./registeredLocations": {}, "./searchLocations": {}, "./categories": {}, "@shared/categories": { CategoryError: ProviderError }, "./audit/http": {},
+  // Explicit isolated adapters for independently tested registrations; never
+  // initialize live audit/provider stores while testing booking notes.
+  "./audit/remote": { async auditRemoteOperation() { throw Error("Unexpected provider operation in booking-notes fixture"); } },
+  "./audit/reads": { protectedReadAudit: () => noop, auditResponseDenials: () => noop },
+  "./audit/viewer": { setupAuditViewerRoutes: noop }, "./audit/viewer-runtime": { auditViewerStore: {} },
+  "./audit/location": { setupLocationAuditRoutes: noop },
+  "./service-view-report/routes": { setupServiceViewReportRoutes: noop },
+  "./service-view-report/store": { createServiceViewReportStore: () => ({}) },
+  "./service-view-report/service": { createServiceViewReportService: () => ({}), ServiceViewReportError: ProviderError },
   "./notifications/transports": { notificationConfig: () => ({ enabled: notificationsEnabled }) }, "@shared/notifications": notifications };
 for (const [module, method] of Object.entries({ publicSearch: "setupPublicSearchRoutes", searchLocationRoutes: "setupSearchLocationRoutes", payments: "setupPaymentRoutes",
   companyRoutes: "setupCompanyRoutes", schedulingRoutes: "setupSchedulingRoutes", adminRoutes: "setupAdminRoutes", categoryRoutes: "setupCategoryRoutes", reviewRoutes: "setupReviewRoutes",

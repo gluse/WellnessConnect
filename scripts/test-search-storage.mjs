@@ -13,6 +13,8 @@ import * as auditContext from "../server/audit/context.ts";
 import * as auditEvents from "../server/audit/events.ts";
 import * as auditCapture from "../server/audit/capture.ts";
 import * as money from "../server/money.ts";
+import * as serviceImages from "../server/serviceImages.ts";
+import * as storefront from "../shared/storefront.ts";
 
 // Execute the actual storage module against an injected query adapter. The
 // import whitelist deliberately prevents loading server/db or any live client.
@@ -37,6 +39,7 @@ const db = { select() {
   return query;
 } };
 const dependencies = {
+  "./serviceImages": serviceImages, "@shared/storefront": storefront,
   "./money": money,
   "node:crypto": { randomUUID() { throw new Error("Unexpected booking identity creation during search"); } },
   "@shared/schema": schema, "./db": { db }, "drizzle-orm": drizzle,

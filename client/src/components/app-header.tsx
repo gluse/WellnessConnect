@@ -13,7 +13,7 @@ export default function AppHeader() {
   const { t } = useTranslation();
   const [location] = useLocation();
   const appointmentArea = location === "/my-bookings" || location === "/my-services" || location.startsWith("/my-services/") || location === "/wishlist" || location === "/inbox";
-  const searchArea = location === "/search" || (location === "/" && isAuthenticated);
+  const searchArea = location === "/search" || location === "/";
 
   return (
     <header className={`app-header ${searchArea ? "search-app-header" : ""} sticky top-0 z-40 bg-header text-white border-b border-white/15 pt-[env(safe-area-inset-top)] [--accent:#343c53] [--accent-foreground:#fff] [--ring:#fff] [--background:var(--header-background)] ${appointmentArea || searchArea ? "[@media(max-height:30rem)]:static" : ""}`}>

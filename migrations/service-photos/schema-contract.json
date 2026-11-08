@@ -1,0 +1,19 @@
+{
+  "version": "service-photos-v1",
+  "column": {
+    "name": "image_urls",
+    "type": "text[]",
+    "notNull": true,
+    "default": "ARRAY[]::text[]"
+  },
+  "constraints": [
+    {
+      "name": "services_image_urls_shape_check",
+      "expression": "cardinality(\"image_urls\") <= 10 AND (cardinality(\"image_urls\") = 0 OR (array_ndims(\"image_urls\") = 1 AND array_lower(\"image_urls\", 1) = 1)) AND array_position(\"image_urls\", NULL) IS NULL AND NOT ('' = ANY(\"image_urls\"))"
+    },
+    {
+      "name": "services_image_urls_cover_check",
+      "expression": "cardinality(\"image_urls\") = 0 OR (\"image_url\" IS NOT NULL AND \"image_url\" = \"image_urls\"[1])"
+    }
+  ]
+}

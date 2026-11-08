@@ -1,0 +1,49 @@
+{
+  "task": "TASK-048",
+  "project": "hbkooiknruimukkhshrk",
+  "auditDestination": "ynygqodmtgjrngiudalw",
+  "executor": "/root/service_photos_database",
+  "startedAt": "2026-11-08T15:22:10.889Z",
+  "state": "verified",
+  "authorization": {
+    "approvalRecord": "docs/service-photos-db-handoff.md#development-activation-authorization--8-november-2026",
+    "recoveryRecord": "docs/service-photos-db-handoff.md#development-activation-authorization--8-november-2026",
+    "backupWaived": true
+  },
+  "script": {
+    "name": "0022_service_photos.sql",
+    "sha256": "ceae2a5dd684aea626e9cc63a09b71cd360eda91dc5dc895d7ed6bf8a90e0775",
+    "attempted": true,
+    "committed": true
+  },
+  "retry": false,
+  "privateConfigEdited": false,
+  "auditDeliveryAttempted": false,
+  "stage": "restricted_gallery_postflight",
+  "baselineChecks": 34,
+  "auditDestinationReadiness": true,
+  "sourceMetadata": {
+    "identity": true,
+    "database": true,
+    "version": true,
+    "read_only": true,
+    "gallery_absent": true,
+    "trigger_enabled": true,
+    "table_count": 41,
+    "service_count": 28,
+    "booking_count": 36,
+    "legacy_image_count": 22,
+    "other_writers": 0
+  },
+  "existingServiceAndBookingFieldsPreserved": true,
+  "postflightCounts": {
+    "exact_backfill": true,
+    "trigger_enabled": true,
+    "service_count": 28,
+    "booking_count": 36,
+    "image_count": 22
+  },
+  "postflightChecks": 36,
+  "auditBackfillEventsPending": 22,
+  "completedAt": "2026-11-08T15:22:20.350Z"
+}

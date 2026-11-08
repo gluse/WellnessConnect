@@ -52,12 +52,13 @@ export function auditEnvironment(input: Record<string, string | undefined>): str
   return input.AUDIT_ENVIRONMENT;
 }
 
-/** Remote Auth producers remain staged until durable intent/reconciliation exists. */
+/** Remote producers require the versioned durable-intent contract before activation. */
 export function assertAuditActivation(input: Record<string, string | undefined>): void {
   for (const key of ["AUDIT_ENABLED", "AUDIT_WORKER_ENABLED", "AUDIT_SERVICE_VIEWS_ENABLED"]) {
     if (input[key] !== undefined && input[key] !== "true" && input[key] !== "false") throw new AuditConfigurationError();
   }
-  if (input.AUDIT_AUTH_EVENTS_ENABLED !== undefined && input.AUDIT_AUTH_EVENTS_ENABLED !== "false") throw new AuditConfigurationError();
+  if (input.AUDIT_AUTH_EVENTS_ENABLED !== undefined && !["true", "false"].includes(input.AUDIT_AUTH_EVENTS_ENABLED)) throw new AuditConfigurationError();
+  if (input.AUDIT_AUTH_EVENTS_ENABLED === "true" && (input.AUDIT_ENABLED !== "true" || input.AUDIT_PRODUCER_CONTRACT !== "completion-0008")) throw new AuditConfigurationError();
   if (input.AUDIT_ENABLED === "true" || input.AUDIT_WORKER_ENABLED === "true") {
     auditEnvironment(input);
     if (input.PGBINARY) throw new AuditConfigurationError();

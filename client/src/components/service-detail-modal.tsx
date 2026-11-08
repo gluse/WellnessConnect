@@ -14,6 +14,7 @@ import { useCategories } from "@/hooks/use-categories";
 import { Link } from "wouter";
 import SearchServiceDetails from "@/components/search-service-details";
 import WishlistHeart from "@/components/wishlist-heart";
+import ServiceImageGallery from "@/components/service-image-gallery";
 
 interface ServiceDetailModalProps {
   service: ServiceWithProvider | null;
@@ -80,7 +81,7 @@ export default function ServiceDetailModal({ service, open, onClose, onBook, onV
         </DialogHeader>
 
         <div className="space-y-6">
-          <div className="relative min-h-16">{service.imageUrl && <img src={service.imageUrl} alt={service.name} className="w-full max-h-72 object-cover rounded-xl" />}{wishlistEnabled && <WishlistHeart serviceId={service.id} />}</div>
+          <div className="relative min-h-16"><ServiceImageGallery key={`${service.id}:${open}`} service={service} />{wishlistEnabled && <WishlistHeart serviceId={service.id} />}</div>
           {/* Provider Info */}
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center">

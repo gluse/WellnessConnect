@@ -23,20 +23,27 @@ recorded operation/target approvals and explicit holds before escalating.
 
 ## Landing page
 
-- [ ] **TASK-005 — Refactor the landing page.** Agree on the desired layout,
-  content, and behavior when starting this task, then implement the refactor.
+Completed locally: [TASK-005 — Open Search directly](TASKS_COMPLETED.md#landing-page).
 
 ## Translations
 - [ ] **Make sure interface is translated in multiple languages ** All labels , button names, tooltip texts should be translated when user switch language.
 
 ## Audit
 
-Plan an activity audit trail covering successful changes, failed/denied actions,
-sensitive reads, and system operations. See [the audit plan](docs/audit-plan.md)
-for the coverage matrix, proposed storage, privacy rules, and acceptance checks.
-Recommended direction: a separate audit PostgreSQL database, fed reliably through
-a transactional outbox in the application database. This is planned work, not
-an implemented audit system.
+Help authorized support users answer **what happened, when, to which record, and
+what evidence identifies the actor**. The separate audit database and reliable
+delivery foundation are implemented; the remaining tasks below concern actual
+activity coverage, a usable history screen and operational verification.
+See [the audit plan](docs/audit-plan.md) for the full acceptance matrix.
+
+**Current assignment, 7 November 2026:** The user granted full permissions to
+complete pending audit work and add an understandable Audit section, explicitly
+without a database backup. Root and assigned Frontend/Backend/DB owners accepted;
+viewer, producer extensions and development database verification are implemented
+in the existing development projects. Remaining acceptance is stated per task.
+[Current authorization, scope, evidence and recovery](docs/audit-review-completion-2026-11-07.md).
+Earlier dated preparation/approval statements below are historical and do not
+override this new scoped authorization or prove current coverage.
 
 **Assignment, 19 October 2026:** At the user's request, General Manager assigned
 `/root/audit_backend` as Back End Developer and `/root/audit_database` as
@@ -60,47 +67,30 @@ Recovery for this preparation is to revise/remove only the new proposal files,
 preserving other sessions' changes. TASK-018 frontend implementation belongs to
 the Front End Developer; hosting and rollout need CI/CD coordination.
 
-- [ ] **TASK-013 — Define the audit event catalog and policies.** Inventory API
-  routes, Auth/Storage operations, scheduled jobs, scripts, and direct database
-  changes. Map each to events, actors, outcomes, safe fields, and retention.
-  Record coverage gaps and settle hosting, reader permissions, and retention
-  periods before provisioning storage. Include future features when implemented.
-  **Status, 19 October 2026:** Backend source inventory/event catalog prepared;
-  28 referenced paths checked and whitespace checks passed. Joint event/outbox
-  contract cross-reviewed with DB Analyst; storage/policy proposal prepared. All local
-  Markdown file links in both proposals resolve. **User selected Option C on
-  19 October 2026:** separate PostgreSQL on independent infrastructure with an
-  application transactional outbox. Intended hosting direction is a separate
-  Supabase project. User confirmed existing application DB is development/testing
-  and subsequently supplied audit project reference `ynygqodmtgjrngiudalw`
-  (`https://ynygqodmtgjrngiudalw.supabase.co`). API variables reported configured;
-  values not printed or tested. User now reports `.env` `AUDIT_DATABASE_URL`
-  configured; DB Analyst may privately derive target metadata while preparing
-  migrations. Private configuration check identifies source `hbkooiknruimukkhshrk`
-  and destination `ynygqodmtgjrngiudalw` as distinct. Privileges/connectivity remain
-  unverified; no database access or SQL applied.
-  **User also approved R1 + P1 and recommended failure behavior:** named
-  security/support readers only with separate export permission,
-  365-day business/security and 90-day read/operational retention, no optional
-  request context initially, and 7-day delivered-outbox retention. Audited
-  mutations roll back on local capture failure; protected reads/exports fail
-  closed; denials still deny with reported capture gaps; destination outages
-  queue locally within capacity. Named targets/readers/operators, hosting setup
-  and provider/direct-SQL gaps remain pending. No runtime coverage verified.
-
-Completed: [TASK-014 — audit storage and delivery](TASKS_COMPLETED.md#audit).
+Completed: [TASK-013 — catalog/policies, TASK-014 — storage/delivery, and TASK-018 — searchable Audit viewer](TASKS_COMPLETED.md#audit).
 See the [development acceptance record](docs/audit-completion-execution.md).
 
-- [ ] **TASK-015 — Audit authentication, accounts, and access changes.** Capture
+- [ ] **TASK-015 — See sign-in, account and access-change history.** Capture
   sign-in/out, signup, social-auth outcomes, recovery/password changes, account
   edits, workspace switches, invitations, memberships, ownership transfers,
   account restrictions, and authorization denials. Correlate application events
   with available Supabase Auth events; never log passwords or session tokens.
+  **7 November:** Durable app Auth request/observed-response producers and
+  authentication/domain authorization denials are implemented and enabled in
+  development; focused offline regressions pass. Native Auth log correlation
+  and fully attributed account/company-access changes remain open. A missing
+  provider response is unresolved, not success. [Actual coverage](docs/audit-producers-completion.md).
 
-- [ ] **TASK-016 — Audit business data changes.** Cover services, shared addresses,
+- [ ] **TASK-016 — See when services, bookings and business records change.** Cover services, shared addresses,
   employees, schedules, bookings, reviews, categories, storefronts, subscriptions,
   and administrative actions. Record safe field changes and server-confirmed
   outcomes, including multi-record updates, copies, deletion, and bulk operations.
+  **7 November:** Actual transactional CRUD capture is applied on 26 business
+  tables; synthetic live rollback/redaction/delivery/read checks pass. Generic
+  trigger events show **database process; initiating person not recorded**, with
+  unknown workspace and redacted changed-field indicators. Trusted human/workspace
+  attribution and reviewed safe value comparisons remain open; this task is not
+  fully complete. [Database evidence](docs/audit-database-completion.md).
   **One-event follow-up implemented, 25 October 2026:** `service.viewed.v1` for
   explicit found-service details opens, using selected R/90-day read retention.
   Backend/Frontend focused checks and TypeScript passed; both development DB
@@ -109,25 +99,35 @@ See the [development acceptance record](docs/audit-completion-execution.md).
   no daemon was left running. Broader mutation coverage remains open.
   [Scope, owners, evidence and recovery](docs/audit-service-view-execution.md).
 
-- [ ] **TASK-017 — Audit sensitive reads, integrations, and background work.**
+- [ ] **TASK-017 — See sensitive-data access and system activity.**
   Cover private/admin data access, exports, protected file access, geocoding,
   embedding generation, cleanup jobs, migrations, and operational scripts.
   Add direct-database coverage where required. Keep general browsing analytics
   separate; add payments, webhooks, and notifications as those features go live.
+  **7 November:** Protected account/admin/company/booking/inbox reads wait for
+  durable capture. Embedding/geocoding operations and notification/activity worker
+  batches have safe request/response evidence. Protected Storage, remaining
+  cleanup/maintenance/migration paths and native provider/DB source coverage remain
+  open. [Producer map and limitations](docs/audit-producers-completion.md).
 
-- [ ] **TASK-018 — Add an audit viewer in Administration.** Provide server-side
-  filters, pagination, event details, safe change comparisons, and request/object
-  history. Restrict global access, scope any company view explicitly, and audit
-  viewing/exporting audit records. Support controlled exports without exposing
-  secrets or other workspaces' data.
-
-- [ ] **TASK-019 — Verify, operate, and roll out auditing.** Test coverage,
+- [ ] **TASK-019 — Keep activity history reliable and detect delivery problems.** Test coverage,
   transaction rollback, duplicate delivery, outages, permissions, redaction,
   retention, deletion, and backup restoration. Add delivery/integrity alerts,
   review procedures, an incident runbook, and deployment/rollback instructions.
   Start with security-critical events, then complete the coverage matrix.
+  **7 November:** Development migration rehearsal, capture-failure rollback,
+  reader permissions, native transport/idempotence/hash checks and empty-queue
+  health passed. Updated app/worker require restart. No DB backup was taken per
+  the user's instruction; backup restoration was not exercised. External alert
+  delivery, full source coverage, production rollout/restore acceptance remain
+  open. [Execution and startup fix](docs/audit-review-completion-2026-11-07.md).
 
-- [ ] **TASK-025 — Audit current-location permission and location consent.**
+- [ ] **TASK-025 — Record location choices accurately without storing the location.**
+  **7 November:** Validated privacy-safe observation endpoint and synthetic
+  en/lv/ru policy/HTTP tests are prepared. Existing browser controls are not wired
+  to it. Browser/guest replay and transition evidence, consent-dependent failure
+  behavior, and qualified legal acceptance remain required; no consent-compliance
+  or released location-audit coverage is claimed.
   **Requested, 23 October 2026:** Record when a registered user or guest permits
   current-location use in the [remembered-location flow](docs/search-location-proposal.md#location-permission-and-consent-audit).
   **Scope:** Audit the app's location-use request, observed browser permission
@@ -494,8 +494,19 @@ See [business scenarios](docs/payment-business-plan.md),
 ## Reports
 
 - [ ] **TASK-038 — Add workspace appointment reports.**
-  **Status, 3 November 2026:** Placeholder requested with the appointment-page
-  redesign; reporting implementation has not started.
+  **Status, 8 November 2026:** Revenue reports are implemented and verified
+  locally, with separate Pending totals, company employee filters, named-service
+  grouping, compact mobile summaries and List/Graph views. See the
+  [report handoff](docs/service-reports-handoff.md),
+  [employee/service grouping](docs/reports-employee-services-handoff.md),
+  [mobile summaries](docs/reports-mobile-summary-handoff.md) and
+  [graphs](docs/reports-graph-view-handoff.md).
+  The user also requested Service view statistics, listed for all Reports users
+  and executable only with active workspace Pro. Local frontend/backend work and
+  offline verification are complete under the
+  [current integration handoff](docs/service-view-statistics-handoff.md).
+  Existing 90-day retained service-detail observations are reused; no database,
+  runtime activation or deployment changes are authorized by this report task.
   **Scope:** Provide a Reports destination for the information removed from
   `/my-services/appointments`: Total bookings, Awaiting approval and Revenue.
   Define reporting periods, revenue/status calculation rules and role visibility
@@ -789,4 +800,51 @@ See [business scenarios](docs/payment-business-plan.md),
   authorized. Next: map records and propose the concrete retention/deletion policy
   for user selection before scoped implementation.
 
-<!-- Add the next task here using TASK-047, or place it in the relevant section. -->
+## Worldwide web and mobile release
+
+- [ ] **TASK-047 — Deliver a publishable worldwide app with a defined 24/7 SLA.**
+  **8 November 2026:** User established the active goal: scalable worldwide
+  operation, continuous availability and one shared codebase for website,
+  Apple App Store and Google Play. Repository readiness review and
+  [release plan](docs/worldwide-release-plan.md) prepared. User selected **99.9%
+  monthly availability**, **EUR 100–300/month operating budget** (excluding
+  development/store fees), and **worldwide-ready architecture with initial
+  Latvia/EU launch**. These are planning requirements, not provisioning/spending
+  approval or an established SLA. Frontend/Backend/DB/CI reviews completed;
+  stale booking-capacity fixture and missing-worker artifact gate repaired and
+  verified. User selected **React/Vite + Capacitor local proof**, with explicit
+  API endpoint, secure native sessions and browser sign-in returns against
+  mocked services. Frontend/Backend/CI owners accepted separate local proof
+  implementation/build scopes; no connected operations/deployment/store release.
+  Reuse TASK-034/035 for mobile and existing authentication, privacy, deletion,
+  billing and operational work; do not duplicate their implementation records.
+  Acceptance requires selected measurable service objectives/terms, costed
+  production design, scale/failure/recovery evidence, secure shared mobile/API
+  integration, signed device-verified apps, applicable store/privacy gates and
+  authorized release/post-release verification. Current staging evidence does
+  not establish production readiness. Role assignments and connected operations
+  follow AGENTS.md; existing holds remain. Test only en/lv/ru; other supported
+  languages/RTL remain deferred. Next: implement/verify selected local proof;
+  costed production/recovery and full-app integration acceptance remain open.
+
+## Service photo galleries
+
+- [x] **TASK-048 — Add Pro service photo galleries.**
+  **Implemented and development DB verified, 8 November 2026.** User requested multiple service pictures for
+  Pro users, meaningful file-size limits and left/right swiping in service views.
+  Assigned Frontend, Backend and DB owners accepted local implementation and
+  offline/mocked validation under standing cooperation. Existing 10 MiB/image
+  limit is retained; Pro galleries allow ten pictures, other plans one.
+  Gallery/editor/API/schema checks, Chrome en/lv/ru phone/desktop checks, isolated
+  builds and targeted app/server types pass. Full-project types still fail on five
+  unrelated native-proof errors; Firefox/WebKit tooling is unavailable. User
+  explicitly approved TASK-048 development execution without a DB backup. Backend
+  stopped verified project app/audit trees; assigned DB owner committed 0022 once:
+  all original fields/counts of 28 services/36 bookings preserved, 22 existing
+  covers backfilled, all 36 readiness gates passed. Root independently reviewed
+  the sanitized receipt/digest. App and audit worker remain stopped; restart is
+  next. No audit delivery, backup, ACL change, deployment or live upload/UI flow.
+  [Scope, contracts, evidence and recovery](docs/service-photos-handoff.md).
+  Testing covers en/lv/ru; other supported languages/RTL remain deferred.
+
+<!-- Add the next task here using TASK-049, or place it in the relevant section. -->

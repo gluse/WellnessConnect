@@ -1,0 +1,13 @@
+﻿"Services & revenue"
+"2026-11-01 — 2026-11-30 · UTC · Anna Visible"
+"Based on appointment dates and booking values, not payments received. Earned = completed; planned = confirmed; pending = awaiting confirmation; loss = cancelled potential revenue, not accounting profit. Currencies are shown separately. Includes only bookings visible in your workspace."
+
+"Currency","Earned revenue","Planned income","Pending","Loss of profit"
+"EUR","13","0","0","40"
+"USD","7","0","0","0"
+
+"Service","Employee","Appointment date","Status","Amount","Currency"
+"Massage","Anna Visible","Nov 7, 2026, 12:00 PM","Completed","10","EUR"
+"Historical treatment","Anna Visible","Nov 7, 2026, 12:00 PM","Cancelled","40","EUR"
+"Massage","Anna Visible","Nov 7, 2026, 12:00 PM","Completed","7","USD"
+"Massage","Anna Visible","Nov 7, 2026, 12:00 PM","Completed","3","EUR"

@@ -31,6 +31,7 @@ globalThis.fetch = async (url, options = {}) => {
   const method = options.method ?? "GET";
   requests.push({ url, method });
   if (url === "/api/admin/access") return respond({ isAdmin: allowed });
+  if (url === "/api/admin/audit/access") return respond({ canRead: false, canExport: false, available: false });
   if (url.startsWith("/api/admin/users?")) return respond({ users: [], page: 1, pageSize: 50, total: 0, totalPages: 1, hasNextPage: false });
   if (url === "/api/categories") return respond(failList ? { message: "Unavailable" } : records, failList ? 503 : 200);
   assert.ok(url.startsWith("/api/admin/categories"));

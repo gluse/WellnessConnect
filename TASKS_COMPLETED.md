@@ -4,6 +4,15 @@ Archive of completed FitsMyTime tasks. Active tasks, including those awaiting
 testing or external setup, remain in [TASKS.md](TASKS.md). Preserve task IDs when
 moving tasks between these files.
 
+## Landing page
+
+- [x] **TASK-005 — Open Search directly.** User selected bypassing the welcome
+  page on 8 November 2026 and assigned `/root` the local frontend task. Both `/`
+  and `/search` render Search; the guest/loading header uses Search styling.
+  Component routing checks and Chrome phone/desktop checks pass in en/lv/ru;
+  TypeScript and isolated frontend build pass. No deployment or connected writes.
+  [Authority, verification, deferrals and recovery](docs/search-entry-handoff.md).
+
 ## Customer booking management
 
 - [x] **TASK-030 — Let customers cancel and reschedule their own bookings.**
@@ -59,6 +68,42 @@ moving tasks between these files.
   [owner handoff, commands and evidence](docs/google-api-fallback-handoff.md).
 
 ## Audit
+
+- [x] **TASK-018 — Search, understand and export activity history in Administration.** Provide server-side
+  filters, pagination, event details, safe change comparisons, and request/object
+  history. Restrict global access, scope any company view explicitly, and audit
+  viewing/exporting audit records. Support controlled exports without exposing
+  secrets or other workspaces' data.
+  **Completed for development, 7 November 2026:** See [current authorization, verification and limits](docs/audit-review-completion-2026-11-07.md). Added independent named-reader/export access, readable activity/date queries, advanced filters, details/redacted comparisons, object/request history, UTC keyset paging and bounded CSV export. Protected access is audited before data leaves the server. Native restricted database roundtrip, viewer HTTP/permission tests, en/lv/ru Chrome phone/tablet/desktop, TypeScript and build passed. No backup or production deployment.
+
+- [x] **TASK-013 — Explain what activity history records and how long it is kept.** Inventory API
+  routes, Auth/Storage operations, scheduled jobs, scripts, and direct database
+  changes. Map each to events, actors, outcomes, safe fields, and retention.
+  Record coverage gaps and settle hosting, reader permissions, and retention
+  periods before provisioning storage. Include future features when implemented.
+  **Status, 19 October 2026:** Backend source inventory/event catalog prepared;
+  28 referenced paths checked and whitespace checks passed. Joint event/outbox
+  contract cross-reviewed with DB Analyst; storage/policy proposal prepared. All local
+  Markdown file links in both proposals resolve. **User selected Option C on
+  19 October 2026:** separate PostgreSQL on independent infrastructure with an
+  application transactional outbox. Intended hosting direction is a separate
+  Supabase project. User confirmed existing application DB is development/testing
+  and subsequently supplied audit project reference `ynygqodmtgjrngiudalw`
+  (`https://ynygqodmtgjrngiudalw.supabase.co`). API variables reported configured;
+  values not printed or tested. User now reports `.env` `AUDIT_DATABASE_URL`
+  configured; DB Analyst may privately derive target metadata while preparing
+  migrations. Private configuration check identifies source `hbkooiknruimukkhshrk`
+  and destination `ynygqodmtgjrngiudalw` as distinct. Privileges/connectivity remain
+  unverified; no database access or SQL applied.
+  **User also approved R1 + P1 and recommended failure behavior:** named
+  security/support readers only with separate export permission,
+  365-day business/security and 90-day read/operational retention, no optional
+  request context initially, and 7-day delivered-outbox retention. Audited
+  mutations roll back on local capture failure; protected reads/exports fail
+  closed; denials still deny with reported capture gaps; destination outages
+  queue locally within capacity. Named targets/readers/operators, hosting setup
+  and provider/direct-SQL gaps remain pending. No runtime coverage verified.
+  **Completed for development, 7 November 2026:** See [current authorization, verification and limits](docs/audit-review-completion-2026-11-07.md). Catalog/policy work is complete: existing C/R1/P1 design retained, actual producer matrix and known gaps updated, dedicated named reader/exporter provisioned. Completing this planning task does not complete every producer/rollout requirement. Original dated history above is preserved.
 
 - [x] **TASK-014 — Build reliable audit storage and delivery.** Add the separate
   audit database, restricted credentials, event schema, and application outbox.

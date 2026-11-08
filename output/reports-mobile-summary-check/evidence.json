@@ -1,0 +1,983 @@
+{
+  "date": "2026-11-07",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/156.0.8078.80",
+    "revision": "@fb096c0011f9d50f0a264a9376420cdea9c421e3",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "jsVersion": "15.6.75.27"
+  },
+  "results": [
+    {
+      "language": "en",
+      "width": 320,
+      "scenario": "single",
+      "mode": "services",
+      "height": 154,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "scenario": "single",
+      "mode": "byService",
+      "height": 154,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "scenario": "multiple",
+      "mode": "services",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "scenario": "multiple",
+      "mode": "byService",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "scenario": "large",
+      "mode": "services",
+      "height": 274.5,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "scenario": "large",
+      "mode": "byService",
+      "height": 274.5,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "scenario": "zero",
+      "mode": "services",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "scenario": "zero",
+      "mode": "byService",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "scenario": "empty",
+      "mode": "services",
+      "height": 165,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "scenario": "empty",
+      "mode": "byService",
+      "height": 154,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "scenario": "single",
+      "mode": "services",
+      "height": 154,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "scenario": "single",
+      "mode": "byService",
+      "height": 154,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "scenario": "multiple",
+      "mode": "services",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "scenario": "multiple",
+      "mode": "byService",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "scenario": "large",
+      "mode": "services",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "scenario": "large",
+      "mode": "byService",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "scenario": "zero",
+      "mode": "services",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "scenario": "zero",
+      "mode": "byService",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "scenario": "empty",
+      "mode": "services",
+      "height": 165,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "scenario": "empty",
+      "mode": "byService",
+      "height": 154,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "scenario": "single",
+      "mode": "services",
+      "height": 319,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "scenario": "single",
+      "mode": "byService",
+      "height": 319,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "scenario": "multiple",
+      "mode": "services",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "scenario": "multiple",
+      "mode": "byService",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "scenario": "large",
+      "mode": "services",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "scenario": "large",
+      "mode": "byService",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "scenario": "zero",
+      "mode": "services",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "scenario": "zero",
+      "mode": "byService",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "scenario": "empty",
+      "mode": "services",
+      "height": 319,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "scenario": "empty",
+      "mode": "byService",
+      "height": 319,
+      "columns": 2
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "scenario": "single",
+      "mode": "services",
+      "height": 173,
+      "columns": 4
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "scenario": "single",
+      "mode": "byService",
+      "height": 173,
+      "columns": 4
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "scenario": "multiple",
+      "mode": "services",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "scenario": "multiple",
+      "mode": "byService",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "scenario": "large",
+      "mode": "services",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "scenario": "large",
+      "mode": "byService",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "scenario": "zero",
+      "mode": "services",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "scenario": "zero",
+      "mode": "byService",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "scenario": "empty",
+      "mode": "services",
+      "height": 173,
+      "columns": 4
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "scenario": "empty",
+      "mode": "byService",
+      "height": 173,
+      "columns": 4
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "scenario": "single",
+      "mode": "services",
+      "height": 170.5,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "scenario": "single",
+      "mode": "byService",
+      "height": 170.5,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "scenario": "multiple",
+      "mode": "services",
+      "height": 223.5,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "scenario": "multiple",
+      "mode": "byService",
+      "height": 223.5,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "scenario": "large",
+      "mode": "services",
+      "height": 291,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "scenario": "large",
+      "mode": "byService",
+      "height": 291,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "scenario": "zero",
+      "mode": "services",
+      "height": 223.5,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "scenario": "zero",
+      "mode": "byService",
+      "height": 223.5,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "scenario": "empty",
+      "mode": "services",
+      "height": 181.5,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "scenario": "empty",
+      "mode": "byService",
+      "height": 170.5,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "scenario": "single",
+      "mode": "services",
+      "height": 154,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "scenario": "single",
+      "mode": "byService",
+      "height": 154,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "scenario": "multiple",
+      "mode": "services",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "scenario": "multiple",
+      "mode": "byService",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "scenario": "large",
+      "mode": "services",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "scenario": "large",
+      "mode": "byService",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "scenario": "zero",
+      "mode": "services",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "scenario": "zero",
+      "mode": "byService",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "scenario": "empty",
+      "mode": "services",
+      "height": 165,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "scenario": "empty",
+      "mode": "byService",
+      "height": 154,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "scenario": "single",
+      "mode": "services",
+      "height": 319,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "scenario": "single",
+      "mode": "byService",
+      "height": 319,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "scenario": "multiple",
+      "mode": "services",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "scenario": "multiple",
+      "mode": "byService",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "scenario": "large",
+      "mode": "services",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "scenario": "large",
+      "mode": "byService",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "scenario": "zero",
+      "mode": "services",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "scenario": "zero",
+      "mode": "byService",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "scenario": "empty",
+      "mode": "services",
+      "height": 319,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "scenario": "empty",
+      "mode": "byService",
+      "height": 319,
+      "columns": 2
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "scenario": "single",
+      "mode": "services",
+      "height": 173,
+      "columns": 4
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "scenario": "single",
+      "mode": "byService",
+      "height": 173,
+      "columns": 4
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "scenario": "multiple",
+      "mode": "services",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "scenario": "multiple",
+      "mode": "byService",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "scenario": "large",
+      "mode": "services",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "scenario": "large",
+      "mode": "byService",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "scenario": "zero",
+      "mode": "services",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "scenario": "zero",
+      "mode": "byService",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "scenario": "empty",
+      "mode": "services",
+      "height": 173,
+      "columns": 4
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "scenario": "empty",
+      "mode": "byService",
+      "height": 173,
+      "columns": 4
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "scenario": "single",
+      "mode": "services",
+      "height": 187,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "scenario": "single",
+      "mode": "byService",
+      "height": 187,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "scenario": "multiple",
+      "mode": "services",
+      "height": 240,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "scenario": "multiple",
+      "mode": "byService",
+      "height": 240,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "scenario": "large",
+      "mode": "services",
+      "height": 307.5,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "scenario": "large",
+      "mode": "byService",
+      "height": 307.5,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "scenario": "zero",
+      "mode": "services",
+      "height": 240,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "scenario": "zero",
+      "mode": "byService",
+      "height": 240,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "scenario": "empty",
+      "mode": "services",
+      "height": 198,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "scenario": "empty",
+      "mode": "byService",
+      "height": 187,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "scenario": "single",
+      "mode": "services",
+      "height": 154,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "scenario": "single",
+      "mode": "byService",
+      "height": 154,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "scenario": "multiple",
+      "mode": "services",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "scenario": "multiple",
+      "mode": "byService",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "scenario": "large",
+      "mode": "services",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "scenario": "large",
+      "mode": "byService",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "scenario": "zero",
+      "mode": "services",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "scenario": "zero",
+      "mode": "byService",
+      "height": 207,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "scenario": "empty",
+      "mode": "services",
+      "height": 165,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "scenario": "empty",
+      "mode": "byService",
+      "height": 154,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "scenario": "single",
+      "mode": "services",
+      "height": 319,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "scenario": "single",
+      "mode": "byService",
+      "height": 319,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "scenario": "multiple",
+      "mode": "services",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "scenario": "multiple",
+      "mode": "byService",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "scenario": "large",
+      "mode": "services",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "scenario": "large",
+      "mode": "byService",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "scenario": "zero",
+      "mode": "services",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "scenario": "zero",
+      "mode": "byService",
+      "height": 391,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "scenario": "empty",
+      "mode": "services",
+      "height": 319,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "scenario": "empty",
+      "mode": "byService",
+      "height": 319,
+      "columns": 2
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "scenario": "single",
+      "mode": "services",
+      "height": 173,
+      "columns": 4
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "scenario": "single",
+      "mode": "byService",
+      "height": 173,
+      "columns": 4
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "scenario": "multiple",
+      "mode": "services",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "scenario": "multiple",
+      "mode": "byService",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "scenario": "large",
+      "mode": "services",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "scenario": "large",
+      "mode": "byService",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "scenario": "zero",
+      "mode": "services",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "scenario": "zero",
+      "mode": "byService",
+      "height": 209,
+      "columns": 4
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "scenario": "empty",
+      "mode": "services",
+      "height": 173,
+      "columns": 4
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "scenario": "empty",
+      "mode": "byService",
+      "height": 173,
+      "columns": 4
+    }
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Synthetic API, Chrome CSS viewport emulation; no connected writes, external network, physical devices or screen readers."
+}

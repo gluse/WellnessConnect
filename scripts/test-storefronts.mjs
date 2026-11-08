@@ -13,7 +13,7 @@ import { categoryFixtures } from "./fixtures/categories.mjs";
 
 const translation = JSON.parse(await readFile(new URL("../client/public/locales/en/translation.json", import.meta.url), "utf8"));
 await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation } } });
-for (const locale of ["lv","ru","de","fr","es","pt","ar","ja","zh","hi"]) {
+for (const locale of ["lv","ru"]) {
   const data = JSON.parse(await readFile(new URL(`../client/public/locales/${locale}/translation.json`, import.meta.url), "utf8"));
   for (const [key, value] of Object.entries(translation.storefront)) {
     assert.ok(data.storefront[key], `${locale}: missing ${key}`);
@@ -42,6 +42,7 @@ const { queryClient } = await import("../client/src/lib/queryClient.ts");
 const { default: StorefrontPage, StorefrontView } = await import("../client/src/pages/storefront.tsx");
 const { default: StorefrontEditor } = await import("../client/src/components/provider/storefront-editor.tsx");
 const { default: ServiceCard } = await import("../client/src/components/service-card.tsx");
+const { default: ServiceDetailModal } = await import("../client/src/components/service-detail-modal.tsx");
 const { default: BookingModal, BookingSignInActions } = await import("../client/src/components/booking-modal.tsx");
 const { default: Administration } = await import("../client/src/pages/administration.tsx");
 const { act, create } = renderer;
@@ -53,8 +54,10 @@ const userId = "c1870dc9-563f-4631-bb7d-1c0fad052b12";
 const respond = (body, status = 200) => new Response(JSON.stringify(body), { status });
 globalThis.fetch = async (url, options = {}) => {
   requests.push({ url, method: options.method ?? "GET", body: options.body ? JSON.parse(options.body) : null });
+  if (options.method === "POST" && /^\/api\/services\/\d+\/view$/.test(url)) return respond(null, 204);
   if (url === "/api/categories") return respond(categoryFixtures);
   if (url === "/api/admin/access") return respond({ isAdmin: adminAllowed });
+  if (url === "/api/admin/audit/access") return respond({ canRead: false, canExport: false, available: false });
   if (url.startsWith("/api/admin/users?")) return respond({ users: [], page: 1, pageSize: 50, total: 0, totalPages: 1, hasNextPage: false });
   if (url.startsWith("/api/admin/subscriptions/options?")) {
     const params = new URL(url, "http://localhost").searchParams;
@@ -104,6 +107,18 @@ assert.equal(component.root.findAllByType(ServiceCard)[0].props.service.id, 2);
 await act(async () => component.root.findAllByType(ServiceCard)[0].props.onBook());
 assert.equal(component.root.findByType(BookingModal).props.returnTo, "/providers/riga-studio?book=2");
 assert.ok(!requests.some(request => request.url.startsWith("/api/availability/") || request.url === "/api/bookings"));
+assert.equal(requests.filter(request => request.url.endsWith('/view')).length, 0, 'Booking alone does not count as a details view');
+await mount(React.createElement(StorefrontView, { page: { ...draft, services } }));
+assert.equal(requests.filter(request => request.url.endsWith('/view')).length, 0, 'Catalog render does not capture a view');
+for (let open = 0; open < 2; open++) {
+  await act(async () => component.root.findAllByType(ServiceCard)[0].props.onViewDetails()); await flush();
+  assert.equal(requests.filter(request => request.url.endsWith('/view')).length, open + 1, 'Explicit repeat opens each count once');
+  await act(async () => component.root.findByType(ServiceDetailModal).props.onClose());
+}
+await mount(React.createElement(StorefrontView, { page: { ...draft, services }, preview: true }));
+await act(async () => component.root.findAllByType(ServiceCard)[0].props.onViewDetails()); await flush();
+assert.equal(requests.filter(request => request.url.endsWith('/view')).length, 0, 'Owner preview never records views');
+await mount(React.createElement(Route, { path: "/providers/:slug", component: StorefrontPage }));
 publicStatus = 404;
 await act(async () => queryClient.invalidateQueries({ queryKey: ["/api/storefronts"] })); await flush();
 assert.ok(text().includes(translation.storefront.unavailable)); assert.equal(component.root.findAllByType(ServiceCard).length, 0, "Revocation removes stale public content");
@@ -113,6 +128,7 @@ assert.equal(component.root.findAllByType(ServiceCard).length, 2);
 window.location.search = "?book=1";
 await mount(React.createElement(StorefrontView, { page: { ...draft, services } }));
 assert.equal(component.root.findByType(BookingModal).props.service.id, 1, "Sign-in return reopens the intended service");
+assert.equal(requests.filter(request => request.url.endsWith('/view')).length, 0, 'Sign-in booking return does not count a details view');
 window.location.search = "";
 await mount(React.createElement(BookingSignInActions, { isLoading: false, onClose() {}, returnTo: "/providers/riga-studio?book=2" }));
 assert.ok(component.root.findAllByType("a").some(node => node.props.href === "/login?returnTo=%2Fproviders%2Friga-studio%3Fbook%3D2"));

@@ -1,5 +1,7 @@
 import "dotenv/config";
 import { notificationConfig } from "./transports";
+import { auditIntegration } from "../audit/integrations";
+import { closeAuditCapture } from "../audit/http";
 
 // Disabled by default; do not even initialize a database pool until explicitly enabled.
 async function main() {
@@ -15,12 +17,12 @@ if (!notificationConfig().enabled) {
   try {
     while (!stopping) {
       const started = Date.now();
-      try { const result = await notificationWorkerTick(db, { shouldStop: () => stopping }); console.info("Notification worker completed:", result.processed); }
+      try { const result = await auditIntegration("notification_batch", () => notificationWorkerTick(db, { shouldStop: () => stopping })); console.info("Notification worker completed:", result.processed); }
       catch { console.error("Notification worker tick failed; no automatic retry of attempted messages."); }
       // Short waits allow prompt signal handling without overlapping ticks.
       while (!stopping && Date.now() - started < 60_000) await new Promise(resolve => setTimeout(resolve, Math.min(1000, 60_000 - (Date.now() - started))));
     }
-  } finally { await pool.end(); }
+  } finally { await Promise.allSettled([pool.end(), closeAuditCapture()]); }
 }
 }
 void main().catch(() => { console.error("Notification worker initialization failed."); process.exitCode = 1; });

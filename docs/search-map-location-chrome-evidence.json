@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-06",
+  "engine": "chrome",
+  "cases": [
+    {
+      "language": "en",
+      "width": 390,
+      "checks": "Disabled initially, while typing/resolving, after failed address/GPS, chip removal, browse without location, forget and blank submission; enabled after manual/GPS choice or saved restoration; no automatic map return; list/grid and keyboard remain usable."
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "checks": "Disabled initially, while typing/resolving, after failed address/GPS, chip removal, browse without location, forget and blank submission; enabled after manual/GPS choice or saved restoration; no automatic map return; list/grid and keyboard remain usable."
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "checks": "Disabled initially, while typing/resolving, after failed address/GPS, chip removal, browse without location, forget and blank submission; enabled after manual/GPS choice or saved restoration; no automatic map return; list/grid and keyboard remain usable."
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "checks": "Disabled initially, while typing/resolving, after failed address/GPS, chip removal, browse without location, forget and blank submission; enabled after manual/GPS choice or saved restoration; no automatic map return; list/grid and keyboard remain usable."
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "checks": "Disabled initially, while typing/resolving, after failed address/GPS, chip removal, browse without location, forget and blank submission; enabled after manual/GPS choice or saved restoration; no automatic map return; list/grid and keyboard remain usable."
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "checks": "Disabled initially, while typing/resolving, after failed address/GPS, chip removal, browse without location, forget and blank submission; enabled after manual/GPS choice or saved restoration; no automatic map return; list/grid and keyboard remain usable."
+    }
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Synthetic API, Maps and geolocation. No connected services, database writes, private configuration or deployment. Physical devices and screen readers unverified."
+}

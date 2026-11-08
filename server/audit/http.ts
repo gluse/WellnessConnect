@@ -8,17 +8,18 @@ type Sink = (event: PreparedAuditEvent) => Promise<void>;
 type Runtime = { capture: Sink; ready(): Promise<void>; close(): Promise<void> };
 declare global { namespace Express { interface Request { auditPersonalRole?: "seeker" | "provider"; } } }
 const correlations = new WeakMap<object, { requestId: string; operationId: string }>();
+const recordedDenials = new WeakSet<object>();
 let runtime: Promise<Runtime> | undefined;
 let injected: Sink | undefined;
 let injectedReady: (() => Promise<void>) | undefined;
 let injectedAuthEvents = true;
 
 export const auditEnabled = () => injected !== undefined || process.env.AUDIT_ENABLED === "true";
+export const completionAuditEnabled = () => injected !== undefined || auditEnabled() && process.env.AUDIT_PRODUCER_CONTRACT === "completion-0008";
 // New R90 production requires its forward DB contract and an updated worker.
 export const serviceViewAuditEnabled = () => auditEnabled() && process.env.AUDIT_SERVICE_VIEWS_ENABLED === "true";
-// Real remote-provider producers are deliberately staged. Enabling their reserved
-// flag is rejected by runtime/startup configuration; tests can exercise the hooks.
-export const auditAuthEventsEnabled = () => injected !== undefined && injectedAuthEvents;
+// Real remote-provider producers activate only after durable-intent migration readiness.
+export const auditAuthEventsEnabled = () => injected !== undefined ? injectedAuthEvents : auditEnabled() && process.env.AUDIT_AUTH_EVENTS_ENABLED === "true";
 /** Synthetic tests/in-process host composition only; never exposed to HTTP. */
 export function setAuditSink(sink?: Sink, ready?: () => Promise<void>, options = { authEvents: true }) {
   injected = sink; injectedReady = ready; injectedAuthEvents = options.authEvents;
@@ -28,6 +29,14 @@ export async function closeAuditCapture() { if (runtime) { const active = runtim
 function captureRuntime() {
   runtime ??= import("./runtime.ts").then(module => module.createCaptureRuntime(process.env)).catch(error => { runtime = undefined; throw error; });
   return runtime;
+}
+/** Protected consumers await durable local capture before exposing data. */
+export async function capturePreparedAudit(event: PreparedAuditEvent): Promise<void> {
+  if (!auditEnabled()) throw new AuditCaptureUnavailable();
+  try {
+    if (injected) await injected(event);
+    else await (await captureRuntime()).capture(event);
+  } catch { auditGap(); throw new AuditCaptureUnavailable(); }
 }
 /** Availability probe only, NOT durable remote intent or a cross-service transaction. */
 export async function requireAuditAvailability(): Promise<void> {
@@ -85,6 +94,8 @@ export async function recordAudit(req: Request, action: AuditAction, userId?: st
 
 /** Await durable denial capture where possible; capture failure NEVER grants access. */
 export async function recordDenial(req: Request, reasonCode: "UNAUTHENTICATED" | "FORBIDDEN" | "WRONG_ORIGIN" | "RATE_LIMITED" | "SESSION_EXPIRED"): Promise<void> {
+  if (!auditEnabled() || recordedDenials.has(req)) return;
+  recordedDenials.add(req);
   try { await recordAudit(req, { eventName: "security.action_denied.v1", outcome: "denied", reasonCode, changes: [] }); }
   catch { /* Safe independent gap signal already emitted; denial remains denied. */ }
 }

@@ -1,0 +1,12 @@
+﻿"Pakalpojumi un ieņēmumi"
+"2026-11-01 — 2026-11-30 · UTC"
+"Aprēķins pēc pierakstu datumiem un rezervāciju vērtībām, nevis saņemtajiem maksājumiem. Nopelnīts = pabeigtās; plānots = apstiprinātās; gaida = vēl neapstiprinātās; zaudējumi = atcelto rezervāciju potenciālie ieņēmumi, nevis grāmatvedības peļņa. Valūtas tiek rādītas atsevišķi. Iekļautas tikai jūsu darbvietā redzamās rezervācijas."
+
+"Valūta","Nopelnītie ieņēmumi","Plānotie ienākumi","Gaida","Zaudētā peļņa"
+"EUR","10","20","30","40"
+
+"Pakalpojums","Pieraksta datums","Statuss","Summa","Valūta"
+"Ārstēšana — Услуга","2026. gada 7. nov. 12:00","Pabeigta","10","EUR"
+"Wellness session 2","2026. gada 7. nov. 12:00","Apstiprināta","20","EUR"
+"Wellness session 3","2026. gada 7. nov. 12:00","Gaida","30","EUR"
+"Wellness session 4","2026. gada 7. nov. 12:00","Atcelta","40","EUR"

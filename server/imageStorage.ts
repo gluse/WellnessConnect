@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, eq, or } from "drizzle-orm";
+import { and, eq, or, sql } from "drizzle-orm";
 import { services, companies, storefronts, providerSubscriptions, type WorkspaceContext } from "@shared/schema";
 import { publishedStorefrontConditions } from "./storefronts";
 import { db } from "./db";
@@ -58,11 +58,13 @@ export async function validateOwnedImage(objectPath: string, userId: string) {
   await downloadImage(objectPath);
 }
 
+const linkedServiceImage = (objectPath: string) => or(eq(services.imageUrl, objectPath), sql`${objectPath} = ANY(${services.imageUrls})`);
+
 export async function validateServiceImage(objectPath: string, userId: string, companyId?: number) {
   const key = objectKey(objectPath);
   if (key.split("/")[0] !== userId) {
     const linked = companyId == null ? [] : await db.select({ id: services.id }).from(services)
-      .where(and(eq(services.companyId, companyId), eq(services.imageUrl, objectPath))).limit(1);
+      .where(and(eq(services.companyId, companyId), linkedServiceImage(objectPath))).limit(1);
     if (!linked.length) throw new ImageStorageError(403, "Choose an image uploaded by you or already used by this company.");
   }
   await downloadImage(objectPath);
@@ -71,7 +73,7 @@ export async function validateServiceImage(objectPath: string, userId: string, c
 export async function canReadImage(objectPath: string, userId?: string, workspace?: WorkspaceContext) {
   const key = objectKey(objectPath);
   const linked = await db.select({ service: services, company: companies }).from(services)
-    .leftJoin(companies, eq(services.companyId, companies.id)).where(eq(services.imageUrl, objectPath));
+    .leftJoin(companies, eq(services.companyId, companies.id)).where(linkedServiceImage(objectPath));
   if (linked.some(({ service, company }) => {
     if (service.isActive && (!company || company.isActive)) return true;
     if (!userId) return false;

@@ -1,5 +1,15 @@
 # Audit event catalog and backend implementation map
 
+**Current development status, 7 November 2026:** The selected C/R1/P1 policies
+are implemented for the verified capture/delivery foundation and named audit
+reader/exporter. The Audit viewer is implemented; new producer coverage and
+remaining acceptance gaps are described in the
+[producer map](audit-producers-completion.md) and
+[current completion evidence](audit-review-completion-2026-11-07.md).
+The original dated inventory/proposals below are preserved as historical design
+evidence; they do not supersede the current implementation map or establish
+coverage for unimplemented rows.
+
 Catalog draft: `1`, reviewed against repository source on 19 October 2026.
 TASK-013 backend deliverable; the route/event matrix describes proposed coverage
 and does not establish that every producer is implemented. TASK-014 development
@@ -47,9 +57,11 @@ Both projects contain these retained test-evidence tables:
 | `audit_rehearsal.cohort` | The twelve approved synthetic event IDs, their run/scenario association and individual completion/pass results. Identifies test events so they are not mistaken for real user activity. |
 
 The rehearsal test login/helper permissions were revoked after acceptance;
-the manifests and synthetic events remain retained evidence. Wrong-password/login
-audit capture remains disabled pending TASK-015, so those attempts do not yet
-produce new `audit.events` rows. The worker moves captured outbox events into
+the manifests and synthetic events remain retained evidence. At the original
+23 October checkpoint, wrong-password/login producers were disabled. On
+7 November, durable app Auth request/observed-response producers were enabled
+after completion-0008 verification; native provider log collection remains open.
+The worker moves captured outbox events into
 `audit.events` when running (`npm run audit:worker`).
 
 Related **views**, rather than additional tables: destination `audit.reader_events`

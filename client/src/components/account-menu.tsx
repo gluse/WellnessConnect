@@ -6,6 +6,7 @@ import { LogOut, UserRound, Shield, Heart } from "lucide-react";
 import type { WorkspaceContext } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppAdmin } from "@/hooks/use-app-admin";
+import { useAuditAccess } from "@/hooks/use-audit-access";
 import { useToast } from "@/hooks/use-toast";
 import { logout } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ export default function AccountMenu() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { data: adminAccess } = useAppAdmin();
+  const { data: auditAccess } = useAuditAccess();
   const { toast } = useToast();
   const [signingOut, setSigningOut] = useState(false);
   const { data: context } = useQuery<WorkspaceContext>({
@@ -60,6 +62,9 @@ export default function AccountMenu() {
         </DropdownMenuItem>
         {adminAccess?.isAdmin && <DropdownMenuItem asChild>
           <Link href="/administration"><Shield aria-hidden="true" /> Administration</Link>
+        </DropdownMenuItem>}
+        {auditAccess?.canRead && <DropdownMenuItem asChild>
+          <Link href="/administration?section=audit"><Shield aria-hidden="true" />{t("audit.title")}</Link>
         </DropdownMenuItem>}
       </DropdownMenuContent>
     </DropdownMenu>;

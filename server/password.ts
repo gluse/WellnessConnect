@@ -3,6 +3,7 @@ import { passwordChangeSchema } from "@shared/password";
 import { createAuthClient } from "./supabase";
 import { recordAudit, recordDenial, requireAuditAvailability } from "./audit/http";
 import { AuditCaptureUnavailable } from "./audit/capture";
+import { auditRemoteOperation } from "./audit/remote";
 
 const sessionOperation = (req: Request, operation: "save" | "regenerate" | "destroy") =>
   new Promise<void>((resolve, reject) => req.session[operation](error => error ? reject(error) : resolve()));
@@ -28,7 +29,7 @@ export const updatePassword: RequestHandler = async (req, res) => {
   let updateAttempted = false;
   try {
     // Use the authenticated account's email, never a target supplied by the browser.
-    const verified = await client.auth.signInWithPassword({ email: req.user.email, password: parsed.data.currentPassword });
+    const verified = await auditRemoteOperation(req, "password_verify", () => client.auth.signInWithPassword({ email: req.user!.email!, password: parsed.data.currentPassword }));
     verifiedSession = Boolean(verified.data.session);
     if (verified.error) {
       const status = verified.error.status;
@@ -46,7 +47,12 @@ export const updatePassword: RequestHandler = async (req, res) => {
     }
 
     updateAttempted = true;
-    const updated = await client.auth.updateUser({ password: parsed.data.newPassword, current_password: parsed.data.currentPassword });
+    const updated = await auditRemoteOperation(req, "password_change", async () => {
+      const result = await client.auth.updateUser({ password: parsed.data.newPassword, current_password: parsed.data.currentPassword });
+      // Retain a known remote success even if recording its report subsequently fails.
+      if (!result.error) passwordChanged = true;
+      return result;
+    });
     if (updated.error) {
       const status = updated.error.status;
       await recordAudit(req, { eventName: "auth.password_changed.v1", changes: [],

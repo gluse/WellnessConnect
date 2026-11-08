@@ -1,0 +1,14 @@
+﻿"Services & revenue by service"
+"2026-11-01 — 2026-11-30 · UTC · Anna Visible"
+"Based on appointment dates and booking values, not payments received. Earned = completed; planned = confirmed; pending = awaiting confirmation; loss = cancelled potential revenue, not accounting profit. Currencies are shown separately. Includes only bookings visible in your workspace. Each named service is shown separately, including current active and inactive services with no bookings. Counts measure bookings in the selected period, not views or interest. Historical booking currencies and employee assignments are retained. Amounts are booking values, not profit."
+
+"Currency","Earned revenue","Planned income","Pending","Loss of profit"
+"EUR","13","0","0","40"
+"USD","7","0","0","0"
+
+"Service","Service ID","Currency","Bookings","Bookings: Completed","Bookings: Confirmed","Bookings: Pending","Bookings: Cancelled","Earned revenue","Planned income","Pending","Loss of profit"
+"Historical treatment","999","EUR","1","0","0","0","1","0","0","0","40"
+"Massage","101","EUR","1","1","0","0","0","10","0","0","0"
+"Massage","101","USD","1","1","0","0","0","7","0","0","0"
+"Massage","102","EUR","1","1","0","0","0","3","0","0","0"
+"Unused treatment","103","EUR","0","0","0","0","0","0","0","0","0"

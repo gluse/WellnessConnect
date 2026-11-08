@@ -17,6 +17,7 @@ import { companyInvitations } from "@shared/schema";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { auditEnabled, auditAuthEventsEnabled, recordAudit, recordDenial, denyWithAudit, auditGap, requireAuditAvailability } from "./audit/http";
 import { AuditCaptureUnavailable } from "./audit/capture";
+import { auditRemoteOperation } from "./audit/remote";
 
 interface AuthSession {
   userId: string;
@@ -136,7 +137,7 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
     }
     try {
       await requireAuditAvailability();
-      const { data, error } = await createAuthClient().auth.signInWithPassword(parsed.data);
+      const { data, error } = await auditRemoteOperation(req, "login", () => createAuthClient().auth.signInWithPassword(parsed.data));
       if (error || !data.session) {
         // Access remains denied even if its independent capture is unavailable.
         try { await recordAudit(req, { eventName: "auth.login.v1", outcome: error?.status && error.status >= 500 ? "failed" : "denied",
@@ -156,10 +157,10 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
       const { email, password, firstName, lastName, accountType, companyName } = parsed.data;
       delete req.session.socialCompanySignup;
       if (isAllowedAuthReturnTo(req.body.returnTo)) req.session.authReturnTo = req.body.returnTo.slice(0, 512);
-      const { data, error } = await pkceClient(req).auth.signUp({
+      const { data, error } = await auditRemoteOperation(req, "signup", () => pkceClient(req).auth.signUp({
         email, password,
         options: { emailRedirectTo: `${appUrl}/api/callback`, data: { first_name: firstName, last_name: lastName, ...(accountType === "company" ? { requested_company_name: companyName } : {}) } },
-      });
+      }));
       if (error) return res.status(400).json({ message: "Unable to create your account. Check the details or try again later." });
       if (data.session) {
         await establishSession(req, data.session);
@@ -179,9 +180,9 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
     if (companyName) req.session.socialCompanySignup = { companyName, expiresAt: Date.now() + 60 * 60_000 };
     else delete req.session.socialCompanySignup;
     const { provider: supabaseProvider, scopes } = oauthSettings(provider);
-    const { data, error } = await pkceClient(req).auth.signInWithOAuth({ provider: supabaseProvider, options: {
+    const { data, error } = await auditRemoteOperation(req, "oauth_start", () => pkceClient(req).auth.signInWithOAuth({ provider: supabaseProvider, options: {
       redirectTo: `${appUrl}/api/callback`, skipBrowserRedirect: true, ...(scopes ? { scopes } : {}),
-    } });
+    } }));
     if (error || !data.url) throw new Error("Unable to start social sign-in");
     await save(req);
     await recordAudit(req, { eventName: "auth.oauth_started.v1", outcome: "succeeded", changes: [] });
@@ -241,7 +242,7 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
         delete req.session.socialCompanySignup;
         // A fresh email proof is required; the application invitation alone is
         // never sufficient to authenticate or set a password.
-        const { error } = await pkceClient(req).auth.signInWithOtp({ email: parsed.data.email, options: { shouldCreateUser: false, emailRedirectTo: `${appUrl}/api/callback` } });
+        const { error } = await auditRemoteOperation(req, "recovery", () => pkceClient(req).auth.signInWithOtp({ email: parsed.data.email, options: { shouldCreateUser: false, emailRedirectTo: `${appUrl}/api/callback` } }));
         if (error) return res.status(503).json({ message: "Unable to send a sign-in email. Please try again later." });
         req.session.invitationRecoveryEmail = parsed.data.email;
         req.session.authReturnTo = parsed.data.returnTo;
@@ -269,7 +270,8 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
     if (companyIntent && (!companyIntent.success || companyIntent.data.expiresAt <= Date.now())) return fail("social_session_expired");
     try {
       await requireAuditAvailability();
-      const { data, error } = await pkceClient(req).auth.exchangeCodeForSession(req.query.code);
+      const code = req.query.code;
+      const { data, error } = await auditRemoteOperation(req, "oauth_callback", () => pkceClient(req).auth.exchangeCodeForSession(code));
       if (error || !data.session) return fail("social_session_expired");
       const recoveryEmail = req.session.invitationRecoveryEmail;
       const user = await establishSession(req, data.session, companyIntent?.success ? companyIntent.data.companyName : undefined, provisionSocialCompany, "auth.oauth_callback.v1");
@@ -290,7 +292,7 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
     const parsed = z.object({ refreshToken: z.string().min(1).max(4096) }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "Invalid invitation sign-in" });
     try {
-    const { data, error } = await createAuthClient().auth.refreshSession({ refresh_token: parsed.data.refreshToken });
+    const { data, error } = await auditRemoteOperation(req, "invite_session", () => createAuthClient().auth.refreshSession({ refresh_token: parsed.data.refreshToken }));
     if (error || !data.session || !data.user?.email_confirmed_at || !data.user.email) return res.status(401).json({ message: "The sign-in link has expired. Sign in or request a new invitation." });
     const pending = await db.select({ id: companyInvitations.id }).from(companyInvitations).where(and(eq(companyInvitations.email, data.user.email.toLowerCase()), isNull(companyInvitations.acceptedAt), isNull(companyInvitations.revokedAt), gt(companyInvitations.expiresAt, new Date()))).limit(1);
     if (!pending.length) return res.status(403).json({ message: "No active team invitation exists for this account." });
@@ -304,16 +306,21 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
     if (!req.session.canSetInvitationPassword) return res.status(403).json({ message: "Use the invitation sign-in link to set your password." });
     const parsed = z.object({ password: z.string().min(8).max(128) }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "Use a password with at least 8 characters." });
+    let passwordSaved = false;
     try {
-    const { error } = await supabaseAdmin.auth.admin.updateUserById(req.user!.claims.sub, { password: parsed.data.password });
+    const { error } = await auditRemoteOperation(req, "invite_password", async () => {
+      const result = await supabaseAdmin.auth.admin.updateUserById(req.user!.claims.sub, { password: parsed.data.password });
+      if (!result.error) passwordSaved = true;
+      return result;
+    });
     if (error) return res.status(400).json({ message: "Unable to set password. Check the password strength and try again." });
-    const { data, error: signInError } = await createAuthClient().auth.signInWithPassword({ email: req.user!.email!, password: parsed.data.password });
+    const { data, error: signInError } = await auditRemoteOperation(req, "login", () => createAuthClient().auth.signInWithPassword({ email: req.user!.email!, password: parsed.data.password }));
     if (signInError || !data.session || data.user?.id !== req.user!.claims.sub) return res.status(503).json({ message: "Your password was saved. Sign in with your new password to accept the invitation." });
     await establishSession(req, data.session);
     req.session.canSetInvitationPassword = false;
     await save(req);
     res.json({ success: true });
-    } catch { res.status(503).json({ message: "Unable to set your password. Please try again." }); }
+    } catch { res.status(503).json({ message: passwordSaved ? "Your password was saved. Sign in with your new password to continue." : "Unable to set your password. Please try again." }); }
   });
   app.get("/api/auth/invite-status", isAuthenticated, (req, res) => res.json({ needsPassword: Boolean(req.session.canSetInvitationPassword) }));
   app.post("/api/logout", async (req, res, next) => {
@@ -330,9 +337,14 @@ export async function setupAuth(app: Express, provisionSocialCompany = ensureCom
           } catch { auditGap(); verifiedUser = undefined; }
         }
       }
-      const revoked = req.session.auth ? await supabaseAdmin.auth.admin.signOut(req.session.auth.accessToken, "local") : undefined;
-      await destroy(req);
-      res.clearCookie("wellness.sid", { httpOnly: true, secure: appUrl.startsWith("https://"), sameSite: "lax", path: "/" });
+      const logoutToken = req.session.auth?.accessToken;
+      let revoked;
+      try { revoked = logoutToken ? await auditRemoteOperation(req, "logout", () => supabaseAdmin.auth.admin.signOut(logoutToken, "local"), verifiedUser) : undefined; }
+      finally {
+        // Local logout must still invalidate the session when audit/provider capture fails.
+        await destroy(req);
+        res.clearCookie("wellness.sid", { httpOnly: true, secure: appUrl.startsWith("https://"), sameSite: "lax", path: "/" });
+      }
       if (verifiedUser) await recordAudit(req, { eventName: "auth.logout.v1", outcome: revoked?.error ? "failed" : "succeeded",
         ...(revoked?.error ? { reasonCode: "PROVIDER_UNAVAILABLE" as const } : {}), changes: [] }, verifiedUser);
       res.json({ success: true });
@@ -351,7 +363,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
         const refreshToken = auth.refreshToken;
         const userId = auth.userId;
         pending = (async () => {
-          const { data, error } = await createAuthClient().auth.refreshSession({ refresh_token: refreshToken });
+          const { data, error } = await auditRemoteOperation(req, "session_refresh", () => createAuthClient().auth.refreshSession({ refresh_token: refreshToken }));
           if (error || !data.session || data.session.user.id !== userId) throw new Error("Session expired");
           return { userId, accessToken: data.session.access_token, refreshToken: data.session.refresh_token, expiresAt: data.session.expires_at ?? 0 };
         })();

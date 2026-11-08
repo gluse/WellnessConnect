@@ -25,10 +25,12 @@ db.transaction = async () => { throw new Error("Unexpected offline DB transactio
 const userId = "11111111-1111-4111-8111-111111111111";
 const user = { id: userId, email: "canary-email@example.invalid", email_confirmed_at: "2026-01-01T00:00:00Z", aud: "authenticated", user_metadata: {}, app_metadata: {} };
 const secrets = [user.email, "CANARY-access-token", "CANARY-refresh-token", "CanaryPassword123!", "CanaryNewPassword456!"];
-const events = [], observedEvents = [], gaps = [], originalError = console.error;
-let unavailable = false, unavailableBefore = false, provider = "success", failSave = false, passwordWrites = 0;
+const events = [], observedEvents = [], remoteEvents = [], gaps = [], originalError = console.error;
+let unavailable = false, unavailableBefore = false, unavailablePasswordReport = false, provider = "success", failSave = false, passwordWrites = 0;
 console.error = (...values) => { gaps.push(values.join(" ")); };
-setAuditSink(async event => { if (unavailable) throw new Error("CANARY-private-driver-error"); events.push(event); observedEvents.push(event); },
+setAuditSink(async event => { if (unavailable || unavailablePasswordReport && event.envelope.eventName==='auth.operation_reported.v1' && event.envelope.changes[0]?.after==='password_change') throw new Error("CANARY-private-driver-error");
+  if (event.envelope.eventName.startsWith('auth.operation_')) remoteEvents.push(event); else events.push(event);
+  observedEvents.push(event); },
   async () => { if (unavailableBefore) throw new Error("CANARY-private-driver-error"); });
 storage.getUser = async id => id === userId ? { id, currentRole: "provider", providerType: "individual" } : undefined;
 storage.upsertUser = async data => ({ ...data, currentRole: "provider", providerType: "individual" });
@@ -69,6 +71,8 @@ try {
   assert.equal(events[0].envelope.actor.userId, userId); assert.equal(events[0].envelope.actor.effectiveRole, "provider");
   assert.equal(events[0].envelope.requestId, events[1].envelope.requestId);
   assert.equal(events[0].envelope.operationId, events[1].envelope.operationId);
+  assert.deepEqual(remoteEvents.map(event=>event.envelope.eventName),['auth.operation_requested.v1','auth.operation_reported.v1']);
+  assert.equal(remoteEvents[1].envelope.parentEventId,remoteEvents[0].envelope.eventId);
   events.length = 0; failSave = true;
   res = await invoke("/api/auth/login", request({ body: req.body }));
   assert.ok(res.failure); assert.equal(events[0].envelope.eventName, "auth.login.v1");
@@ -77,7 +81,7 @@ try {
   res = await invoke("/api/auth/login", request({ body: req.body }));
   assert.equal(res.code, 401); assert.equal(events[0].envelope.outcome, "denied"); assert.equal(events[0].envelope.actor.kind, "anonymous");
   unavailable = true; res = await invoke("/api/auth/login", request({ body: req.body }));
-  assert.equal(res.code, 401, "Capture outage never grants a denied login");
+  assert.equal(res.failure?.status, 503, "Durable-intent outage prevents invoking remote login");
   unavailable = false; provider = "success"; events.length = 0;
   req = request(); req.session = {};
   res = response(); let next = false; await isAuthenticated(req, res, () => { next = true; });
@@ -114,9 +118,15 @@ try {
   failSave = false; unavailable = true;
   req = request({ body: { currentPassword: secrets[3], newPassword: secrets[4] }, user: { claims: { sub: userId }, email: user.email }, auditPersonalRole: "provider" });
   res = response(); await updatePassword(req, res);
-  assert.equal(res.code, 503); assert.match(res.body.message, /password was saved/i);
-  assert.equal(req.session.auth, undefined, "Known remote success + capture failure forces safe reauthentication");
+  assert.equal(res.code, 503); assert.match(res.body.message, /unable to update/i);
+  assert.ok(req.session.auth, "Failed intent never changes the password or destroys a valid session");
   unavailable = false; events.length = 0;
+  unavailablePasswordReport = true;
+  req = request({ body: { currentPassword: secrets[3], newPassword: secrets[4] }, user: { claims: { sub: userId }, email: user.email }, auditPersonalRole: "provider" });
+  res = response(); await updatePassword(req, res);
+  assert.equal(res.code,503);assert.match(res.body.message,/password was saved/i);
+  assert.equal(req.session.auth,undefined,'Known provider success survives report failure and invalidates the old local session');
+  unavailablePasswordReport = false;
   unavailableBefore = true;
   const writesBefore = passwordWrites;
   req = request({ body: { currentPassword: secrets[3], newPassword: secrets[4] }, user: { claims: { sub: userId }, email: user.email }, auditPersonalRole: "provider" });
@@ -138,6 +148,7 @@ try {
     const logout = request(); res = await invoke("/api/logout", logout);
     assert.equal(res.body.success, true); assert.equal(res.failure, undefined);
     assert.deepEqual(logout.session, {}); assert.deepEqual(events, [], "Unavailable attribution never invents a logout actor");
+    assert.equal(remoteEvents.at(-1).envelope.actor.kind,'anonymous');
   }
   storage.getUser = getUser;
   const failedLogout = request(); failedLogout.session.destroy = callback => callback(new Error("CANARY-private-session-error"));

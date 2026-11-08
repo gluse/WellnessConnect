@@ -1,5 +1,7 @@
 import "dotenv/config";
 import { ACTIVITY_INTERVAL_MS,createActivityStore,processActivityTick } from "./worker";
+import { auditIntegration } from "../audit/integrations";
+import { closeAuditCapture } from "../audit/http";
 
 // Explicitly opt in after migration/runtime activation. Disabled runs never load db.
 async function main(){
@@ -12,10 +14,10 @@ async function main(){
     const store=createActivityStore(db);
     while(!stopping){
       const start=Date.now();
-      try{const result=await processActivityTick(store);console.info("Product activity batch completed:",result.processed);}
+      try{const result=await auditIntegration("activity_batch",()=>processActivityTick(store));console.info("Product activity batch completed:",result.processed);}
       catch{console.error("Product activity batch failed; transaction rolled back.");}
       while(!stopping&&Date.now()-start<ACTIVITY_INTERVAL_MS)await new Promise(resolve=>setTimeout(resolve,Math.min(1000,ACTIVITY_INTERVAL_MS-(Date.now()-start))));
     }
-  }finally{await pool.end();process.off("SIGINT",stop);process.off("SIGTERM",stop);}
+  }finally{await Promise.allSettled([pool.end(),closeAuditCapture()]);process.off("SIGINT",stop);process.off("SIGTERM",stop);}
 }
 void main().catch(()=>{console.error("Product activity worker initialization refused.");process.exitCode=1;});

@@ -1,6 +1,7 @@
 // Injected metadata guard only. No configuration, connections or SQL on import.
 import { WISHLIST_APPLICATION_READINESS_SQL, WISHLIST_APPLICATION_READINESS_KEYS, wishlistApplicationReadinessArguments } from '../wishlist/application-readiness.mjs';
 import { PRICING_RUNTIME_CONTRACT_JSON, PRICING_RUNTIME_RIGHTS, PRICING_READINESS_CTES, PRICING_READINESS_SELECT } from './runtime-contract.mjs';
+import { EXPECTED_COMPLETION_AUDIT_PARSERS } from '../audit/application-readiness.mjs';
 const marker = '\nSELECT current_user=';
 if (WISHLIST_APPLICATION_READINESS_SQL.split(marker).length !== 2) throw new Error('WORKSPACE_PRICING_BASE_PROFILE_CHANGED');
 export const WORKSPACE_PRICING_APPLICATION_READINESS_SQL = WISHLIST_APPLICATION_READINESS_SQL.replace(marker, `, ${PRICING_READINESS_CTES}${marker}`) + `, ${PRICING_READINESS_SELECT}`;
@@ -8,7 +9,7 @@ export const WORKSPACE_PRICING_APPLICATION_READINESS_KEYS = Object.freeze([...WI
   'workspace_pricing_columns','workspace_pricing_constraints','workspace_pricing_indexes','workspace_pricing_private_acl','workspace_pricing_policies','workspace_pricing_schema_access']);
 export function workspacePricingApplicationReadinessArguments() {
   const base = wishlistApplicationReadinessArguments();
-  return [JSON.stringify([...JSON.parse(base[0]), PRICING_RUNTIME_RIGHTS]), ...base.slice(1), PRICING_RUNTIME_CONTRACT_JSON];
+  return [JSON.stringify([...JSON.parse(base[0]), PRICING_RUNTIME_RIGHTS]), JSON.stringify(EXPECTED_COMPLETION_AUDIT_PARSERS), ...base.slice(2), PRICING_RUNTIME_CONTRACT_JSON];
 }
 export class WorkspacePricingDatabaseReadinessError extends Error {
   code = 'WORKSPACE_PRICING_DB_NOT_READY';

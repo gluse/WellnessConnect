@@ -23,6 +23,12 @@ export function StorefrontView({ page, preview = false }: { page: PublicStorefro
   const priceSortAvailable = canSortServicePrices(page.services);
   useEffect(() => { if (!priceSortAvailable && sort === "price") setSort("name"); }, [priceSortAvailable, sort]);
   const [detail, setDetail] = useState<ServiceWithProvider | null>(null);
+  const showDetails = (service: ServiceWithProvider) => {
+    setDetail(service);
+    if (!preview && Number.isInteger(service.id) && service.id > 0 && service.id <= 2147483647) {
+      void apiRequest("POST", `/api/services/${service.id}/view`).catch(() => {});
+    }
+  };
   const [booking, setBooking] = useState<ServiceWithProvider | null>(() => {
     const id = preview || typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("book");
     return page.services.find(service => String(service.id) === id) ?? null;
@@ -59,7 +65,7 @@ export function StorefrontView({ page, preview = false }: { page: PublicStorefro
       {!priceSortAvailable && <p className="text-sm text-neutral-600" role="status">{t("currency.mixedSort")}</p>}
       <p role="status" className="text-sm text-neutral-500">{t("catalog.count", { count: services.length })}</p>
       {!services.length ? <p className="rounded-xl border bg-white p-6">{t("storefront.empty")}</p> : <div className="grid gap-4 lg:grid-cols-2">
-        {services.map(service => <ServiceCard key={service.id} service={service} wishlistEnabled={!preview} onBook={() => setBooking(service)} onViewDetails={() => setDetail(service)} />)}
+        {services.map(service => <ServiceCard key={service.id} service={service} wishlistEnabled={!preview} onBook={() => setBooking(service)} onViewDetails={() => showDetails(service)} />)}
       </div>}
     </section>
     <ServiceDetailModal service={detail} open={detail !== null} wishlistEnabled={!preview} onClose={() => setDetail(null)} onBook={() => { setBooking(detail); setDetail(null); }} />

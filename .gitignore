@@ -10,3 +10,20 @@ vite.config.ts.*
 *.dump
 database-backups/
 outputs/aws-staging-build/
+
+# TASK-047 local native proof outputs and caches; native project sources stay reviewable.
+output/native-proof/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/app/src/main/assets/public/
+ios/App/App/public/
+ios/App/build/
+ios/App/Pods/
+ios/**/xcuserdata/
+
+# Local verification checkouts and Python caches.
+.search-commit-check-*/
+__pycache__/
+*.py[cod]

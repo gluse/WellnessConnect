@@ -11,6 +11,7 @@ import { mountBillingBodyBoundaries } from "./billing/middleware";
 import { verifyBillingDatabaseReadiness } from "./billing/database-readiness";
 import { setupHealthRoutes } from "./health";
 import { closeAuditCapture } from "./audit/http";
+import { auditViewerStore } from "./audit/viewer-runtime";
 import { assertAuditActivation } from "./audit/config";
 import { verifyAuditApplicationPool } from "./audit/application";
 import { mountNotificationWebhooks } from "./notifications/webhooks";
@@ -18,6 +19,7 @@ import { startupFailureDiagnostic, type StartupStage } from "./startup-diagnosti
 import { startBookingMessageRetention } from "./appointments/retention";
 import { verifyCurrencyDatabaseReadiness } from "../migrations/currencies/application-readiness.mjs";
 import { verifyWorkspacePricingDatabaseReadiness } from "../migrations/workspace-pricing/application-readiness.mjs";
+import { verifyServicePhotoDatabaseReadiness } from "../migrations/service-photos/application-readiness.mjs";
 
 assertAuditActivation(process.env);
 const app = express();
@@ -68,6 +70,11 @@ app.use((req, res, next) => {
     const query: QueryConfig & Pick<ClientConfig, "query_timeout"> = { text, values, query_timeout: 5000 };
     return pool.query(query);
   });
+  startupStage = "service_photo_database";
+  await verifyServicePhotoDatabaseReadiness((text, values) => {
+    const query: QueryConfig & Pick<ClientConfig, "query_timeout"> = { text, values, query_timeout: 5000 };
+    return pool.query(query);
+  });
   startupStage = "billing_configuration";
   const config = selectedLocalBillingRuntime();
   startupStage = "billing_runtime";
@@ -94,7 +101,7 @@ app.use((req, res, next) => {
     // Docker's grace period is 30 seconds; bound long-running requests to 25.
     setTimeout(() => process.exit(1), 25_000).unref();
     server.close(() => {
-      Promise.all([pool.end(), closeAuditCapture()]).then(() => process.exit(0), () => process.exit(1));
+      Promise.all([pool.end(), closeAuditCapture(), auditViewerStore.close()]).then(() => process.exit(0), () => process.exit(1));
     });
   };
   process.on("SIGTERM", shutdown);
@@ -133,5 +140,5 @@ app.use((req, res, next) => {
 })().catch(error => {
   activeBilling?.stop();
   console.error("Application startup refused:", JSON.stringify(startupFailureDiagnostic(startupStage, error)));
-  void Promise.allSettled([pool.end(), closeAuditCapture()]).finally(() => { process.exitCode = 1; });
+  void Promise.allSettled([pool.end(), closeAuditCapture(), auditViewerStore.close()]).finally(() => { process.exitCode = 1; });
 });

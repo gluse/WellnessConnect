@@ -178,5 +178,10 @@ assert.throws(() => { context.actor.userId = ids.other; }, TypeError);
 assert.throws(() => { login.envelope.changes.push({ field: "email" }); }, TypeError);
 assert.throws(() => { login.envelope.source.environment = "production"; }, TypeError);
 assert.throws(() => { SUPPORTED_AUDIT_EVENTS.push("fake.v1"); }, TypeError);
-assert.equal(SUPPORTED_AUDIT_EVENTS.length, 26); // Original 12 producers + explicit billing/portal extensions.
+assert.equal(SUPPORTED_AUDIT_EVENTS.length, 37);
+for (const name of ["audit.records_viewed.v1", "audit.records_exported.v1", "data.record_created.v1", "data.record_updated.v1",
+  "data.record_deleted.v1", "location.observation_recorded.v1", "auth.operation_requested.v1", "auth.operation_reported.v1",
+  "integration.operation_requested.v1", "integration.operation_reported.v1", "activity.records_read.v1"]) {
+  assert.ok(SUPPORTED_AUDIT_EVENTS.includes(name), `Reviewed completion registry must include ${name}`);
+}
 console.log(`Passed: existing security/business event contracts and registry extension, truthful outcomes, trusted-context boundary, safe fields/redaction, immutable snapshots, canonical hash/expiry and payload bounds; ${rejected} invalid inputs rejected. No DB/services/application runtime used.`);

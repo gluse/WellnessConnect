@@ -4,6 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { defaultAdminUserFilters, type AdminUsersPage, type AdminProSubscription } from "@shared/admin";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppAdmin } from "@/hooks/use-app-admin";
+import { useAuditAccess } from "@/hooks/use-audit-access";
+import AdminAudit from "@/components/admin-audit";
 import { apiRequest } from "@/lib/queryClient";
 import { formatDateTime24 } from "@/lib/date-time";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -19,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from "@/components/ui/table";
 
 const signInUrl = "/login?returnTo=%2Fadministration";
+const auditSignInUrl = "/login?returnTo=%2Fadministration%3Fsection%3Daudit";
 
 function dateLabel(value: string | null, language?: string): string {
   if (!value) return "Never";
@@ -40,7 +43,7 @@ function ProSubscriptionStatus({ subscription, company = false }: { subscription
 export default function Administration() {
   const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) return <main className="p-8" role="status">Loading administration…</main>;
-  if (!isAuthenticated) return <Redirect to={signInUrl} />;
+  if (!isAuthenticated) return <Redirect to={new URLSearchParams(window.location.search).get("section") === "audit" ? auditSignInUrl : signInUrl} />;
   return <AdministrationContent />;
 }
 
@@ -49,8 +52,10 @@ function AdministrationContent() {
   const { user } = useAuth();
   const { adminPricingTransport } = useBillingRuntime();
   const access = useAppAdmin();
+  const auditAccess = useAuditAccess();
   const queryClient = useQueryClient();
-  const [section, setSection] = useState<"users" | "categories" | "subscriptions" | "billingPrice">("users");
+  const [section, setSection] = useState<"users" | "categories" | "subscriptions" | "billingPrice" | "audit">(() => new URLSearchParams(window.location.search).get("section") === "audit" ? "audit" : "users");
+  const [auditAccessError, setAuditAccessError] = useState<Error | null>(null);
   const [categoryAccessError, setCategoryAccessError] = useState<Error | null>(null);
   const [options, setOptions] = useState(() => ({ page: 1, pageSize: 50,
     filters: { ...defaultAdminUserFilters, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
@@ -63,29 +68,35 @@ function AdministrationContent() {
     },
     staleTime: 0, gcTime: 0, retry: false,
   });
-  const expired = isUnauthorizedError(access.error) || isUnauthorizedError(users.error) || isUnauthorizedError(categoryAccessError);
+  const expired = isUnauthorizedError(access.error) || isUnauthorizedError(users.error) || isUnauthorizedError(categoryAccessError) || isUnauthorizedError(auditAccess.error) || isUnauthorizedError(auditAccessError);
   const forbidden = (users.error instanceof Error && users.error.message.startsWith("403:")) || Boolean(categoryAccessError?.message.startsWith("403:"));
   useEffect(() => {
     if (expired) queryClient.setQueryData(["/api/auth/user"], null);
     if (forbidden) queryClient.setQueryData(["/api/admin/access"], { isAdmin: false });
     if (expired || forbidden || access.data?.isAdmin === false) queryClient.removeQueries({ queryKey: ["/api/admin/users"] });
-  }, [expired, forbidden, access.data?.isAdmin, queryClient]);
-  if (expired) return <Redirect to={signInUrl} />;
+    if (expired || auditAccessError || auditAccess.data?.canRead === false) queryClient.removeQueries({ queryKey: ["/api/admin/audit/events"] });
+  }, [expired, forbidden, access.data?.isAdmin, auditAccess.data?.canRead, auditAccessError, queryClient]);
+  if (expired) return <Redirect to={section === "audit" ? auditSignInUrl : signInUrl} />;
 
   const denied = access.data?.isAdmin === false || forbidden;
+  const canReadAudit = Boolean(auditAccess.data?.canRead && !auditAccessError);
+  const showAudit = section === "audit" || (denied && canReadAudit);
   const page = users.data?.page ?? options.page;
   const hasFilters = options.filters.search || options.filters.company || options.filters.registeredFrom || options.filters.registeredTo
     || options.filters.emailStatus !== "all" || options.filters.accountStatus !== "all";
   return <div className="min-h-[calc(100dvh-4rem)] bg-neutral-50">
     <main className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
       <div><h1 className="text-2xl font-semibold">Administration</h1><p className="mt-2 text-neutral-600">Application support</p></div>
-      {access.data?.isAdmin && !denied && <nav aria-label="Administration sections" className="flex flex-wrap gap-2">
+      {((access.data?.isAdmin && !denied) || canReadAudit) && <nav aria-label="Administration sections" className="flex flex-wrap gap-2">
+        {access.data?.isAdmin && !denied && <>
         <Button variant={section === "users" ? "default" : "outline"} aria-pressed={section === "users"} onClick={() => setSection("users")}>App users</Button>
         <Button variant={section === "categories" ? "default" : "outline"} aria-pressed={section === "categories"} onClick={() => setSection("categories")}>Categories</Button>
         <Button variant={section === "subscriptions" ? "default" : "outline"} aria-pressed={section === "subscriptions"} onClick={() => setSection("subscriptions")}>{t("storefront.subscriptions")}</Button>
         <Button variant={section === "billingPrice" ? "default" : "outline"} aria-pressed={section === "billingPrice"} onClick={() => setSection("billingPrice")}>{t("monthlyBilling.priceTitle")}</Button>
+        </>}
+        {canReadAudit && <Button variant={showAudit ? "default" : "outline"} aria-pressed={showAudit} onClick={() => setSection("audit")}>{t("audit.title")}</Button>}
       </nav>}
-      {access.isPending ? <p role="status">Checking support access…</p> : denied ? <div role="alert" className="space-y-3">
+      {showAudit ? auditAccess.isPending ? <p role="status">{t("audit.checking")}</p> : !canReadAudit ? <div role="alert" className="space-y-3"><p>{t(auditAccess.isError ? "audit.accessError" : "audit.denied")}</p>{auditAccess.isError && <Button onClick={() => { setAuditAccessError(null); void auditAccess.refetch(); }}>{t("audit.retry")}</Button>}</div> : <AdminAudit key={user?.id} actorId={user?.id ?? ""} canExport={Boolean(auditAccess.data?.canExport)} available={Boolean(auditAccess.data?.available)} onAccessError={setAuditAccessError} /> : access.isPending || (denied && auditAccess.isPending) ? <p role="status">Checking support access…</p> : denied ? <div role="alert" className="space-y-3">
         <p>Application support access is required to view this page.</p>
         <Button asChild variant="outline"><Link href="/">Find Services</Link></Button>
       </div> : access.isError ? <div role="alert" className="space-y-3">

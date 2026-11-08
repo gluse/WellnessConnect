@@ -7,6 +7,7 @@ import { addressStore } from "./addresses";
 import { supabaseAdmin, createAuthClient } from "./supabase";
 import { z } from "zod";
 import { createImageUpload, validateOwnedImage, validateServiceImage, canReadImage, downloadImage, ImageStorageError } from "./imageStorage";
+import { serviceImageChanges, ServiceImageError } from "./serviceImages";
 import { generateEmbedding } from "./embeddings";
 import { setupPublicSearchRoutes } from "./publicSearch";
 import { setupSearchLocationRoutes } from "./searchLocationRoutes";
@@ -30,7 +31,15 @@ import { companies } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { requestAuditContext } from "./audit/http";
 import { AuditCaptureUnavailable } from "./audit/capture";
+import { auditRemoteOperation } from "./audit/remote";
+import { protectedReadAudit, auditResponseDenials } from "./audit/reads";
 import { setupServiceViewRoutes } from "./serviceViewRoutes";
+import { setupServiceViewReportRoutes } from "./service-view-report/routes";
+import { createServiceViewReportStore } from "./service-view-report/store";
+import { createServiceViewReportService, ServiceViewReportError } from "./service-view-report/service";
+import { setupLocationAuditRoutes } from "./audit/location";
+import { setupAuditViewerRoutes } from "./audit/viewer";
+import { auditViewerStore } from "./audit/viewer-runtime";
 import { setupNotificationRoutes } from "./notifications/routes";
 import { setupAppointmentRoutes } from "./appointments/routes";
 import { setupWishlistRoutes } from "./wishlist/routes";
@@ -62,7 +71,7 @@ function apiFailure(error: unknown, res: import("express").Response, fallback: s
   if ((pgError as any)?.code === "23503" && (pgError as any)?.constraint === "services_category_categories_key_fk") {
     return res.status(400).json({ message: "Choose an existing category." });
   }
-  const known = error instanceof AccessError || error instanceof CustomerBookingError || error instanceof ImageStorageError || error instanceof GeocodingError || error instanceof CategoryError || error instanceof AuditCaptureUnavailable || error instanceof NotificationError || error instanceof MoneyInputError;
+  const known = error instanceof AccessError || error instanceof CustomerBookingError || error instanceof ImageStorageError || error instanceof ServiceImageError || error instanceof GeocodingError || error instanceof CategoryError || error instanceof AuditCaptureUnavailable || error instanceof NotificationError || error instanceof MoneyInputError;
   res.status(known ? error.status : error instanceof z.ZodError ? 400 : error instanceof BookingConflictError ? 409 : 500)
     .json({ message: known || error instanceof BookingConflictError ? error.message : error instanceof z.ZodError ? error.issues[0].message : fallback });
 }
@@ -107,14 +116,37 @@ async function enrichEmbeddingText(name: string, description: string | null, cat
 export async function registerRoutes(app: Express, billing?: { mountAuthenticated(app: Express): void }): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+  app.use(auditResponseDenials());
+  app.use(protectedReadAudit());
   // Coordinate retention is managed explicitly, not by intermediary HTTP caches.
   app.use(["/api/services", "/api/bookings", "/api/geocode", "/api/addresses"], (_req, res, next) => {
     res.set("Cache-Control", "no-store");
     next();
   });
   setupAdminRoutes(app);
+  setupAuditViewerRoutes(app, { authenticate: isAuthenticated, store: auditViewerStore });
+  setupLocationAuditRoutes(app, { verifyActor: async req => {
+    const auth = req.session?.auth;
+    if (!auth) return { kind: "anonymous" };
+    const { data, error } = await createAuthClient().auth.getUser(auth.accessToken);
+    if (error || !data.user || data.user.id !== auth.userId) throw new AuditCaptureUnavailable();
+    const profile = await storage.getUser(data.user.id);
+    if (!profile || (profile.currentRole !== "seeker" && profile.currentRole !== "provider")) throw new AuditCaptureUnavailable();
+    return { kind: "user", userId: data.user.id, effectiveRole: profile.currentRole };
+  } });
   setupCategoryRoutes(app);
   setupCompanyRoutes(app);
+  setupServiceViewReportRoutes(app, {
+    authenticate: isAuthenticated,
+    service: createServiceViewReportService(createServiceViewReportStore(db), () => process.env.PRODUCT_ACTIVITY_ENABLED === "true"),
+    currentActor(req) {
+      try { const current = scope(req); return { userId: current.userId, companyId: current.companyId ?? null }; }
+      catch (error) {
+        if (error instanceof AccessError) throw new ServiceViewReportError(403, "workspace_unavailable");
+        throw error;
+      }
+    },
+  });
   setupWorkspacePricingRoutes(app, { authenticate: isAuthenticated, store: createWorkspacePricingStore(db), currentWorkspace(req, write) {
     try {
       const current = scope(req, "manageServices");
@@ -225,9 +257,9 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
       const names = accountDetailsSchema.parse(req.body);
       const userId = req.user!.claims.sub;
       if (!await storage.getUser(userId)) return res.status(404).json({ message: "Account not found." });
-      const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+      const { error } = await auditRemoteOperation(req, "profile_update", () => supabaseAdmin.auth.admin.updateUserById(userId, {
         user_metadata: { first_name: names.firstName, last_name: names.lastName },
-      });
+      }));
       if (error) return res.status(503).json({ message: "Unable to save account details. Please try again." });
       res.json(await storage.updateUserNames(userId, names));
     } catch (error) {
@@ -392,7 +424,8 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
       });
       if (!(await categoryStore.list()).some(category => category.key === serviceData.category)) throw new CategoryError(400, "Choose an existing category.");
       await validateAddressAssignment(serviceData.addressId, req);
-      if (serviceData.imageUrl) await validateServiceImage(serviceData.imageUrl, userId, current.companyId);
+      Object.assign(serviceData, serviceImageChanges(serviceData));
+      for (const image of serviceData.imageUrls ?? []) await validateServiceImage(image, userId, current.companyId);
       await validateEmployeeAssignment(serviceData.employeeId, req);
       
       const service = await storage.createService(serviceData);
@@ -545,7 +578,8 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
       const updates = insertServiceSchema.omit({ providerId: true, companyId: true }).partial().parse(req.body);
       if (updates.category !== undefined && !(await categoryStore.list()).some(category => category.key === updates.category)) throw new CategoryError(400, "Choose an existing category.");
       if (updates.addressId !== undefined) await validateAddressAssignment(updates.addressId, req);
-      if (updates.imageUrl) await validateServiceImage(updates.imageUrl, userId, current.companyId);
+      Object.assign(updates, serviceImageChanges(updates, service));
+      for (const image of updates.imageUrls ?? []) await validateServiceImage(image, userId, current.companyId);
       await validateEmployeeAssignment(updates.employeeId, req);
       if (updates.employeeId !== undefined && updates.employeeId !== service!.employeeId) {
         const upcoming = (await storage.getBookingsByProvider(current.providerId, current.companyId)).some(booking => booking.serviceId === serviceId

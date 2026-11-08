@@ -8,6 +8,7 @@ import { isAuthenticated } from "./auth";
 import { scope, workspaceContext, saveWorkspaceSession, AccessError } from "./companyAccess";
 import { supabaseAdmin, appUrl } from "./supabase";
 import { sendInvitationEmailOnce } from "./invitationEmail";
+import { auditRemoteOperation } from "./audit/remote";
 
 const roleSchema = z.enum(["admin", "provider", "viewer"]);
 const assignmentSchema = z.object({ role: roleSchema, employeeId: z.number().int().positive().nullable().default(null) })
@@ -89,7 +90,7 @@ export function setupCompanyRoutes(app: Express) {
     });
     let emailSent = false;
     if (data.sendEmail) {
-      emailSent = await sendInvitationEmailOnce(() => supabaseAdmin.auth.admin.inviteUserByEmail(data.email, { redirectTo: `${appUrl}/api/callback` }));
+      emailSent = await sendInvitationEmailOnce(() => auditRemoteOperation(req, "signup", () => supabaseAdmin.auth.admin.inviteUserByEmail(data.email, { redirectTo: `${appUrl}/api/callback` })));
     }
     res.status(201).json({ id, invitationUrl: `${appUrl}/invite?token=${token}`, emailSent, message: emailSent ? "Invitation emailed." : "Invitation created. Share the invitation link with this email address." });
   }));

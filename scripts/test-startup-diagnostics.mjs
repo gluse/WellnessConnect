@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { startupFailureDiagnostic, startupStages } from "../server/startup-diagnostics.ts";
 import { BillingDatabaseReadinessError, verifyBillingDatabaseReadiness } from "../server/billing/database-readiness.ts";
 import { CurrencyDatabaseReadinessError } from "../migrations/currencies/application-readiness.mjs";
+import { ServicePhotoDatabaseReadinessError } from "../migrations/service-photos/application-readiness.mjs";
 import { WORKSPACE_PRICING_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS, WORKSPACE_PRICING_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL,
   workspacePricingApplicationReadinessArguments as billingApplicationReadinessArguments, WorkspacePricingDatabaseReadinessError } from "../migrations/workspace-pricing/application-readiness.mjs";
 
@@ -41,6 +42,9 @@ check(() => assert.deepEqual(startupFailureDiagnostic("workspace_pricing_databas
 }));
 check(() => assert.deepEqual(startupFailureDiagnostic("currency_database", new CurrencyDatabaseReadinessError(["currency_columns", canary])), {
   event: "application_startup_refused", stage: "currency_database", code: "CURRENCY_DB_NOT_READY", checks: ["currency_columns"],
+}));
+check(() => assert.deepEqual(startupFailureDiagnostic("service_photo_database", new ServicePhotoDatabaseReadinessError(["service_photo_column", canary, "service_photo_constraints", "service_photo_column"])), {
+  event: "application_startup_refused", stage: "service_photo_database", code: "SERVICE_PHOTO_DB_NOT_READY", checks: ["service_photo_column", "service_photo_constraints"],
 }));
 await verifyBillingDatabaseReadiness(async (sql, parameters) => {
   calls++; assert.equal(sql, BILLING_APPLICATION_READINESS_SQL); assert.deepEqual(parameters, billingApplicationReadinessArguments()); return { rows: [good] };

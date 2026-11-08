@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { readFile } from "node:fs/promises";
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
@@ -27,6 +29,7 @@ let component, location, allowed = true, requests = [], userStatus = 200, access
 globalThis.fetch = async url => {
   requests.push(url);
   if (url === "/api/admin/access") return new Response(JSON.stringify({ isAdmin: allowed }), { status: accessStatus });
+  if (url === "/api/admin/audit/access") return Response.json({ canRead: false, canExport: false, available: false });
   const parsed = new URL(url, "http://localhost");
   assert.equal(parsed.pathname, "/api/admin/users");
   const page = Number(parsed.searchParams.get("page"));
@@ -62,7 +65,7 @@ assert.equal(isAllowedAuthReturnTo("//example.com/administration"), false);
 allowed = false;
 await mount();
 assert.ok(component.root.findByProps({ role: "alert" }));
-assert.deepEqual(requests, ["/api/admin/access"], "Regular users must not request the user directory");
+assert.deepEqual(requests, ["/api/admin/access", "/api/admin/audit/access"], "Regular users must only check access, never request private directories or audit records");
 allowed = true; hold = true;
 await mount();
 assert.ok(component.root.findByProps({ role: "status" }).children.includes("Loading registered users…"));
@@ -137,7 +140,7 @@ assert.equal(queryClient.getQueryData(["/api/auth/user"]), null);
 userStatus = 200; accessStatus = 503;
 await mount();
 assert.ok(component.root.findByProps({ role: "alert" }));
-assert.deepEqual(requests, ["/api/admin/access"]);
+assert.deepEqual(requests, ["/api/admin/access", "/api/admin/audit/access"]);
 accessStatus = 200;
 await click("Try again"); await flush();
 assert.equal(component.root.findAllByProps({ role: "alert" }).length, 0);
@@ -149,6 +152,10 @@ delete globalThis.window; delete globalThis.document;
 if (process.argv.includes("--frontend-only")) { console.log("Passed: isolated administration frontend regressions; backend checks not requested."); process.exit(0); }
 
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";
+const noEnvironment = fileURLToPath(new URL('../.audit-unit-no-env', import.meta.url));
+assert.equal(existsSync(noEnvironment), false);
+process.env.DOTENV_PATH = process.env.DOTENV_CONFIG_PATH = noEnvironment;
+Object.assign(process.env, { AUDIT_ENABLED:'false', AUDIT_AUTH_EVENTS_ENABLED:'false', AUDIT_WORKER_ENABLED:'false', AUDIT_SERVICE_VIEWS_ENABLED:'false' });
 process.env.SUPABASE_URL = "http://127.0.0.1:1";
 process.env.SUPABASE_PUBLISHABLE_KEY = "fixture-key";
 process.env.SUPABASE_SECRET_KEY = "fixture-key";

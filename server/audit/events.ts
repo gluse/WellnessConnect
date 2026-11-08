@@ -12,6 +12,12 @@ export const SUPPORTED_AUDIT_EVENTS = Object.freeze([
   "account.active_role_changed.v1", "company.membership_changed.v1",
   "company.ownership_transferred.v1",
   "service.viewed.v1",
+  "audit.records_viewed.v1", "audit.records_exported.v1",
+  "data.record_created.v1", "data.record_updated.v1", "data.record_deleted.v1",
+  "location.observation_recorded.v1",
+  "auth.operation_requested.v1", "auth.operation_reported.v1",
+  "integration.operation_requested.v1", "integration.operation_reported.v1",
+  "activity.records_read.v1",
   "billing.checkout_reserved.v1", "billing.checkout_created.v1", "billing.checkout_unknown.v1",
   "billing.checkout_resolved.v1", "billing.event_accepted.v1", "billing.event_quarantined.v1",
   "billing.subscription_reconciled.v1", "billing.offer_changed.v1", "billing.price_mapping_changed.v1",
@@ -19,6 +25,7 @@ export const SUPPORTED_AUDIT_EVENTS = Object.freeze([
   "billing.portal_reserved.v1", "billing.portal_created.v1", "billing.portal_unknown.v1",
 ] as const);
 export type AuditEventName = typeof SUPPORTED_AUDIT_EVENTS[number];
+export const AUDIT_READ_ACTIONS = Object.freeze(["account.profile", "admin.users", "addresses.list", "employees.list", "services.provider", "bookings.seeker", "bookings.provider", "schedules.provider", "company.context", "company.team", "company.invitations", "appointments.conversation", "appointments.reschedules", "appointments.available_times", "notifications.settings", "notifications.booking", "wishlist.list", "inbox.summary", "inbox.messages", "inbox.notifications"] as const);
 const outcomes = ["succeeded", "rejected", "denied", "failed", "unknown"] as const;
 const safeReasons = [
   "INVALID_INPUT", "INVALID_CREDENTIALS", "UNAUTHENTICATED", "FORBIDDEN",
@@ -53,13 +60,84 @@ const selfEvents = new Set<AuditEventName>([
 const companyEvents = new Set<AuditEventName>(["company.membership_changed.v1", "company.ownership_transferred.v1"]);
 function retention(eventName: AuditEventName): "B" | "S" | "R" {
   if (eventName.startsWith("billing.")) return eventName === "billing.event_quarantined.v1" ? "S" : "B";
-  if (eventName === "service.viewed.v1") return "R";
+  if (eventName === "service.viewed.v1" || eventName.startsWith("audit.") || eventName.startsWith("location.") || eventName.startsWith("integration.") || eventName === "activity.records_read.v1") return "R";
+  if (eventName.startsWith("data.")) return "B";
   return eventName.startsWith("account.") || companyEvents.has(eventName) ? "B" : "S";
 }
 
 function validatePolicy(event: z.infer<typeof envelopeSchema>): void {
   const reject = () => { throw new AuditContractError(); };
   const { actor, scope, target, eventName, outcome, reasonCode, changes } = event;
+  if (eventName === "activity.records_read.v1") {
+    auditContextSchema.parse({ actor, scope, target, source: event.source, requestId: event.requestId, operationId: event.operationId });
+    if (event.source.component !== "application" || event.retentionClass !== "R" || target.type !== "request" || actor.kind !== "user" ||
+      outcome !== "succeeded" || reasonCode !== undefined || changes.length !== 1 || changes[0].field !== "action" ||
+      changes[0].before !== null || changes[0].redacted || !AUDIT_READ_ACTIONS.includes(changes[0].after as typeof AUDIT_READ_ACTIONS[number])) reject();
+    const admin = changes[0]?.after === "admin.users";
+    if (admin ? scope.kind !== "global" || actor.kind !== "user" || actor.effectiveRole !== "support"
+      : !(actor.kind === "user" && (scope.kind === "personal" && scope.workspaceId === actor.userId && ["seeker", "provider"].includes(actor.effectiveRole) ||
+        scope.kind === "company" && ["owner", "admin", "provider", "viewer"].includes(actor.effectiveRole)))) reject();
+    return;
+  }
+  if (eventName.startsWith("integration.")) {
+    auditContextSchema.parse({ actor, scope, target, source: event.source, requestId: event.requestId,
+      operationId: event.operationId, ...(event.parentEventId ? { parentEventId: event.parentEventId } : {}) });
+    if (event.source.component !== "integration" || event.retentionClass !== "R" || target.type !== "request" ||
+      actor.kind !== "service" || actor.serviceId !== "integration-runtime" || scope.kind !== "unknown" ||
+      changes.length !== 1 || changes[0].field !== "operation" || changes[0].before !== null || changes[0].redacted ||
+      !["embedding", "geocoding", "notification_batch", "activity_batch"].includes(String(changes[0].after))) reject();
+    if (eventName === "integration.operation_requested.v1" && (outcome !== "succeeded" || reasonCode !== undefined)) reject();
+    if (eventName === "integration.operation_reported.v1" && !(outcome === "succeeded" && reasonCode === undefined ||
+      outcome === "failed" && reasonCode === "PROVIDER_UNAVAILABLE" || outcome === "unknown" && reasonCode === "PROVIDER_TIMEOUT")) reject();
+    return;
+  }
+  if (eventName === "auth.operation_requested.v1" || eventName === "auth.operation_reported.v1") {
+    auditContextSchema.parse({ actor, scope, target, source: event.source, requestId: event.requestId,
+      operationId: event.operationId, ...(event.parentEventId ? { parentEventId: event.parentEventId } : {}) });
+    if (event.source.component !== "auth" || event.retentionClass !== "S" || target.type !== "request" ||
+      !(actor.kind === "anonymous" && scope.kind === "unknown" || actor.kind === "user" &&
+        ["seeker", "provider"].includes(actor.effectiveRole) && scope.kind === "personal" && scope.workspaceId === actor.userId) ||
+      changes.length !== 1 || changes[0].field !== "operation" || changes[0].before !== null || changes[0].redacted ||
+      !["login", "signup", "oauth_start", "oauth_callback", "recovery", "invite_session", "invite_password", "logout", "password_verify", "password_change", "session_refresh", "profile_update"].includes(String(changes[0].after))) reject();
+    if (eventName === "auth.operation_requested.v1" && (outcome !== "succeeded" || reasonCode !== undefined)) reject();
+    if (eventName === "auth.operation_reported.v1" && !(outcome === "succeeded" && reasonCode === undefined ||
+      outcome === "rejected" && reasonCode === "INVALID_INPUT" || outcome === "denied" && ["INVALID_CREDENTIALS", "RATE_LIMITED"].includes(String(reasonCode)) ||
+      outcome === "failed" && reasonCode === "PROVIDER_UNAVAILABLE" || outcome === "unknown" && reasonCode === "PROVIDER_TIMEOUT")) reject();
+    return;
+  }
+  if (eventName.startsWith("audit.") || eventName.startsWith("data.") || eventName.startsWith("location.")) {
+    auditContextSchema.parse({ actor, scope, target, source: event.source, requestId: event.requestId,
+      operationId: event.operationId, ...(event.parentEventId ? { parentEventId: event.parentEventId } : {}) });
+    if (outcome !== "succeeded" || reasonCode !== undefined || event.retentionClass !== retention(eventName)) reject();
+    if (eventName.startsWith("audit.")) {
+      if (event.source.component !== "audit" || actor.kind !== "user" || actor.effectiveRole !== "support" ||
+        scope.kind !== "global" || target.type !== "request" || changes.length) reject();
+    } else if (eventName.startsWith("data.")) {
+      if (event.source.component !== "database" || actor.kind !== "service" || actor.serviceId !== "database-runtime" ||
+        scope.kind !== "unknown" || target.type !== "database_record" || !changes.length ||
+        new Set(changes.map(change => change.field)).size !== changes.length ||
+        changes.some(change => !/^[a-z_]{1,64}$/.test(change.field) || change.redacted !== true || "before" in change || "after" in change)) reject();
+    } else {
+      if (event.source.component !== "location" || target.type !== "request" ||
+        !(actor.kind === "anonymous" && scope.kind === "unknown" || actor.kind === "user" &&
+          ["seeker", "provider"].includes(actor.effectiveRole) && scope.kind === "personal" && scope.workspaceId === actor.userId)) reject();
+      const fields: Record<string, readonly string[]> = {
+        stage: ["requested", "permission_observed", "remember_chosen", "withdrawn"],
+        reportedOutcome: ["requested", "granted", "already_granted", "denied", "timeout", "unavailable", "policy_blocked", "unknown", "remember", "forget"],
+        storageScope: ["none", "profile", "cookie"], noticeVersion: ["location-2026-11-07"],
+        language: ["en", "lv", "ru", "ar", "zh", "fr", "de", "hi", "ja", "pt", "es"],
+      };
+      if (changes.length !== 5 || new Set(changes.map(change => change.field)).size !== 5 || changes.some(change =>
+        !Object.hasOwn(fields, change.field) || change.before !== null || typeof change.after !== "string" ||
+        !fields[change.field].includes(change.after) || change.redacted)) reject();
+      const values = Object.fromEntries(changes.map(change => [change.field, change.after]));
+      if (values.stage === "requested" && (values.reportedOutcome !== "requested" || values.storageScope !== "none") ||
+        values.stage === "permission_observed" && (!["granted", "already_granted", "denied", "timeout", "unavailable", "policy_blocked", "unknown"].includes(String(values.reportedOutcome)) || values.storageScope !== "none") ||
+        values.stage === "remember_chosen" && (values.reportedOutcome !== "remember" || values.storageScope === "none") ||
+        values.stage === "withdrawn" && values.reportedOutcome !== "forget") reject();
+    }
+    return;
+  }
   if (eventName.startsWith("billing.")) {
     auditContextSchema.parse({ actor, scope, target, source: event.source,
       requestId: event.requestId, operationId: event.operationId,

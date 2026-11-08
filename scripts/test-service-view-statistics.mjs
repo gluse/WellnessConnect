@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { activeViewPro, allowedViewStatisticsPeriod, rankedViewStatistics, verifyViewStatistics, viewBarPercent, viewStatisticsPeriod } from '../client/src/lib/service-view-statistics.ts';
+import { reportCsv, reportXlsx } from '../client/src/lib/report-downloads.ts';
+const now = new Date('2026-11-08T23:59:59Z');
+const capability = { hasPro:true, proUntil:'2026-11-09T00:00:00Z', trackingEnabled:true, availableFrom:'2026-08-11',availableTo:'2026-11-08',asOf:now.toISOString(),retentionDays:90,timezone:'UTC',measurement:'recorded_detail_opens',historyCoverage:'unknown',captureStartedAt:null };
+assert.equal(activeViewPro(capability,+now),true);
+assert.equal(activeViewPro(capability,Date.parse(capability.proUntil)),false);
+assert.equal(activeViewPro({...capability,hasPro:false},+now),false);
+assert.equal(activeViewPro(undefined,+now),false);
+assert.deepEqual(viewStatisticsPeriod(capability,'week'),{from:'2026-11-02',to:'2026-11-08'});
+assert.deepEqual(viewStatisticsPeriod(capability,'month'),{from:'2026-11-01',to:'2026-11-08'});
+for (const [from,to,expected] of [['2026-08-11','2026-11-08',true],['2026-08-10','2026-11-08',false],['2026-11-01','2026-11-09',false],['2026-11-09','2026-11-08',false],['2026-09-31','2026-11-08',false]]) assert.equal(allowedViewStatisticsPeriod({from,to},capability),expected);
+const query={from:'2026-11-01',to:'2026-11-08',employee:'all'};
+const rows=[{serviceId:1,service:'Duplicate name',employeeId:null,employeeName:null,views:'0'},{serviceId:2,service:'Duplicate name',employeeId:11,employeeName:'Anna',views:'9007199254740993'},{serviceId:3,service:'=HYPERLINK("evil")',employeeId:12,employeeName:'Boris',views:'7'}];
+const report={...capability,...query,rows,totalViews:'9007199254741000'};
+assert.equal(verifyViewStatistics(report,query),report);
+assert.throws(()=>verifyViewStatistics({...report,totalViews:'9007199254740999'},query));
+assert.throws(()=>verifyViewStatistics({...report,employee:'11'},query));
+assert.deepEqual(rankedViewStatistics(rows).map(row=>row.serviceId),[2,3,1]);
+assert.equal(viewBarPercent('0','0'),0); assert.equal(viewBarPercent('9007199254740993','9007199254740993'),100);
+const document={title:'Views',subtitle:'UTC',note:'Retained observations',summary:[['Total',9007199254741000n]],columns:['Service','Views'],rows:rows.map(row=>[row.service,BigInt(row.views)])};
+assert.match(await reportCsv(document).text(),/9007199254740993/);
+assert.match(await reportCsv(document).text(),/"'=HYPERLINK/);
+assert.match(await reportXlsx(document).text(),/<v>9007199254740993<\/v>/);
+for (const language of ['en','lv','ru']) {
+ const messages=JSON.parse(await readFile(`client/public/locales/${language}/translation.json`,'utf8')).reports;
+ for (const key of ['serviceViews','viewsCount','viewsTotal','viewsDefinition','viewsCoverage','viewsProRequired','viewsProHelp','viewsAskOwner','viewsUnavailable','viewsAccessError','viewsWindow','viewsPeriodError','viewsEmployeeHelp']) assert.ok(messages[key],`${language}.${key}`);
+ assert.deepEqual(messages.viewsWindow.match(/{{\w+}}/g),['{{from}}','{{to}}']);
+}
+console.log('Service view frontend helpers passed: UTC bounds/presets, exclusive Pro expiry, response totals/scope, stable ranking, exact bigint exports, formula safety and en/lv/ru messages.');
