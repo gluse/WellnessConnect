@@ -73,6 +73,21 @@ try {
     }
   }
   const unavailable = manualPreview({ customerName: "Synthetic", subject: "Test", message: "Text", preferences: defaultPreferences, email: null });
+  const customNote = "Please arrive 10 minutes early.\nBring <documents> & {date} literally.";
+  for (const language of ["en", "lv", "ru"]) {
+    const input = { kind: "reminder", service: privateService, date: appointment, language, timeZone: "UTC" };
+    const standard = renderMessage(input), custom = renderMessage({ ...input, reminderMessage: `  ${customNote}\n ` });
+    equal(custom.message, standard.message.replace("\nFitsMyTime", `\n\n${customNote}\nFitsMyTime`), "Custom text supplements mandatory localized appointment details");
+    equal(renderMessage({ ...input, reminderMessage: " \n " }).message, standard.message, "Blank custom text preserves existing message");
+    equal(custom.reminderMessage, customNote);
+    for (const kind of ["accepted", "rejected", "rescheduled"]) {
+      equal(renderMessage({ ...input, kind, oldDate: now, reminderMessage: customNote }).reminderMessage, "", "Status updates never include reminder-only instructions");
+    }
+    const preview = manualPreview({ customerName: "Synthetic", ...custom, preferences: prefs, email: "customer@example.test" });
+    for (const [channel, parameter] of [["email", "body"], ["sms", "body"], ["whatsapp", "text"]]) {
+      equal(new URL(preview.channels[channel].href).searchParams.get(parameter), custom.message, "Manual URI contains literal custom text");
+    }
+  }
   equal(Object.values(unavailable.channels).map(channel => channel.href), [null, null, null]);
   equal(unavailable.channels.sms.reasonCode, "missing_phone");
   equal(deliveryTransition("delivered", "failed"), "delivered", "Late failure cannot undo delivered");
@@ -123,6 +138,24 @@ try {
   equal(requests.at(-1).body.template.parameters, [privateService, sent.date, sent.oldDate]);
   equal(requests.at(-1).body.client_ref, sent.jobId);
   ok(!Object.hasOwn(requests.at(-1).body, "text"), "WhatsApp always uses an approved template");
+  const customInput = { ...sent, kind: "reminder", channel: "whatsapp", recipient: phone, reminderMessage: customNote };
+  equal(transportReady(config, "whatsapp", "en", "reminder", customNote), false, "Default approved template cannot silently lose custom text");
+  const requestsBefore = requests.length;
+  await expectTransportError(() => transport.send(customInput), "failed", "not_configured");
+  equal(requests.length, requestsBefore, "Missing custom template performs no provider request");
+  const customConfig = { ...config, whatsappTemplates: JSON.stringify({ ...templates, "en:reminder_custom": { name: "custom_reminder", namespace: "test_namespace", language: "en" } }) };
+  equal(transportReady(customConfig, "whatsapp", "en", "reminder", customNote), true);
+  await createTransports(customConfig, fetcher).send(customInput);
+  equal(requests.at(-1).body.template.name, "test_namespace:custom_reminder");
+  equal(requests.at(-1).body.template.parameters, [privateService, sent.date, customNote], "Approved custom template receives separate bounded literal note variable");
+  equal(templateFor(customConfig, "en", "reminder", " \n ").name, "appointment_reminder", "Blank note selects original template");
+  const customRendered = renderMessage({ kind: "reminder", service: privateService, date: appointment, language: "en", timeZone: "UTC", reminderMessage: customNote });
+  result = { id: "custom-email" };
+  await transport.send({ ...sent, ...customRendered, kind: "reminder" });
+  equal(requests.at(-1).body.text, customRendered.message, "Email uses text body with full custom message");
+  result = { message_uuid: requestId };
+  await transport.send({ ...sent, ...customRendered, kind: "reminder", channel: "sms", recipient: phone });
+  equal(requests.at(-1).body.text, customRendered.message, "SMS receives full custom message");
 
   for (const [status, outcome, code] of [[429, "failed", "rate_limited"], [400, "failed", "provider_rejected"], [503, "unknown", "provider_rejected"]]) {
     let calls = 0;

@@ -109,10 +109,13 @@ try {
   reset({ provider_subscriptions: [{ userId: "provider", companyId: null, plan: "pro", proUntil: new Date(Date.now() + 86400000) }] });
   for (const language of ["en", "lv", "ru"]) {
     state.memory.data.user_communication_preferences[0].language = language;
+    state.booking.service.reminderMessage = "Bring <documents> & {date}.\nArrive early.";
     const beforePreview = structuredClone(state.memory.data);
     response = await request("/api/bookings/1/notification-preview", { method: "POST", body: { kind: "reminder", timeZone: "Europe/Riga" } });
     assert.equal(response.status, 200, "PRO with service automation off must support manual reminders");
     assert.ok(response.body.message.startsWith({ en: "Reminder:", lv: "Atgādinājums:", ru: "Напоминание:" }[language])); assert.ok(response.body.channels.email.href.startsWith("mailto:"));
+    assert.ok(response.body.message.includes(state.booking.service.reminderMessage));
+    assert.equal(new URL(response.body.channels.email.href).searchParams.get("body"), response.body.message, "Custom note is safely encoded as literal message text");
     assert.equal(state.providerRequests.length, 0, "Manual preview must not send through a provider");
     assert.deepEqual(state.memory.data, beforePreview, "Manual preview must not change persisted data");
     assert.equal(state.memory.operations.length, 0, "Manual preview must not create a job or attempt any write"); cases++;

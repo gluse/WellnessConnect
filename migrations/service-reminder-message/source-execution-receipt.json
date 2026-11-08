@@ -1,0 +1,43 @@
+{
+  "task": "TASK-049",
+  "project": "hbkooiknruimukkhshrk",
+  "executor": "/root/custom_reminder_db",
+  "startedAt": "2026-11-08T16:22:48.424Z",
+  "state": "verified",
+  "authorization": {
+    "approvalRecord": "docs/custom-service-reminder-db-handoff.md#development-activation-authorization--8-november-2026",
+    "recoveryRecord": "docs/custom-service-reminder-db-handoff.md#development-activation-authorization--8-november-2026",
+    "backupWaived": true
+  },
+  "script": {
+    "name": "0023_service_reminder_message.sql",
+    "sha256": "341f702ef28c59e3e5adf289eb0a520411f3b6e93fc476a0c737ada86ba9168d",
+    "attempted": true,
+    "committed": true
+  },
+  "retry": false,
+  "sourceOnly": true,
+  "privateConfigEdited": false,
+  "auditDeliveryAttempted": false,
+  "stage": "restricted_message_postflight",
+  "sourceMetadata": {
+    "identity": true,
+    "database": true,
+    "version": true,
+    "read_only": true,
+    "table_count": 41,
+    "message_absent": true,
+    "trigger_enabled": true,
+    "service_count": 28,
+    "booking_count": 36,
+    "other_writers": 0
+  },
+  "existingServiceAndBookingFieldsPreserved": true,
+  "postflightCounts": {
+    "service_count": 28,
+    "booking_count": 36,
+    "messages_empty": true,
+    "trigger_enabled": true
+  },
+  "completedAt": "2026-11-08T16:22:53.402Z"
+}

@@ -19,8 +19,9 @@ class FixedDate extends NativeDate {
 }
 globalThis.Date = FixedDate as DateConstructor;
 const user = { id: "synthetic-provider", firstName: "Synthetic", currentRole: "provider" };
-const service: Service = { id: 7, providerId: user.id, companyId: null, employeeId: null, createdAt: null, updatedAt: null, imageUrl: null, externalUrl: null, name: "Synthetic service <img src=x onerror=alert(1)>", description: "Synthetic description", category: "education", serviceType: "one_to_one", price: "25", duration: 60, cleanupTime: 0, maxCapacity: 1, ageGroups: [], targetGender: "both", instantBooking: false, advancePaymentPercent: 50, addressId: 3, isActive: true, reminderEnabled: false, reminderMethod: "email", reminderHours: 24, address: "Synthetic saved address", latitude: 0, longitude: 0, locationSource: "manual", locationKey: null, locationPlaceId: null, locationExpiresAt: null, locationAddressSource: "user" };
+const service: Service = { id: 7, providerId: user.id, companyId: null, employeeId: null, createdAt: null, updatedAt: null, imageUrl: null, externalUrl: null, name: "Synthetic service <img src=x onerror=alert(1)>", description: "Synthetic description", category: "education", serviceType: "one_to_one", price: "25", currency: "EUR", duration: 60, cleanupTime: 0, maxCapacity: 1, ageGroups: [], targetGender: "both", instantBooking: false, advancePaymentPercent: 50, addressId: 3, isActive: true, reminderEnabled: false, reminderMethod: "email", reminderHours: 24, reminderMessage: "", address: "Synthetic saved address", latitude: 0, longitude: 0, locationSource: "manual", locationKey: null, locationPlaceId: null, locationExpiresAt: null, locationAddressSource: "user", countryCode: "LV" };
 service.reminderEnabled = params.get("reminder") === "true";
+service.reminderMessage = params.get("message") || "";
 const booking = (id: number, status: string, day: number) => ({ id, serviceId: 7, scheduledDate: `2030-01-${day}T15:00:00Z`, totalAmount: "25", status, service, seeker: { firstName: "Synthetic", lastName: "Customer", email: "customer@example.test" }, provider: user });
 let records = [booking(1, "pending", 17), booking(2, "confirmed", 18), booking(3, "cancelled", 19), booking(4, "completed", 14)];
 const rescheduleRequests: Record<number, object[]> = {};
@@ -28,6 +29,7 @@ let preferences: CommunicationSettings = { phone: params.get("phone") === "empty
 const permissions = { manageServices: true, manageSchedules: true, manageBookings: params.get("denied") !== "true", manageTeam: true, isOwner: true, readAll: true };
 const context = { company: null, membership: null, permissions, workspaces: [] };
 const fixture = { ready: false, pro: params.get("pro") === "true", capabilitiesResult: params.get("capabilities") || "success", stateResult: "success", result: "success", previewResult: "success", verifyResult: "success", automaticState: "queued", reminderState: service.reminderEnabled ? "scheduled" : "off", reminderReasonCode: null as string | null, writes: [] as { path: string; body: Record<string, unknown> }[], unexpected: [] as string[], release: null as (() => void) | null,
+  changeLanguage: (language: string) => i18next.changeLanguage(language),
   switchUser: () => queryClient.setQueryData(["/api/auth/user"], { ...user, id: "other-account" }),
   revoke: () => queryClient.setQueryData(["/api/company/context"], { ...context, permissions: { ...permissions, manageBookings: false } }),
   switchWorkspace: () => queryClient.setQueryData(["/api/company/context"], { ...context, company: { id: 99 } }),
@@ -73,7 +75,7 @@ window.fetch = async (input, options = {}) => {
   if (path === "/api/provider/employees" || path === "/api/bookings/seeker") return Response.json([]);
   if (path === "/api/categories") return Response.json([{ key: "education", name: "Synthetic category", icon: "", searchKeywords: "" }]);
   if (path === "/api/addresses") return Response.json([{ id: 3, address: "Synthetic saved address" }]);
-  if (path === "/api/services/7" && method === "PATCH") { if (fixture.result === "error") return Response.json({}, { status: 503 }); return Response.json({ ...service, ...body }); }
+  if (path === "/api/services/7" && method === "PATCH") { if (fixture.result === "pending") await held(); if (fixture.result === "error") return Response.json({}, { status: 503 }); return Response.json({ ...service, ...body }); }
   if (path === "/api/account/communication") {
     if (method === "PATCH") {
       if (fixture.result === "pending") await held();

@@ -89,6 +89,12 @@ const statusText = id => component.root.findByProps({ "data-testid": id }).findA
   .map(node => node.children.filter(child => typeof child === "string").join("")).join(" ");
 assert.ok(statusText(`personal-pro-${entry.id}`).includes(translation.storefront.proEnabled));
 assert.ok(statusText(`company-pro-${entry.id}-7`).includes(translation.storefront.companyProEnabled));
+assert.ok(component.root.findAllByType("th").some(node => node.children.includes(translation.adminUsers.serviceProvider)));
+for (const [value, label] of [[true, "yes"], [false, "no"], [null, "unknown"], [undefined, "unknown"]]) {
+  entry.isServiceProvider = value;
+  await click("Refresh");
+  assert.equal(statusText(`service-provider-${entry.id}`).trim(), translation.adminUsers[label], "Provider status uses the explicit API value, independently of company membership or Pro");
+}
 assert.ok(statusText(`personal-pro-${entry.id}`).includes(translation.storefront.validUntil.split("{{date}}")[0]));
 entry.proSubscription = { enabled: false, proUntil: "2000-01-01T00:00:00.000Z" };
 await click("Refresh");
@@ -178,6 +184,7 @@ const companyLinks = companyAffiliations([
 assert.equal(companyLinks.get(entry.id).length, 2, "Owners and memberships must not duplicate a company");
 assert.equal(companyLinks.get("other-support-user")[0].role, "owner", "Include owners even without a membership");
 let companyRequests = 0, companyUnavailable = false, subscriptionRequests = 0, subscriptionUnavailable = false, requestedSubscriptionTargets;
+let providerStatusRequests = 0, providerStatusUnavailable = false, requestedProviderIds;
 setupAdminRoutes({ get(path, ...handlers) { routes.push({ path, handlers }); } }, async () => {
   companyRequests++;
   if (companyUnavailable) throw new Error("Database unavailable");
@@ -187,6 +194,10 @@ setupAdminRoutes({ get(path, ...handlers) { routes.push({ path, handlers }); } }
   if (subscriptionUnavailable) throw new Error("Private subscription connection details");
   const rows = new Map([[`user:${entry.id}`, activePro], ["company:7", activePro]]);
   return new Map(Array.from(rows).filter(([key]) => key.startsWith("user:") ? userIds.includes(key.slice(5)) : companyIds.includes(Number(key.slice(8)))));
+}, async userIds => {
+  providerStatusRequests++; requestedProviderIds = userIds;
+  if (providerStatusUnavailable) throw new Error("Private application role connection details");
+  return new Map(userIds.filter(id => id === entry.id).map(id => [id, true]));
 });
 const directory = routes.find(route => route.path === "/api/admin/users");
 assert.equal(directory.handlers[0], isAuthenticated);
@@ -238,12 +249,15 @@ try {
   assert.equal(sdkRequests.length, 0, "Invalid pagination must not call privileged APIs");
   assert.equal(companyRequests, 0);
   assert.equal(subscriptionRequests, 0, "Denied or invalid requests must not read subscriptions");
+  assert.equal(providerStatusRequests, 0, "Denied or invalid requests must not read application roles");
   const first = await request("/api/admin/users");
   assert.equal(first.code, 200);
   assert.equal(first.headers["Cache-Control"], "no-store");
   assert.deepEqual(sdkRequests.slice(-2), [{ page: "1", size: "1000" }, { page: "2", size: "1000" }]);
   assert.equal(first.body.users.length, 50);
-  assert.deepEqual(first.body.users.find(item => item.id === entry.id), { ...entry, name: "New Registrant", companies: companyLinks.get(entry.id).map(company => ({ ...company, proSubscription: company.id === 7 ? activePro : inactivePro })) });
+  assert.deepEqual(first.body.users.find(item => item.id === entry.id), { ...entry, isServiceProvider: true, name: "New Registrant", companies: companyLinks.get(entry.id).map(company => ({ ...company, proSubscription: company.id === 7 ? activePro : inactivePro })) });
+  assert.equal(providerStatusRequests, 1, "Batch application role reads for the visible page");
+  assert.deepEqual(requestedProviderIds, first.body.users.map(user => user.id));
   assert.equal(subscriptionRequests, 1, "Batch subscription reads for the visible directory page");
   assert.deepEqual(requestedSubscriptionTargets.userIds, first.body.users.map(user => user.id));
   assert.deepEqual(requestedSubscriptionTargets.companyIds.sort(), [7,8]);
@@ -260,6 +274,7 @@ try {
   assert.equal(outside.total, 1);
   assert.deepEqual(outside.users[0].proSubscription, inactivePro, "Editable metadata and a company subscription never grant personal Pro");
   assert.deepEqual(outside.users[0].companies[0].proSubscription, activePro);
+  assert.equal(outside.users[0].isServiceProvider, null, "Missing application profiles stay unknown despite company roles or Pro");
   const organizations = await lookup({ company: "ACME" });
   assert.equal(organizations.total, 2);
   assert.equal(organizations.users.find(item => item.id === "outside-user").companies[0].role, "viewer");
@@ -299,6 +314,12 @@ try {
   assert.equal(subscriptionFailure.code, 503, "A subscription lookup failure must not mislabel users as Free");
   assert.ok(!JSON.stringify(subscriptionFailure.body).includes("Private"));
   subscriptionUnavailable = false;
+  providerStatusUnavailable = true;
+  const providerStatusFailure = await request("/api/admin/users");
+  assert.equal(providerStatusFailure.code, 503, "Role lookup failure must not mislabel providers as non-providers");
+  assert.deepEqual(Object.keys(providerStatusFailure.body), ["message"]);
+  assert.ok(!JSON.stringify(providerStatusFailure.body).includes("Private"));
+  providerStatusUnavailable = false;
   listUnavailable = true;
   const failure = await request("/api/admin/users");
   assert.equal(failure.code, 503);

@@ -547,7 +547,7 @@
     "loading": "Kontodaten werden geladen…",
     "back": "Zurück zur Übersicht",
     "title": "Kontodaten",
-    "intro": "Verwalten Sie persönliche Informationen, gespeicherte Adressen und Ihr Passwort.",
+    "intro": "Verwalten Sie Ihre persönlichen Daten, Kommunikationseinstellungen, Rolle und Ihr Passwort.",
     "sections": "Kontobereiche"
   },
   "passwordForm": {
@@ -1059,6 +1059,14 @@
     "hours": "Stunden vor dem Termin",
     "hoursInvalid": "Ganze Zahl zwischen 1 und 168 Stunden eingeben.",
     "reminderHelp": "Die Kundenwahl ersetzt diese Vorgabe. Nur bestätigte Termine mit zukünftiger Erinnerungszeit erhalten Erinnerungen.",
+    "customMessage": "Eigene Nachricht (optional)",
+    "customMessageHelp": "Ergänzen Sie die Termindetails um eine Notiz mit bis zu 1.000 Zeichen. Sie wird unverändert und ohne Übersetzung gesendet. Leer lassen, um die Standarderinnerung zu verwenden.",
+    "customMessageInvalid": "Verwenden Sie höchstens 1.000 Zeichen.",
+    "customMessageCount": "{{count}} / 1.000 Zeichen",
+    "whatsappCustomMessageHelp": "Eigene WhatsApp-Nachrichten benötigen eine passende genehmigte Vorlage. Die Kanalpräferenzen des Kunden gelten weiterhin.",
+    "messagePreview": "Nachrichtenvorschau",
+    "messagePreviewHelp": "Beispieltermin in UTC in Ihrer Oberflächensprache. Die tatsächlichen Angaben und die Sprache der Standarderinnerung richten sich nach der Buchung und den Kundenpräferenzen. Diese Vorschau sendet keine Nachricht.",
+    "sampleService": "Beispieldienstleistung",
     "reminderSettings": "Terminerinnerungen",
     "statusUnavailable": "Erinnerungsstatus derzeit nicht verfügbar.",
     "appointments": "Termine",
@@ -1093,7 +1101,10 @@
       "unverified_phone": "Kundentelefonnummer nicht bestätigt.",
       "missing_permission": "Kunde hat diese Kontaktmethode nicht erlaubt.",
       "missing_email": "Keine Kunden-E-Mail-Adresse verfügbar."
-    }
+    },
+    "saveAndVerifyHelp": "Ihre Telefonnummer wird vor dem Versand des Bestätigungscodes gespeichert. Andere Einstellungsänderungen werden separat gespeichert.",
+    "sendingCode": "Code wird gesendet…",
+    "resendWait": "Bitte warten Sie, bevor Sie einen weiteren Code anfordern."
   },
   "appointmentCollaboration": {
     "viewBookings": "Buchungen anzeigen ({{count}})",
@@ -1705,5 +1716,63 @@
     "next": "Nächstes Bild",
     "unavailable": "Dieses Bild konnte nicht geladen werden.",
     "alt": "{{name}}, Bild {{current}} von {{total}}"
+  },
+  "adminUsers": {
+    "serviceProvider": "Dienstleister",
+    "yes": "Ja",
+    "no": "Nein",
+    "unknown": "Unbekannt"
+  },
+  "accountRole": {
+    "title": "Rolle",
+    "help": "Wählen Sie, wie Sie FitsMyTime nutzen. Auch als Dienstleister können Sie Dienstleistungen suchen und buchen.",
+    "current": "Aktuelle Rolle",
+    "buyer": "Nutzer/Käufer",
+    "provider": "Dienstleister",
+    "become": "Dienstleister werden",
+    "activating": "Wird aktiviert…",
+    "manage": "Meine Dienstleistungen verwalten",
+    "error": "Ihre Rolle konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
+    "activated": "Dienstleisterrolle aktiviert."
+  },
+  "accountTabs": {
+    "general": "Allgemein",
+    "contact": "Kontakt",
+    "password": "Passwort"
+  },
+  "providerSettings": {
+    "loading": "Einstellungen werden geladen…",
+    "description": "Verwalten Sie Ihr Anbieterprofil und Ihr Unternehmen.",
+    "sections": "Einstellungsbereiche",
+    "profileTab": "Profil und Mitarbeitende",
+    "teamTab": "Team und Zugriff",
+    "loadingEmployees": "Mitarbeitende werden geladen…",
+    "loadEmployeesError": "Mitarbeitende konnten nicht geladen werden. Aktualisieren Sie die Seite und versuchen Sie es erneut.",
+    "teamDenied": "Teameinstellungen sind für Unternehmensverwalter verfügbar.",
+    "teamHint": "Öffnen Sie Team und Zugriff, um Ihr Unternehmen zu verwalten.",
+    "denied": "Ihre Zugriffsrechte erlauben keine Änderungen an den Einstellungen.",
+    "notFound": "Einstellungsseite nicht gefunden.",
+    "profileTitle": "Anbieterprofil",
+    "offerAs": "Dienstleistungen anbieten als",
+    "individual": "Privatperson",
+    "company": "Unternehmen",
+    "companyName": "Unternehmensname *",
+    "companyPlaceholder": "Zum Beispiel: Schönheitssalon Riga",
+    "companyHelp": "Kunden sehen bei all Ihren Angeboten diesen Namen anstelle des persönlichen Namens des Administrators.",
+    "saveProfile": "Profil speichern",
+    "profileSaved": "Anbieterprofil gespeichert",
+    "employees": "Mitarbeitende",
+    "employeesHelp": "Fügen Sie Ihr Team hinzu und weisen Sie beim Bearbeiten einer Dienstleistung Mitarbeitende zu. Sie verwalten deren Angebote und Buchungen über dieses Konto.",
+    "employeesEmpty": "Noch keine Mitarbeitenden hinzugefügt.",
+    "nameVisible": "Name für Kunden sichtbar",
+    "nameHidden": "Name vor Kunden verborgen",
+    "editEmployee": "Mitarbeiter bearbeiten",
+    "addEmployee": "Mitarbeiter hinzufügen",
+    "employeePlaceholder": "Name oder interne Bezeichnung, z. B. Massagetherapeut",
+    "showName": "Diesen Namen Kunden anzeigen",
+    "saveEmployee": "Mitarbeiter speichern",
+    "employeeSaved": "Mitarbeiter gespeichert",
+    "employeeRemoved": "Mitarbeiter entfernt",
+    "saveFailed": "Speichern nicht möglich"
   }
 }

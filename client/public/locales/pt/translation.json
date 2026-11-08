@@ -547,7 +547,7 @@
     "loading": "Carregando dados da conta…",
     "back": "Voltar ao painel",
     "title": "Dados da conta",
-    "intro": "Gerencie suas informações pessoais, endereços salvos e senha.",
+    "intro": "Gira os seus dados pessoais, preferências de comunicação, função e palavra-passe.",
     "sections": "Seções da conta"
   },
   "passwordForm": {
@@ -1059,6 +1059,14 @@
     "hours": "Horas antes do agendamento",
     "hoursInvalid": "Insira um inteiro de 1 a 168 horas.",
     "reminderHelp": "A preferência do cliente substitui este padrão. Somente agendamentos confirmados com horário futuro de lembrete recebem avisos.",
+    "customMessage": "Mensagem personalizada (opcional)",
+    "customMessageHelp": "Adicione uma nota após os detalhes da marcação, até 1000 caracteres. É enviada como escrita, sem tradução. Deixe em branco para usar o lembrete padrão.",
+    "customMessageInvalid": "Use no máximo 1000 caracteres.",
+    "customMessageCount": "{{count}} / 1000 caracteres",
+    "whatsappCustomMessageHelp": "As mensagens WhatsApp personalizadas exigem um modelo aprovado compatível. As preferências de canal do cliente continuam a aplicar-se.",
+    "messagePreview": "Pré-visualização da mensagem",
+    "messagePreviewHelp": "Exemplo de marcação em UTC no idioma da interface. Os detalhes reais e o idioma do lembrete padrão seguem a reserva e as preferências do cliente. Esta pré-visualização não envia mensagens.",
+    "sampleService": "Exemplo de serviço",
     "reminderSettings": "Lembretes de agendamento",
     "statusUnavailable": "Status do lembrete indisponível.",
     "appointments": "Agendamentos",
@@ -1093,7 +1101,10 @@
       "unverified_phone": "Telefone do cliente não verificado.",
       "missing_permission": "O cliente não permitiu este método.",
       "missing_email": "E-mail do cliente indisponível."
-    }
+    },
+    "saveAndVerifyHelp": "O seu número será guardado antes de enviar o código de verificação. As outras alterações de preferências são guardadas separadamente.",
+    "sendingCode": "A enviar código…",
+    "resendWait": "Aguarde antes de pedir outro código."
   },
   "appointmentCollaboration": {
     "viewBookings": "Ver reservas ({{count}})",
@@ -1710,5 +1721,63 @@
     "next": "Foto seguinte",
     "unavailable": "Não foi possível carregar esta foto.",
     "alt": "{{name}}, foto {{current}} de {{total}}"
+  },
+  "adminUsers": {
+    "serviceProvider": "Prestador de serviços",
+    "yes": "Sim",
+    "no": "Não",
+    "unknown": "Desconhecido"
+  },
+  "accountRole": {
+    "title": "Função",
+    "help": "Escolha como usar o FitsMyTime. Como prestador, também pode procurar e reservar serviços.",
+    "current": "Função atual",
+    "buyer": "Utilizador/comprador",
+    "provider": "Prestador de serviços",
+    "become": "Tornar-se prestador de serviços",
+    "activating": "A ativar…",
+    "manage": "Gerir os meus serviços",
+    "error": "Não foi possível atualizar a sua função. Tente novamente.",
+    "activated": "Função de prestador de serviços ativada."
+  },
+  "accountTabs": {
+    "general": "Geral",
+    "contact": "Contacto",
+    "password": "Palavra-passe"
+  },
+  "providerSettings": {
+    "loading": "A carregar definições…",
+    "description": "Gira o seu perfil de prestador e a sua empresa.",
+    "sections": "Secções das definições",
+    "profileTab": "Perfil e funcionários",
+    "teamTab": "Equipa e acesso",
+    "loadingEmployees": "A carregar funcionários…",
+    "loadEmployeesError": "Não foi possível carregar os funcionários. Atualize a página para tentar novamente.",
+    "teamDenied": "As definições da equipa estão disponíveis para gestores da empresa.",
+    "teamHint": "Abra Equipa e acesso para gerir a sua empresa.",
+    "denied": "O seu nível de acesso não permite alterar as definições.",
+    "notFound": "Página de definições não encontrada.",
+    "profileTitle": "Perfil de prestador",
+    "offerAs": "Oferecer serviços como",
+    "individual": "Particular",
+    "company": "Empresa",
+    "companyName": "Nome da empresa *",
+    "companyPlaceholder": "Por exemplo, Salão de Beleza Riga",
+    "companyHelp": "Os clientes veem este nome em vez do nome pessoal do administrador em todas as suas ofertas.",
+    "saveProfile": "Guardar perfil",
+    "profileSaved": "Perfil de prestador guardado",
+    "employees": "Funcionários",
+    "employeesHelp": "Adicione a sua equipa e atribua um funcionário ao editar um serviço. Pode gerir as ofertas e reservas deles a partir desta conta.",
+    "employeesEmpty": "Ainda não foram adicionados funcionários.",
+    "nameVisible": "Nome visível para os clientes",
+    "nameHidden": "Nome oculto dos clientes",
+    "editEmployee": "Editar funcionário",
+    "addEmployee": "Adicionar funcionário",
+    "employeePlaceholder": "Nome ou designação interna, por exemplo, massagista",
+    "showName": "Mostrar este nome aos clientes",
+    "saveEmployee": "Guardar funcionário",
+    "employeeSaved": "Funcionário guardado",
+    "employeeRemoved": "Funcionário removido",
+    "saveFailed": "Não foi possível guardar"
   }
 }

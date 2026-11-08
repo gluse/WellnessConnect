@@ -547,7 +547,7 @@
     "loading": "Ielādē konta datus…",
     "back": "Atpakaļ uz paneli",
     "title": "Konta dati",
-    "intro": "Pārvaldiet personīgo informāciju, saglabātās adreses un paroli.",
+    "intro": "Pārvaldiet savu personisko informāciju, saziņas preferences, lomu un paroli.",
     "sections": "Konta sadaļas"
   },
   "passwordForm": {
@@ -1057,6 +1057,14 @@
     "hours": "Stundas pirms rezervācijas",
     "hoursInvalid": "Ievadiet veselu stundu skaitu no 1 līdz 168.",
     "reminderHelp": "Klienta izvēle aizstāj noklusējumu. Atgādinājumu saņem tikai apstiprinātas rezervācijas ar nākotnes atgādinājuma laiku.",
+    "customMessage": "Pielāgots ziņojums (neobligāti)",
+    "customMessageHelp": "Pievienojiet piezīmi pēc pieraksta informācijas, līdz 1000 rakstzīmēm. Tā tiek nosūtīta bez tulkošanas. Atstājiet tukšu, lai izmantotu standarta atgādinājumu.",
+    "customMessageInvalid": "Izmantojiet ne vairāk kā 1000 rakstzīmes.",
+    "customMessageCount": "{{count}} / 1000 rakstzīmes",
+    "whatsappCustomMessageHelp": "Pielāgotiem WhatsApp ziņojumiem nepieciešama saderīga apstiprināta veidne. Joprojām tiek ievērota klienta saziņas kanāla izvēle.",
+    "messagePreview": "Ziņojuma priekšskatījums",
+    "messagePreviewHelp": "Pieraksta piemērs UTC laika joslā jūsu saskarnes valodā. Faktiskā informācija un standarta atgādinājuma valoda atbilst klienta rezervācijai un izvēlēm. Priekšskatījums nenosūta ziņojumu.",
+    "sampleService": "Pakalpojuma piemērs",
     "reminderSettings": "Rezervācijas atgādinājumi",
     "statusUnavailable": "Atgādinājuma statuss pašlaik nav pieejams.",
     "appointments": "Rezervācijas",
@@ -1091,7 +1099,10 @@
       "unverified_phone": "Klienta tālruņa numurs nav apstiprināts.",
       "missing_permission": "Klients nav atļāvis šo saziņas veidu.",
       "missing_email": "Klienta e-pasta adrese nav pieejama."
-    }
+    },
+    "saveAndVerifyHelp": "Pirms verifikācijas koda nosūtīšanas tālruņa numurs tiks saglabāts. Citas preferenču izmaiņas jāsaglabā atsevišķi.",
+    "sendingCode": "Sūta kodu…",
+    "resendWait": "Lūdzu, uzgaidiet, pirms pieprasāt nākamo kodu."
   },
   "appointmentCollaboration": {
     "viewBookings": "Skatīt rezervācijas ({{count}})",
@@ -1712,5 +1723,63 @@
     "next": "Nākamais attēls",
     "unavailable": "Šo attēlu neizdevās ielādēt.",
     "alt": "{{name}}, {{current}}. attēls no {{total}}"
+  },
+  "adminUsers": {
+    "serviceProvider": "Pakalpojumu sniedzējs",
+    "yes": "Jā",
+    "no": "Nē",
+    "unknown": "Nav zināms"
+  },
+  "accountRole": {
+    "title": "Loma",
+    "help": "Izvēlieties, kā izmantot FitsMyTime. Arī kā pakalpojumu sniedzējs varat meklēt un rezervēt pakalpojumus.",
+    "current": "Pašreizējā loma",
+    "buyer": "Lietotājs/pircējs",
+    "provider": "Pakalpojumu sniedzējs",
+    "become": "Kļūt par pakalpojumu sniedzēju",
+    "activating": "Aktivizē…",
+    "manage": "Pārvaldīt manus pakalpojumus",
+    "error": "Neizdevās atjaunināt lomu. Lūdzu, mēģiniet vēlreiz.",
+    "activated": "Pakalpojumu sniedzēja loma ir aktivizēta."
+  },
+  "accountTabs": {
+    "general": "Vispārīgi",
+    "contact": "Kontaktinformācija",
+    "password": "Parole"
+  },
+  "providerSettings": {
+    "loading": "Ielādē iestatījumus…",
+    "description": "Pārvaldiet savu pakalpojumu sniedzēja profilu un uzņēmumu.",
+    "sections": "Iestatījumu sadaļas",
+    "profileTab": "Profils un darbinieki",
+    "teamTab": "Komanda un piekļuve",
+    "loadingEmployees": "Ielādē darbiniekus…",
+    "loadEmployeesError": "Neizdevās ielādēt darbiniekus. Atsvaidziniet lapu, lai mēģinātu vēlreiz.",
+    "teamDenied": "Komandas iestatījumi ir pieejami uzņēmuma pārvaldniekiem.",
+    "teamHint": "Atveriet sadaļu “Komanda un piekļuve”, lai pārvaldītu uzņēmumu.",
+    "denied": "Jūsu piekļuves līmenis neļauj mainīt iestatījumus.",
+    "notFound": "Iestatījumu lapa nav atrasta.",
+    "profileTitle": "Pakalpojumu sniedzēja profils",
+    "offerAs": "Sniegt pakalpojumus kā",
+    "individual": "Privātpersona",
+    "company": "Uzņēmums",
+    "companyName": "Uzņēmuma nosaukums *",
+    "companyPlaceholder": "Piemēram, Rīgas skaistumkopšanas salons",
+    "companyHelp": "Visos jūsu piedāvājumos klienti redz šo nosaukumu administratora vārda vietā.",
+    "saveProfile": "Saglabāt profilu",
+    "profileSaved": "Pakalpojumu sniedzēja profils saglabāts",
+    "employees": "Darbinieki",
+    "employeesHelp": "Pievienojiet komandu un, rediģējot pakalpojumu, piešķiriet darbinieku. Viņu piedāvājumus un rezervācijas pārvaldāt no šī konta.",
+    "employeesEmpty": "Vēl nav pievienotu darbinieku.",
+    "nameVisible": "Vārds ir redzams klientiem",
+    "nameHidden": "Vārds ir paslēpts no klientiem",
+    "editEmployee": "Rediģēt darbinieku",
+    "addEmployee": "Pievienot darbinieku",
+    "employeePlaceholder": "Vārds vai iekšējais apzīmējums, piemēram, masieris",
+    "showName": "Rādīt šo vārdu klientiem",
+    "saveEmployee": "Saglabāt darbinieku",
+    "employeeSaved": "Darbinieks saglabāts",
+    "employeeRemoved": "Darbinieks noņemts",
+    "saveFailed": "Neizdevās saglabāt"
   }
 }

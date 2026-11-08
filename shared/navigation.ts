@@ -2,6 +2,7 @@ const providerDestinations = new Set([
   "/my-services", "/my-services/appointments", "/my-services/services", "/my-services/services/new",
   "/my-services/upcoming-appointments", "/my-services/past-appointments",
   "/my-services/availability", "/my-services/settings", "/my-services/settings/team", "/my-services/settings/storefront",
+  "/my-services/settings/pricing", "/my-services/settings/addresses",
 ]);
 
 export function isAllowedAuthReturnTo(value: unknown): value is string {

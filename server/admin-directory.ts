@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { companies, companyMemberships, providerSubscriptions } from "@shared/schema";
+import { companies, companyMemberships, providerSubscriptions, users as userProfiles } from "@shared/schema";
 import { inArray, or } from "drizzle-orm";
 import type { CompanyRole } from "@shared/schema";
 import type { AdminCompanyAffiliation, AdminProSubscription, AdminUser, AdminUserFilters, AdminUsersPage } from "@shared/admin";
@@ -42,6 +42,15 @@ export async function loadDirectorySubscriptions(userIds: string[], companyIds: 
 
 const noPro = (): AdminProSubscription => ({ enabled: false, proUntil: null });
 
+export async function loadDirectoryProviderStatuses(userIds: string[]): Promise<Map<string, boolean | null>> {
+  if (!userIds.length) return new Map();
+  // Use application roles, not editable Auth metadata or subscription/membership
+  // status. Limit this single query to the visible directory page.
+  const rows = await db.select({ id: userProfiles.id, currentRole: userProfiles.currentRole }).from(userProfiles)
+    .where(inArray(userProfiles.id, userIds));
+  return new Map(rows.map(row => [row.id, row.currentRole === "provider" ? true : row.currentRole === "seeker" ? false : null]));
+}
+
 export async function loadCompanyAffiliations() {
   const [records, memberships] = await Promise.all([
     db.select({ id: companies.id, name: companies.name, ownerId: companies.ownerId, isActive: companies.isActive }).from(companies),
@@ -59,6 +68,7 @@ function directoryUser(user: User, now: number): AdminUser {
     email: user.email || null,
     emailVerified: Boolean(user.email_confirmed_at),
     accountStatus: user.deleted_at || (user.banned_until && Date.parse(user.banned_until) > now) ? "blocked" : "active",
+    isServiceProvider: null,
     proSubscription: noPro(),
     createdAt: user.created_at,
     lastSignInAt: user.last_sign_in_at || null,
@@ -83,7 +93,7 @@ async function loadRegisteredUsers(): Promise<AdminUser[]> {
 
 export async function registeredUserDirectory(filters: AdminUserFilters, requestedPage: number, pageSize: number,
   loadCompanies: () => Promise<Map<string, AdminCompanyAffiliation[]>> = loadCompanyAffiliations,
-  loadSubscriptions = loadDirectorySubscriptions): Promise<AdminUsersPage> {
+  loadSubscriptions = loadDirectorySubscriptions, loadProviderStatuses = loadDirectoryProviderStatuses): Promise<AdminUsersPage> {
   const [registered, affiliations] = await Promise.all([loadRegisteredUsers(), loadCompanies()]);
   const search = filters.search.toLocaleLowerCase();
   const companySearch = filters.company.toLocaleLowerCase();
@@ -111,8 +121,12 @@ export async function registeredUserDirectory(filters: AdminUserFilters, request
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.min(requestedPage, totalPages);
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
-  const subscriptions = await loadSubscriptions(visible.map(user => user.id), Array.from(new Set(visible.flatMap(user => user.companies.map(company => company.id)))));
-  const users = visible.map(user => ({ ...user, proSubscription: subscriptions.get(`user:${user.id}`) ?? noPro(),
+  const visibleIds = visible.map(user => user.id);
+  const [subscriptions, providerStatuses] = await Promise.all([
+    loadSubscriptions(visibleIds, Array.from(new Set(visible.flatMap(user => user.companies.map(company => company.id))))),
+    loadProviderStatuses(visibleIds),
+  ]);
+  const users = visible.map(user => ({ ...user, isServiceProvider: providerStatuses.get(user.id) ?? null, proSubscription: subscriptions.get(`user:${user.id}`) ?? noPro(),
     companies: user.companies.map(company => ({ ...company, proSubscription: subscriptions.get(`company:${company.id}`) ?? noPro() })) }));
   return { users, page, pageSize, total, totalPages, hasNextPage: page < totalPages };
 }

@@ -1,0 +1,99 @@
+{
+  "date": "2026-11-08",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/156.0.8078.80",
+    "revision": "@fb096c0011f9d50f0a264a9376420cdea9c421e3",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "jsVersion": "15.6.75.27"
+  },
+  "checks": [
+    "conditional editor, shared-renderer preview, live name/note updates, whitespace fallback, safe literal text, toggle retention and no preview sends",
+    "1000 boundary, over-limit blocked with linked error, mutation payload, rejected/pending save retention and duplicate-submit prevention",
+    "existing saved message, keyboard focus, language-change retention and account-change draft isolation",
+    "free, unknown and failed entitlement disable stored custom-message editing",
+    "en/lv/ru long-text wrapping, translated labels/help and sample preview at phone, short-height, tablet and desktop sizes"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "height": 900
+    }
+  ],
+  "screenshots": [
+    "docs/custom-service-reminder-chrome-phone.png",
+    "docs/custom-service-reminder-chrome-preview.png"
+  ],
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "deferredLanguages": [
+    "ar",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Actual editor with synthetic fetch boundaries; no connected database, real sends, credentials or external requests. Native-language review, screen readers and physical devices unverified."
+}

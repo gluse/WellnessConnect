@@ -3,6 +3,7 @@ import { startupFailureDiagnostic, startupStages } from "../server/startup-diagn
 import { BillingDatabaseReadinessError, verifyBillingDatabaseReadiness } from "../server/billing/database-readiness.ts";
 import { CurrencyDatabaseReadinessError } from "../migrations/currencies/application-readiness.mjs";
 import { ServicePhotoDatabaseReadinessError } from "../migrations/service-photos/application-readiness.mjs";
+import { ServiceReminderMessageDatabaseReadinessError } from "../migrations/service-reminder-message/application-readiness.mjs";
 import { WORKSPACE_PRICING_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS, WORKSPACE_PRICING_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL,
   workspacePricingApplicationReadinessArguments as billingApplicationReadinessArguments, WorkspacePricingDatabaseReadinessError } from "../migrations/workspace-pricing/application-readiness.mjs";
 
@@ -45,6 +46,9 @@ check(() => assert.deepEqual(startupFailureDiagnostic("currency_database", new C
 }));
 check(() => assert.deepEqual(startupFailureDiagnostic("service_photo_database", new ServicePhotoDatabaseReadinessError(["service_photo_column", canary, "service_photo_constraints", "service_photo_column"])), {
   event: "application_startup_refused", stage: "service_photo_database", code: "SERVICE_PHOTO_DB_NOT_READY", checks: ["service_photo_column", "service_photo_constraints"],
+}));
+check(() => assert.deepEqual(startupFailureDiagnostic("service_reminder_message_database", new ServiceReminderMessageDatabaseReadinessError(["service_reminder_message_column", canary, "service_reminder_message_constraint", "service_reminder_message_column"])), {
+  event: "application_startup_refused", stage: "service_reminder_message_database", code: "SERVICE_REMINDER_MESSAGE_DB_NOT_READY", checks: ["service_reminder_message_column", "service_reminder_message_constraint"],
 }));
 await verifyBillingDatabaseReadiness(async (sql, parameters) => {
   calls++; assert.equal(sql, BILLING_APPLICATION_READINESS_SQL); assert.deepEqual(parameters, billingApplicationReadinessArguments()); return { rows: [good] };

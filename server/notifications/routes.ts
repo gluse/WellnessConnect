@@ -67,7 +67,7 @@ export function setupNotificationRoutes(app: Express) {
       kind = event.kind; oldDate = event.previousScheduledDate; date = event.scheduledDate; timeZone = event.timezone;
     }
     const preferences = await preferencesFor(db, booking!.seekerId);
-    const rendered = renderMessage({ kind, service: booking!.service.name, date, oldDate, language: preferences.language, timeZone });
+    const rendered = renderMessage({ kind, service: booking!.service.name, date, oldDate, language: preferences.language, timeZone, reminderMessage: booking!.service.reminderMessage });
     res.json(manualPreview({ ...rendered, preferences, email: booking!.seeker.email, customerName: [booking!.seeker.firstName, booking!.seeker.lastName].filter(Boolean).join(" ") || "Customer" }));
   }));
 }

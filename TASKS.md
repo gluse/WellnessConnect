@@ -28,6 +28,21 @@ Completed locally: [TASK-005 — Open Search directly](TASKS_COMPLETED.md#landin
 ## Translations
 - [ ] **Make sure interface is translated in multiple languages ** All labels , button names, tooltip texts should be translated when user switch language.
 
+  **Settings follow-up, 8 November 2026 — completed locally:** user reports that
+  `/my-services/settings` remains English after changing language. Assigned
+  Front End Developer `/root/settings_translation_frontend` accepted reversible
+  local settings/components/resource changes and isolated mocked verification
+  under standing cooperation. Root owns integration review. Preserve existing
+  uncommitted settings/locale work; no backend/database, private configuration,
+  connected operations or deployment. Test en/lv/ru only; ar/RTL, zh, fr, de, hi,
+  ja, pt and es remain deferred. Hard-coded settings/profile/employee text now
+  subscribes to language changes, including reactive save receipts; drafts and
+  API contracts are preserved. Chrome passes four behavior groups and 12 en/lv/ru
+  viewport cases; scoped TypeScript, account regression and env-isolated Vite
+  build pass. Root reviewed code, evidence and lv-phone/ru-desktop screenshots.
+  Full-project TypeScript still reports five existing native-proof errors in
+  unchanged files. [Scope, evidence and recovery](docs/settings-translations-handoff.md).
+
 ## Audit
 
 Help authorized support users answer **what happened, when, to which record, and
@@ -847,4 +862,70 @@ See [business scenarios](docs/payment-business-plan.md),
   [Scope, contracts, evidence and recovery](docs/service-photos-handoff.md).
   Testing covers en/lv/ru; other supported languages/RTL remain deferred.
 
-<!-- Add the next task here using TASK-049, or place it in the relevant section. -->
+## Custom service reminder message
+
+- [x] **TASK-049 — Customize service reminders with a live preview.**
+  **Implemented and development DB verified, 8 November 2026.** When automatic service reminders are enabled,
+  allow an optional plain text message and representative live preview. Preserve
+  the required appointment details; blank text retains the existing default.
+  Assigned Frontend `/root/custom_reminder_frontend`, Backend
+  `/root/custom_reminder_backend` and DB `/root/custom_reminder_db` accepted
+  reversible local implementation and offline/mocked checks under standing
+  cooperation. Root coordinates the contract and integrated review. Initial work
+  was offline only. Scoped types, Chrome 5 behavior groups/12 en/lv/ru
+  viewport cases, backend storage/rendering/worker/API/startup checks and offline
+  SQL/executor checks pass. Full-project types retain five baseline native errors;
+  Firefox/WebKit unavailable.
+  User subsequently approved the reviewed development migration and explicitly
+  waived TASK-049 DB backup. Named DB executor `/root/custom_reminder_db` accepted
+  the source-only one-shot migration/configuration-read/pre/post-check scope.
+  Backend stopped the verified local app/watch tree, preserving its terminal;
+  DB owner committed 0023 once and passed baseline/new-message readiness. All
+  original fields/counts of 28 services/36 bookings were preserved; new messages
+  are empty and the audit trigger remains enabled. Root independently reviewed
+  the sanitized receipt and SQL digest. No backup, retry, startup, real sends,
+  audit delivery or deployment. Restart the updated app to use the new editor.
+  Test en/lv/ru only; other supported languages and RTL remain deferred.
+  [Integrated evidence and activation handoff](docs/custom-service-reminder-handoff.md).
+
+- [x] **TASK-050 — Redesign account tabs and relocate provider settings.**
+  **Implemented locally, 8 November 2026:** User assigned Frontend `/root` to
+  make account sections real tabs, enable phone verification beside the input
+  without a separate save, add a read-only Role tab with provider activation,
+  and move pricing defaults/saved addresses to My Services settings. Existing
+  APIs, permissions, draft isolation and legacy destinations are retained.
+  Backend accepted/completed the two exact authentication return destinations.
+  Chrome: 11 behavior groups/66 en/lv/ru viewport cases plus enlarged text and
+  light/dark contrast checks pass; affected TypeScript, complete frontend bundle,
+  account/password/address/pricing/notification regressions and 45 auth-return
+  cases pass. Full-project TypeScript and the broad provider regression have
+  independently reproduced baseline failures. No connected account/SMS/database
+  execution or deployment. Other supported language/RTL verification is deferred.
+  **Follow-up:** Tab labels are General, Contact, Role and Password. Calendar and
+  My Services navigation appears only for `currentRole === "provider"` on desktop
+  and mobile, including provider menu/workspace entries. Role changes dismiss
+  stale provider navigation; activation reveals it immediately. Chrome passes
+  4 focused behavior groups/24 en/lv/ru viewport cases; affected TypeScript passes.
+  **Provider route guard:** `/my-services` and every descendant now require an
+  authenticated exact `provider` role before mounting provider content. Buyers
+  go to `/account#role`; signed-out/auth-failed users go to login. Cached auth
+  errors cannot cause a login redirect loop. Chrome passes 6 behavior groups/
+  42 en/lv/ru denied-route cases; scoped TypeScript and login regressions pass.
+  [Implementation, approvals, evidence and limits](docs/account-tabs-redesign-handoff.md).
+
+- [x] **TASK-051 — Show service-provider status in App users.**
+  **Implemented and verified locally, 8 November 2026.** Added a Service provider
+  column in `/administration` → App users, showing localized Yes/No/Unknown.
+  Frontend executor `/root` accepts the specific local page/translation/test scope;
+  assigned Backend `/root/admin_provider_backend` owns the protected API/DTO/query
+  dependency under standing cooperation. Use the authoritative account role,
+  independently of Pro, company membership or existing service count; missing roles
+  show Unknown. Scope: reversible local files and offline/mocked checks only.
+  No connected database/service/configuration access, startup or deployment.
+  Chrome passes three behavior groups/nine en/lv/ru viewport cases; affected
+  frontend/backend types, bundles and mocked regressions pass. Full-project types
+  reproduce five existing native-proof errors; no administration diagnostics.
+  Tests: en/lv/ru; ar/RTL, zh/fr/de/hi/ja/pt/es remain deferred.
+  [Scope and evidence](docs/admin-provider-status-handoff.md).
+
+<!-- Add the next task here using TASK-052, or place it in the relevant section. -->

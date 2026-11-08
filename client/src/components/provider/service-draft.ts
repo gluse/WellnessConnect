@@ -10,6 +10,7 @@ export function createServiceDraft(service?: Service) {
     reminderEnabled: service?.reminderEnabled ?? false,
     reminderMethod: service?.reminderMethod ?? "email",
     reminderHours: service?.reminderHours ?? 24,
+    reminderMessage: service?.reminderMessage ?? "",
     ageGroups: service?.ageGroups ?? [] as string[], targetGender: service?.targetGender ?? "both",
     instantBooking: service?.instantBooking ?? false, advancePaymentPercent: service?.advancePaymentPercent ?? 50,
     addressId: service?.addressId ?? null,

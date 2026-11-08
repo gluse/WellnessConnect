@@ -359,7 +359,7 @@ export class DatabaseStorage implements IStorage {
       if (updates.imageUrls !== undefined) await assertGalleryConfiguration(tx, { ...previous, ...updates }, previous);
       await assertReminderConfiguration(tx, previous, updates, previous);
       const [updated] = await tx.update(services).set({ ...updates, updatedAt: new Date() }).where(eq(services.id, id)).returning();
-      if (updated.reminderEnabled !== previous.reminderEnabled || updated.reminderMethod !== previous.reminderMethod || updated.reminderHours !== previous.reminderHours) await reconcileServiceReminders(tx, id);
+      if (updated.reminderEnabled !== previous.reminderEnabled || updated.reminderMethod !== previous.reminderMethod || updated.reminderHours !== previous.reminderHours || updated.reminderMessage !== previous.reminderMessage) await reconcileServiceReminders(tx, id);
       return updated;
     });
     return serviceLocation(service, service.addressId == null ? null : (await db.select().from(addresses).where(eq(addresses.id, service.addressId)))[0]);

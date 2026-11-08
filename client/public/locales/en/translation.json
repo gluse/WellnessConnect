@@ -547,7 +547,7 @@
     "loading": "Loading account details…",
     "back": "Back to dashboard",
     "title": "Account details",
-    "intro": "Manage your personal information, saved addresses and password.",
+    "intro": "Manage your personal information, communication preferences, role and password.",
     "sections": "Account sections"
   },
   "passwordForm": {
@@ -1055,6 +1055,14 @@
     "hours": "Hours before appointment",
     "hoursInvalid": "Enter a whole number from 1 to 168 hours.",
     "reminderHelp": "Customer preference overrides this default. Only confirmed appointments with a future reminder time receive a reminder.",
+    "customMessage": "Custom message (optional)",
+    "customMessageHelp": "Add a note after the appointment details, up to 1,000 characters. It is sent as written, without translation. Leave blank to use the standard reminder.",
+    "customMessageInvalid": "Use no more than 1,000 characters.",
+    "customMessageCount": "{{count}} / 1,000 characters",
+    "whatsappCustomMessageHelp": "Custom WhatsApp messages require a compatible approved template. Customer channel preferences still apply.",
+    "messagePreview": "Message preview",
+    "messagePreviewHelp": "Example appointment in UTC, shown in your interface language. Actual details and the standard reminder language follow the customer’s booking and preferences. No message is sent by this preview.",
+    "sampleService": "Sample service",
     "reminderSettings": "Appointment reminders",
     "statusUnavailable": "Reminder status is currently unavailable.",
     "appointments": "Appointments",
@@ -1089,7 +1097,10 @@
       "unverified_phone": "The customer phone number has not been verified.",
       "missing_permission": "The customer has not allowed this communication method.",
       "missing_email": "No customer email address is available."
-    }
+    },
+    "saveAndVerifyHelp": "Your phone number will be saved before the verification code is sent. Other preference edits are saved separately.",
+    "sendingCode": "Sending code…",
+    "resendWait": "Please wait before requesting another code."
   },
   "appointmentCollaboration": {
     "viewBookings": "View bookings ({{count}})",
@@ -1701,5 +1712,63 @@
     "next": "Next picture",
     "unavailable": "This picture could not be loaded.",
     "alt": "{{name}}, picture {{current}} of {{total}}"
+  },
+  "adminUsers": {
+    "serviceProvider": "Service provider",
+    "yes": "Yes",
+    "no": "No",
+    "unknown": "Unknown"
+  },
+  "accountRole": {
+    "title": "Role",
+    "help": "Choose how you use FitsMyTime. You can still find and book services as a service provider.",
+    "current": "Current role",
+    "buyer": "User/buyer",
+    "provider": "Service provider",
+    "become": "Become Service Provider",
+    "activating": "Activating…",
+    "manage": "Manage my services",
+    "error": "Unable to update your role. Please try again.",
+    "activated": "Service provider role activated."
+  },
+  "accountTabs": {
+    "general": "General",
+    "contact": "Contact",
+    "password": "Password"
+  },
+  "providerSettings": {
+    "loading": "Loading settings…",
+    "description": "Manage your provider profile and company.",
+    "sections": "Settings sections",
+    "profileTab": "Profile & employees",
+    "teamTab": "Team & access",
+    "loadingEmployees": "Loading employees…",
+    "loadEmployeesError": "Unable to load employees. Refresh to try again.",
+    "teamDenied": "Team settings are available to company managers.",
+    "teamHint": "Open Team & access to manage your company.",
+    "denied": "Your access level does not allow changing settings.",
+    "notFound": "Settings page not found.",
+    "profileTitle": "Provider profile",
+    "offerAs": "Offer services as",
+    "individual": "Individual",
+    "company": "Company",
+    "companyName": "Company name *",
+    "companyPlaceholder": "e.g., Riga Beauty Salon",
+    "companyHelp": "Customers see this name instead of the administrator’s personal name on all your offers.",
+    "saveProfile": "Save Profile",
+    "profileSaved": "Provider profile saved",
+    "employees": "Employees",
+    "employeesHelp": "Add your team, then assign an employee when editing a service. You manage their offers and bookings from this account.",
+    "employeesEmpty": "No employees added yet.",
+    "nameVisible": "Name visible to customers",
+    "nameHidden": "Name hidden from customers",
+    "editEmployee": "Edit employee",
+    "addEmployee": "Add employee",
+    "employeePlaceholder": "Name or internal label, e.g., Massage therapist",
+    "showName": "Show this name to customers",
+    "saveEmployee": "Save Employee",
+    "employeeSaved": "Employee saved",
+    "employeeRemoved": "Employee removed",
+    "saveFailed": "Unable to save"
   }
 }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { getTableName } from "drizzle-orm";
-import { reconcileBookingReminder, captureStatusEvent, assertReminderConfiguration } from "../server/notifications/repository.ts";
+import { reconcileBookingReminder, captureStatusEvent, assertReminderConfiguration, bookingNotificationState } from "../server/notifications/repository.ts";
 
 // Scripted ORM boundary: these tests execute the real scheduler's eligibility,
 // timing, channel and duplicate-attempt decisions. They do not establish SQL
@@ -80,6 +80,19 @@ try {
   const reactivated = boundary({ event: queuedEvent, job: { ...dueJob, state: "cancelled" } }); await reconcile(reactivated); assert.equal(reactivated.job.state, "queued");
   await assert.rejects(assertReminderConfiguration(boundary({ pro: false }).database, baseBooking, { reminderEnabled: true }), /PRO/); cases++;
   await assertReminderConfiguration(boundary({ pro: false }).database, baseBooking, { reminderEnabled: false, reminderHours: 24, reminderMethod: "email" }); cases++;
+  await assert.rejects(assertReminderConfiguration(boundary({ pro: false }).database, baseBooking, { reminderMessage: "Bring documents" }), /PRO/); cases++;
+  await assert.rejects(assertReminderConfiguration(boundary({ pro: false }).database, baseBooking, { reminderMessage: "Changed instructions" }, { ...baseService, reminderMessage: "Bring documents" }), /PRO/); cases++;
+  await assertReminderConfiguration(boundary({ pro: false }).database, baseBooking, { reminderMessage: "Bring documents" }, { ...baseService, reminderMessage: "Bring documents" }); cases++;
+  await assertReminderConfiguration(boundary({ pro: false }).database, baseBooking, { reminderMessage: "" }); cases++;
+  await assertReminderConfiguration(boundary().database, baseBooking, { reminderMessage: "Bring documents" }); cases++;
+  process.env.VONAGE_WHATSAPP_FROM = "37120000002";
+  process.env.VONAGE_WHATSAPP_TEMPLATES_JSON = JSON.stringify({ "en:reminder": { name: "reminder", namespace: "synthetic", language: "en" } });
+  const summaryOptions = { event: queuedEvent, job: dueJob, preferences: { preferredMethod: "whatsapp" } };
+  const standardSummary = await bookingNotificationState(boundary(summaryOptions).database, baseBooking);
+  assert.equal(standardSummary.reminder.state, "scheduled", "Default approved template remains available for blank notes"); cases++;
+  const customSummary = await bookingNotificationState(boundary({ ...summaryOptions, service: { reminderMessage: "Bring documents" } }).database, baseBooking);
+  assert.equal(customSummary.reminder.state, "unavailable"); assert.equal(customSummary.reminder.reasonCode, "not_configured");
+  assert.equal(customSummary.reminder.channel, "whatsapp", "Customer preference overrides service default for custom-template readiness"); cases++;
   const manual = boundary({ pro: false }); const manualResult = await captureStatusEvent(manual.database, baseBooking, "accepted", "Europe/Riga");
   assert.equal(manualResult.mode, "manual"); assert.equal(manual.job, null); cases++;
   const automatic = boundary(); const automaticResult = await captureStatusEvent(automatic.database, baseBooking, "rescheduled", "Europe/Riga", now);

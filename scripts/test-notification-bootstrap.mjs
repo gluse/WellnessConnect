@@ -67,6 +67,8 @@ const fixtures = {
     });
   },
   isAuthenticated(req, res, next) { const actor = req.session.auth?.userId; if (!actor) return res.status(401).json({ message: "Unauthorized" }); req.user = { claims: { sub: actor } }; next(); },
+  auditResponseDenials: () => (_req, _res, next) => next(),
+  protectedReadAudit: () => (_req, _res, next) => next(),
   storage: { async getBookingById(id) { return state.booking?.id === id ? state.booking : undefined; } },
   appUrl: "http://example.test",
 };
@@ -122,7 +124,11 @@ try {
   let response = await request(app, endpoints[0][0]);
   assert.equal(response.status, 200, "Actual bootstrap must hydrate workspace before capabilities, not return the missing-workspace 403"); assert.equal(response.body.hasPro, false); cases++;
   response = await request(app, endpoints[1][0]); assert.equal(response.status, 200); assert.equal(response.body.notification.eventId, eventId); cases++;
-  response = await request(app, endpoints[2][0], endpoints[2][1]); assert.equal(response.status, 200); assert.ok(response.body.channels.email.href.startsWith("mailto:")); cases++;
+  state.booking.service.reminderMessage = "Bring <documents> & {date}.\nArrive early.";
+  response = await request(app, endpoints[2][0], endpoints[2][1]); assert.equal(response.status, 200); assert.ok(response.body.channels.email.href.startsWith("mailto:"));
+  assert.ok(response.body.message.includes(state.booking.service.reminderMessage)); cases++;
+  response = await request(app, endpoints[2][0], { method: "POST", body: { kind: "status", timeZone: "Europe/Riga" } });
+  assert.equal(response.status, 200); assert.ok(!response.body.message.includes(state.booking.service.reminderMessage), "Status preview excludes reminder-only note"); cases++;
   for (const [url, options] of endpoints) { assert.equal((await request(app, url, { ...options, actor: null })).status, 401); cases++; }
   for (const [url, options] of endpoints) { assert.equal((await request(app, url, { ...options, actor: "admin", companyId: 99 })).status, 403); cases++; }
   for (const [url, options] of endpoints.slice(1)) { assert.equal((await request(app, url, { ...options, actor: "different-provider" })).status, 403); cases++; }

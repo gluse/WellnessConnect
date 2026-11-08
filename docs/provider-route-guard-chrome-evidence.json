@@ -1,0 +1,246 @@
+{
+  "date": "2026-11-08",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/156.0.8078.80",
+    "revision": "@fb096c0011f9d50f0a264a9376420cdea9c421e3",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "jsVersion": "15.6.75.27"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    "en/lv/ru: every My Services entry and descendant redirects non-providers before mounting or fetching provider features",
+    "empty, missing, unknown and case-mismatched roles fail closed",
+    "signed-out deep links preserve the existing login return destination",
+    "authentication loading cannot flash provider content; successful provider resolution opens it and live role loss removes it",
+    "resolved non-provider, auth failures and failed revalidation of a cached provider all deny the route",
+    "en/lv/ru provider access remains functional and logout redirects away from mounted provider content"
+  ],
+  "cases": [
+    {
+      "lang": "en",
+      "path": "/my-services",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/appointments",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/upcoming-appointments",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/past-appointments",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/services",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/services/new",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/services/7/edit",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/availability",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/reports",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/settings",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/settings/pricing",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/settings/addresses",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "en",
+      "path": "/my-services/unknown/nested",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/appointments",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/upcoming-appointments",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/past-appointments",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/services",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/services/new",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/services/7/edit",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/availability",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/reports",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/settings",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/settings/pricing",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/settings/addresses",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "lv",
+      "path": "/my-services/unknown/nested",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/appointments",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/upcoming-appointments",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/past-appointments",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/services",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/services/new",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/services/7/edit",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/availability",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/reports",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/settings",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/settings/pricing",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/settings/addresses",
+      "outcome": "account-role"
+    },
+    {
+      "lang": "ru",
+      "path": "/my-services/unknown/nested",
+      "outcome": "account-role"
+    }
+  ],
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Actual App using synthetic in-memory fetch mocks; no live auth/session/database/service operations. Frontend route guard; server endpoint authorization is unchanged."
+}

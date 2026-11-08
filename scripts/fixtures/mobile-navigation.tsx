@@ -8,7 +8,7 @@ import type { WorkspaceContext } from "../../shared/schema";
 
 declare const __FORM_RESOURCES__: Record<string, { translation: object }>;
 const params = new URLSearchParams(location.search);
-const user = { id: "synthetic-provider", firstName: "Synthetic", lastName: "Provider", email: "synthetic@example.invalid", currentRole: "provider", providerType: "individual" };
+let user = { id: "synthetic-provider", firstName: "Synthetic", lastName: "Provider", email: "synthetic@example.invalid", currentRole: params.has("role") ? params.get("role") : "provider", providerType: "individual" };
 let signedIn = !params.has("guest");
 const workspaces: WorkspaceContext["workspaces"] = [
   { id: 2, name: "Synthetic company with a long workspace name <script>test</script>", role: "admin" },
@@ -19,15 +19,28 @@ const permissions = { manageCompany: true, manageTeam: true, manageServices: tru
 const personal: WorkspaceContext = { company: null, membership: null, workspaces, permissions, invalid: false };
 let context = personal;
 const fixture = {
-  ready: false, result: "success", contextResult: params.get("context") ?? "success", writes: [] as { companyId: number | null }[], unexpected: [] as string[],
+  ready: false, result: "success", authResult: params.get("auth") ?? "success", contextResult: params.get("context") ?? "success", writes: [] as { companyId: number | null }[], reads: [] as string[], unexpected: [] as string[],
   release: null as (() => void) | null, releaseContext: null as (() => void) | null,
+  releaseAuth: null as (() => void) | null,
   refresh: () => queryClient.invalidateQueries({ queryKey: ["/api/company/context"] }),
   signOut: () => { signedIn = false; queryClient.setQueryData(["/api/auth/user"], null); },
+  setRole: (role: string | null) => { user = { ...user, currentRole: role }; queryClient.setQueryData(["/api/auth/user"], user); },
+  failAuth: () => { fixture.authResult = "error"; return queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] }); },
 };
 Object.assign(window, { phase2Fixture: fixture });
 window.fetch = async (input, options = {}) => {
   const path = String(input), method = options.method || "GET";
-  if (path === "/api/auth/user" && method === "GET") return Response.json(signedIn ? user : null);
+  if (method === "GET") fixture.reads.push(path);
+  if (path === "/api/auth/user" && method === "GET") {
+    if (fixture.authResult === "pending") await new Promise<void>(resolve => { fixture.releaseAuth = resolve; });
+    if (fixture.authResult === "error") return Response.json({}, { status: 503 });
+    return Response.json(signedIn ? user : null);
+  }
+  if (path === "/api/users/role" && method === "PATCH") {
+    const body = JSON.parse(String(options.body));
+    if (body.role !== "provider") throw Error("Unexpected fixture role update");
+    user = { ...user, currentRole: "provider" }; return Response.json(user);
+  }
   if (path === "/api/company/context") {
     if (method === "POST") {
       const body = JSON.parse(String(options.body)); fixture.writes.push(body);
@@ -48,6 +61,7 @@ window.fetch = async (input, options = {}) => {
     if (path.startsWith("/api/services/search/page?")) return Response.json({ services: [], nextCursor: null, mode: "text" });
     if (path === "/api/account/search-location") return Response.json(null);
     if (path === "/api/admin/access") return Response.json({ isAdmin: false });
+    if (path === "/api/admin/audit/access") return Response.json({ canRead: false });
     if (path === "/api/auth/providers") return Response.json({ google: false, facebook: false, apple: false, microsoft: false });
     if (path === "/api/billing/runtime") return Response.json({ subscriptionsReady: false, administrationReady: false, hostedOrigins: [] });
     if (path === "/api/account/communication") return Response.json({ phone: null, preferredMethod: null, language: "en", smsOptIn: false, whatsappOptIn: false, phoneVerified: false });
@@ -62,7 +76,7 @@ const language = params.get("lang") || "en";
 await i18next.init({ lng: language, fallbackLng: "en", supportedLngs: ["en", "lv", "ru"], resources: __FORM_RESOURCES__, interpolation: { escapeValue: false } });
 document.documentElement.lang = language;
 localStorage.clear();
-queryClient.setQueryData(["/api/auth/user"], signedIn ? user : null);
+if (fixture.authResult === "success") queryClient.setQueryData(["/api/auth/user"], signedIn ? user : null);
 if (fixture.contextResult === "success") queryClient.setQueryData(["/api/company/context"], context);
 installServiceNavigationTracking();
 createRoot(document.getElementById("root")!).render(<App />);

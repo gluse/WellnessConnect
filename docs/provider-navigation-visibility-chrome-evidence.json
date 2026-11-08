@@ -1,0 +1,184 @@
+{
+  "date": "2026-11-08",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/156.0.8078.80",
+    "revision": "@fb096c0011f9d50f0a264a9376420cdea9c421e3",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "jsVersion": "15.6.75.27"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    "en/lv/ru provider and buyer navigation, mobile provider menu/workspace visibility, personal actions, touch targets and breakpoint/reflow coverage",
+    "missing/empty/unknown/case-mismatched roles never show provider navigation",
+    "live role changes hide/restore navigation, dismiss stale provider workspace UI and preserve mobile bar clearance",
+    "real account Role action reveals provider navigation immediately; provider calendar works and logout hides private navigation"
+  ],
+  "matrix": [
+    {
+      "lang": "en",
+      "role": "seeker",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "role": "seeker",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "role": "seeker",
+      "width": 1024,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "role": "seeker",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "role": "provider",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "role": "provider",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "role": "provider",
+      "width": 1024,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "role": "provider",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "role": "seeker",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "role": "seeker",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "role": "seeker",
+      "width": 1024,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "role": "seeker",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "role": "provider",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "role": "provider",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "role": "provider",
+      "width": 1024,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "role": "provider",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "role": "seeker",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "role": "seeker",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "role": "seeker",
+      "width": 1024,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "role": "seeker",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "role": "provider",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "role": "provider",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "role": "provider",
+      "width": 1024,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "role": "provider",
+      "width": 1280,
+      "height": 900
+    }
+  ],
+  "screenshots": [
+    "docs/provider-navigation-visibility-chrome-seeker-320.png",
+    "docs/provider-navigation-visibility-chrome-seeker-1280.png",
+    "docs/provider-navigation-visibility-chrome-provider-320.png",
+    "docs/provider-navigation-visibility-chrome-provider-1280.png"
+  ],
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Actual App with synthetic in-memory fetch mocks; role changes exercise frontend visibility only. No real sessions, database writes, provider messages or deployment. No physical-device or screen-reader coverage."
+}

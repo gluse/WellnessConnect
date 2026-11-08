@@ -547,7 +547,7 @@
     "loading": "Chargement des données du compte…",
     "back": "Retour au tableau de bord",
     "title": "Données du compte",
-    "intro": "Gérez vos informations personnelles, adresses enregistrées et mot de passe.",
+    "intro": "Gérez vos informations personnelles, préférences de communication, rôle et mot de passe.",
     "sections": "Rubriques du compte"
   },
   "passwordForm": {
@@ -1059,6 +1059,14 @@
     "hours": "Heures avant le rendez-vous",
     "hoursInvalid": "Saisissez un entier de 1 à 168 heures.",
     "reminderHelp": "Le choix du client remplace ce réglage. Seuls les rendez-vous confirmés avec une heure de rappel future reçoivent un rappel.",
+    "customMessage": "Message personnalisé (facultatif)",
+    "customMessageHelp": "Ajoutez une note après les détails du rendez-vous, jusqu’à 1 000 caractères. Elle est envoyée telle quelle, sans traduction. Laissez vide pour le rappel standard.",
+    "customMessageInvalid": "Utilisez au maximum 1 000 caractères.",
+    "customMessageCount": "{{count}} / 1 000 caractères",
+    "whatsappCustomMessageHelp": "Les messages WhatsApp personnalisés nécessitent un modèle approuvé compatible. Les préférences de canal du client restent prioritaires.",
+    "messagePreview": "Aperçu du message",
+    "messagePreviewHelp": "Exemple de rendez-vous en UTC, dans la langue de votre interface. Les détails réels et la langue du rappel standard suivent la réservation et les préférences du client. Cet aperçu n’envoie aucun message.",
+    "sampleService": "Exemple de service",
     "reminderSettings": "Rappels de rendez-vous",
     "statusUnavailable": "Statut du rappel indisponible.",
     "appointments": "Rendez-vous",
@@ -1093,7 +1101,10 @@
       "unverified_phone": "Téléphone client non vérifié.",
       "missing_permission": "Le client n’a pas autorisé ce moyen de communication.",
       "missing_email": "Aucune adresse e-mail client disponible."
-    }
+    },
+    "saveAndVerifyHelp": "Votre numéro sera enregistré avant l’envoi du code de vérification. Les autres modifications des préférences sont enregistrées séparément.",
+    "sendingCode": "Envoi du code…",
+    "resendWait": "Veuillez patienter avant de demander un autre code."
   },
   "appointmentCollaboration": {
     "viewBookings": "Voir les réservations ({{count}})",
@@ -1710,5 +1721,63 @@
     "next": "Photo suivante",
     "unavailable": "Impossible de charger cette photo.",
     "alt": "{{name}}, photo {{current}} sur {{total}}"
+  },
+  "adminUsers": {
+    "serviceProvider": "Prestataire de services",
+    "yes": "Oui",
+    "no": "Non",
+    "unknown": "Inconnu"
+  },
+  "accountRole": {
+    "title": "Rôle",
+    "help": "Choisissez comment utiliser FitsMyTime. Les prestataires peuvent aussi rechercher et réserver des services.",
+    "current": "Rôle actuel",
+    "buyer": "Utilisateur/acheteur",
+    "provider": "Prestataire de services",
+    "become": "Devenir prestataire de services",
+    "activating": "Activation…",
+    "manage": "Gérer mes services",
+    "error": "Impossible de mettre à jour votre rôle. Veuillez réessayer.",
+    "activated": "Rôle de prestataire activé."
+  },
+  "accountTabs": {
+    "general": "Général",
+    "contact": "Contact",
+    "password": "Mot de passe"
+  },
+  "providerSettings": {
+    "loading": "Chargement des paramètres…",
+    "description": "Gérez votre profil de prestataire et votre entreprise.",
+    "sections": "Sections des paramètres",
+    "profileTab": "Profil et employés",
+    "teamTab": "Équipe et accès",
+    "loadingEmployees": "Chargement des employés…",
+    "loadEmployeesError": "Impossible de charger les employés. Actualisez la page pour réessayer.",
+    "teamDenied": "Les paramètres de l’équipe sont accessibles aux responsables de l’entreprise.",
+    "teamHint": "Ouvrez Équipe et accès pour gérer votre entreprise.",
+    "denied": "Votre niveau d’accès ne permet pas de modifier les paramètres.",
+    "notFound": "Page de paramètres introuvable.",
+    "profileTitle": "Profil du prestataire",
+    "offerAs": "Proposer des services en tant que",
+    "individual": "Particulier",
+    "company": "Entreprise",
+    "companyName": "Nom de l’entreprise *",
+    "companyPlaceholder": "Par exemple : Salon de beauté Riga",
+    "companyHelp": "Les clients voient ce nom à la place du nom personnel de l’administrateur dans toutes vos offres.",
+    "saveProfile": "Enregistrer le profil",
+    "profileSaved": "Profil du prestataire enregistré",
+    "employees": "Employés",
+    "employeesHelp": "Ajoutez votre équipe, puis affectez un employé lors de la modification d’un service. Vous gérez leurs offres et réservations depuis ce compte.",
+    "employeesEmpty": "Aucun employé ajouté pour le moment.",
+    "nameVisible": "Nom visible par les clients",
+    "nameHidden": "Nom masqué aux clients",
+    "editEmployee": "Modifier l’employé",
+    "addEmployee": "Ajouter un employé",
+    "employeePlaceholder": "Nom ou libellé interne, par exemple : massothérapeute",
+    "showName": "Afficher ce nom aux clients",
+    "saveEmployee": "Enregistrer l’employé",
+    "employeeSaved": "Employé enregistré",
+    "employeeRemoved": "Employé supprimé",
+    "saveFailed": "Impossible d’enregistrer"
   }
 }

@@ -8,6 +8,7 @@ export const serviceControlIds: Partial<Record<keyof ServiceDraft, string>> = {
   cleanupTime: "cleanupTime", maxCapacity: "maxCapacity", advancePaymentPercent: "advancePayment",
   addressId: "service-address", externalUrl: "externalUrl",
   reminderHours: "service-reminder-hours",
+  reminderMessage: "service-reminder-message",
 };
 export function fieldFeedback(errors: ServiceErrors, field: keyof ServiceDraft, help?: string) {
   return {
@@ -31,6 +32,7 @@ export function validateServiceDraft(draft: ServiceDraft, locale = "en"): Partia
   if (!Number.isInteger(draft.advancePaymentPercent) || draft.advancePaymentPercent < 0 || draft.advancePaymentPercent > 100) errors.advancePaymentPercent = "serviceForm.advanceInvalid";
   if (!draft.addressId) errors.addressId = "serviceForm.addressRequired";
   if (!Number.isInteger(draft.reminderHours) || draft.reminderHours < 1 || draft.reminderHours > 168) errors.reminderHours = "notifications.hoursInvalid";
+  if (draft.reminderMessage.trim().length > 1000) errors.reminderMessage = "notifications.customMessageInvalid";
   if (draft.externalUrl) {
     try { if (!["http:", "https:"].includes(new URL(draft.externalUrl).protocol)) errors.externalUrl = "serviceForm.urlInvalid"; }
     catch { errors.externalUrl = "serviceForm.urlInvalid"; }

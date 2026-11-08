@@ -17,6 +17,8 @@ export interface AdminUser {
   email: string | null;
   emailVerified: boolean;
   accountStatus: "active" | "blocked";
+  /** null when the application profile has no recognized role. */
+  isServiceProvider: boolean | null;
   proSubscription: AdminProSubscription;
   companies: AdminCompany[];
   createdAt: string;

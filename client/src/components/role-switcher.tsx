@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function RoleSwitcher() {
+  const { user } = useAuth();
   const [location] = useLocation();
   const inMyServices = location === "/my-services" || location.startsWith("/my-services/");
   const inSearch = location === "/" || location === "/search";
@@ -23,14 +25,14 @@ export default function RoleSwitcher() {
       >
         <Link href="/my-bookings" aria-current={location === "/my-bookings" ? "page" : undefined}>My Bookings</Link>
       </Button>
-      <Button
+      {user?.currentRole === "provider" && <Button
         asChild
         variant={inMyServices ? "default" : "ghost"}
         size="sm"
         className="flex-1 sm:flex-none px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium"
       >
         <Link href="/my-services" aria-current={inMyServices ? "page" : undefined}>My Services</Link>
-      </Button>
+      </Button>}
     </nav>
   );
 }

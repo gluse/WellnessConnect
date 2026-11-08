@@ -24,6 +24,6 @@ export default function ServiceLocationFields({ newService, setNewService, error
       {addresses.isError && <p role="alert">{t("serviceForm.addressesError")} <button type="button" className="underline min-h-11" onClick={() => void addresses.refetch()}>{t("publicSearch.retry")}</button></p>}
       {addresses.data?.length === 0 && <p>{t("serviceForm.addressesEmpty")}</p>}
     </div>
-    <p id="service-address-help" className="text-sm text-muted-foreground">{t("serviceForm.addressHelp")} <a href="/account#addresses" target="_blank" rel="noopener noreferrer" className="underline text-primary inline-block py-2">{t("serviceForm.manageAddresses")}</a></p>
+    <p id="service-address-help" className="text-sm text-muted-foreground">{t("serviceForm.addressHelp")} <a href="/my-services/settings/addresses" target="_blank" rel="noopener noreferrer" className="underline text-primary inline-block py-2">{t("serviceForm.manageAddresses")}</a></p>
   </div>;
 }

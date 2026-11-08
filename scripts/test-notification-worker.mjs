@@ -51,6 +51,17 @@ function historicalAttempts(input, count, { seekerId = "customer", providerId = 
 }
 try {
   await scenario("PRO accepted update", () => {}, { state: "accepted", calls: 1 });
+  const customNote = "Please arrive early.\nBring <documents> & {date}.";
+  await scenario("Reminder loads latest custom note at dispatch", input => { input.notification_events[0].kind = "reminder"; input.services[0].reminderMessage = customNote; }, { state: "accepted", calls: 1 }, (_memory, message) => {
+    assert.ok(message.message.includes(`\n\n${customNote}\nFitsMyTime`));
+    assert.ok(message.message.includes("Synthetic service")); assert.ok(message.message.includes(message.date));
+    assert.equal(message.reminderMessage, customNote); return { provider: "vonage", messageId: "synthetic-custom" };
+  });
+  await scenario("Status message excludes reminder note", input => { input.services[0].reminderMessage = customNote; }, { state: "accepted", calls: 1 }, (_memory, message) => {
+    assert.ok(!message.message.includes(customNote)); assert.equal(message.reminderMessage, ""); return { provider: "vonage", messageId: "synthetic-status" };
+  });
+  process.env.VONAGE_WHATSAPP_TEMPLATES_JSON = JSON.stringify({ "lv:reminder": { name: "reminder", namespace: "synthetic", language: "lv" } });
+  await scenario("Customer WhatsApp preference requires approved custom template", input => { input.notification_events[0].kind = "reminder"; input.services[0].reminderMessage = customNote; input.user_communication_preferences[0].preferredMethod = "whatsapp"; }, { state: "skipped", calls: 0, reason: "not_configured" });
   await scenario("Unverified phone cannot send", input => { input.user_communication_preferences[0].phoneVerifiedAt = null; }, { state: "skipped", calls: 0, reason: "unverified_phone" });
   await scenario("Revoked permission cannot send", input => { input.user_communication_preferences[0].smsOptIn = false; }, { state: "skipped", calls: 0, reason: "missing_permission" });
   await scenario("Stale status event", input => { input.bookings[0].notificationRevision++; }, { state: "cancelled", calls: 0, reason: "superseded" });

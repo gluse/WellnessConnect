@@ -14,17 +14,20 @@ export function notificationConfig(env: NodeJS.ProcessEnv = process.env) {
   return config;
 }
 type Template = { name: string; language: string; namespace: string };
-export function templateFor(config: NotificationConfig, language: string, kind: string): Template | null {
+export function templateFor(config: NotificationConfig, language: string, kind: string, reminderMessage?: string | null): Template | null {
   try {
-    const value = JSON.parse(config.whatsappTemplates)[`${language}:${kind}`];
+    // Custom reminders require a separately approved three-variable template.
+    // Never silently omit a provider's note from the two-variable default.
+    const templateKind = kind === "reminder" && reminderMessage?.trim() ? "reminder_custom" : kind;
+    const value = JSON.parse(config.whatsappTemplates)[`${language}:${templateKind}`];
     return value && [value.name, value.language, value.namespace].every(v => typeof v === "string" && /^[a-zA-Z0-9_-]{1,150}$/.test(v)) ? value : null;
   } catch { return null; }
 }
-export function transportReady(config: NotificationConfig, channel: CommunicationMethod, language = "en", kind = "reminder") {
+export function transportReady(config: NotificationConfig, channel: CommunicationMethod, language = "en", kind = "reminder", reminderMessage?: string | null) {
   if (!config.automationEnabled) return false;
   if (channel === "email") return Boolean(config.resendKey && config.emailFrom && config.resendSecret);
   const common = Boolean(config.applicationId && config.privateKey && config.apiKey && config.signatureSecret);
-  return common && (channel === "sms" ? Boolean(config.smsFrom) : Boolean(config.whatsappFrom && templateFor(config, language, kind)));
+  return common && (channel === "sms" ? Boolean(config.smsFrom) : Boolean(config.whatsappFrom && templateFor(config, language, kind, reminderMessage)));
 }
 export function verificationReady(config: NotificationConfig) { return config.verificationEnabled && Boolean(config.applicationId && config.privateKey); }
 function jwt(config: NotificationConfig) {
@@ -61,17 +64,18 @@ export function createTransports(config: NotificationConfig, fetcher: typeof fet
       const result = await post(`https://api.nexmo.com/v2/verify/${encodeURIComponent(requestId)}`, jwt(config), { code });
       return result.status === "completed" && result.request_id === requestId;
     },
-    async send(input: { channel: CommunicationMethod; recipient: string; subject: string; message: string; jobId: string; language: string; kind: string; service: string; date: string; oldDate: string }) {
-      if (!transportReady(config, input.channel, input.language, input.kind)) throw new TransportError("failed", "not_configured");
+    async send(input: { channel: CommunicationMethod; recipient: string; subject: string; message: string; jobId: string; language: string; kind: string; service: string; date: string; oldDate: string; reminderMessage?: string }) {
+      if (!transportReady(config, input.channel, input.language, input.kind, input.reminderMessage)) throw new TransportError("failed", "not_configured");
       if (input.channel === "email") {
         const result = await post("https://api.resend.com/emails", config.resendKey, { from: config.emailFrom, to: [input.recipient], subject: input.subject, text: input.message }, input.jobId);
         if (typeof result.id !== "string" || result.id.length > 255) throw new TransportError("unknown", "invalid_response");
         return { provider: "resend" as const, messageId: result.id };
       }
-      const template = templateFor(config, input.language, input.kind);
+      const template = templateFor(config, input.language, input.kind, input.reminderMessage);
       const message = input.channel === "sms" ? { channel: "sms", message_type: "text", text: input.message, from: config.smsFrom }
         : { channel: "whatsapp", message_type: "template", from: config.whatsappFrom, whatsapp: { policy: "deterministic", locale: template!.language },
-          template: { name: `${template!.namespace}:${template!.name}`, parameters: [input.service, input.date, ...(input.kind === "rescheduled" ? [input.oldDate] : [])] } };
+          template: { name: `${template!.namespace}:${template!.name}`, parameters: [input.service, input.date, ...(input.kind === "rescheduled" ? [input.oldDate] : []),
+            ...(input.kind === "reminder" && input.reminderMessage?.trim() ? [input.reminderMessage.trim()] : [])] } };
       const result = await post("https://api.nexmo.com/v1/messages", jwt(config), { ...message, to: input.recipient.replace(/^\+/, ""), client_ref: input.jobId });
       if (typeof result.message_uuid !== "string" || result.message_uuid.length > 255) throw new TransportError("unknown", "invalid_response");
       return { provider: "vonage" as const, messageId: result.message_uuid };

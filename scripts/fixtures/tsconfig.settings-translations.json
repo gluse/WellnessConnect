@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["settings-translations.tsx", "../../client/src/pages/provider/settings.tsx", "../../client/src/components/provider-profile.tsx"],
+  "exclude": [],
+  "compilerOptions": { "target": "ES2022", "incremental": false }
+}

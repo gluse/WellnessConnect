@@ -27,7 +27,7 @@ function callbackError(code: string | null) {
 }
 export default function Login() {
   const { t, i18n, language } = useFormLocale();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isError } = useAuth();
   const [signup, setSignup] = useState(false), [busy, setBusy] = useState(false);
   const locked = useRef(false), heading = useRef<HTMLHeadingElement>(null), errorRef = useRef<HTMLParagraphElement>(null);
   const [email, setEmail] = useState(""), [password, setPassword] = useState(""), [confirmPassword, setConfirmPassword] = useState("");
@@ -44,7 +44,7 @@ export default function Login() {
   // before the visitor can read the current interface language.
   const languages = (Array.isArray(i18n.options.supportedLngs) ? i18n.options.supportedLngs : Object.keys(i18n.services.resourceStore.data)).filter(code => code !== "cimode");
   const languageName = (code: string) => new Intl.DisplayNames([code], { type: "language" }).of(code) || code;
-  if (isAuthenticated) return <Redirect to={returnTo} />;
+  if (isAuthenticated && !isError) return <Redirect to={returnTo} />;
 
   async function socialSignIn(provider: SocialProvider) {
     if (locked.current) return;

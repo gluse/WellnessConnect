@@ -78,7 +78,7 @@ export default function AccountPasswordForm() {
       </fieldset>
       {error && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t(error)}</p>}
       {saved && <p role="status" className="text-sm">{t("passwordForm.saved")}</p>}
-      <Button type="submit" disabled={change.isPending} className="w-full sm:w-auto">{change.isPending && <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none shrink-0" aria-hidden="true" />}{t(change.isPending ? "passwordForm.updating" : "passwordForm.title")}</Button>
+      <Button type="submit" disabled={change.isPending} className="w-full sm:w-auto min-h-11 h-auto whitespace-normal">{change.isPending && <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none shrink-0" aria-hidden="true" />}{t(change.isPending ? "passwordForm.updating" : "passwordForm.title")}</Button>
     </form></CardContent>
   </Card>;
 }

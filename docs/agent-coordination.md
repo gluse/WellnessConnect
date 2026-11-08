@@ -1,5 +1,130 @@
 # Cross-role dependency queue
 
+## TASK-051 App users provider indicator — 8 November 2026
+
+**Completed locally / integrated checks pass.** User specifically requests provider
+status on `/administration` App users. Frontend `/root` owns page/locales/frontend
+checks; assigned Backend `/root/admin_provider_backend` owns the authoritative
+  role API/DTO/query dependency and mocked backend checks. Backend accepted and
+  returned passing scoped types/bundle/regressions; root reviewed integration and
+  independently reran backend and frontend regressions. Contract: nullable
+`isServiceProvider`, provider Yes / seeker No / missing or unknown role Unknown;
+independent of Pro, company membership or services. Lookup failure fails the
+directory request. Local reversible edits and offline mocks only; no connected
+database/services/config reads, startup or deployment. See
+[scope, validation and recovery](admin-provider-status-handoff.md). en/lv/ru tests;
+other supported languages/RTL deferred.
+Chrome passes three behavior groups/nine viewport cases and affected frontend
+types pass. Full-project types reproduce five existing native-proof errors.
+No database migration is required. Normal local application review is next;
+deployment/live verification is outside scope.
+
+## TASK-050 account tabs and provider settings — 8 November 2026
+
+**Implemented locally; scoped checks pass, baseline project failures recorded.**
+User assigned Frontend executor `/root` for account tabs, inline phone verification,
+Role/provider activation and relocation of pricing/addresses to My Services.
+Frontend requested the exact sign-in return-path dependency from assigned Backend
+owner/executor `/root/account_return_paths_backend`, who accepted, implemented and
+returned 45 passing offline checks. Root independently reran those checks and
+verified integrated frontend routes with in-memory API mocks. No connected
+authentication/session/database/provider execution or deployment is included.
+Chrome passes 11 behavior groups and 66 en/lv/ru viewport cases plus enlarged
+text/light-dark contrast; affected TypeScript, frontend bundle and scoped
+regressions pass. Full-project native TypeScript and the pre-existing broad
+provider runner remain failed; evidence distinguishes them from this change.
+[Frontend scope, validation, limits and recovery](account-tabs-redesign-handoff.md);
+[Backend dependency](account-tabs-auth-return-handoff.md). ar/RTL, zh, fr, de, hi,
+ja, pt and es verification remains deferred. Next: local product review and
+separate baseline-check repairs; no new execution approval is implied.
+Follow-up user request accepted/completed by the same Frontend executor: hide
+Calendar/My Services navigation for every role except `provider`. Desktop/mobile
+links, provider menu/workspace entries and live role cleanup pass 24 en/lv/ru
+Chrome viewport cases and affected TypeScript. This is local frontend visibility;
+server authorization and direct route behavior are unchanged. Evidence is linked
+from the same handoff.
+Subsequent explicit user request adds the provider route guard: Frontend `/root`
+guards `/my-services` and all children before provider content mounts; non-providers
+redirect to `/account#role`, signed-out/auth-failed users to login. The login
+redirect respects auth errors to avoid a cached-user loop. Chrome passes 6 behavior
+groups/42 en/lv/ru denied-route cases; scoped TypeScript, isolated login and pure
+return-path regressions pass. This supersedes the earlier direct-route visibility
+limit; backend endpoint authorization remains unchanged. No connected execution.
+
+## TASK-049 custom service reminder message — 8 November 2026
+
+**Completed locally and development DB verified.** User requests customizable text and message preview
+when `service-reminder-enabled` is checked. Requester/coordinator `/root` checked
+the reachable roster (no other owners), then assigned Front End Developer
+`/root/custom_reminder_frontend`, Back End Developer `/root/custom_reminder_backend`
+and DB Analyst/Developer `/root/custom_reminder_db`; all accepted through live
+tools under AGENTS.md standing cooperation. Frontend owns editor/draft/preview,
+supported translations and mocked UI checks; Backend owns message rendering,
+service/API gates, worker/transports and mocked regressions; DB owns schema,
+additive migration/readiness preparation and offline parity checks. Root owns
+task/coordination records and integrated review. Shared contract: optional trimmed
+`reminderMessage`, maximum 1,000 characters, default empty; append to mandatory
+localized appointment details before the signature. Blank retains existing output.
+Custom text is sent as written. WhatsApp needs a compatible approved custom-note
+template; missing setup must fail closed rather than silently omit the message.
+
+Scope: reversible local repository changes and offline/mocked verification only.
+No private configuration, connected database/service access, migration execution,
+real message send, spending, startup, deployment or publishing. Prior operation
+approvals for other tasks do not transfer. Test only en/lv/ru; ar including RTL,
+zh/fr/de/hi/ja/pt/es remain deferred while translations are maintained. Recovery:
+revert only TASK-049 changes; unapplied migration has no database effects.
+Baseline `npm run check` fails on five existing native-proof/client errors before
+this feature's implementation; scoped checks must distinguish new errors.
+
+Owner evidence:
+[frontend](custom-service-reminder-frontend-handoff.md),
+[backend](custom-service-reminder-backend-handoff.md),
+[database](custom-service-reminder-db-handoff.md).
+All owners returned passing focused evidence. Root reviewed the integrated
+contract and phone screenshots, passed offline app/worker bundles, 60 locale/time
+cases, new DB parity and held-executor checks, and independently matched SQL digest.
+Chrome passed 5 groups/12 en/lv/ru viewport cases; scoped frontend types pass.
+Full nonincremental types reproduce five baseline native errors; Firefox/WebKit
+binaries unavailable. Existing notification runtime-contract check has an unrelated
+stale 35-vs-33 rights-count failure; applied history remains unchanged.
+See [integrated evidence and remaining activation](custom-service-reminder-handoff.md).
+Reviewed 0023 is unapplied; exact dev source/executor/command, protected configuration
+read scope and source pre/post checks are in the DB handoff. Fresh connected scope
+and current verified recovery or an explicit TASK-049 backup waiver remain missing.
+No app/worker was started, no provider send or database connection was made during
+preparation.
+
+**Development activation approved / completed.** User replied **"Approve.
+Proceed without DB backup"** to root's concrete migration0023 development request.
+Root routed the fresh TASK-049 source-only authorization and explicit backup waiver
+to the original assigned DB executor `/root/custom_reminder_db` through live tools;
+owner accepted. Scope: existing source `hbkooiknruimukkhshrk`, necessary protected
+connection configuration reads, one pinned migration, bounded source pre/post
+checks and sanitized receipt. The approved recovery choice is no backup for this
+TASK-049 development operation. Backend `/root/custom_reminder_backend` accepted
+necessary local process inspection and stopping only positively identified project
+app/watch/notification/audit writer trees, preserving terminals and unrelated work.
+DB waits for that check before the single connected attempt; the database guard
+still requires zero other writer clients. Stop on first failure; no retry, receipt
+removal, destination access, ACL/private configuration edits, app/worker startup,
+real send, audit delivery or deployment. DB owns execution/DB handoff; root owns
+receipt/digest review and integrated status. Earlier preparation holds are historical
+and do not negate this fresh authorization; other task waivers do not transfer.
+
+Backend freshly identified and stopped the exact local npm/dev/watch process tree;
+its terminal and unrelated processes were preserved. The sole approved DB attempt
+committed migration0023 at 18:22 Riga on 8 November 2026. Source metadata verified
+PG17/postgres, 41 public tables, enabled trigger and zero other writer clients.
+Original fields/counts of all 28 services and 36 bookings were preserved; new
+messages are empty. Restricted baseline and message readiness passed. Receipt
+state is `verified`, `committed:true`, no retry. Root independently checked the
+sanitized receipt SHA-256 `c1a4c84e91ff7ae3181fe187fdb457042ad896963d0bf4d970a212ac68ce36b8`
+and unchanged SQL digest. No backup, destination access, private configuration edit,
+ACL change, real send, audit delivery, app/worker restart or deployment occurred.
+App remains stopped after cutover; next is normal updated-app startup. Live UI
+saves/provider delivery were not exercised. Do not rerun or remove the receipt.
+
 ## TASK-048 Pro service photo galleries — 8 November 2026
 
 **Completed locally and development DB verified.** User requested multiple service photos
@@ -2102,3 +2227,24 @@ DB's existing-source query review remains approved without schema/grant changes.
 No live/private configuration/connected/deployment operation occurred. Runtime
 capture availability/live counts/plans remain unverified; deferred languages/RTL
 remain deferred. Authorized local implementation and verification are complete.
+
+## Settings language switching — 8 November 2026
+
+**Completed locally / integrated review passed:** root assigned Front End Developer
+`/root/settings_translation_frontend` for the user's `/my-services/settings`
+translation bug under AGENTS.md standing cooperation; owner accepted. Scope is
+reversible local settings UI/components, supported translation resources and
+offline/mocked regression checks. Root reviews integration and owns task records.
+Preserve existing dirty work. No backend/database, private configuration,
+connected operations or deployment. Tests en/lv/ru only; ar/RTL, zh, fr, de, hi,
+ja, pt and es deferred. Owner records root cause, validation and recovery in
+[the handoff](settings-translations-handoff.md). Hard-coded settings/profile and
+employee text is localized, including language-reactive save receipts. Root also
+accepted the necessary type-only toast-title correction to preserve its intended
+ReactNode contract. Chrome's four behavior groups/12 en/lv/ru viewport cases,
+scoped TypeScript, mocked account regression and env-isolated Vite build pass.
+Root reviewed the integrated diff, evidence and lv-phone/ru-desktop screenshots.
+Full-project TypeScript retains five native-proof baseline errors in unchanged
+files; no introduced diagnostic. Next: normal local application review; no
+deployment or connected verification claimed. Recovery is reversal of
+attributable hunks only, preserving pre-task settings/locale changes.

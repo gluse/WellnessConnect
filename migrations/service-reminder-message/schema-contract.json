@@ -1,0 +1,13 @@
+{
+  "version": "service-reminder-message-v1",
+  "column": {
+    "name": "reminder_message",
+    "type": "text",
+    "notNull": true,
+    "default": ""
+  },
+  "constraint": {
+    "name": "services_reminder_message_check",
+    "expression": "char_length(\"reminder_message\") <= 1000"
+  }
+}

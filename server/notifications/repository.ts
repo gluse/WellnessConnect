@@ -18,10 +18,11 @@ export async function workspacePro(database: NotificationDatabase, workspace: Wo
     : and(eq(providerSubscriptions.userId, workspace.providerId), isNull(providerSubscriptions.companyId)));
   return hasPro(subscription ?? null, now);
 }
-export async function assertReminderConfiguration(database: NotificationDatabase, workspace: Workspace, updates: { reminderEnabled?: boolean; reminderMethod?: CommunicationMethod; reminderHours?: number }, previous?: { reminderEnabled: boolean; reminderMethod: CommunicationMethod; reminderHours: number }) {
+export async function assertReminderConfiguration(database: NotificationDatabase, workspace: Workspace, updates: { reminderEnabled?: boolean; reminderMethod?: CommunicationMethod; reminderHours?: number; reminderMessage?: string }, previous?: { reminderEnabled: boolean; reminderMethod: CommunicationMethod; reminderHours: number; reminderMessage?: string }) {
   const changed = previous ? (updates.reminderEnabled !== undefined && updates.reminderEnabled !== previous.reminderEnabled)
     || (updates.reminderMethod !== undefined && updates.reminderMethod !== previous.reminderMethod) || (updates.reminderHours !== undefined && updates.reminderHours !== previous.reminderHours)
-    : updates.reminderEnabled === true || updates.reminderMethod !== undefined && updates.reminderMethod !== "email" || updates.reminderHours !== undefined && updates.reminderHours !== 24;
+    || (updates.reminderMessage !== undefined && updates.reminderMessage !== (previous.reminderMessage ?? ""))
+    : updates.reminderEnabled === true || updates.reminderMethod !== undefined && updates.reminderMethod !== "email" || updates.reminderHours !== undefined && updates.reminderHours !== 24 || Boolean(updates.reminderMessage);
   if (changed && !await workspacePro(database, workspace)) throw new NotificationError(403, "pro_required", "An active PRO subscription is required to change automatic reminders.");
 }
 export async function preferencesFor(database: NotificationDatabase, userId: string) {
@@ -102,11 +103,11 @@ export async function bookingNotificationState(database: NotificationDatabase, b
   return { notification: status ? { mode: status.event.automatic ? "automatic" : "manual", eventId: status.event.id, state: status.job?.state ?? "manual", reasonCode: status.job?.reasonCode } : { mode: "none" },
     reminder: summarizeReminder(pro, service, job, preferences, customer?.email ?? null) };
 }
-function summarizeReminder(pro: boolean, service: { reminderEnabled: boolean; reminderMethod: CommunicationMethod } | undefined,
+function summarizeReminder(pro: boolean, service: { reminderEnabled: boolean; reminderMethod: CommunicationMethod; reminderMessage?: string } | undefined,
   job: NotificationJob | null | undefined, preferences: Preferences | null, email: string | null): ReminderSummary {
   const channel = job?.attemptedAt ? job.channel : preferences?.preferredMethod ?? service?.reminderMethod ?? job?.channel;
   const unavailableReason = job && !job.attemptedAt && channel && preferences ? channelReason(channel, preferences, email)
-    ?? (transportReady(notificationConfig(), channel, preferences.language, "reminder") ? null : "not_configured") : null;
+    ?? (transportReady(notificationConfig(), channel, preferences.language, "reminder", service?.reminderMessage) ? null : "not_configured") : null;
   const state: ReminderSummary["state"] = job?.state === "delivered" || job?.state === "accepted" ? "sent" : job?.state === "failed" || job?.state === "unknown" ? "failed"
     : !service?.reminderEnabled ? "off" : !pro ? "paused" : !notificationConfig().automationEnabled || unavailableReason ? "unavailable" : job?.state === "queued" || job?.state === "leased" ? "scheduled" : "unavailable";
   return { state, ...(job ? { dueAt: job.dueAt.toISOString(), channel, reasonCode: unavailableReason ?? job.reasonCode } : {}) };

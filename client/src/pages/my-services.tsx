@@ -14,13 +14,14 @@ import ReportsPage from "@/pages/provider/reports";
 import { requestServiceEditorExit } from "@/components/provider/service-navigation-guard";
 
 export default function MyServices() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isLoading, isError } = useAuth();
   const [location] = useLocation();
 
   if (isLoading) return <main className="p-8 text-center" role="status">Loading your services…</main>;
-  if (!isAuthenticated) return <Redirect to={`/login?returnTo=${encodeURIComponent(location)}`} />;
+  if (!user || isError) return <Redirect to={`/login?returnTo=${encodeURIComponent(location)}`} replace />;
+  if (user.currentRole !== "provider") return <Redirect to="/account#role" replace />;
 
-  return <ProviderLayout />;
+  return <ProviderLayout key={user.id} />;
 }
 
 function ProviderLayout() {

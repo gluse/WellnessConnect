@@ -80,8 +80,8 @@ export async function processNotificationJob(database: typeof applicationDb, job
     const channel = prefs.preferredMethod ?? (event.kind === "reminder" ? service.reminderMethod : "email");
     const reason = channelReason(channel, prefs, user?.email ?? null);
     if (reason) return stop(reason);
-    if (!transportReady(config, channel, prefs.language, event.kind)) return stop("not_configured");
-    const message = renderMessage({ kind: event.kind, service: service.name, date: event.scheduledDate, oldDate: event.previousScheduledDate, language: prefs.language, timeZone: event.timezone });
+    if (!transportReady(config, channel, prefs.language, event.kind, service.reminderMessage)) return stop("not_configured");
+    const message = renderMessage({ kind: event.kind, service: service.name, date: event.scheduledDate, oldDate: event.previousScheduledDate, language: prefs.language, timeZone: event.timezone, reminderMessage: service.reminderMessage });
     // Bounds protect paid sends from repeated reschedule/status requests without
     // storing contacts. Advisory lock above covers count plus attempt reservation.
     const quota = await tx.execute(sql`SELECT count(*)::int AS workspace_attempts,

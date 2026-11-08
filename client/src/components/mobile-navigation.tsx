@@ -38,16 +38,18 @@ export default function MobileNavigationLayout({ children }: { children: ReactNo
     observer.observe(bar.current);
     measure();
     return () => { observer.disconnect(); cancelAnimationFrame(frame); };
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, user?.id, user?.currentRole]);
 
   return <div ref={shell} className={isAuthenticated ? "mobile-navigation-layout pb-[var(--mobile-navigation-height,calc(7rem_+_env(safe-area-inset-bottom)))] lg:pb-0" : undefined}>
     {children}
-    {isAuthenticated && <MobileNavigation key={user?.id} barRef={bar} />}
+    {isAuthenticated && <MobileNavigation key={`${user?.id}:${user?.currentRole ?? ""}`} barRef={bar} />}
   </div>;
 }
 
 function MobileNavigation({ barRef }: { barRef: RefObject<HTMLElement> }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const isProvider = user?.currentRole === "provider";
   const [location, navigate] = useLocation();
   const [open, setOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
@@ -59,13 +61,13 @@ function MobileNavigation({ barRef }: { barRef: RefObject<HTMLElement> }) {
   const change = useWorkspaceChange();
   const inProvider = location === "/my-services" || location.startsWith("/my-services/");
   const busy = (inProvider && mutations > 0) || change.isPending;
-  const workspace = useQuery<WorkspaceContext>({ queryKey: ["/api/company/context"], retry: false });
-  const sections = providerSections(workspace.isError ? undefined : workspace.data).filter(section => section.path !== "/my-services/appointments");
+  const workspace = useQuery<WorkspaceContext>({ queryKey: ["/api/company/context"], enabled: isProvider, retry: false });
+  const sections = isProvider ? providerSections(workspace.isError ? undefined : workspace.data).filter(section => section.path !== "/my-services/appointments") : [];
   const menuActive = sections.some(section => location === section.path || location.startsWith(`${section.path}/`));
   const tabs = [
     { href: "/", label: t("mobileNavigation.explore"), icon: Search, active: location === "/" || location === "/search" },
     { href: "/my-bookings", label: t("nav.bookings"), icon: Calendar, active: location === "/my-bookings" },
-    { href: "/my-services/appointments", label: t("appointmentAgenda.calendar"), icon: CalendarDays, active: location === "/my-services" || location === "/my-services/appointments" },
+    ...(isProvider ? [{ href: "/my-services/appointments", label: t("appointmentAgenda.calendar"), icon: CalendarDays, active: location === "/my-services" || location === "/my-services/appointments" }] : []),
   ];
   useEffect(() => { setOpen(false); setWorkspaceOpen(false); }, [location]);
   useEffect(() => {
@@ -111,7 +113,7 @@ function MobileNavigation({ barRef }: { barRef: RefObject<HTMLElement> }) {
             onSelect={event => { event.preventDefault(); pendingNavigation.current = path; setOpen(false); }}>
             <Icon aria-hidden="true" />{t(labelKey)}
           </DropdownMenuItem>)}
-          {!workspace.isError && !!workspace.data?.workspaces.length && <DropdownMenuItem disabled={busy} className="min-h-11 whitespace-normal break-words"
+          {isProvider && !workspace.isError && !!workspace.data?.workspaces.length && <DropdownMenuItem disabled={busy} className="min-h-11 whitespace-normal break-words"
             onSelect={event => { event.preventDefault(); pendingWorkspace.current = true; setOpen(false); }}>
             <Building2 aria-hidden="true" />{t("providerNavigation.workspace")}
           </DropdownMenuItem>}
@@ -122,7 +124,7 @@ function MobileNavigation({ barRef }: { barRef: RefObject<HTMLElement> }) {
           <DropdownMenuItem asChild className="min-h-11 whitespace-normal break-words">
             <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer"><Shield aria-hidden="true" />{t("legal.privacyPolicyNewTab")}</a>
           </DropdownMenuItem>
-          {(workspace.isPending || workspace.isError) && <p role="status" className="px-2 py-2 text-sm text-muted-foreground">
+          {isProvider && (workspace.isPending || workspace.isError) && <p role="status" className="px-2 py-2 text-sm text-muted-foreground">
             {t(workspace.isError ? "mobileNavigation.workspaceError" : "mobileNavigation.workspaceLoading")}
           </p>}
         </DropdownMenuContent>

@@ -1,0 +1,486 @@
+{
+  "date": "2026-11-08",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/156.0.8078.80",
+    "revision": "@fb096c0011f9d50f0a264a9376420cdea9c421e3",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "jsVersion": "15.6.75.27"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    "en: keyboard tabs/history, private draft retention, no provider settings requests, direct save/send, failed-save/send/code recovery, consent and server-only verification",
+    "en: read-only role, failed activation recovery, existing provider API and workspace link",
+    "lv: keyboard tabs/history, private draft retention, no provider settings requests, direct save/send, failed-save/send/code recovery, consent and server-only verification",
+    "lv: read-only role, failed activation recovery, existing provider API and workspace link",
+    "ru: keyboard tabs/history, private draft retention, no provider settings requests, direct save/send, failed-save/send/code recovery, consent and server-only verification",
+    "ru: read-only role, failed activation recovery, existing provider API and workspace link",
+    "pending phone save deduplicated; account switch clears drafts and prevents dependent code send",
+    "late role activation cannot overwrite another account",
+    "unavailable verification, preferences-load retry, challenge expiry and resend cooldown",
+    "en/lv/ru legacy links redirect to provider settings, permissions deny loading, pricing drafts reset across workspaces",
+    "unknown hash defaults safely; logged-out account redirects without writes"
+  ],
+  "matrix": [
+    {
+      "lang": "en",
+      "section": "personal",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "lang": "en",
+      "section": "personal",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "lang": "en",
+      "section": "personal",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "personal",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "communication",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "lang": "en",
+      "section": "communication",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "lang": "en",
+      "section": "communication",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "communication",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "role",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "lang": "en",
+      "section": "role",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "lang": "en",
+      "section": "role",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "role",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "password",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "lang": "en",
+      "section": "password",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "lang": "en",
+      "section": "password",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "password",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "personal",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "lang": "lv",
+      "section": "personal",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "lang": "lv",
+      "section": "personal",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "personal",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "communication",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "lang": "lv",
+      "section": "communication",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "lang": "lv",
+      "section": "communication",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "communication",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "role",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "lang": "lv",
+      "section": "role",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "lang": "lv",
+      "section": "role",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "role",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "password",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "lang": "lv",
+      "section": "password",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "lang": "lv",
+      "section": "password",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "password",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "personal",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "lang": "ru",
+      "section": "personal",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "lang": "ru",
+      "section": "personal",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "personal",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "communication",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "lang": "ru",
+      "section": "communication",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "lang": "ru",
+      "section": "communication",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "communication",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "role",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "lang": "ru",
+      "section": "role",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "lang": "ru",
+      "section": "role",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "role",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "password",
+      "width": 320,
+      "height": 700
+    },
+    {
+      "lang": "ru",
+      "section": "password",
+      "width": 390,
+      "height": 300
+    },
+    {
+      "lang": "ru",
+      "section": "password",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "password",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "/my-services/settings/pricing",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "/my-services/settings/pricing",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "/my-services/settings/pricing",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "/my-services/settings/addresses",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "/my-services/settings/addresses",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "en",
+      "section": "/my-services/settings/addresses",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "/my-services/settings/pricing",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "/my-services/settings/pricing",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "/my-services/settings/pricing",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "/my-services/settings/addresses",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "/my-services/settings/addresses",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "lv",
+      "section": "/my-services/settings/addresses",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "/my-services/settings/pricing",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "/my-services/settings/pricing",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "/my-services/settings/pricing",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "/my-services/settings/addresses",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "/my-services/settings/addresses",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "lang": "ru",
+      "section": "/my-services/settings/addresses",
+      "width": 1280,
+      "height": 900
+    }
+  ],
+  "screenshots": [
+    "docs/account-tabs-chrome-communication-phone.png",
+    "docs/account-tabs-chrome-role-phone.png",
+    "docs/account-tabs-chrome-desktop.png"
+  ],
+  "contrast": [
+    {
+      "lang": "en",
+      "dark": false,
+      "failures": [],
+      "minText": 4.797580078171407,
+      "minControlBorder": 4.741667181590045
+    },
+    {
+      "lang": "en",
+      "dark": true,
+      "failures": [],
+      "minText": 5.506681400777804,
+      "minControlBorder": 4.1958570466569505
+    },
+    {
+      "lang": "lv",
+      "dark": false,
+      "failures": [],
+      "minText": 4.797580078171407,
+      "minControlBorder": 4.741667181590045
+    },
+    {
+      "lang": "lv",
+      "dark": true,
+      "failures": [],
+      "minText": 5.506681400777804,
+      "minControlBorder": 4.1958570466569505
+    },
+    {
+      "lang": "ru",
+      "dark": false,
+      "failures": [],
+      "minText": 4.797580078171407,
+      "minControlBorder": 4.741667181590045
+    },
+    {
+      "lang": "ru",
+      "dark": true,
+      "failures": [],
+      "minText": 5.506681400777804,
+      "minControlBorder": 4.1958570466569505
+    }
+  ],
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "boundaries": "Isolated loopback fixture; synthetic data, in-memory fetch mocks; no connected database/services, credentials or SMS sends."
+}

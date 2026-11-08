@@ -1,7 +1,9 @@
 import "dotenv/config";
+import type { ClientConfig, QueryConfig } from "pg";
 import { notificationConfig } from "./transports";
 import { auditIntegration } from "../audit/integrations";
 import { closeAuditCapture } from "../audit/http";
+import { verifyServiceReminderMessageDatabaseReadiness } from "../../migrations/service-reminder-message/application-readiness.mjs";
 
 // Disabled by default; do not even initialize a database pool until explicitly enabled.
 async function main() {
@@ -15,6 +17,10 @@ if (!notificationConfig().enabled) {
   const stop = () => { stopping = true; };
   process.on("SIGTERM", stop); process.on("SIGINT", stop);
   try {
+    await verifyServiceReminderMessageDatabaseReadiness((text, values) => {
+      const query: QueryConfig & Pick<ClientConfig, "query_timeout"> = { text, values, query_timeout: 5000 };
+      return pool.query(query);
+    });
     while (!stopping) {
       const started = Date.now();
       try { const result = await auditIntegration("notification_batch", () => notificationWorkerTick(db, { shouldStop: () => stopping })); console.info("Notification worker completed:", result.processed); }

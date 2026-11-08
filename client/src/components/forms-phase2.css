@@ -21,6 +21,10 @@
 .phase2-form button.bg-primary:enabled:hover { background-color: var(--primary); color: var(--primary-foreground); }
 .phase2-form button[aria-pressed="true"],
 .phase2-form button[aria-selected="true"] { background-color: var(--primary); color: var(--primary-foreground); }
+.phase2-form .account-settings-tabs [role="tab"][data-state="active"] {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
 @media (prefers-reduced-motion: reduce) {
   .phase2-form * { transition: none; animation: none; }
 }

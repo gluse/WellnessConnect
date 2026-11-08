@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["account-tabs.tsx", "../../client/src/pages/my-services.tsx", "../../client/src/pages/login.tsx", "../../client/src/components/provider/service-location-fields.tsx", "../../client/src/components/mobile-navigation.tsx", "../../client/src/components/role-switcher.tsx"],
+  "exclude": [],
+  "compilerOptions": { "target": "ES2022", "incremental": false }
+}

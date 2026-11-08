@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, Redirect } from "wouter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -12,9 +12,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { useFormLocale } from "@/components/forms-locale";
 import AccountPasswordForm from "@/components/account-password-form";
-import AccountAddresses from "@/components/account-addresses";
 import AccountCommunication from "@/components/account-communication";
-import AccountPricingSettings from "@/components/account-pricing-settings";
+import AccountRole from "@/components/account-role";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function AccountDetailsForm({ user }: { user: User }) {
   const { t } = useFormLocale();
@@ -69,27 +69,49 @@ function AccountDetailsForm({ user }: { user: User }) {
       </dl>
       {error && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t(error)}</p>}
       {saved && <p role="status" className="text-sm">{t("accountForm.saved")}</p>}
-      <Button type="submit" disabled={mutation.isPending} className="w-full sm:w-auto">{mutation.isPending && <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none shrink-0" aria-hidden="true" />}{t(mutation.isPending ? "accountForm.saving" : "accountForm.save")}</Button>
+      <Button type="submit" disabled={mutation.isPending} className="w-full sm:w-auto min-h-11 h-auto whitespace-normal">{mutation.isPending && <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none shrink-0" aria-hidden="true" />}{t(mutation.isPending ? "accountForm.saving" : "accountForm.save")}</Button>
     </form></CardContent>
   </Card>;
 }
 export default function Account() {
   const { user, isLoading } = useAuth();
-  const { t, i18n } = useFormLocale();
+  const { t } = useFormLocale();
   if (isLoading) return <main className="min-h-screen flex items-center justify-center" role="status">{t("accountForm.loading")}</main>;
   if (!user) return <Redirect to="/login?returnTo=%2Faccount" />;
+  return <AccountTabs key={user.id} user={user} />;
+}
+
+function AccountTabs({ user }: { user: User }) {
+  const { t, i18n } = useFormLocale();
+  const [section, setSection] = useState(() => window.location.hash.slice(1) || "personal");
+  useEffect(() => {
+    const sync = () => setSection(window.location.hash.slice(1) || "personal");
+    window.addEventListener("hashchange", sync);
+    window.addEventListener("popstate", sync);
+    return () => { window.removeEventListener("hashchange", sync); window.removeEventListener("popstate", sync); };
+  }, []);
+  const sections = [
+    { id: "personal", label: "accountTabs.general", content: <AccountDetailsForm user={user} /> },
+    { id: "communication", label: "accountTabs.contact", content: <AccountCommunication actorId={user.id} /> },
+    { id: "role", label: "accountRole.title", content: <AccountRole user={user} /> },
+    { id: "password", label: "accountTabs.password", content: <AccountPasswordForm /> },
+  ];
+  if (section === "pricing-settings") return <Redirect to="/my-services/settings/pricing" replace />;
+  if (section === "addresses") return <Redirect to="/my-services/settings/addresses" replace />;
+  const active = sections.some(item => item.id === section) ? section : "personal";
   return <div className="phase2-form min-h-screen bg-background text-foreground" dir={i18n.dir()}>
     <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <Button variant="ghost" asChild><Link href="/"><ArrowLeft className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />{t("accountForm.back")}</Link></Button>
+      <Button variant="ghost" className="min-h-11 h-auto max-w-full whitespace-normal text-start" asChild><Link href="/"><ArrowLeft className="h-4 w-4 shrink-0 rtl:rotate-180" aria-hidden="true" />{t("accountForm.back")}</Link></Button>
       <div><h1 className="text-2xl font-semibold">{t("accountForm.title")}</h1><p className="mt-2 text-muted-foreground">{t("accountForm.intro")}</p></div>
-      <nav aria-label={t("accountForm.sections")} className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-        <a className="underline py-3" href="#personal">{t("accountForm.personal")}</a><a className="underline py-3" href="#communication">{t("notifications.settingsTitle")}</a><a className="underline py-3" href="#pricing-settings">{t("pricingSettings.title")}</a><a className="underline py-3" href="#addresses">{t("addressForm.title")}</a><a className="underline py-3" href="#password">{t("passwordForm.title")}</a>
-      </nav>
-      <AccountDetailsForm key={user.id} user={user} />
-      <AccountCommunication key={`communication-${user.id}`} actorId={user.id} />
-      <AccountPricingSettings key={`pricing-${user.id}`} actorId={user.id} />
-      <AccountAddresses key={`addresses-${user.id}`} />
-      <AccountPasswordForm key={`password-${user.id}`} />
+      <Tabs value={active} dir={i18n.dir()} onValueChange={value => {
+        setSection(value);
+        window.history.pushState(null, "", `#${value}`);
+      }} className="account-settings-tabs space-y-6">
+        <TabsList aria-label={t("accountForm.sections")} className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl p-1.5 text-foreground sm:flex">
+          {sections.map(item => <TabsTrigger key={item.id} value={item.id} className="min-h-12 min-w-0 flex-1 whitespace-normal break-words rounded-lg px-3 py-2 text-start leading-snug data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{t(item.label)}</TabsTrigger>)}
+        </TabsList>
+        {sections.map(item => <TabsContent key={item.id} value={item.id} forceMount className="mt-0 data-[state=inactive]:hidden">{item.content}</TabsContent>)}
+      </Tabs>
     </main>
   </div>;
 }

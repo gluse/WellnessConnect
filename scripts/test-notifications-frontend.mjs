@@ -11,6 +11,10 @@ assert.equal(safeNotificationHref("whatsapp", `https://wa.me/37120000000?text=${
 for (const method of ["email", "sms", "whatsapp"]) for (const href of ["javascript:alert(1)", "data:text/html,x", "https://wa.me.evil.test/37120000000?text=x", "https://wa.me@evil.test/37120000000?text=x", "https://evil.test", "sms:+37120000000\r\n?body=x", "mailto:customer%0A@example.test?subject=x&body=y"]) assert.equal(safeNotificationHref(method, href), undefined, method + ": " + href);
 const valid = { ...createServiceDraft(), name: "Synthetic", category: "education", price: "25", addressId: 3 };
 assert.equal(valid.reminderEnabled, false); assert.equal(valid.reminderMethod, "email"); assert.equal(valid.reminderHours, 24);
+assert.equal(valid.reminderMessage, "");
+assert.equal(createServiceDraft({ reminderMessage: "Bring a towel." }).reminderMessage, "Bring a towel.");
+assert.equal(validateServiceDraft({ ...valid, reminderMessage: "a".repeat(1000) }).reminderMessage, undefined);
+assert.equal(validateServiceDraft({ ...valid, reminderMessage: "a".repeat(1001) }).reminderMessage, "notifications.customMessageInvalid");
 for (const reminderHours of [1, 24, 168]) assert.equal(validateServiceDraft({ ...valid, reminderHours }).reminderHours, undefined);
 for (const reminderHours of [0, 169, 1.5, Number.NaN]) assert.equal(validateServiceDraft({ ...valid, reminderHours }).reminderHours, "notifications.hoursInvalid");
 const languages = ["en", "lv", "ru"];

@@ -547,7 +547,7 @@
     "loading": "正在加载账户信息…",
     "back": "返回控制面板",
     "title": "账户信息",
-    "intro": "管理个人信息、已保存的地址和密码。",
+    "intro": "管理您的个人信息、通信偏好、角色和密码。",
     "sections": "账户栏目"
   },
   "passwordForm": {
@@ -1059,6 +1059,14 @@
     "hours": "预约前几小时",
     "hoursInvalid": "请输入 1 至 168 之间的整数小时。",
     "reminderHelp": "客户偏好优先于默认设置。仅对已确认且提醒时间尚未到达的预约发送提醒。",
+    "customMessage": "自定义消息（可选）",
+    "customMessageHelp": "在预约详情后添加备注，最多1000个字符。备注将按原文发送，不会翻译。留空则使用标准提醒。",
+    "customMessageInvalid": "请勿超过1000个字符。",
+    "customMessageCount": "{{count}} / 1000个字符",
+    "whatsappCustomMessageHelp": "自定义WhatsApp消息需要兼容的已批准模板。仍会遵循客户的渠道偏好。",
+    "messagePreview": "消息预览",
+    "messagePreviewHelp": "以界面语言显示的UTC时区预约示例。实际详情和标准提醒语言取决于客户的预约和偏好。预览不会发送消息。",
+    "sampleService": "示例服务",
     "reminderSettings": "预约提醒",
     "statusUnavailable": "提醒状态暂不可用。",
     "appointments": "预约",
@@ -1093,7 +1101,10 @@
       "unverified_phone": "客户电话号码尚未验证。",
       "missing_permission": "客户尚未授权此通信方式。",
       "missing_email": "没有可用的客户电子邮件地址。"
-    }
+    },
+    "saveAndVerifyHelp": "发送验证码前将保存您的电话号码。其他偏好更改需单独保存。",
+    "sendingCode": "正在发送验证码…",
+    "resendWait": "请稍候再请求新的验证码。"
   },
   "appointmentCollaboration": {
     "viewBookings": "查看预订（{{count}}）",
@@ -1695,5 +1706,63 @@
     "next": "下一张图片",
     "unavailable": "无法加载此图片。",
     "alt": "{{name}}，第 {{current}} 张图片，共 {{total}} 张"
+  },
+  "adminUsers": {
+    "serviceProvider": "服务提供商",
+    "yes": "是",
+    "no": "否",
+    "unknown": "未知"
+  },
+  "accountRole": {
+    "title": "角色",
+    "help": "选择如何使用 FitsMyTime。服务提供者也可以搜索和预订服务。",
+    "current": "当前角色",
+    "buyer": "用户/买家",
+    "provider": "服务提供者",
+    "become": "成为服务提供者",
+    "activating": "正在启用…",
+    "manage": "管理我的服务",
+    "error": "无法更新您的角色。请重试。",
+    "activated": "已启用服务提供者角色。"
+  },
+  "accountTabs": {
+    "general": "常规",
+    "contact": "联系方式",
+    "password": "密码"
+  },
+  "providerSettings": {
+    "loading": "正在加载设置…",
+    "description": "管理您的服务提供者资料和公司。",
+    "sections": "设置栏目",
+    "profileTab": "资料与员工",
+    "teamTab": "团队与权限",
+    "loadingEmployees": "正在加载员工…",
+    "loadEmployeesError": "无法加载员工。请刷新页面重试。",
+    "teamDenied": "团队设置仅供公司管理人员使用。",
+    "teamHint": "打开“团队与权限”来管理您的公司。",
+    "denied": "您的访问权限不允许更改设置。",
+    "notFound": "未找到设置页面。",
+    "profileTitle": "服务提供者资料",
+    "offerAs": "提供服务的身份",
+    "individual": "个人",
+    "company": "公司",
+    "companyName": "公司名称 *",
+    "companyPlaceholder": "例如：里加美容院",
+    "companyHelp": "在您的所有服务中，客户将看到此名称，而不是管理员的个人姓名。",
+    "saveProfile": "保存资料",
+    "profileSaved": "服务提供者资料已保存",
+    "employees": "员工",
+    "employeesHelp": "添加团队成员，然后在编辑服务时分配员工。您可以通过此账户管理他们的服务和预约。",
+    "employeesEmpty": "尚未添加员工。",
+    "nameVisible": "客户可见姓名",
+    "nameHidden": "客户不可见姓名",
+    "editEmployee": "编辑员工",
+    "addEmployee": "添加员工",
+    "employeePlaceholder": "姓名或内部标签，例如：按摩师",
+    "showName": "向客户显示此姓名",
+    "saveEmployee": "保存员工",
+    "employeeSaved": "员工已保存",
+    "employeeRemoved": "员工已移除",
+    "saveFailed": "无法保存"
   }
 }

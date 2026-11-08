@@ -1,0 +1,94 @@
+{
+  "date": "2026-11-08",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/156.0.8078.80",
+    "revision": "@fb096c0011f9d50f0a264a9376420cdea9c421e3",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "jsVersion": "15.6.75.27"
+  },
+  "languages": [
+    "en",
+    "lv",
+    "ru"
+  ],
+  "checks": [
+    "Mounted company form switches en/lv/ru labels, headings, tabs, helpers, options, placeholders and accessible nav name while preserving drafts, canonical values and visibility switch; 12 viewport cases fit without clipping",
+    "Pending profile save translates live; rejected synthetic save retains drafts and uses localized safe feedback; existing failure/success receipt also changes language",
+    "Translated employee edit/save/remove/add interactions and failure retention preserve existing synthetic API contracts",
+    "en/lv/ru empty/loading/load-failure, individual/company selection, permission-denied/team hint/team-denied and not-found states translate without writes"
+  ],
+  "matrix": [
+    {
+      "lang": "en",
+      "width": 320,
+      "state": "company-form"
+    },
+    {
+      "lang": "en",
+      "width": 390,
+      "state": "company-form"
+    },
+    {
+      "lang": "en",
+      "width": 768,
+      "state": "company-form"
+    },
+    {
+      "lang": "en",
+      "width": 1280,
+      "state": "company-form"
+    },
+    {
+      "lang": "lv",
+      "width": 320,
+      "state": "company-form"
+    },
+    {
+      "lang": "lv",
+      "width": 390,
+      "state": "company-form"
+    },
+    {
+      "lang": "lv",
+      "width": 768,
+      "state": "company-form"
+    },
+    {
+      "lang": "lv",
+      "width": 1280,
+      "state": "company-form"
+    },
+    {
+      "lang": "ru",
+      "width": 320,
+      "state": "company-form"
+    },
+    {
+      "lang": "ru",
+      "width": 390,
+      "state": "company-form"
+    },
+    {
+      "lang": "ru",
+      "width": 768,
+      "state": "company-form"
+    },
+    {
+      "lang": "ru",
+      "width": 1280,
+      "state": "company-form"
+    }
+  ],
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "boundaries": "Isolated loopback fixture using actual SettingsPage/ProviderProfile and i18next, synthetic in-memory fetch responses; zero connected operations. Receipt wrapper renders actual toast React content; toast animations and screen-reader announcements are not tested."
+}

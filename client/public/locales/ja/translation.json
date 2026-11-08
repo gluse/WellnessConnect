@@ -547,7 +547,7 @@
     "loading": "アカウント情報を読み込み中…",
     "back": "ダッシュボードに戻る",
     "title": "アカウント情報",
-    "intro": "個人情報、保存済み住所、パスワードを管理します。",
+    "intro": "個人情報、連絡設定、ロール、パスワードを管理します。",
     "sections": "アカウントの項目"
   },
   "passwordForm": {
@@ -1059,6 +1059,14 @@
     "hours": "予約の何時間前",
     "hoursInvalid": "1～168 の整数を入力してください。",
     "reminderHelp": "お客様の希望が優先されます。確認済みでリマインダー時刻が未来の予約にのみ送信します。",
+    "customMessage": "カスタムメッセージ（任意）",
+    "customMessageHelp": "予約詳細の後に最大1000文字のメモを追加できます。メモは翻訳せず、そのまま送信されます。標準リマインダーを使う場合は空欄にしてください。",
+    "customMessageInvalid": "1000文字以内で入力してください。",
+    "customMessageCount": "{{count}} / 1000文字",
+    "whatsappCustomMessageHelp": "カスタムWhatsAppメッセージには対応する承認済みテンプレートが必要です。お客様のチャネル設定が引き続き優先されます。",
+    "messagePreview": "メッセージのプレビュー",
+    "messagePreviewHelp": "画面の言語で表示したUTCの予約例です。実際の詳細と標準リマインダーの言語は、お客様の予約と設定に従います。このプレビューでメッセージは送信されません。",
+    "sampleService": "サービスの例",
     "reminderSettings": "予約リマインダー",
     "statusUnavailable": "リマインダーの状態を確認できません。",
     "appointments": "予約",
@@ -1093,7 +1101,10 @@
       "unverified_phone": "お客様の電話番号が未確認です。",
       "missing_permission": "お客様がこの連絡方法を許可していません。",
       "missing_email": "お客様のメールアドレスがありません。"
-    }
+    },
+    "saveAndVerifyHelp": "確認コードを送信する前に電話番号を保存します。他の設定変更は別途保存されます。",
+    "sendingCode": "コードを送信中…",
+    "resendWait": "次のコードをリクエストするまでお待ちください。"
   },
   "appointmentCollaboration": {
     "viewBookings": "予約を表示（{{count}}）",
@@ -1695,5 +1706,63 @@
     "next": "次の写真",
     "unavailable": "この写真を読み込めませんでした。",
     "alt": "{{name}}、{{total}}枚中{{current}}枚目の写真"
+  },
+  "adminUsers": {
+    "serviceProvider": "サービス提供者",
+    "yes": "はい",
+    "no": "いいえ",
+    "unknown": "不明"
+  },
+  "accountRole": {
+    "title": "ロール",
+    "help": "FitsMyTimeの利用方法を選択します。サービス提供者もサービスを検索して予約できます。",
+    "current": "現在のロール",
+    "buyer": "ユーザー/購入者",
+    "provider": "サービス提供者",
+    "become": "サービス提供者になる",
+    "activating": "有効化中…",
+    "manage": "自分のサービスを管理",
+    "error": "ロールを更新できませんでした。もう一度お試しください。",
+    "activated": "サービス提供者のロールが有効になりました。"
+  },
+  "accountTabs": {
+    "general": "一般",
+    "contact": "連絡先",
+    "password": "パスワード"
+  },
+  "providerSettings": {
+    "loading": "設定を読み込み中…",
+    "description": "サービス提供者のプロフィールと会社を管理します。",
+    "sections": "設定のセクション",
+    "profileTab": "プロフィールと従業員",
+    "teamTab": "チームとアクセス権",
+    "loadingEmployees": "従業員を読み込み中…",
+    "loadEmployeesError": "従業員を読み込めませんでした。ページを更新して再試行してください。",
+    "teamDenied": "チーム設定は会社の管理者が利用できます。",
+    "teamHint": "会社を管理するには「チームとアクセス権」を開いてください。",
+    "denied": "現在のアクセス権では設定を変更できません。",
+    "notFound": "設定ページが見つかりません。",
+    "profileTitle": "サービス提供者のプロフィール",
+    "offerAs": "サービスの提供形態",
+    "individual": "個人",
+    "company": "会社",
+    "companyName": "会社名 *",
+    "companyPlaceholder": "例：リガ・ビューティーサロン",
+    "companyHelp": "すべてのサービスで、管理者の個人名の代わりにこの名前がお客様に表示されます。",
+    "saveProfile": "プロフィールを保存",
+    "profileSaved": "サービス提供者のプロフィールを保存しました",
+    "employees": "従業員",
+    "employeesHelp": "チームを追加し、サービスの編集時に従業員を割り当てます。このアカウントから従業員のサービスや予約を管理できます。",
+    "employeesEmpty": "従業員はまだ追加されていません。",
+    "nameVisible": "名前をお客様に表示",
+    "nameHidden": "名前をお客様に非表示",
+    "editEmployee": "従業員を編集",
+    "addEmployee": "従業員を追加",
+    "employeePlaceholder": "名前または内部ラベル（例：マッサージセラピスト）",
+    "showName": "この名前をお客様に表示する",
+    "saveEmployee": "従業員を保存",
+    "employeeSaved": "従業員を保存しました",
+    "employeeRemoved": "従業員を削除しました",
+    "saveFailed": "保存できませんでした"
   }
 }

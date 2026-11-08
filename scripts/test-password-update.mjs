@@ -11,6 +11,8 @@ import { initReactI18next } from "react-i18next";
 await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation: JSON.parse(await readFile(new URL("../client/public/locales/en/translation.json", import.meta.url), "utf8")) } } });
 
 globalThis.React = React;
+globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
+globalThis.cancelAnimationFrame = clearTimeout;
 globalThis.window = { location: { pathname: "/account", search: "", hash: "", assign: url => destinations.push(url) }, addEventListener() {}, removeEventListener() {} };
 globalThis.document = { visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
@@ -104,6 +106,7 @@ assert.equal(destinations.at(-1), "/login?returnTo=%2Faccount&passwordUpdated=1"
 await act(async () => component.unmount());
 queryClient.clear();
 delete globalThis.window; delete globalThis.document;
+delete globalThis.requestAnimationFrame; delete globalThis.cancelAnimationFrame;
 if (process.argv.includes("--frontend-only")) {
   console.log("Passed: mocked password validation, response rejection, retry, pending guard, secret-field clearing and session redirects; backend section not loaded.");
   process.exit(0);
