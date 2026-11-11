@@ -1,7 +1,7 @@
 import session from "express-session";
 import { isAllowedAuthReturnTo } from "@shared/navigation";
 import { socialProviders } from "@shared/social-auth";
-import { authProfileNames, enabledAuthProviders, loginFailureUrl, oauthSettings } from "./social-auth";
+import { authProfileImage, authProfileNames, enabledAuthProviders, loginFailureUrl, oauthSettings } from "./social-auth";
 import { updatePassword } from "./password";
 import connectPg from "connect-pg-simple";
 import { rateLimit } from "express-rate-limit";
@@ -70,7 +70,7 @@ async function establishSession(req: Request, tokens: Session, socialCompanyName
     id: user.id,
     email: user.email,
     ...authProfileNames(user, existing),
-    profileImageUrl: existing?.profileImageUrl || (typeof user.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null),
+    profileImageUrl: authProfileImage(user, existing),
     ...(!existing && newCompanyName ? { providerType: "company", companyName: newCompanyName, currentRole: "provider" } as const : {}),
   });
   if (auditAuthEventsEnabled()) {

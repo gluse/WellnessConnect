@@ -11,7 +11,7 @@ fs.mkdirSync(context);
 const files = [];
 const roots = ['package.json', 'package-lock.json', 'tsconfig.json', 'vite.config.ts', 'tailwind.config.ts', 'postcss.config.js', 'Dockerfile', '.dockerignore',
   'client', 'server', 'shared', 'migrations', 'scripts/privacy-policy.ts', 'deploy/aws/staging-proxy.mjs', 'deploy/aws/test-staging-proxy.mjs',
-  'deploy/aws/buildspec.yaml', 'deploy/aws-staging/supabase-ca.crt'];
+  'deploy/aws/buildspec.yaml', 'deploy/aws/publish-image.mjs', 'deploy/aws/publish-cloud-build.mjs', 'deploy/aws-staging/supabase-ca.crt'];
 const denied = /(^|\/)(?:\.env[^/]*|node_modules|\.git|\.cache|\.vite)(\/|$)|\.(?:key|pem|dump|tsbuildinfo)$/i;
 const secret = /(?:AKIA|ASIA)[A-Z0-9]{16}|sb_secret_[A-Za-z0-9_-]{24,}|sk-proj-[A-Za-z0-9_-]{24,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/;
 function copy(relative) {

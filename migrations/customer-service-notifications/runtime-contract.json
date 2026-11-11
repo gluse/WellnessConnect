@@ -1,0 +1,188 @@
+{
+  "version": "customer-service-notifications-v1",
+  "tables": [
+    "customer_service_notifications"
+  ],
+  "columns": [
+    {
+      "table": "customer_service_notifications",
+      "name": "id",
+      "type": "uuid",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "seeker_id",
+      "type": "character varying",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "booking_id",
+      "type": "integer",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "service_id",
+      "type": "integer",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "changed_fields",
+      "type": "jsonb",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "read_at",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "default": null
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": "now()"
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "expires_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "default": null
+    },
+    {
+      "table": "services",
+      "name": "deleted_at",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "default": null
+    }
+  ],
+  "constraints": [
+    {
+      "table": "customer_service_notifications",
+      "name": "customer_service_notification_fields_check",
+      "type": "c",
+      "expression": "jsonb_typeofchanged_fields='array'andjsonb_array_lengthchanged_fields>=1andjsonb_array_lengthchanged_fields<=18andchanged_fields<@'[name,description,category,servicetype,price,currency,duration,cleanuptime,maxcapacity,agegroups,targetgender,instantbooking,advancepaymentpercent,imageurls,externalurl,addressid,employeeid,isactive]'::jsonb"
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "customer_service_notification_retention_check",
+      "type": "c",
+      "expression": "expires_at>created_atandexpires_at<=created_at+'2160:00:00'::intervalandread_atisnullorread_at>=created_at"
+    },
+    {
+      "table": "services",
+      "name": "services_deleted_inactive_check",
+      "type": "c",
+      "expression": "deleted_atisnulloris_activeisfalse"
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "customer_service_notifications_pkey",
+      "type": "p",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "customer_service_notifications_seeker_id_users_id_fk",
+      "type": "f",
+      "columns": [
+        "seeker_id"
+      ],
+      "referenceTable": "users",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "customer_service_notifications_booking_id_bookings_id_fk",
+      "type": "f",
+      "columns": [
+        "booking_id"
+      ],
+      "referenceTable": "bookings",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "customer_service_notifications_service_id_services_id_fk",
+      "type": "f",
+      "columns": [
+        "service_id"
+      ],
+      "referenceTable": "services",
+      "referenceColumns": [
+        "id"
+      ],
+      "onDelete": "c"
+    }
+  ],
+  "indexes": [
+    {
+      "table": "customer_service_notifications",
+      "name": "customer_service_notifications_pkey",
+      "unique": true,
+      "columns": [
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "customer_service_notification_inbox_idx",
+      "unique": false,
+      "columns": [
+        "seeker_id",
+        "created_at",
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "customer_service_notification_expiry_idx",
+      "unique": false,
+      "columns": [
+        "expires_at",
+        "id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "customer_service_notification_booking_idx",
+      "unique": false,
+      "columns": [
+        "booking_id"
+      ],
+      "predicate": null
+    },
+    {
+      "table": "customer_service_notifications",
+      "name": "customer_service_notification_service_idx",
+      "unique": false,
+      "columns": [
+        "service_id"
+      ],
+      "predicate": null
+    }
+  ]
+}

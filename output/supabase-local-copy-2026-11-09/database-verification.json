@@ -1,0 +1,66 @@
+{
+  "status": "passed",
+  "hostedWrites": false,
+  "localWrites": false,
+  "applicationChecks": 38,
+  "roles": [
+    {
+      "kind": "app",
+      "passed": true,
+      "readOnly": true,
+      "connectionLimit": 5,
+      "otherConnections": 0,
+      "applicationChecks": 38,
+      "transport": "explicit-local-loopback"
+    },
+    {
+      "kind": "capture",
+      "passed": true,
+      "readOnly": true,
+      "connectionLimit": 2,
+      "otherConnections": 0,
+      "transport": "explicit-local-loopback"
+    },
+    {
+      "kind": "worker",
+      "passed": true,
+      "readOnly": true,
+      "connectionLimit": 2,
+      "otherConnections": 0,
+      "transport": "explicit-local-loopback"
+    },
+    {
+      "kind": "writer",
+      "passed": true,
+      "readOnly": true,
+      "connectionLimit": 2,
+      "otherConnections": 0,
+      "transport": "explicit-local-loopback"
+    },
+    {
+      "kind": "reader",
+      "passed": true,
+      "readOnly": true,
+      "connectionLimit": 2,
+      "otherConnections": 0,
+      "transport": "explicit-local-loopback"
+    }
+  ],
+  "invariants": {
+    "storageObjects": 32,
+    "referencedObjectPaths": 20,
+    "missingObjectPaths": 0,
+    "hostedStorageUrls": 0,
+    "authUsers": 16,
+    "authIdentities": 18,
+    "unmatchedApplicationUsers": 0,
+    "copiedApplicationSessions": 0,
+    "copiedAuthSessions": 0,
+    "copiedRefreshTokens": 0,
+    "remainingSourceUserTokens": 0,
+    "applicationTables": 41,
+    "publicTablesWithoutRls": 0,
+    "cronJobTablePresent": false
+  },
+  "sequenceAdvancementSafe": true
+}

@@ -7,14 +7,14 @@ import { getProviderName } from "@shared/provider";
 import { currentLocation } from "@shared/locations";
 import type { ServiceWithProvider } from "@shared/schema";
 
-export default function SearchServiceCard({ service: source, onViewDetails, onViewProvider, hasLocation }: {
-  service: ServiceWithProvider; onViewDetails: () => void; onViewProvider?: () => void; hasLocation: boolean;
+export default function SearchServiceCard({ service: source, onViewDetails, onViewProvider, hasLocation, wishlistEnabled = true }: {
+  service: ServiceWithProvider; onViewDetails: () => void; onViewProvider?: () => void; hasLocation: boolean; wishlistEnabled?: boolean;
 }) {
   const { t } = useTranslation();
   const categories = useCategories();
   const service = currentLocation(source);
   const provider = getProviderName(service.provider);
-  return <ServiceResultCard service={service} onViewDetails={onViewDetails} employeeName={service.employee?.name}
+  return <ServiceResultCard service={service} onViewDetails={onViewDetails} wishlistEnabled={wishlistEnabled} employeeName={service.employee?.name}
     category={categories.data?.find(category => category.key === service.category)?.name ?? service.category}
     distance={hasLocation ? service.distance : undefined}
     rating={<ServiceRating service={service} compact />}

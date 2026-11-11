@@ -1781,5 +1781,22 @@
     "employeeSaved": "Darbinieks saglabāts",
     "employeeRemoved": "Darbinieks noņemts",
     "saveFailed": "Neizdevās saglabāt"
+  },
+  "frontendFollowup": {
+    "accountMenu": "Atvērt konta izvēlni",
+    "originalService": "Skatīt sākotnējo pakalpojumu",
+    "scheduleMode": "Pieejamības veids",
+    "recurring": "Atkārtots nedēļas grafiks",
+    "specific": "Tikai konkrēti datumi",
+    "specificHelp": "Saglabājiet šo režīmu, lai izslēgtu nedēļas grafiku. Pēc tam pievienojiet datumus un laikus zemāk. Pieejami būs tikai šeit iestatītie datumi.",
+    "saveSpecific": "Saglabāt konkrētu datumu režīmu",
+    "endDate": "Beigu datums (nav obligāts)",
+    "endHelp": "Nedēļas grafiks ir spēkā līdz šim datumam ieskaitot izvēlētajā laika joslā. Atstājiet tukšu, ja nav beigu datuma.",
+    "endError": "Izvēlieties derīgu beigu datumu.",
+    "datedTitle": "Pieejamie datumi un laiki",
+    "datedHelp": "Pievienojiet katru datumu un tā pieejamos laika intervālus. Datums bez laika intervāliem nav pieejams. Pirms datumu pievienošanas saglabājiet šo režīmu.",
+    "serviceChanged": "Pakalpojums {{service}} ir mainīts kopš rezervācijas veikšanas.",
+    "reviewBooking": "Pārskatīt manu rezervāciju",
+    "keepBooking": "Jūsu rezervācija nav mainīta. Pārskatiet pakalpojumu un paturiet rezervāciju vai atveriet sadaļu Manas rezervācijas, lai to atceltu."
   }
 }

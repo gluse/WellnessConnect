@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "sourceWrites": false,
+  "sourceSessionsCopied": false,
+  "targets": {
+    "source": {
+      "tables": 54,
+      "rows": 3135,
+      "archives": [
+        {
+          "file": "source-application.dump",
+          "bytes": 986433,
+          "sha256": "f65535e2b6061ca78716433527635932a39ffd085dd23d60c514840290bc5053"
+        },
+        {
+          "file": "source-auth.dump",
+          "bytes": 8659,
+          "sha256": "3c4cb41893acd128f5b328e1a3bbc0b922be48d4410732159fa83f46b9f86a8d"
+        }
+      ]
+    },
+    "destination": {
+      "tables": 8,
+      "rows": 2534,
+      "archives": [
+        {
+          "file": "destination-application.dump",
+          "bytes": 529798,
+          "sha256": "3d9aff0e4c979b2b70c60ad1271beb1190fa2310abaa3d70bf3c1900113d65a2"
+        }
+      ]
+    }
+  }
+}

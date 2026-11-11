@@ -84,16 +84,18 @@ export function InboxList({ kind, enabled = true, preview = false, onNavigate }:
       </Link>;
     }) : notifications.map(item => {
       const path = item.available ? serviceReturnTo(item.serviceId) : undefined;
-      const label = item.available ? t(`inbox.${item.kind}`, { count: item.count, service: item.serviceName }) : t("inbox.unavailable");
+      const serviceChanged = item.kind === "service_changes";
+      const label = serviceChanged ? t("frontendFollowup.serviceChanged", { service: item.serviceName }) : item.available ? t(`inbox.${item.kind}`, { count: item.count, service: item.serviceName }) : t("inbox.unavailable");
       return <article key={item.id} className="rounded-lg border p-3 space-y-2" data-notification-unread={!item.read}>
         {!item.read && <span className="block text-xs font-semibold text-red-700">{t("inbox.unread")}</span>}
         {path ? <Link href={path} onClick={event => link(event, path, item)} className="font-medium underline underline-offset-2">{label}</Link> : <p>{label}</p>}
+        {serviceChanged && <><p>{t("frontendFollowup.keepBooking")}</p><Link href="/my-bookings" onClick={event => link(event, "/my-bookings", item)} className="inline-flex min-h-11 items-center font-medium underline underline-offset-2">{t("frontendFollowup.reviewBooking")}</Link></>}
         <p className="text-xs text-muted-foreground">{t("inbox.reportingPeriod", { date: new Intl.DateTimeFormat(i18n.language, { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${item.reportingDay}T00:00:00Z`)) })}</p>
-        {!item.read && <Button variant="outline" size="sm" disabled={read.isPending} onClick={() => read.mutate([item])}>{t("inbox.markRead")}</Button>}
+        {!item.read && <Button variant="outline" size="sm" className="h-auto min-h-11 max-w-full whitespace-normal" disabled={read.isPending} onClick={() => read.mutate([item])}>{t("inbox.markRead")}</Button>}
       </article>;
     })}
     {read.isError && <p role="alert">{t("inbox.readFailed")}</p>}
-    {notifications.some(item => !item.read) && <Button variant="outline" disabled={read.isPending} onClick={() => read.mutate(notifications.filter(item => !item.read).slice(0, 100))}>{t("inbox.markLoadedRead")}</Button>}
+    {notifications.some(item => !item.read) && <Button variant="outline" className="h-auto min-h-11 max-w-full whitespace-normal" disabled={read.isPending} onClick={() => read.mutate(notifications.filter(item => !item.read).slice(0, 100))}>{t("inbox.markLoadedRead")}</Button>}
     {!preview && list.hasNextPage && <Button variant="outline" disabled={list.isFetchingNextPage} onClick={() => void list.fetchNextPage()}>{t("inbox.more")}</Button>}
     {preview && <Link href={`/inbox?${state.query}&tab=${kind}`} className="block min-h-11 py-3 underline" onClick={event => link(event, `/inbox?${state.query}&tab=${kind}`)}>{t("inbox.viewAll")}</Link>}
   </div>;

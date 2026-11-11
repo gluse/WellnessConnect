@@ -28,7 +28,7 @@ export default function ServiceCard({ service, onBook, onViewDetails, onViewProv
   service = currentLocation(service);
   const { t, i18n } = useTranslation();
   const categories = useCategories();
-  if (searchLayout) return <SearchServiceCard service={service} onViewDetails={onViewDetails} onViewProvider={onViewProvider} hasLocation={hasLocation} />;
+  if (searchLayout) return <SearchServiceCard service={service} onViewDetails={onViewDetails} onViewProvider={onViewProvider} hasLocation={hasLocation} wishlistEnabled={wishlistEnabled} />;
   const isGroupService = service.serviceType === "group";
   const availableSpots = isGroupService ? ((service.maxCapacity || 1) - (service.availableCapacity || 0)) : 1;
 

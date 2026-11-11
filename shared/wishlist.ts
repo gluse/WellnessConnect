@@ -14,7 +14,7 @@ export type InboxMessage = { bookingId: number; serviceName: string; counterpart
 export type InboxMessages = { items: InboxMessage[]; nextCursor: string | null };
 export type InboxBooking = BookingWithDetails;
 export type ActivityKind = "wishlist_additions" | "service_views";
-export type InboxNotification = { id: string; kind: ActivityKind; serviceId: number; serviceName: string | null;
+export type InboxNotification = { id: string; kind: ActivityKind | "service_changes"; serviceId: number; serviceName: string | null; bookingId?: number; changedFields?: string[];
   reportingDay: string; count: number; revision: number; read: boolean; available: boolean; updatedAt: string };
 export type InboxNotifications = { items: InboxNotification[]; nextCursor: string | null };
 export const messageReadSchema = z.object({ messageIds: z.array(z.string().uuid()).min(1).max(100).refine(ids => new Set(ids).size === ids.length) }).strict();

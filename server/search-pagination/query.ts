@@ -16,9 +16,44 @@ function orderKeys(request:SearchPageRequest):OrderKey[]{
  return [{name:sort.startsWith('price-')?'price_key':sort.startsWith('rating-')?'rating_key':'distance_key',direction:sort.endsWith('-desc')?'DESC':'ASC',type:'float8'},{name:'id',direction:'ASC',type:'integer'}];
 }
 function column(name:string){return sql.raw(`e.${name}`);}
+
+// Keep catalog eligibility aligned with booking's schedule precedence. The
+// presence of a service week is significant even when closed or expired: it
+// must not silently fall back to general working hours.
+function scheduleScope(alias:'av'|'sv'|'sw'|'gv'):SQL {
+ return sql.raw(`${alias}.is_active=true AND ((s.company_id IS NOT NULL AND ${alias}.company_id=s.company_id) OR (s.company_id IS NULL AND ${alias}.company_id IS NULL AND ${alias}.provider_id=s.provider_id))`);
+}
+function scheduleHasWorkingRange(alias:'av'|'sw'):SQL {
+ // Any surviving interval starts at the working start or a break's end. Check
+ // those finite boundaries so fully covered schedules count as closed too.
+ return sql.raw(`${alias}.start_time<${alias}.end_time AND EXISTS(SELECT 1 FROM (
+  SELECT ${alias}.start_time AS point UNION ALL SELECT pause->>'endTime'
+   FROM jsonb_array_elements(CASE WHEN jsonb_typeof(${alias}.breaks)='array' THEN ${alias}.breaks ELSE '[]'::jsonb END) pause
+  ) openings WHERE point>=${alias}.start_time AND point<${alias}.end_time
+   AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(${alias}.breaks)='array' THEN ${alias}.breaks ELSE '[]'::jsonb END) pause
+    WHERE pause->>'startTime'<=point AND pause->>'endTime'>point))`);
+}
+function dateOnlySchedule():SQL {
+ return sql`EXISTS(SELECT 1 FROM public.availability sw WHERE ${scheduleScope('sw')} AND sw.service_id=s.id AND sw.schedule_type='recurring')
+  AND NOT EXISTS(SELECT 1 FROM public.availability sw WHERE ${scheduleScope('sw')} AND sw.service_id=s.id AND sw.schedule_type='recurring'
+   AND CASE WHEN jsonb_typeof(sw.days_of_week)='array' THEN jsonb_array_length(sw.days_of_week)>0 ELSE false END AND ${scheduleHasWorkingRange('sw')})`;
+}
+function recurrenceApplies():SQL {
+ const zone=sql`CASE WHEN EXISTS(SELECT 1 FROM pg_catalog.pg_timezone_names tz WHERE tz.name=av.timezone) THEN av.timezone ELSE 'UTC' END`;
+ return sql`(av.recurrence_end_type IS DISTINCT FROM 'on_date' OR av.recurrence_end_value IS NULL OR av.recurrence_end_value='' OR to_char(day,'YYYY-MM-DD')<=left(av.recurrence_end_value,10))
+  AND (av.recurrence_end_type IS DISTINCT FROM 'after_events' OR av.created_at IS NULL OR EXISTS(
+   SELECT 1 FROM (SELECT day::date-((av.created_at AT TIME ZONE 'UTC') AT TIME ZONE ${zone})::date AS elapsed,
+    extract(dow FROM ((av.created_at AT TIME ZONE 'UTC') AT TIME ZONE ${zone}))::integer AS first_weekday,
+    CASE WHEN length(av.recurrence_end_value)<=100 AND av.recurrence_end_value ~ '^[+]?[0-9]+([.][0-9]+)?([eE][+-]?[0-9]{1,3})?$'
+     THEN av.recurrence_end_value::numeric ELSE NULL END AS event_limit) recurrence
+   WHERE elapsed>=0 AND event_limit>0 AND event_limit<=1.7976931348623157e308
+    AND floor((elapsed+1)/7.0)*(CASE WHEN jsonb_typeof(av.days_of_week)='array' THEN jsonb_array_length(av.days_of_week) ELSE 0 END)
+    +(SELECT count(*) FROM generate_series(0,mod(elapsed+1,7)-1) remaining(offset_day)
+      WHERE av.days_of_week @> jsonb_build_array(mod(first_weekday+offset_day,7)))<=event_limit))`;
+}
 export function searchPageSQL(request:SearchPageRequest):SQL{
  const {filters,limit,embedding,position}=request;
- const conditions:SQL[]=[sql`s.is_active=true`,sql`(c.id IS NULL OR c.is_active=true)`];
+ const conditions:SQL[]=[sql`s.is_active=true`,sql`s.deleted_at IS NULL`,sql`(c.id IS NULL OR c.is_active=true)`];
  if(filters.category)conditions.push(sql`s.category=${filters.category}`);
  if(filters.serviceType)conditions.push(sql`s.service_type=${filters.serviceType}`);
  if(filters.ageGroups?.length)conditions.push(sql`s.age_groups ?| ARRAY[${sql.join(filters.ageGroups.map(group=>sql`${group}`),sql`, `)}]::text[]`);
@@ -33,10 +68,18 @@ export function searchPageSQL(request:SearchPageRequest):SQL{
  if(filters.availableOnly&&filters.date){
   const time=filters.time||filters.timeEnd;
   conditions.push(sql`EXISTS(SELECT 1 FROM public.availability av
-   WHERE av.is_active=true AND ((s.company_id IS NOT NULL AND av.company_id=s.company_id) OR (s.company_id IS NULL AND av.company_id IS NULL AND av.provider_id=s.provider_id))
+   WHERE ${scheduleScope('av')}
    AND (av.service_id IS NULL OR av.service_id=s.id)
+   AND ${scheduleHasWorkingRange('av')} AND EXISTS(SELECT 1 FROM pg_catalog.pg_timezone_names tz WHERE tz.name=av.timezone)
    AND EXISTS(SELECT 1 FROM generate_series(${filters.date}::date,${filters.dateEnd??filters.date}::date,interval '1 day') AS dates(day)
-    WHERE (av.schedule_type='specific' AND av.specific_date::date=day::date) OR (av.schedule_type='recurring' AND av.days_of_week @> jsonb_build_array(extract(dow FROM day)::integer)))
+    WHERE (av.schedule_type='specific' AND av.specific_date::date=day::date
+      AND (av.service_id=s.id OR (NOT (${dateOnlySchedule()}) AND NOT EXISTS(
+       SELECT 1 FROM public.availability sv WHERE ${scheduleScope('sv')} AND sv.service_id=s.id AND sv.schedule_type='specific' AND sv.specific_date::date=day::date))))
+     OR (av.schedule_type='recurring' AND av.days_of_week @> jsonb_build_array(extract(dow FROM day)::integer)
+      AND ${recurrenceApplies()}
+      AND NOT EXISTS(SELECT 1 FROM public.availability sv WHERE ${scheduleScope('sv')} AND sv.service_id=s.id AND sv.schedule_type='specific' AND sv.specific_date::date=day::date)
+      AND ((${dateOnlySchedule()}) OR NOT EXISTS(SELECT 1 FROM public.availability gv WHERE ${scheduleScope('gv')} AND gv.service_id IS NULL AND gv.schedule_type='specific' AND gv.specific_date::date=day::date))
+      AND (av.service_id=s.id OR NOT EXISTS(SELECT 1 FROM public.availability sw WHERE ${scheduleScope('sw')} AND sw.service_id=s.id AND sw.schedule_type='recurring'))))
    ${time?sql`AND ${filters.time??'00:00'}<COALESCE(av.end_time,'23:59') AND ${filters.timeEnd??'23:59'}>COALESCE(av.start_time,'00:00')
     AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(av.breaks)='array' THEN av.breaks ELSE '[]'::jsonb END) br
      WHERE ${filters.time??'00:00'}<(br->>'endTime') AND ${filters.timeEnd??'23:59'}>(br->>'startTime'))`:sql``})`);

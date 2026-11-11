@@ -21,7 +21,7 @@ export function validateHandoff(value: string) {
   const expected = new URL(NATIVE_PROOF_RETURN_URI);
   if (url.origin !== expected.origin || url.pathname !== expected.pathname || url.username || url.password || url.hash ||
     url.searchParams.getAll("attemptId").length !== 1 || url.searchParams.getAll("code").length !== 1 ||
-    [...url.searchParams.keys()].some(key => key !== "attemptId" && key !== "code") ||
+    Array.from(url.searchParams.keys()).some(key => key !== "attemptId" && key !== "code") ||
     !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(url.searchParams.get("attemptId") ?? "") ||
     !/^[A-Za-z0-9_-]{43}$/.test(url.searchParams.get("code") ?? "")) throw new ProofError("invalid_handoff");
   return url.href;
@@ -29,7 +29,7 @@ export function validateHandoff(value: string) {
 function record(value: unknown): value is Record<string, unknown> { return !!value && typeof value === "object" && !Array.isArray(value); }
 export function safeUser(value: unknown): NativeProofUser {
   if (!record(value) || Object.keys(value).sort().join() !== "displayName,id" ||
-    (value.id !== "proof-alice" && value.id !== "proof-bob") ||
+    (value.id !== "proof-alice" && value.id !== "proof-bob") || typeof value.displayName !== "string" ||
     value.displayName !== (value.id === "proof-alice" ? "Alice (synthetic)" : "Bob (synthetic)")) throw new ProofError("invalid_response");
   return { id: value.id, displayName: value.displayName };
 }
@@ -80,7 +80,7 @@ export class NativeProofClient {
       if (revision !== this.revision) throw new ProofError("stale_session");
       const browser = new URL(attempt.browserUrl);
       if (browser.origin !== NATIVE_PROOF_API_ORIGIN || browser.pathname !== NATIVE_PROOF_PATHS.browserStart || browser.username || browser.password || browser.hash ||
-        [...browser.searchParams.keys()].join() !== "attemptId" || browser.searchParams.get("attemptId") !== attempt.attemptId) throw new ProofError("invalid_destination");
+        Array.from(browser.searchParams.keys()).join() !== "attemptId" || browser.searchParams.get("attemptId") !== attempt.attemptId) throw new ProofError("invalid_destination");
       return { attemptId: attempt.attemptId, browserUrl: browser.href, expiresAt: attempt.expiresAt };
     } catch (error) { throw normalizeError(error); }
   }

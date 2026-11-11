@@ -1,0 +1,57 @@
+# TASK-064 local Docker development only; no hosted project link.
+# Start on internal fitsmytime-local network with loopback host bindings.
+project_id = "fitsmytime-local"
+[api]
+enabled = true
+port = 15421
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+auto_expose_new_tables = false
+[db]
+port = 15422
+shadow_port = 15420
+major_version = 17
+health_timeout = "2m"
+[db.pooler]
+enabled = false
+[db.migrations]
+enabled = false
+schema_paths = []
+[db.seed]
+enabled = false
+sql_paths = []
+[realtime]
+enabled = false
+[studio]
+enabled = false
+[local_smtp]
+enabled = true
+port = 15424
+[storage]
+enabled = true
+file_size_limit = "10MiB"
+[storage.s3_protocol]
+enabled = false
+[storage.vector]
+enabled = false
+[auth]
+enabled = true
+site_url = "http://localhost:5000"
+additional_redirect_urls = ["http://localhost:5000/api/callback", "http://127.0.0.1:5000/api/callback"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+enable_signup = true
+enable_anonymous_sign_ins = false
+minimum_password_length = 8
+[auth.email]
+enabled = true
+double_confirm_changes = true
+enable_confirmations = true
+secure_password_change = true
+[auth.sms]
+enabled = false
+[edge_runtime]
+enabled = false
+[analytics]
+enabled = false

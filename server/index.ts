@@ -18,7 +18,7 @@ import { mountNotificationWebhooks } from "./notifications/webhooks";
 import { startupFailureDiagnostic, type StartupStage } from "./startup-diagnostics";
 import { startBookingMessageRetention } from "./appointments/retention";
 import { verifyCurrencyDatabaseReadiness } from "../migrations/currencies/application-readiness.mjs";
-import { verifyWorkspacePricingDatabaseReadiness } from "../migrations/workspace-pricing/application-readiness.mjs";
+import { verifyCustomerServiceNotificationDatabaseReadiness } from "../migrations/customer-service-notifications/application-readiness.mjs";
 import { verifyServicePhotoDatabaseReadiness } from "../migrations/service-photos/application-readiness.mjs";
 import { verifyServiceReminderMessageDatabaseReadiness } from "../migrations/service-reminder-message/application-readiness.mjs";
 
@@ -66,8 +66,8 @@ app.use((req, res, next) => {
     const query: QueryConfig & Pick<ClientConfig, "query_timeout"> = { text, values, query_timeout: 5000 };
     return pool.query(query);
   });
-  startupStage = "workspace_pricing_database";
-  await verifyWorkspacePricingDatabaseReadiness((text, values) => {
+  startupStage = "customer_service_notification_database";
+  await verifyCustomerServiceNotificationDatabaseReadiness((text, values) => {
     const query: QueryConfig & Pick<ClientConfig, "query_timeout"> = { text, values, query_timeout: 5000 };
     return pool.query(query);
   });
@@ -137,7 +137,7 @@ app.use((req, res, next) => {
   const port = Number(process.env.PORT || 5000);
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
-    server.listen({ port, host: config?.host ?? "0.0.0.0" }, () => {
+    server.listen({ port, host: config?.host ?? (process.env.AUDIT_RUNTIME_PROFILE === "local-docker" ? "127.0.0.1" : "0.0.0.0") }, () => {
       server.off("error", reject);
       log(`serving on port ${port}`);
       resolve();

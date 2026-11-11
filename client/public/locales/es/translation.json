@@ -1779,5 +1779,22 @@
     "employeeSaved": "Empleado guardado",
     "employeeRemoved": "Empleado eliminado",
     "saveFailed": "No se pudo guardar"
+  },
+  "frontendFollowup": {
+    "accountMenu": "Abrir menú de la cuenta",
+    "originalService": "Ver servicio original",
+    "scheduleMode": "Tipo de disponibilidad",
+    "recurring": "Horario semanal recurrente",
+    "specific": "Solo fechas específicas",
+    "specificHelp": "Guarda este modo para desactivar el horario semanal. Después añade fechas y horas. Solo estarán disponibles las fechas definidas aquí.",
+    "saveSpecific": "Guardar modo de fechas específicas",
+    "endDate": "Fecha de fin (opcional)",
+    "endHelp": "El horario semanal se aplica hasta esta fecha inclusive en la zona horaria seleccionada. Déjalo vacío para no establecer fecha de fin.",
+    "endError": "Elige una fecha de fin válida.",
+    "datedTitle": "Fechas y horas disponibles",
+    "datedHelp": "Añade cada fecha y sus intervalos disponibles. Una fecha sin horas no está disponible. Guarda primero este modo.",
+    "serviceChanged": "{{service}} ha cambiado desde que reservaste.",
+    "reviewBooking": "Revisar mi reserva",
+    "keepBooking": "Tu reserva no ha cambiado. Revisa el servicio y conserva tu reserva o abre Mis reservas para cancelarla."
   }
 }

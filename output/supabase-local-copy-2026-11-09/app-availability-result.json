@@ -1,0 +1,28 @@
+{
+  "task": "TASK-064",
+  "followup": "localhost-app-availability",
+  "verifiedDate": "2026-11-10",
+  "timezone": "Europe/Riga",
+  "status": "passed",
+  "applicationAlreadyRunning": true,
+  "applicationLeftRunning": true,
+  "newProcessStarted": false,
+  "existingProcessStopped": false,
+  "codeChanged": false,
+  "listener": {
+    "address": "127.0.0.1",
+    "port": 5000,
+    "processIdAtVerification": 32152,
+    "localLauncherChainConfirmed": true,
+    "hostedCommandMarker": false
+  },
+  "httpChecks": [
+    { "origin": "http://localhost:5000", "liveStatus": 200, "readyStatus": 200, "ready": true, "rootStatus": 200, "rootIsHtml": true, "hasApplicationRoot": true },
+    { "origin": "http://127.0.0.1:5000", "liveStatus": 200, "readyStatus": 200, "ready": true, "rootStatus": 200, "rootIsHtml": true, "hasApplicationRoot": true }
+  ],
+  "auditWorkerStarted": false,
+  "hostedChanges": false,
+  "rawCommandLinesOrEnvironmentPrinted": false,
+  "browserMatrixClaimed": false,
+  "remainingBackendBlockers": []
+}

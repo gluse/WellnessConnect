@@ -9,7 +9,9 @@ const run = promisify(execFile);
 const root = process.cwd();
 const snapshot = path.resolve(root, process.argv[2] || '');
 const artifacts = path.join(root, 'outputs/aws-staging-build');
-const serviceName = 'fitsmytime-staging';
+const publishOptions = process.argv.slice(3);
+const serviceOptions = publishOptions.filter(value => value.startsWith('--service='));
+const serviceName = serviceOptions[0]?.slice('--service='.length) || 'fitsmytime-staging';
 const docker = 'C:/Users/LuseG/AppData/Local/Programs/DockerDesktop/resources/bin/docker.exe';
 const helper = path.join(artifacts, 'aws-mcp-session.py');
 let stage = 'validate';
@@ -60,6 +62,8 @@ function engine(socketPath, method, endpoint, headers = {}, progress = false) {
   });
 }
 try {
+  check(serviceOptions.length <= 1 && publishOptions.every(value => value === '--check' || value.startsWith('--service=')), 'PUBLICATION_OPTIONS_REJECTED');
+  check(['fitsmytime-staging', 'fitsmytime-staging-20261109'].includes(serviceName), 'SERVICE_TARGET_REJECTED');
   check(snapshot.startsWith(artifacts + path.sep) && path.basename(snapshot).startsWith('source-'), 'SNAPSHOT_SCOPE');
   const build = JSON.parse(fs.readFileSync(path.join(snapshot, 'local-build-result.json')));
   check(build.IsolatedProxyAndArtifactsPassed && !build.ApplicationStarted && !build.Published, 'BUILD_NOT_READY');
@@ -73,7 +77,7 @@ try {
   const image = JSON.parse(await command(docker, ['image', 'inspect', build.ImageTag]))[0];
   check(image.RepoDigests?.some(d => d.endsWith(build.ImageId)) || image.Id === build.ImageId ||
     (await command(docker, ['image', 'inspect', build.ImageTag, '--format', '{{.Id}}'])) === build.ImageId, 'IMAGE_ID_CHANGED');
-  if (process.argv[3] === '--check') {
+  if (publishOptions.includes('--check')) {
     console.log(JSON.stringify({ localImageVerified: true, linuxEngine: true, registryCredentialsPersisted: false, awsCalls: false }));
     process.exit(0);
   }

@@ -1,0 +1,52 @@
+{
+  "task": "TASK-064",
+  "followup": "local-host-port-correction",
+  "completedDate": "2026-11-10",
+  "timezone": "Europe/Riga",
+  "backendStatus": "passed",
+  "localOnly": true,
+  "hostedConnections": false,
+  "hostedChanges": false,
+  "windowsNetworkSettingsChanged": false,
+  "ports": {
+    "api": 15421,
+    "sourceDatabase": 15422,
+    "auditDatabase": 15432,
+    "application": 5000
+  },
+  "protectedProfileMigration": {
+    "changedEndpointValues": 6,
+    "protectedRollbackCreatedBeforeReplacement": true,
+    "databasePasswordsPreserved": true,
+    "apiKeysPreserved": true,
+    "sessionSecretPreserved": true,
+    "membershipsAndFlagsPreserved": true,
+    "unrelatedFieldsPreserved": true,
+    "applicationAndWorkerConfigurationChecks": "passed"
+  },
+  "offlineChecks": {
+    "focusedMigrationAndIsolationRegression": "passed",
+    "typescript": "passed",
+    "syntaxAndDiff": "passed"
+  },
+  "releasedLocalSmoke": {
+    "actualListener": "127.0.0.1:5000",
+    "applicationLiveness": true,
+    "applicationReadiness": true,
+    "guestSearch": true,
+    "authHealth": true,
+    "unknownPasswordGrantRejected": true,
+    "rejectionProducedNoTokensOrUser": true,
+    "knownUserPasswordReadOrUsed": false,
+    "accountOrSessionCreated": false,
+    "auditWorkerStarted": false,
+    "nonlocalTcpGuardActive": true,
+    "taskAppStopped": true,
+    "testExitCode": 0
+  },
+  "historicalEvidencePreserved": true,
+  "localeMatrixRequired": false,
+  "deferredLocales": ["ar including RTL", "zh", "fr", "de", "hi", "ja", "pt", "es"],
+  "remainingBackendBlockers": [],
+  "nextOwner": "Root: final integrated npm stop/start lifecycle and user delivery"
+}

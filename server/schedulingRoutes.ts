@@ -75,13 +75,17 @@ export function setupSchedulingRoutes(app: Express) {
   app.put("/api/availability/weekly", isAuthenticated, async (req, res) => {
     try {
       const current = scope(req, "manageSchedules");
-      const body = z.object({ ...target, inherit: z.boolean().default(false), days: z.array(z.object({ day: z.number().int().min(0).max(6), intervals })).length(7).refine(days => new Set(days.map(item => item.day)).size === 7, "Include each weekday once.") }).parse(req.body);
+      const body = z.object({ ...target, inherit: z.boolean().default(false), recurrenceEndType: z.enum(["never", "on_date"]).default("never"), recurrenceEndValue: dateSchema.nullable().optional(), days: z.array(z.object({ day: z.number().int().min(0).max(6), intervals })).length(7).refine(days => new Set(days.map(item => item.day)).size === 7, "Include each weekday once.") })
+        .refine(value => value.recurrenceEndType !== "on_date" || value.recurrenceEndValue != null, "Choose the last date for this schedule.").parse(req.body?.inherit === true
+          ? { serviceId: req.body.serviceId, inherit: true, timezone: "UTC", days: Array.from({ length: 7 }, (_, day) => ({ day, intervals: [] })) }
+          : req.body);
       if (body.serviceId != null) assertService(req, await storage.getServiceById(body.serviceId), true);
       if (body.inherit && body.serviceId == null) throw new AccessError(400, "General working hours cannot inherit another schedule.");
-      const rows = body.days.flatMap(day => day.intervals.map(range => ({ ...range, providerId: current.providerId, companyId: current.companyId ?? null, serviceId: body.serviceId, timezone: body.timezone, scheduleType: "recurring" as const, daysOfWeek: [day.day], breaks: [], recurrenceEndType: "never" as const, isActive: true })));
+      const recurrence = { recurrenceEndType: body.recurrenceEndType, recurrenceEndValue: body.recurrenceEndType === "on_date" ? body.recurrenceEndValue! : null };
+      const rows = body.days.flatMap(day => day.intervals.map(range => ({ ...range, providerId: current.providerId, companyId: current.companyId ?? null, serviceId: body.serviceId, timezone: body.timezone, scheduleType: "recurring" as const, daysOfWeek: [day.day], breaks: [], ...recurrence, isActive: true })));
       // An explicit empty weekly schedule prevents service-specific hours from
       // silently falling back to the company's general hours.
-      if (!rows.length && !body.inherit) rows.push({ startTime: "00:00", endTime: "00:00", providerId: current.providerId, companyId: current.companyId ?? null, serviceId: body.serviceId, timezone: body.timezone, scheduleType: "recurring", daysOfWeek: [], breaks: [], recurrenceEndType: "never", isActive: true });
+      if (!rows.length && !body.inherit) rows.push({ startTime: "00:00", endTime: "00:00", providerId: current.providerId, companyId: current.companyId ?? null, serviceId: body.serviceId, timezone: body.timezone, scheduleType: "recurring", daysOfWeek: [], breaks: [], recurrenceEndType: "never", recurrenceEndValue: null, isActive: true });
       await storage.replaceAvailability(current.providerId, current.companyId, body.serviceId, "recurring", body.inherit ? [] : rows);
       res.json({ success: true });
     } catch (error) { failure(error, res); }

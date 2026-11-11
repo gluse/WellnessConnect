@@ -1,0 +1,104 @@
+{
+  "date": "2026-11-11",
+  "engine": "chrome",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/157.0.8103.50",
+    "revision": "@049750111b1e5c11565c792b2aeed5541f332bad",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+    "jsVersion": "15.7.112.23"
+  },
+  "checks": [
+    "Guest Search exposes active Pro individual/company provider links; free/expired provider names and details have no catalog control or request; shared card presentation matches",
+    "Provider search/category/sort, empty result, broken image fallback, keyboard details and guest booking return path work; only simulated view analytics occurred",
+    "Direct unavailable/expired page, pending load, failed load/retry, successful page revoked on refresh, and empty provider page render safe states",
+    "Storefront preview retains the shared layout without wishlist hearts or view analytics, including details",
+    "Desktop labels and accessible navigation name change live in en/lv/ru; active route preserved; shared desktop/mobile order places Availability before Reports before Settings",
+    "Provider grid reflows in 12 en/lv/ru phone/tablet/desktop cases, plus 320px at 200% text"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320,
+      "columns": 2,
+      "clipped": false
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "columns": 2,
+      "clipped": false
+    },
+    {
+      "language": "en",
+      "width": 768,
+      "columns": 3,
+      "clipped": false
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "columns": 4,
+      "clipped": false
+    },
+    {
+      "language": "lv",
+      "width": 320,
+      "columns": 2,
+      "clipped": false
+    },
+    {
+      "language": "lv",
+      "width": 390,
+      "columns": 2,
+      "clipped": false
+    },
+    {
+      "language": "lv",
+      "width": 768,
+      "columns": 3,
+      "clipped": false
+    },
+    {
+      "language": "lv",
+      "width": 1280,
+      "columns": 4,
+      "clipped": false
+    },
+    {
+      "language": "ru",
+      "width": 320,
+      "columns": 2,
+      "clipped": false
+    },
+    {
+      "language": "ru",
+      "width": 390,
+      "columns": 2,
+      "clipped": false
+    },
+    {
+      "language": "ru",
+      "width": 768,
+      "columns": 3,
+      "clipped": false
+    },
+    {
+      "language": "ru",
+      "width": 1280,
+      "columns": 4,
+      "clipped": false
+    }
+  ],
+  "deferred": [
+    "ar/RTL",
+    "zh",
+    "fr",
+    "de",
+    "hi",
+    "ja",
+    "pt",
+    "es"
+  ],
+  "limits": "Isolated actual App/StorefrontView with synthetic in-memory fetch mocks. No connected sessions, database writes, private credentials, deployment, physical-device or screen-reader coverage."
+}

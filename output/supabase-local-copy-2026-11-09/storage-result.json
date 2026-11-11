@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "sourceWrites": false,
+  "destination": "http://127.0.0.1:54321",
+  "buckets": 1,
+  "objects": 32,
+  "bytes": 13145565,
+  "copied": 32,
+  "verified": 32,
+  "startedAt": "2026-11-09T11:45:57.286Z",
+  "automaticRetry": false,
+  "manifestSha256": "1e25f52860273c6f9627866584146f756e8320c6bc8e6ef4b3c735d9c7399c24",
+  "completedAt": "2026-11-09T11:46:11.532Z"
+}

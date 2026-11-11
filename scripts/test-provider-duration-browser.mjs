@@ -13,7 +13,7 @@ const fixture = await browserFixture({ entry: "scripts/fixtures/provider-duratio
 const { evaluate, until, click, key, viewport } = fixture;
 const visibleDuration = (duration, details = false) => evaluate(({ duration, details }) => {
   const scope = details ? document.querySelector('[role="dialog"]') : document;
-  const node = [...scope.querySelectorAll('p')].find(item => item.textContent === duration);
+  const node = [...scope.querySelectorAll('p,[data-testid="text-duration"],.search-service-meta>span')].find(item => item.textContent === duration);
   if (!node || !node.getClientRects().length || node.scrollWidth > node.clientWidth + 1) return false;
   const text = document.createRange(); text.selectNodeContents(node);
   return [...text.getClientRects()].every(rect => rect.left >= 0 && rect.right <= innerWidth + 1);
@@ -25,8 +25,8 @@ try {
     for (const [index, duration] of values.entries()) {
       const id = index + 1;
       assert.equal(await evaluate(({ id, duration }) => {
-        const card = document.querySelector(`[data-testid="button-view-details-${id}"]`).closest('.shadow-sm');
-        return [...card.querySelectorAll('p')].some(node => node.textContent === duration);
+        const card = document.querySelector(`[data-testid="button-view-details-${id}"]`).closest('.search-service-card');
+        return [...card.querySelectorAll('.search-service-meta>span')].some(node => node.textContent === duration);
       }, { id, duration }), true, `${language}/${width} card ${id}`);
       assert.equal(await visibleDuration(duration), true, `${language}/${width} card duration wraps without horizontal clipping`);
       await click(`[data-testid="button-view-details-${id}"]`);

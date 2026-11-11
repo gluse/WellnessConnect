@@ -28,6 +28,22 @@ export function loginFailureUrl(error: string, returnTo: unknown): string {
 
 const metadataText = (value: unknown): string | null => typeof value === "string" ? value.trim().slice(0, 100) || null : null;
 
+export function authProfileImage(user: AuthUser, existing: User | undefined): string | null {
+  // Providers may omit a photo (notably Apple). Preserve a chosen account image;
+  // never fetch an external profile or accept executable/local image URLs.
+  if (existing?.profileImageUrl) return existing.profileImageUrl;
+  const metadata = [user.user_metadata, ...(user.identities ?? []).map(identity => identity.identity_data ?? {})];
+  for (const source of metadata) for (const key of ["avatar_url", "picture"]) {
+    const value = source[key];
+    if (typeof value !== "string" || value.length > 2048) continue;
+    try {
+      const url = new URL(value);
+      if (url.protocol === "https:" && !url.username && !url.password) return url.href;
+    } catch { /* Sparse or invalid provider metadata leaves the account-icon fallback. */ }
+  }
+  return null;
+}
+
 export function authProfileNames(user: AuthUser, existing: User | undefined) {
   // Account edits are synced to first_name/last_name, including intentional empty
   // strings. Sparse provider metadata must not erase stored names or restore an

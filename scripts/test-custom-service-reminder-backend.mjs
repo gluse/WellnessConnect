@@ -8,6 +8,7 @@ import * as schema from "../shared/schema.ts";
 import * as money from "../server/money.ts";
 import * as gallery from "../server/serviceImages.ts";
 import * as storefront from "../shared/storefront.ts";
+import * as serviceBookingProtection from "../server/service-booking-protection.ts";
 import { assertReminderConfiguration } from "../server/notifications/repository.ts";
 
 // Actual storage + entitlement decisions; only persistence, unrelated operations
@@ -19,6 +20,7 @@ const dialect = new PgDialect();
 let source, pro, changes, reconciliation, activeTransaction;
 function reset(hasPro = true) { source = { ...base }; pro = hasPro; changes = []; reconciliation = []; activeTransaction = false; }
 const database = {
+  async execute(query) { assert.ok(activeTransaction); assert.match(dialect.sqlToQuery(query).sql, /^INSERT INTO public.customer_service_notifications/); return { rows: [] }; },
   select() {
     let table, predicate;
     const query = { from(value) { table = orm.getTableName(value); return this; }, where(value) { predicate = value; return this; },
@@ -37,6 +39,7 @@ const database = {
   async transaction(action) { activeTransaction = true; try { return await action(database); } finally { activeTransaction = false; } },
 };
 const dependencies = {
+  "./service-booking-protection": serviceBookingProtection,
   "@shared/schema": schema, "drizzle-orm": orm, "./db": { db: database }, "./money": money,
   "./serviceImages": gallery, "@shared/storefront": storefront, "node:crypto": await import("node:crypto"),
   "./addresses": { serviceLocation: value => value }, "./storefronts": {}, "@shared/provider": {}, "@shared/scheduling": {},

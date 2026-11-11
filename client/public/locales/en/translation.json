@@ -1770,5 +1770,22 @@
     "employeeSaved": "Employee saved",
     "employeeRemoved": "Employee removed",
     "saveFailed": "Unable to save"
+  },
+  "frontendFollowup": {
+    "accountMenu": "Open account menu",
+    "originalService": "View original service",
+    "scheduleMode": "Availability type",
+    "recurring": "Recurring weekly hours",
+    "specific": "Specific dates only",
+    "specificHelp": "Save this mode to disable weekly hours. Then add dates and hours below. Only dates set for this scope will be available.",
+    "saveSpecific": "Save specific-date mode",
+    "endDate": "End date (optional)",
+    "endHelp": "The weekly schedule applies through this date in the selected timezone. Leave blank for no end date.",
+    "endError": "Choose a valid end date.",
+    "datedTitle": "Available dates and hours",
+    "datedHelp": "Add each date and its available time ranges. A date without hours is unavailable. Save this mode before adding dates.",
+    "serviceChanged": "{{service}} has changed since you booked.",
+    "reviewBooking": "Review my booking",
+    "keepBooking": "Your reservation is unchanged. Review the service, then keep your booking or open My Bookings to cancel."
   }
 }

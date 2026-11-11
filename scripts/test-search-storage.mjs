@@ -15,6 +15,7 @@ import * as auditCapture from "../server/audit/capture.ts";
 import * as money from "../server/money.ts";
 import * as serviceImages from "../server/serviceImages.ts";
 import * as storefront from "../shared/storefront.ts";
+import * as serviceBookingProtection from "../server/service-booking-protection.ts";
 
 // Execute the actual storage module against an injected query adapter. The
 // import whitelist deliberately prevents loading server/db or any live client.
@@ -39,6 +40,7 @@ const db = { select() {
   return query;
 } };
 const dependencies = {
+  "./service-booking-protection": serviceBookingProtection,
   "./serviceImages": serviceImages, "@shared/storefront": storefront,
   "./money": money,
   "node:crypto": { randomUUID() { throw new Error("Unexpected booking identity creation during search"); } },

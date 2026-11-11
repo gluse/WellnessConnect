@@ -1,0 +1,18 @@
+{
+  "startedAt": "2026-11-11T17:44:04.9167417Z",
+  "npmProcessId": 31692,
+  "processCreationUtc": "2026-11-11T17:44:04.9113467Z",
+  "command": "npm run dev",
+  "target": "local Docker profile only",
+  "stdoutFile": "C:\\Source\\Private\\WellnessConnect\\outputs\\supabase-local-private\\dev-20261111T174404882Z.stdout.log",
+  "stderrFile": "C:\\Source\\Private\\WellnessConnect\\outputs\\supabase-local-private\\dev-20261111T174404882Z.stderr.log",
+  "migrationPassed": true,
+  "startupVerified": true,
+  "verifiedAt": "2026-11-11T17:44:58.3521692Z",
+  "applicationProcessId": 20620,
+  "loopbackOnly": true,
+  "checks": [
+    "127.0.0.1:5000 health/live200 health/ready200 ready root200html no cookies",
+    "localhost:5000 health/live200 health/ready200 ready root200html no cookies"
+  ]
+}

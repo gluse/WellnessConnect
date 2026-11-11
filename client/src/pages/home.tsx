@@ -4,7 +4,6 @@ import { MapPin, List, LayoutGrid, CalendarDays, Map as MapIcon, Search, Target,
 import ServiceFilters, { type SearchFilters } from "@/components/service-filters";
 import SearchDateFields, { searchDates } from "@/components/search-date-fields";
 import ServiceCard from "@/components/service-card";
-import ProviderServicesDialog from "@/components/provider-services-dialog";
 import SearchResultsSort from "@/components/search-results-sort";
 import { serviceRating, canSortServicePrices, type ServiceSort } from "@/lib/service-sort";
 import SearchPagination from "@/components/search-pagination";
@@ -45,7 +44,7 @@ function SearchPage({ userId }: { userId: string | null }) {
   }, [queryClient, userId]);
   const { t, language } = useFormLocale();
   const categories = useCategories();
-  const [requestedViewMode, setViewMode] = useState<"grid" | "list" | "map">("list");
+  const [requestedViewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
   const [sort, setSort] = useState<ServiceSort>("default");
   const [filters, setFilters] = useState<SearchFilters>(defaults);
   const [draft, setDraft] = useState<SearchFilters>(defaults);
@@ -80,7 +79,6 @@ function SearchPage({ userId }: { userId: string | null }) {
   const queryFeedback = useRef<HTMLParagraphElement>(null);
   const resultsHeading = useRef<HTMLHeadingElement>(null);
   const [selectedService, setSelectedService] = useState<ServiceWithProvider | null>(null);
-  const [providerSource, setProviderSource] = useState<ServiceWithProvider | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const resumeId = new URLSearchParams(window.location.search).get("service");
@@ -356,7 +354,7 @@ function SearchPage({ userId }: { userId: string | null }) {
         {!priceSortAvailable && <p role="status" className="search-map-help">{t("currency.mixedSort")}</p>}
         {!searchEnabled && !loading ? <div className="search-state" role="status"><p>{t("searchLocation.intro")}</p><Button type="button" variant="outline" onClick={browseWithoutLocation}>{t("searchLocation.browseWithout")}</Button></div> : loading ? <div className="search-loading" role="status"><p>{t("publicSearch.loading")}</p><div /><div /></div> : errorKey ? <div className="search-state" role="alert"><h3>{t("searchPage.errorTitle")}</h3><p>{t(errorKey)}</p><Button variant="outline" onClick={() => void search.refetch()} disabled={search.isFetching}>{t("publicSearch.retry")}</Button></div> : <>
           {search.data?.pages[0]?.mode === "text-fallback" && <p className="search-truncated" role="status">{t("searchPage.semanticFallback")}</p>}
-          {viewMode !== "map" && (services.length ? <div className={`search-cards search-cards-${viewMode}`}>{services.map(service => <ServiceCard key={service.id} service={service} searchLayout hasLocation={!!location} onBook={() => book(service)} onViewDetails={() => details(service)} onViewProvider={() => setProviderSource(service)} />)}</div> : <div className="search-state" role="status"><MapPin aria-hidden="true" /><h3>{t("searchPage.emptyTitle")}</h3><p>{t("publicSearch.empty")}</p><Button onClick={clearAll} disabled={busy}>{t("searchPage.clear")}</Button></div>)}
+          {viewMode !== "map" && (services.length ? <div className={`search-cards search-cards-${viewMode}`}>{services.map(service => <ServiceCard key={service.id} service={service} searchLayout hasLocation={!!location} onBook={() => book(service)} onViewDetails={() => details(service)} />)}</div> : <div className="search-state" role="status"><MapPin aria-hidden="true" /><h3>{t("searchPage.emptyTitle")}</h3><p>{t("publicSearch.empty")}</p><Button onClick={clearAll} disabled={busy}>{t("searchPage.clear")}</Button></div>)}
           {viewMode === "map" && <div><p className="search-map-help">{t("searchPage.mapHelp")} <button type="button" className="search-text-button" onClick={() => setViewMode("list")}>{t("searchPage.backList")}</button></p>{search.hasNextPage && <p className="search-map-help">{t("searchPage.mapPaginationHelp")}</p>}{services.length || location ? <div className="search-map"><GoogleMap services={services} userLocation={location?.coords ?? null} onServiceSelect={details} onShowList={() => setViewMode("list")} /></div> : <div className="search-state"><h3>{t("searchPage.emptyTitle")}</h3><p>{t("searchPage.anyLocation")}</p><Button variant="outline" onClick={() => setViewMode("list")}>{t("searchPage.backList")}</Button></div>}</div>}
           <SearchPagination key={`${searchIdentity}:${viewMode}`} hasNextPage={search.hasNextPage} fetching={search.isFetching} failed={search.isFetchNextPageError} error={search.error} hasResults={services.length > 0}
             onLoad={() => { if (!search.isFetching && search.hasNextPage) void search.fetchNextPage({ cancelRefetch: false }); }} onRefresh={refreshSearch} />
@@ -366,8 +364,7 @@ function SearchPage({ userId }: { userId: string | null }) {
     </main>
     {validResumeId && !resumeDismissed && resume.isError && <div role="alert" className="max-w-5xl mx-auto p-4"><p>{t("wishlist.unavailableHelp")}</p><Button variant="outline" onClick={() => void resume.refetch()}>{t("wishlist.retry")}</Button></div>}
     {showBookingModal && selectedService && <BookingModal service={selectedService} onClose={() => setShowBookingModal(false)} />}
-    <ProviderServicesDialog source={providerSource} open={providerSource !== null && !showDetailModal && !showBookingModal} onClose={() => setProviderSource(null)} onBook={book} onViewDetails={details} />
-    <ServiceDetailModal service={selectedService} searchLayout open={showDetailModal} onViewProvider={() => { if (selectedService) setProviderSource(selectedService); setShowDetailModal(false); setResumeDismissed(true); }} onClose={() => { setShowDetailModal(false); setSelectedService(null); setResumeDismissed(true); }} onBook={() => { setShowDetailModal(false); setShowBookingModal(true); setResumeDismissed(true); }} />
+    <ServiceDetailModal service={selectedService} searchLayout open={showDetailModal} onClose={() => { setShowDetailModal(false); setSelectedService(null); setResumeDismissed(true); }} onBook={() => { setShowDetailModal(false); setShowBookingModal(true); setResumeDismissed(true); }} />
     {!userId && <div className="search-bottom-navigation"><BottomNavigation /></div>}
   </div>;
 }

@@ -1,5 +1,37 @@
 # Cross-role dependency queue
 
+## TASK-065 frontend and booked-service follow-up — 11 November 2026
+
+**Local startup repair completed after explicit user yes:** DB executor
+`/root/publish_db_contract` applied pinned0024→0025 once to127.0.0.1:15422/postgres
+after Root confirmed zero consumers/listener5000 (no processes needed stopping).
+Current42 runtime readiness,3Search EXPLAIN variants and calendar checks pass;
+29services/36bookings fingerprints unchanged, new table empty, all probes closed.
+Root restarted the approved `npm run dev` once with protected logs; npmPID31692,
+appPID20620,127.0.0.1-only5000. Both localhost/127.0.0.1 health/live, health/ready
+and root GETs returned200 with no cookies or startup refusal. App left running.
+No separate worker, hostedSupabase, audit15432 or AWS operation. The consumed
+migration receipt must not be replayed. See
+[local execution/restart evidence](frontend-followup-local-migration-2026-11-11.md).
+Earlier prepared-only scope below is historical; hosted execution remains separate.
+
+**Local implementation verified; DB execution/activation pending approval.**
+User assigned Root frontend refinements. Root accepted frontend/components/locales/
+offline checks and assigned scoped dependencies to Backend
+`/root/availability_booking_backend` and DB `/root/availability_booking_database`;
+both accepted under standing cooperation and returned implementation/evidence.
+Root reviewed integrated API/query/DTO contracts and browser visuals, and reran
+focused backend/DB checks. Specific dates/weekly end dates, booking protection/
+durable deletion and private change notices are prepared alongside the UI changes.
+No connected operation or deployment. Prepared0024/0025 require exact local target
+authorization and physical verification before the new app starts. Recommended
+target is local application PostgreSQL127.0.0.1:15422 only; prior copy/port approvals
+do not cover the new migration. Existing provider-suite workspace draft-loss failure
+is reproduced with baseline components; requested-flow regressions pass. Tests
+en/lv/ru only; other languages/RTL deferred. Root owns final integration/status;
+DB owns migration/grant/query verification, Backend owns runtime compatibility.
+[Integration, owner evidence, limits, recovery and next action](frontend-followup-2026-11-11.md).
+
 ## TASK-051 App users provider indicator — 8 November 2026
 
 **Completed locally / integrated checks pass.** User specifically requests provider
@@ -663,6 +695,41 @@ isolated checks pass in en/lv/ru at desktop/tablet/phone widths, along with
 TypeScript and production frontend build. Other supported locales/RTL are deferred
 for testing. No backend/database/service execution or deployment; no dependency
 request remains. Next: local user review.
+
+## TASK-066 — Two reusable AWS publishing commands — 11 November 2026
+
+**Preparation accepted; live execution incomplete.** Requester/approver: user
+selected both PC and CodeBuild options; executor Root/CI/CD. Scope: reversible
+repository scripts/configuration and offline/mocked checks, exact current
+restricted `fitsmytime-staging-20261109`, project674200807170/eu-north-1. Assigned
+DB `/root/publish_db_contract`, Backend `/root/publish_backend_contract` and
+delegated template CI/CD `/root/publish_cloud_builder` accepted their scoped
+dependencies and returned implementation/review evidence. See the
+[integrated workflow/approval/recovery record](aws-one-command-publishing.md),
+[DB contract](aws-publish-db-contract-2026-11-11.md),
+[Backend contract](aws-publish-backend-contract-2026-11-11.md) and
+[builder setup](aws-publish-builder-2026-11-11.md).
+
+Both npm entry points and shared release/build logic prepared. Offline checks:
+workflow26, DB97, Python6, both no-call plans and source preparations pass. No new
+Docker image, cloud build/upload/deployment, private config read or DB/service
+execution. Automatic approval review rejected adding the proposed five-URL/four-
+audit-setting AWS-to-local-owner-hook stdin route: exact private payload/recipient
+authorization absent. No rejected path/hook landed or alternate route attempted.
+User subsequently replied **"ok"** to the exact in-memory five-URL/four-audit-setting
+handoff to `scripts/aws-publish-capacity.mjs` solely for read-only capacity checks.
+Root and the same assigned DB owner resumed that implementation and mocked tests;
+no real private settings or database connection was exercised. This resolves the
+implementation hold without expanding live deployment/provisioning authority.
+The exact-recipient pipe handoff and receiving checker are now implemented with
+independent hash/approval/drain/TLS/identity/capacity validation, exclusive attempt
+guards and secret-free receipts. Fresh workflow31/DB97/Python9 and DB-owner checker109
+scenarios pass; both publishing previews and the receiver plan pass. Current
+hosted current42 schema acceptance remains separate (no automatic migrations). CodeBuild requires
+template schema/guard validation and exact setup/IAM/spending approval; live
+publishing/release and en/lv/ru guest/signed-session/worker acceptance remain.
+Other languages/RTL deferred. Recovery stops and inspects; do not clear immutable
+guards, retry uncertain actions or resume old writers. Existing holds persist.
 
 ## TASK-036 — Restricted AWS staging — 31 October 2026
 
@@ -2248,3 +2315,139 @@ Full-project TypeScript retains five native-proof baseline errors in unchanged
 files; no introduced diagnostic. Next: normal local application review; no
 deployment or connected verification claimed. Recovery is reversal of
 attributable hunks only, preserving pre-task settings/locale changes.
+
+## TASK-036 current-app AWS publication — 9 November 2026
+
+**Prepared; awaiting material hosting choice.** User requested AWS publishing.
+Root accepted CI/CD scope and assigned Backend `/root/aws_publish_backend`,
+Frontend `/root/aws_publish_frontend`, DB `/root/aws_publish_database`; all accepted
+and returned evidence. Existing-profile AWS renewal succeeded. Actual old service
+is DISABLED/version8; owners prohibit starting its stale app/worker after current
+schema changes. Final local Linux image, gateway/artifact checks, full TypeScript,
+scoped frontend en/lv/ru mocked-browser checks and backend regressions pass.
+The unrelated synthetic native-client replay test has a proved baseline failure;
+focused changed-type behavior and backend native14 groups pass.
+DB owner executed distinct9Nov preflight once:38 gates/five restricted roles,
+TLS/read-only/caps and zero other clients passed, no writes/claims/retry. Root
+matched actual live credential settings and selected Audit fields to the receipt
+fingerprints in memory. No image upload/AWS service mutation/app startup occurred.
+
+Root prepared replacement `fitsmytime-staging-20261109`, eu-north-1 micro/scale1,
+USD10/month base with password restriction. Proposed old-service cleanup after
+new-site acceptance returns combined base from temporary USD20/month to USD10;
+new URL and destructive old-service cleanup require explicit user choice. Root
+will not enable the stale old app or reuse consumed DB/manual tokens. Current
+preflight acceptance does not replace fresh capacity acceptance before activation.
+See [exact image, owner evidence, authority, commands and recovery](aws-publish-2026-11-09.md).
+Next: user chooses replacement/additional spending/cleanup; Root executes within
+that selection, DB owns fresh capacity acceptance and Frontend live guest checks.
+Test en/lv/ru only; ar/RTL, zh, fr, de, hi, ja, pt and es remain deferred.
+
+**Approved replacement; AWS limit hold:** user replied yes to replacement and
+old-service deletion AFTER successful new-site acceptance. Root reconfirmed old
+DISABLED8 and fingerprints, then submitted CreateContainerService once. AWS
+InvalidInputException reports maximum container-service limit; no retry. Only
+old service remains, still disabled; no new resource/image/app startup occurred.
+Read-only quota metadata exposes no adjustable container-service quota. No plan
+upgrade/support request inferred. Root prepared and roundtrip-verified an ignored
+owner-only DPAPI CurrentUser encrypted checkpoint of the reviewed active runtime
+spec and selected Audit inputs; no plaintext config response was persisted.
+Details/hash in linked release record. DB replacement capacity mode and Frontend
+new-target guest runner are prepared, offline-tested and unexecuted. User must
+choose whether to delete old staging BEFORE creating replacement; earlier
+cleanup-after-acceptance approval does not cover this changed destructive order.
+All original stop/no-retry and stale-app holds remain.
+
+**Completed restricted publication:** user subsequently approved delete-first,
+conditional on environment review. Root passed that review and encrypted recovery,
+deleted only the disabled old service, created replacement micro/scale1, uploaded
+exact reviewed imageapp.4 and deployed1 after the DB owner's distinct fresh
+five-principal capacity acceptance. Current38-gate preflight and capacity grants
+were consumed once without failure/retry/writes. Exact replacement ACTIVE/RUNNING
+spec and old absence verified; HTTPS/gateway/session and corrected source-backed
+en/lv/ru Chrome guest checks pass. Owner inspected all6phone/desktop login visuals;
+Root inspected lvphone/rudesktop. Initial obsolete landing-test failure retained;
+no runtime image change was needed. User reports resolving redirects by adding
+new staging Redirect URLs in Supabase; no agent account/OAuth verification inferred.
+Current worker delivered13 with0newfailures/quarantine at final observation, but
+234inherited quarantines keep overall Audit attention; no repair/replay or extra
+connected diagnostic occurred. Warning/followup and exact release/URL/receipts/
+limits/recovery are in the linked release record. Base capacityUSD10/month;
+no old-service overlap or plan upgrade. Scoped publishing complete; no pending
+permission for the already-executed replacement. Other feature/public-release
+holds remain, with testing en/lv/ru and other languages/RTL deferred.
+
+## Provider browsing and navigation follow-up — 9 November 2026
+
+**Completed locally.** User assigned `/root` the four frontend changes and
+clarified that catalog eligibility follows the service provider's active Pro
+subscription. `/root` accepted local frontend components/presentation, existing
+translation keys and offline/mocked tests; no connected-service/database,
+credentials, backend, infrastructure or deployment scope. Search now retains
+eligible public Pro storefront links and removes the generic catalog-window
+fallback for other providers. Public provider cards/details reuse Search's
+presentation, desktop navigation translates live, and the shared provider menu
+orders Services → Availability → Reports → Settings with existing permissions.
+Chrome passed six behavior groups/12 en/lv/ru viewport cases and the affected
+24 duration card/detail cases/three booking summaries. Scoped regressions,
+full/fixture TypeScript and environment-isolated frontend build pass. Other
+languages/RTL deferred. Details, evidence, legacy guest-runner limitation and
+recovery: [frontend handoff](frontend-provider-navigation-2026-11-09.md).
+No pending local dependency; deployment remains separate.
+
+## Independent local Supabase copy — 9 November 2026 (TASK-064)
+
+**Completed / verified10November.** User selected a Docker copy on this PC for local
+development, retaining existing hosted Supabase application/audit projects for
+AWS, and requested resume. Root coordinates infrastructure; assigned owners
+`/root/local_copy_database` and `/root/local_copy_backend` accepted DB copy and
+backend isolation dependencies through live agent tools. Necessary source reads
+and local restores/configuration are scoped to this copy; no hosted writes,
+AWS deployment, paid resources or reuse of consumed authorizations. DB owner
+owns manifests/export/restore/security verification; Backend owns explicit local
+runtime support; Root owns CLI/Docker/Storage coordination and final cutover.
+Track evidence, limits, validation and recovery in the
+[copy handoff](supabase-local-copy-2026-11-09.md) and linked owner handoffs.
+
+All owners returned completed evidence: current schema/identities restored,
+49routine definitions byte-exact,38readiness gates/five least-privilege runtime
+roles passed,32private images copied/hash verified and all20application image
+references local. Local login/session/logout/search and bounded audit delivery
+passed; synthetic fixture removed and original16Authusers/18identities restored.
+Root's managed local stop/start passed on10November. DB owner verified exact
+pre/postrestart fingerprints across58source+8audit tables and metadata; Storage
+verified all32image bytes/config/privacy again without hosted access. Backend
+verified the actual127.0.0.1 listener/readiness/guest search after restart and
+closed its own app. Local services remain running, no task app/worker process.
+No hosted writes, AWS changes, new paid resources or automatic synchronization.
+Preserved original protected `.env`; normal `dev` and audit-worker commands use
+the protected local profile. Local external-provider features stay dormant.
+No remaining acceptance dependency; user can run the local app with the handoff
+commands. No locale matrix needed; en/lv/ru scope and other-language/RTL deferrals
+remain unchanged.
+
+## Local database startup port repair — 10 November 2026
+
+**Completed / verified (TASK-064 follow-up).** User reports the local start
+command fails. Root reproduced Windows socket denial on54322; read-only network
+inspection proves exclusions54310–54409 cover all old local service ports. Root
+coordinates existing-container port repair; Backend accepted runtime/profile
+updates and DB accepted local configuration plus before/after verification,
+delegating Root's db/shadow config and protected status URL changes. New verified
+loopback ports15421/15422/15424/15432 avoid the reserved range; app5000 is unchanged.
+No source/AWS operations, data/schema/grant changes, Windows policy edits or
+volume deletion. Scope, evidence, checks and recovery:
+[port repair handoff](supabase-local-ports-2026-11-10.md).
+
+Root repaired loopback gateway publications and CLI config; Backend migrated only
+six protected profile URL values, preserving keys/passwords/flags, and DB verified
+unchanged data through the new15422/15432 endpoints. Root also removed the audit
+container's obsolete direct54332 publication under explicit DB-owner delegation,
+preserving the same named volume/image/password and recording protected recovery.
+Actual npm stop/start, audit restart and repeat start succeed; all8 services are
+healthy with verified loopback bindings. Final66-table/metadata fingerprint is
+identical;38gates/five roles, local app/Auth/search/listener and all32image bytes/
+privacy pass. No real credentials tested, account created, source/cloud access,
+Windows setting change or volume deletion. All test app/worker consumers closed.
+Root owns final user instructions: Docker Desktop only, then run the npm command
+from WellnessConnect; do not create new containers from Docker Images.

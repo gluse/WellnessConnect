@@ -10,6 +10,7 @@ import { useAuditAccess } from "@/hooks/use-audit-access";
 import { useToast } from "@/hooks/use-toast";
 import { logout } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -26,6 +27,8 @@ export default function AccountMenu() {
     queryKey: ["/api/company/context"], enabled: Boolean(user), retry: false,
   });
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ");
+  // OAuth photos are optional untrusted metadata. Only load secure image URLs.
+  const avatarUrl = secureAvatarUrl(user?.profileImageUrl);
   const companyNames = context?.company ? [context.company.name] : context?.workspaces.map(workspace => workspace.name) || [];
 
   async function signOut() {
@@ -37,8 +40,11 @@ export default function AccountMenu() {
 
   return <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="header-icon-button h-11 w-11 p-0" aria-label="Open account menu" disabled={!user || signingOut}>
-          <UserRound className="h-5 w-5" aria-hidden="true" />
+        <Button variant="ghost" size="sm" className="header-icon-button h-11 w-11 p-0" aria-label={t("frontendFollowup.accountMenu")} disabled={!user || signingOut}>
+          <Avatar key={`${user?.id}:${avatarUrl}`} className="h-8 w-8" aria-hidden="true">
+            {avatarUrl && <AvatarImage src={avatarUrl} alt="" referrerPolicy="no-referrer" className="object-cover" />}
+            <AvatarFallback className="bg-white/15 text-white"><UserRound className="h-5 w-5" /></AvatarFallback>
+          </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-72 max-w-[calc(100vw-2rem)]">
@@ -68,4 +74,10 @@ export default function AccountMenu() {
         </DropdownMenuItem>}
       </DropdownMenuContent>
     </DropdownMenu>;
+}
+
+function secureAvatarUrl(value: string | null | undefined) {
+  if (!value) return undefined;
+  try { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password ? url.href : undefined; }
+  catch { return undefined; }
 }

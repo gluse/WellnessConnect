@@ -18,6 +18,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--logs', action='store_true')
     parser.add_argument('--verify', action='store_true')
+    parser.add_argument('--replacement', action='store_true')
     args = parser.parse_args()
     try:
         config = Config(retries={'total_max_attempts': 1, 'mode': 'standard'}, connect_timeout=5, read_timeout=15)
@@ -25,7 +26,8 @@ def main():
         if session.client('sts', config=config).get_caller_identity()['Account'] != '674200807170':
             raise ValueError('WRONG_PROJECT')
         client = session.client('lightsail', config=config)
-        service = client.get_container_services(serviceName='fitsmytime-staging')['containerServices'][0]
+        service_name = 'fitsmytime-staging-20261109' if args.replacement else 'fitsmytime-staging'
+        service = client.get_container_services(serviceName=service_name)['containerServices'][0]
         def deployment(value):
             if not value:
                 return None
@@ -37,7 +39,7 @@ def main():
             summaries = {}
             log_start = (service.get('nextDeployment') or service.get('currentDeployment') or {}).get('createdAt')
             for container in ['app', 'gateway', 'audit-worker']:
-                params = {'serviceName':'fitsmytime-staging', 'containerName':container}
+                params = {'serviceName':service_name, 'containerName':container}
                 if log_start:
                     params['startTime'] = log_start
                 events = client.get_container_log(**params).get('logEvents', [])
@@ -57,14 +59,17 @@ def main():
                             summary['workerHealth'] = value.get('status') if value.get('status') in ['healthy', 'attention', 'unavailable'] else 'unknown'
                             summary['healthTime'] = str(event.get('createdAt'))
                             summary['failures'] = {key: value.get('metrics', {}).get(key) for key in ['sourceFailures', 'destinationFailures', 'captureGaps']}
+                            summary['deliveryMetrics'] = {key: value.get('metrics', {}).get(key) for key in ['claimed', 'delivered', 'matching', 'retried', 'quarantined', 'stale']}
+                            summary['backlogHealth'] = {key: value.get('health', {}).get(key) for key in ['pending', 'leased', 'quarantined', 'expired', 'oldestAgeSeconds']}
                     except (ValueError, AttributeError):
                         pass
                 summaries[container] = summary
             result['logs'] = summaries
         if args.verify:
-            if service.get('currentDeployment', {}).get('state') != 'ACTIVE' or service.get('nextDeployment'):
+            if service.get('currentDeployment', {}).get('state') != 'ACTIVE' or service.get('nextDeployment') or service['state'] != 'RUNNING' or service['isDisabled']:
                 raise ValueError('ACTIVE_REQUIRED')
-            access = dict(dotenv_values(ROOT / '.env.aws-staging-access.local', interpolate=False))
+            access_file = '.env.aws-staging-access-20261109.local' if args.replacement else '.env.aws-staging-access.local'
+            access = dict(dotenv_values(ROOT / access_file, interpolate=False))
             origin = service['url'].rstrip('/')
             if access.get('STAGING_ORIGIN') != origin:
                 raise ValueError('ACCESS_ORIGIN_MISMATCH')
@@ -116,7 +121,8 @@ def main():
             checks.append({'path':'/', 'tamperedCookie':True, 'status':code})
             result['gatewayChecks'] = checks
             result['verified'] = True
-            (ROOT / 'outputs/aws-staging-build/live-gateway-session-result.json').write_text(json.dumps(result, indent=2, default=str))
+            evidence_file = 'live-gateway-session-20261109-result.json' if args.replacement else 'live-gateway-session-result.json'
+            (ROOT / 'outputs/aws-staging-build' / evidence_file).write_text(json.dumps(result, indent=2, default=str))
         print(json.dumps(result, default=str))
         return 0
     except Exception as error:

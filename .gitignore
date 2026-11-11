@@ -10,6 +10,10 @@ vite.config.ts.*
 *.dump
 database-backups/
 outputs/aws-staging-build/
+outputs/supabase-local-tools/
+outputs/supabase-local-private/
+deploy/local-supabase/supabase/.temp/
+deploy/local-supabase/supabase/.branches/
 
 # TASK-047 local native proof outputs and caches; native project sources stay reviewable.
 output/native-proof/

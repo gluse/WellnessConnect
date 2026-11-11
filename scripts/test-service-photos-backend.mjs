@@ -7,6 +7,7 @@ import { PgDialect } from 'drizzle-orm/pg-core';
 import * as schema from '../shared/schema.ts';
 import * as gallery from '../server/serviceImages.ts';
 import * as money from '../server/money.ts';
+import * as serviceBookingProtection from '../server/service-booking-protection.ts';
 import * as storefront from '../shared/storefront.ts';
 import * as scheduling from '../shared/scheduling.ts';
 import * as reviews from '../shared/reviews.ts';
@@ -56,6 +57,7 @@ function filter(rows, predicate) {
     && (!query.sql.includes('"company_id" is null') || row.companyId == null));
 }
 const database = {
+  async execute(query) { assert.equal(transaction, true); assert.match(dialect.sqlToQuery(query).sql, /^INSERT INTO public.customer_service_notifications/); return { rows: [] }; },
   select() {
     let table, predicate;
     const query = { from(value) { table = drizzle.getTableName(value); return query; }, where(value) { predicate = value; return query; },
@@ -73,7 +75,7 @@ const base = { id: 1, providerId: 'owner', companyId: null, employeeId: null, ad
   advancePaymentPercent: 0, imageUrl: paths[0], imageUrls: paths.slice(0, 3), isActive: true };
 const activePro = { userId: 'owner', companyId: null, plan: 'pro', proUntil: new Date('2099-01-01') };
 const reset = (pro = true, companyId = null) => { source = { ...base, companyId }; inserted = []; updates = []; selects = []; subscriptions = pro ? [{ ...activePro, userId: companyId == null ? 'owner' : null, companyId }] : []; };
-const dependencies = { './money': money, './serviceImages': gallery, '@shared/storefront': storefront, 'node:crypto': await import('node:crypto'), '@shared/schema': schema,
+const dependencies = { './service-booking-protection': serviceBookingProtection, './money': money, './serviceImages': gallery, '@shared/storefront': storefront, 'node:crypto': await import('node:crypto'), '@shared/schema': schema,
   './db': { db: database }, 'drizzle-orm': drizzle, '@shared/provider': provider, './storefronts': {}, './addresses': { serviceLocation: value => value }, '@shared/scheduling': scheduling,
   '@shared/reviews': reviews, './searchInput': searchInput, './customerBookings': customerBookings, './audit/context': auditContext, './audit/events': auditEvents, './audit/capture': auditCapture,
   './notifications/repository': { assertReminderConfiguration() {}, async reconcileServiceReminders() {} }, './notifications/policy': {} };

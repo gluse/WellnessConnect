@@ -19,6 +19,7 @@ import * as customerBookings from "../server/customerBookings.ts";
 import * as notifications from "../shared/notifications.ts";
 import * as money from "../server/money.ts";
 import * as serviceImages from "../server/serviceImages.ts";
+import * as serviceBookingProtection from "../server/service-booking-protection.ts";
 import * as storefront from "../shared/storefront.ts";
 import * as workspacePricing from "../shared/workspace-pricing.ts";
 
@@ -95,6 +96,7 @@ const db = {
   },
 };
 const dependencies = {
+  "./service-booking-protection": serviceBookingProtection,
   "./serviceImages": serviceImages, "@shared/storefront": storefront,
   "./money": money,
   "@shared/schema": schema, "./db": { db }, "drizzle-orm": drizzle, "@shared/provider": provider, "node:crypto": { randomUUID },

@@ -38,7 +38,7 @@ export function StorefrontView({ page, preview = false }: { page: PublicStorefro
     .sort((a, b) => sort === "price" && priceSortAvailable ? Number(a.price) - Number(b.price) || a.id - b.id
       : sort === "duration" ? a.duration - b.duration || a.id - b.id : a.name.localeCompare(b.name) || a.id - b.id), [page.services, search, category, sort, priceSortAvailable]);
   const availableCategories = Array.from(new Set(page.services.map(service => service.category)));
-  return <div className="space-y-6">
+  return <div className="search-design space-y-6">
     <section className="overflow-hidden rounded-2xl border bg-white shadow-sm">
       <div className="h-40 sm:h-56 bg-gradient-to-r from-primary/20 via-primary/5 to-secondary/20">
         {page.coverUrl && <img src={page.coverUrl} alt="" className="h-full w-full object-cover" />}
@@ -64,11 +64,11 @@ export function StorefrontView({ page, preview = false }: { page: PublicStorefro
       </div>
       {!priceSortAvailable && <p className="text-sm text-neutral-600" role="status">{t("currency.mixedSort")}</p>}
       <p role="status" className="text-sm text-neutral-500">{t("catalog.count", { count: services.length })}</p>
-      {!services.length ? <p className="rounded-xl border bg-white p-6">{t("storefront.empty")}</p> : <div className="grid gap-4 lg:grid-cols-2">
-        {services.map(service => <ServiceCard key={service.id} service={service} wishlistEnabled={!preview} onBook={() => setBooking(service)} onViewDetails={() => showDetails(service)} />)}
+      {!services.length ? <p className="rounded-xl border bg-white p-6">{t("storefront.empty")}</p> : <div className="search-cards search-cards-grid">
+        {services.map(service => <ServiceCard key={service.id} service={service} searchLayout wishlistEnabled={!preview} onBook={() => setBooking(service)} onViewDetails={() => showDetails(service)} />)}
       </div>}
     </section>
-    <ServiceDetailModal service={detail} open={detail !== null} wishlistEnabled={!preview} onClose={() => setDetail(null)} onBook={() => { setBooking(detail); setDetail(null); }} />
+    <ServiceDetailModal service={detail} searchLayout open={detail !== null} wishlistEnabled={!preview} onClose={() => setDetail(null)} onBook={() => { setBooking(detail); setDetail(null); }} />
     {booking && <BookingModal service={booking} returnTo={`/providers/${page.slug}?book=${booking.id}`} onClose={() => {
       setBooking(null);
       if (!preview && new URLSearchParams(window.location.search).has("book")) window.history.replaceState(null, "", `/providers/${page.slug}`);

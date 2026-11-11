@@ -1764,5 +1764,22 @@
     "employeeSaved": "従業員を保存しました",
     "employeeRemoved": "従業員を削除しました",
     "saveFailed": "保存できませんでした"
+  },
+  "frontendFollowup": {
+    "accountMenu": "アカウントメニューを開く",
+    "originalService": "元のサービスを見る",
+    "scheduleMode": "予約可能日時の種類",
+    "recurring": "毎週繰り返す時間",
+    "specific": "指定日のみ",
+    "specificHelp": "このモードを保存して毎週の予定を無効にし、日時を追加してください。ここで設定した日付のみ予約可能になります。",
+    "saveSpecific": "指定日モードを保存",
+    "endDate": "終了日（任意）",
+    "endHelp": "選択したタイムゾーンで、この日まで（当日を含む）毎週の予定が適用されます。終了日を設定しない場合は空欄にしてください。",
+    "endError": "有効な終了日を選択してください。",
+    "datedTitle": "予約可能な日時",
+    "datedHelp": "各日付と予約可能な時間帯を追加してください。時間帯のない日は予約できません。先にこのモードを保存してください。",
+    "serviceChanged": "予約後に {{service}} が変更されました。",
+    "reviewBooking": "予約を確認する",
+    "keepBooking": "予約は変更されていません。サービスを確認し、予約を維持するか、「予約一覧」を開いてキャンセルしてください。"
   }
 }

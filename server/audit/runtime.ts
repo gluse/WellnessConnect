@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import tls from "node:tls";
-import { auditConnection, auditEnvironment, assertAuditActivation, AUDIT_USERS, type AuditConnectionKind } from "./config.ts";
+import { auditConnection, auditEnvironment, assertAuditActivation, assertAuditTransport, AUDIT_USERS, type AuditConnectionKind } from "./config.ts";
 import { AuditCaptureUnavailable, captureIndependent, type AuditPool, type AuditExecutor, type PreparedAuditEvent } from "./capture.ts";
 import { AuditPortFailure, type AuditClaim, type AuditWorkerPorts, type DeliveryDisposition } from "./worker.ts";
 
@@ -8,8 +8,8 @@ type Environment = Record<string, string | undefined>;
 type RuntimePool = Awaited<ReturnType<typeof openPool>>;
 
 /** Explicit startup only. Importing this module creates no pool or connection. */
-async function openPool(url: string | undefined, kind: AuditConnectionKind) {
-  const config = auditConnection(url, kind);
+async function openPool(url: string | undefined, kind: AuditConnectionKind, environment: Environment) {
+  const config = auditConnection(url, kind, environment);
   const { default: pg } = await import("pg");
   const ssl: tls.ConnectionOptions = { rejectUnauthorized: true, servername: config.host,
     checkServerIdentity: tls.checkServerIdentity, minVersion: "TLSv1.2" };
@@ -17,15 +17,16 @@ async function openPool(url: string | undefined, kind: AuditConnectionKind) {
   // Explicit fields only: URL/libpq SSL/host/query options cannot override policy.
   const pool = new pg.Pool({ host: config.host, port: config.port, user: config.user, password: config.password,
     ...{ replication: "false", sslnegotiation: "postgres" },
-    database: config.database, ssl, max: kind === "capture" ? 2 : 1,
+    database: config.database, ssl: config.local ? false : ssl, max: kind === "capture" ? 2 : 1,
     connectionTimeoutMillis: 5000, idleTimeoutMillis: 10000,
     application_name: `fitsmytime-audit-${kind}`, query_timeout: 6000,
     options: "-c statement_timeout=5000 -c lock_timeout=1000 -c idle_in_transaction_session_timeout=10000" });
   pool.on("error", () => { /* Per-operation failures/worker metrics report safe classes only. */ });
   const wrap = async () => {
     const client = await pool.connect();
-    const stream = (client as unknown as { connection: { stream: { encrypted?: boolean; authorized?: boolean } } }).connection.stream;
-    if (!stream.encrypted || !stream.authorized) { client.release(true); throw new AuditCaptureUnavailable(); }
+    const stream = (client as unknown as { connection: { stream: { encrypted?: boolean; authorized?: boolean; remoteAddress?: string } } }).connection.stream;
+    try { assertAuditTransport(config, stream); }
+    catch { client.release(true); throw new AuditCaptureUnavailable(); }
     let released = false;
     return {
       query: async (text: string, values?: unknown[]) => client.query(text, values),
@@ -85,7 +86,7 @@ export async function createCaptureRuntime(environment: Environment) {
   assertAuditActivation(environment);
   auditEnvironment(environment);
   if (environment.AUDIT_ENABLED !== "true") throw new AuditCaptureUnavailable();
-  const pool = await openPool(environment.AUDIT_CAPTURE_DATABASE_URL, "capture");
+  const pool = await openPool(environment.AUDIT_CAPTURE_DATABASE_URL, "capture", environment);
   try { await checkRole(pool, "capture"); }
   catch { await pool.pool.end(); throw new AuditCaptureUnavailable(); }
   return { capture: (event: PreparedAuditEvent) => captureIndependent(pool.adapter, event), close: () => pool.pool.end(),
@@ -96,10 +97,10 @@ export async function createWorkerRuntime(environment: Environment): Promise<{ p
   assertAuditActivation(environment);
   auditEnvironment(environment);
   if (environment.AUDIT_WORKER_ENABLED !== "true") throw new AuditCaptureUnavailable();
-  const source = await openPool(environment.AUDIT_SOURCE_DATABASE_URL, "worker");
+  const source = await openPool(environment.AUDIT_SOURCE_DATABASE_URL, "worker", environment);
   let destination: RuntimePool | undefined;
   try {
-    destination = await openPool(environment.AUDIT_DATABASE_URL, "writer");
+    destination = await openPool(environment.AUDIT_DATABASE_URL, "writer", environment);
     await checkRole(source, "worker"); await checkRole(destination, "writer");
     const target = destination;
     const flag = async (name: "ack" | "retry" | "quarantine", row: AuditClaim, values: unknown[], signal: AbortSignal) => {

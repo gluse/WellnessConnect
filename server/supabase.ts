@@ -1,5 +1,8 @@
 import "dotenv/config";
 import { createClient, type SupportedStorage } from "@supabase/supabase-js";
+import { assertLocalAuditIsolation } from "./audit/config";
+
+assertLocalAuditIsolation(process.env);
 
 export const supabaseUrl = process.env.SUPABASE_URL;
 const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;

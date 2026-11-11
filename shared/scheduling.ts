@@ -96,6 +96,22 @@ function withinRecurrence(schedule: Availability, day: string) {
   return true;
 }
 
+export function schedulesForDay(schedules: Availability[], serviceId: number, day: string, zone: string): Availability[] {
+  const relevant = schedules.filter(item => item.isActive !== false && (item.serviceId == null || item.serviceId === serviceId));
+  const inZone = relevant.filter(item => item.timezone === zone);
+  const serviceExceptions = inZone.filter(item => item.serviceId === serviceId && item.scheduleType === "specific" && scheduleDate(item) === day);
+  const generalExceptions = inZone.filter(item => item.serviceId == null && item.scheduleType === "specific" && scheduleDate(item) === day);
+  const serviceWeekly = inZone.filter(item => item.serviceId === serviceId && item.scheduleType === "recurring");
+  const generalWeekly = inZone.filter(item => item.serviceId == null && item.scheduleType === "recurring");
+  // An explicit closed service week opts out of inherited dated openings too.
+  const serviceDatesOnly = relevant.some(item => item.serviceId === serviceId && item.scheduleType === "recurring")
+    && !relevant.some(item => item.serviceId === serviceId && item.scheduleType === "recurring" && item.daysOfWeek?.length && workingRanges(item).length);
+  if (relevant.some(item => item.serviceId === serviceId && item.scheduleType === "specific" && scheduleDate(item) === day)) return serviceExceptions;
+  if (!serviceDatesOnly && relevant.some(item => item.serviceId == null && item.scheduleType === "specific" && scheduleDate(item) === day)) return generalExceptions;
+  return (relevant.some(item => item.serviceId === serviceId && item.scheduleType === "recurring") ? serviceWeekly : generalWeekly)
+    .filter(item => item.daysOfWeek?.includes(new Date(day).getUTCDay()) && withinRecurrence(item, day));
+}
+
 export function bookableSlots({ service, schedules, bookings, date, timezone, participantCount = 1, now = new Date() }: {
   service: SlotService;
   schedules: Availability[];
@@ -112,16 +128,9 @@ export function bookableSlots({ service, schedules, bookings, date, timezone, pa
   if (duration <= 0) return [];
   const zones = Array.from(new Set(relevant.map(item => item.timezone))).filter(validTimezone);
   for (const zone of zones) {
-    const inZone = relevant.filter(item => item.timezone === zone);
     for (const delta of [-2, -1, 0, 1, 2]) {
-      const day = addDateDays(date, delta), weekday = new Date(day).getUTCDay();
-      const serviceExceptions = inZone.filter(item => item.serviceId === service.id && item.scheduleType === "specific" && scheduleDate(item) === day);
-      const generalExceptions = inZone.filter(item => item.serviceId == null && item.scheduleType === "specific" && scheduleDate(item) === day);
-      const serviceWeekly = inZone.filter(item => item.serviceId === service.id && item.scheduleType === "recurring");
-      const generalWeekly = inZone.filter(item => item.serviceId == null && item.scheduleType === "recurring");
-      const selected = relevant.some(item => item.serviceId === service.id && item.scheduleType === "specific" && scheduleDate(item) === day) ? serviceExceptions
-        : relevant.some(item => item.serviceId == null && item.scheduleType === "specific" && scheduleDate(item) === day) ? generalExceptions
-        : (relevant.some(item => item.serviceId === service.id && item.scheduleType === "recurring") ? serviceWeekly : generalWeekly).filter(item => item.daysOfWeek?.includes(weekday) && withinRecurrence(item, day));
+      const day = addDateDays(date, delta);
+      const selected = schedulesForDay(relevant, service.id, day, zone);
       const offsets = zoneOffsets(day, zone);
       for (const schedule of selected) for (const range of workingRanges(schedule)) {
         for (let start = minutes(range.startTime); start + occupiedDuration <= minutes(range.endTime); start += 15) {

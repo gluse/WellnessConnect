@@ -1,0 +1,55 @@
+{
+  "task": "TASK-064",
+  "verifiedAt": "2026-11-10T10:58:50.212Z",
+  "stopPassed": true,
+  "startPassed": true,
+  "hostedOperations": false,
+  "volumesDeleted": false,
+  "baselineFingerprint": "a9b8485e3f3f95b70ebae33c8b419c5a8f4ee6992dbf304ff0b4b57f60b96371",
+  "operation": "status",
+  "project": "fitsmytime-local",
+  "localOnly": true,
+  "persistentDataRetained": true,
+  "services": [
+    {
+      "name": "supabase_storage_fitsmytime-local",
+      "running": true,
+      "health": "healthy"
+    },
+    {
+      "name": "supabase_rest_fitsmytime-local",
+      "running": true,
+      "health": null
+    },
+    {
+      "name": "supabase_inbucket_fitsmytime-local",
+      "running": true,
+      "health": "healthy"
+    },
+    {
+      "name": "supabase_auth_fitsmytime-local",
+      "running": true,
+      "health": "healthy"
+    },
+    {
+      "name": "supabase_kong_fitsmytime-local",
+      "running": true,
+      "health": "healthy"
+    },
+    {
+      "name": "supabase_db_fitsmytime-local",
+      "running": true,
+      "health": "healthy"
+    },
+    {
+      "name": "fitsmytime-local-ingress",
+      "running": true,
+      "health": null
+    },
+    {
+      "name": "fitsmytime-local-audit",
+      "running": true,
+      "health": "healthy"
+    }
+  ]
+}

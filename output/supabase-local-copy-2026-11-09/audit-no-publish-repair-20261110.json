@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "container": "fitsmytime-local-audit",
+  "sameNamedVolume": true,
+  "publishedPorts": 0,
+  "healthy": true,
+  "hostedAccess": false,
+  "sqlChanges": false,
+  "volumeDeleted": false,
+  "verifiedAt": "2026-11-10T14:24:50.323Z"
+}

@@ -328,6 +328,21 @@ No increase request, support reply, build retry or deployment was submitted.
 The unfinished CLI sign-in process was cancelled after the console status check;
 no pending local authentication helper is intentionally left running.
 
+**Verified, 11 November 2026:** user reported Support approval/completion and
+authorized a status check. Executor Root read the existing signed-in AWS Console
+for the exact Fresh Deploy project, eu-north-1 CodeBuild quota L-9D07B6EF.
+The quota details show **applied value 15**, AWS default one. The matching
+31 October request still shows requested value one, request ID
+`2b7514310fe64c10957526723276c08aqmDZpxlm`, Support case
+`179346682900519`, status **Case Closed**, last updated **11 November 2026**.
+The previous zero-capacity quota blocker is resolved. This is console evidence;
+the CLI identity check reported an expired session, and direct AWS MCP tools
+were unavailable. No build, resource creation, deployment, support reply or new
+quota request was performed. The later local-PC publication and unused-builder
+cleanup records remain applicable; this check does not recreate that builder.
+No application/browser locale tests were needed for this read-only quota check.
+Test acceptance remains en/lv/ru; other languages/RTL remain deferred.
+
 Prepared: scoped source/build files, protected runtime inputs, public CA,
 owner evidence, connected DB preflight and supporting build resources. Not
 completed: Linux image verification/publication, Lightsail creation, cloud

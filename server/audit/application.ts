@@ -1,4 +1,4 @@
-import { assertAuditActivation, auditApplicationConnection } from "./config.ts";
+import { assertAuditActivation, auditApplicationConnection, assertAuditTransport } from "./config.ts";
 import { AuditCaptureUnavailable, type AuditPool } from "./capture.ts";
 
 /** Checked against the actual server connection, not just a configured URI. */
@@ -13,14 +13,14 @@ export function assertAuditApplicationRole(rows: Record<string, unknown>[]): voi
 export async function verifyAuditApplicationPool(pool: AuditPool, environment: Record<string, string | undefined>): Promise<void> {
   assertAuditActivation(environment);
   if (environment.AUDIT_ENABLED !== "true") return;
-  auditApplicationConnection(environment.DATABASE_URL); // Refuse stale ambient owner configuration before any socket.
+  const config = auditApplicationConnection(environment.DATABASE_URL, environment); // Refuse stale ambient owner configuration before any socket.
   let client: Awaited<ReturnType<AuditPool["connect"]>>;
   try { client = await pool.connect(); }
   catch { throw new AuditCaptureUnavailable(); }
   let failed = true;
   try {
-    const stream = (client as unknown as { connection?: { stream?: { encrypted?: boolean; authorized?: boolean } } }).connection?.stream;
-    if (stream?.encrypted !== true || stream.authorized !== true) throw new AuditCaptureUnavailable();
+    const stream = (client as unknown as { connection?: { stream?: { encrypted?: boolean; authorized?: boolean; remoteAddress?: string } } }).connection?.stream;
+    assertAuditTransport(config, stream);
     const result = await client.query(`SELECT current_user AS principal,r.rolcanlogin,r.rolinherit,r.rolconnlimit,
       r.rolsuper,r.rolbypassrls,r.rolcreaterole,r.rolcreatedb,r.rolreplication,
       pg_has_role(current_user,'fm_app_runtime','USAGE') AS app_member,

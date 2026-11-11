@@ -1,0 +1,56 @@
+{
+  "task": "TASK-064",
+  "completedDate": "2026-11-10",
+  "timezone": "Europe/Riga",
+  "status": "passed",
+  "localOnly": true,
+  "hostedConnections": false,
+  "hostedChanges": false,
+  "runtime": {
+    "explicitLocalProfile": true,
+    "mixedLocalHostedRoutesRejected": true,
+    "hostedTlsPolicyPreserved": true,
+    "ambientProviderCredentialsExcluded": true,
+    "historicalHostedSetupCommandsGuarded": true
+  },
+  "fullLocalSmoke": {
+    "applicationReady": true,
+    "guestSearch": true,
+    "syntheticEmailPasswordLogin": true,
+    "sessionRoundtrip": true,
+    "logoutInvalidatedSession": true,
+    "auditDelivered": 3,
+    "newAuditFailures": 0,
+    "newAuditQuarantines": 0,
+    "inheritedQuarantines": 236
+  },
+  "fixtureCleanup": {
+    "exactProfileRemovedByDatabaseOwner": true,
+    "sessionAbsentAfterLogout": true,
+    "authAccountRemoved": true,
+    "cleanupAuditDelivered": 1,
+    "generatedAuditEvidencePreserved": true
+  },
+  "afterInfrastructureRestart": {
+    "applicationReady": true,
+    "guestSearch": true,
+    "actualListener": "127.0.0.1:5000",
+    "nonlocalTcpGuardActive": true,
+    "authFixtureCreated": false,
+    "auditWorkerStarted": false,
+    "taskApplicationStopped": true,
+    "testExitCode": 0
+  },
+  "offlineValidation": {
+    "localRoutingAndLauncherSecurity": "passed",
+    "historicalCommandGuard": "passed",
+    "auditActivation": "passed",
+    "auditWorker": "passed",
+    "auditViewer": "passed",
+    "geocoding": "passed",
+    "typescript": "passed"
+  },
+  "localeCoverage": "No locale matrix required for backend-only changes; any integrated locale tests are limited to en/lv/ru.",
+  "deferredLocales": ["ar including RTL", "zh", "fr", "de", "hi", "ja", "pt", "es"],
+  "remainingBackendBlockers": []
+}

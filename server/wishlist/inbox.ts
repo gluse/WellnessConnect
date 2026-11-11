@@ -7,6 +7,7 @@ import { WishlistError } from "./service";
 
 export type InboxActor = InboxScope & { userId: string };
 const contextKey = (actor: InboxActor) => actor.scope === "customer" ? "customer" : actor.companyId == null ? "provider:personal" : `provider:company:${actor.companyId}`;
+const customerNoticeAccess = (actor: InboxActor) => actor.scope === "provider" ? sql`false` : sql`n.seeker_id=${actor.userId} AND b.seeker_id=n.seeker_id AND b.service_id=n.service_id`;
 // Every query rechecks current membership/assignment rather than trusting a cache or client role.
 export function bookingAccess(actor: InboxActor): SQL {
   if (actor.scope === "customer") return sql`b.seeker_id=${actor.userId}`;
@@ -40,7 +41,8 @@ export function createInboxService(database: ProductDatabase, hydrateBooking: (i
     async summary(actor:InboxActor):Promise<InboxSummary> {
       const [messages]=await queryRows<{count:number}>(database,sql`SELECT count(*)::int AS count FROM public.booking_messages bm JOIN public.bookings b ON b.id=bm.booking_id
         WHERE (${bookingAccess(actor)}) AND (${unread(actor)})`);
-      const [notifications]=await queryRows<{count:number}>(database,sql`SELECT count(*)::int AS count FROM public.service_activity_groups g JOIN public.services s ON s.id=g.service_id
+      const [notifications]=await queryRows<{count:number}>(database,sql`SELECT (count(*) + (SELECT count(*) FROM public.customer_service_notifications n JOIN public.bookings b ON b.id=n.booking_id
+        WHERE (${customerNoticeAccess(actor)}) AND n.read_at IS NULL AND n.expires_at>${now().toISOString()}::timestamptz))::int AS count FROM public.service_activity_groups g JOIN public.services s ON s.id=g.service_id
         LEFT JOIN public.service_activity_reads r ON r.group_id=g.id AND r.user_id=${actor.userId}
         WHERE (${groupAccess(actor)}) AND g.expires_at>${now().toISOString()}::timestamptz AND COALESCE(r.read_revision,0)<g.revision`);
       return {unreadMessages:messages.count,unreadNotifications:notifications.count};
@@ -82,13 +84,19 @@ export function createInboxService(database: ProductDatabase, hydrateBooking: (i
     async notifications(actor:InboxActor,before:string|undefined,limit:number):Promise<InboxNotifications> {
       const after=readCursor(before);if(after&&typeof after.id!=="string")throw new WishlistError(400,"invalid_cursor");
       type Row=Omit<InboxNotification,'updatedAt'|'reportingDay'> & {updatedAt:Date;reportingDay:string};
-      const rows=await queryRows<Row>(database,sql`SELECT g.id,g.kind,g.service_id AS "serviceId",CASE WHEN s.is_active THEN s.name ELSE NULL END AS "serviceName",
+      const rows=await queryRows<Row>(database,sql`SELECT * FROM (SELECT g.id,g.kind,g.service_id AS "serviceId",CASE WHEN s.is_active THEN s.name ELSE NULL END AS "serviceName",
         g.reporting_day::text AS "reportingDay",g.count,g.revision,COALESCE(r.read_revision,0)>=g.revision AS read,s.is_active AS available,g.updated_at AS "updatedAt"
+        ,NULL::integer AS "bookingId",NULL::jsonb AS "changedFields"
         FROM public.service_activity_groups g JOIN public.services s ON s.id=g.service_id
         LEFT JOIN public.service_activity_reads r ON r.group_id=g.id AND r.user_id=${actor.userId}
         WHERE (${groupAccess(actor)}) AND g.expires_at>${now().toISOString()}::timestamptz
-        ${after?sql`AND (g.updated_at,g.id)<(${after.date}::timestamptz,${after.id}::uuid)`:sql``}
-        ORDER BY g.updated_at DESC,g.id DESC LIMIT ${limit+1}`);
+        UNION ALL SELECT n.id,'service_changes' AS kind,n.service_id AS "serviceId",s.name AS "serviceName",
+        (n.created_at AT TIME ZONE 'UTC')::date::text AS "reportingDay",1 AS count,1 AS revision,n.read_at IS NOT NULL AS read,
+        (s.is_active AND COALESCE(c.is_active,true)) AS available,n.created_at AS "updatedAt",n.booking_id AS "bookingId",n.changed_fields AS "changedFields"
+        FROM public.customer_service_notifications n JOIN public.bookings b ON b.id=n.booking_id JOIN public.services s ON s.id=n.service_id
+        LEFT JOIN public.companies c ON c.id=s.company_id WHERE (${customerNoticeAccess(actor)}) AND n.expires_at>${now().toISOString()}::timestamptz) notices
+        ${after?sql`WHERE ("updatedAt",id)<(${after.date}::timestamptz,${after.id}::uuid)`:sql``}
+        ORDER BY "updatedAt" DESC,id DESC LIMIT ${limit+1}`);
       const items=rows.slice(0,limit).map(row=>({...row,updatedAt:new Date(row.updatedAt).toISOString()}));const last=items.at(-1);
       return {items,nextCursor:rows.length>limit&&last?cursor(last.updatedAt,last.id):null};
     },
@@ -97,7 +105,14 @@ export function createInboxService(database: ProductDatabase, hydrateBooking: (i
         for(const item of items){
           const allowed=await queryRows<{revision:number}>(tx,sql`SELECT g.revision FROM public.service_activity_groups g JOIN public.services s ON s.id=g.service_id
             WHERE g.id=${item.id}::uuid AND (${groupAccess(actor)}) AND g.expires_at>${now().toISOString()}::timestamptz`);
-          if(!allowed.length)throw new WishlistError(403,"notification_unavailable");
+          if(!allowed.length){
+            if(item.revision!==1)throw new WishlistError(400,"invalid_revision");
+            const customer=await queryRows(tx,sql`UPDATE public.customer_service_notifications n SET read_at=COALESCE(n.read_at,${now().toISOString()}::timestamptz)
+              FROM public.bookings b WHERE n.id=${item.id}::uuid AND b.id=n.booking_id AND (${customerNoticeAccess(actor)})
+              AND n.expires_at>${now().toISOString()}::timestamptz RETURNING n.id`);
+            if(!customer.length)throw new WishlistError(403,"notification_unavailable");
+            continue;
+          }
           if(item.revision>allowed[0].revision)throw new WishlistError(400,"invalid_revision");
           await tx.execute(sql`INSERT INTO public.service_activity_reads(user_id,group_id,read_revision) VALUES(${actor.userId},${item.id}::uuid,${item.revision})
             ON CONFLICT(user_id,group_id) DO UPDATE SET read_revision=GREATEST(service_activity_reads.read_revision,EXCLUDED.read_revision)`);

@@ -8,7 +8,7 @@ async function lookup(input: unknown, request: typeof fetch) {
   if (typeof input !== "string" || !input.trim() || input.length > 500) {
     throw new GeocodingError(400, "INVALID_ADDRESS", "Enter an address of up to 500 characters.");
   }
-  const key = process.env.GOOGLE_GEOCODING_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
+  const key = process.env.AUDIT_RUNTIME_PROFILE === "local-docker" ? undefined : process.env.GOOGLE_GEOCODING_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
   if (!key) throw new GeocodingError(503, "NOT_CONFIGURED", "Address lookup is not configured.");
   const url = new URL("https://maps.googleapis.com/maps/api/geocode/json");
   url.searchParams.set("address", input.trim());

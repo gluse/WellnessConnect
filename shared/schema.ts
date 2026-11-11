@@ -473,11 +473,14 @@ export const services = pgTable("services", {
   reminderHours: integer("reminder_hours").notNull().default(24),
   reminderMessage: text("reminder_message").notNull().default(""),
   isActive: boolean("is_active").default(true),
+  // A tombstone hides deleted listings while retaining reservation references.
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, table => [index("services_address_idx").on(table.addressId), index("services_category_idx").on(table.category), check("services_cleanup_time_check", sql`${table.cleanupTime} BETWEEN 0 AND 1440`),
   check("services_reminder_settings_check", sql`${table.reminderMethod} IN ('email','sms','whatsapp') AND ${table.reminderHours} BETWEEN 1 AND 168`),
   check("services_reminder_message_check", sql`char_length(${table.reminderMessage}) <= 1000`),
+  check("services_deleted_inactive_check", sql`${table.deletedAt} IS NULL OR ${table.isActive} IS FALSE`),
   check("services_currency_check", currencyCodeCheck(table.currency)),
   check("services_image_urls_shape_check", sql`cardinality(${table.imageUrls}) <= 10 AND (cardinality(${table.imageUrls}) = 0 OR (array_ndims(${table.imageUrls}) = 1 AND array_lower(${table.imageUrls}, 1) = 1)) AND array_position(${table.imageUrls}, NULL) IS NULL AND NOT ('' = ANY(${table.imageUrls}))`),
   check("services_image_urls_cover_check", sql`cardinality(${table.imageUrls}) = 0 OR (${table.imageUrl} IS NOT NULL AND ${table.imageUrl} = ${table.imageUrls}[1])`),
@@ -638,6 +641,27 @@ export const serviceActivityReads = pgTable("service_activity_reads", {
   primaryKey({ columns: [table.userId, table.groupId] }),
   index("service_activity_read_group_idx").on(table.groupId),
   check("service_activity_read_revision_check", sql`${table.readRevision} >= 0`),
+]).enableRLS();
+
+// Customer-specific listing-change notices contain field names only; reservation
+// prices/times remain authoritative in bookings. The server rechecks the booking
+// recipient and service before exposing a notice, including in the global inbox.
+export const customerServiceNotifications = pgTable("customer_service_notifications", {
+  id: uuid("id").primaryKey(),
+  seekerId: varchar("seeker_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  bookingId: integer("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
+  serviceId: integer("service_id").notNull().references(() => services.id, { onDelete: "cascade" }),
+  changedFields: jsonb("changed_fields").$type<string[]>().notNull(),
+  readAt: timestamp("read_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+}, table => [
+  index("customer_service_notification_inbox_idx").on(table.seekerId, table.createdAt.desc(), table.id.desc()),
+  index("customer_service_notification_expiry_idx").on(table.expiresAt, table.id),
+  index("customer_service_notification_booking_idx").on(table.bookingId),
+  index("customer_service_notification_service_idx").on(table.serviceId),
+  check("customer_service_notification_fields_check", sql`jsonb_typeof(${table.changedFields}) = 'array' AND jsonb_array_length(${table.changedFields}) >= 1 AND jsonb_array_length(${table.changedFields}) <= 18 AND ${table.changedFields} <@ '["name","description","category","serviceType","price","currency","duration","cleanupTime","maxCapacity","ageGroups","targetGender","instantBooking","advancePaymentPercent","imageUrls","externalUrl","addressId","employeeId","isActive"]'::jsonb`),
+  check("customer_service_notification_retention_check", sql`${table.expiresAt} > ${table.createdAt} AND ${table.expiresAt} <= ${table.createdAt} + '2160:00:00'::interval AND (${table.readAt} IS NULL OR ${table.readAt} >= ${table.createdAt})`),
 ]).enableRLS();
 
 // Explicit per-message receipts avoid a watermark clearing unseen older pages or
@@ -941,6 +965,7 @@ export const insertServiceSchema = createInsertSchema(services, {
   id: true,
   createdAt: true,
   updatedAt: true,
+  deletedAt: true,
 });
 
 export const insertBookingSchema = createInsertSchema(bookings, { currency: currencyInput }).omit({

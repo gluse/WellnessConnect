@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-11",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/157.0.8103.50",
+    "revision": "@049750111b1e5c11565c792b2aeed5541f332bad",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+    "jsVersion": "15.7.112.23"
+  },
+  "checks": [
+    "Inclusive optional recurring end-date survives refresh, rejection, pending save and scope reload; empty date clears recurrence limit",
+    "Specific-date mode persists a closed weekly sentinel, retains mode across scope changes, and saves dated hours through the existing override contract",
+    "Availability weekly and specific modes reflow in en/lv/ru at 320/390/768/1280 and 320px at 200% text",
+    "en/lv/ru circular 44px gallery controls, boundary disabling, broken-image fallback and keyboard navigation; distinct completed/cancelled badges; original service links; service-change inbox review links; unsafe-avatar fallback/menu",
+    "HTTPS profile photo renders from an exact in-memory image response, sends no referrer, and a failed photo restores the account icon"
+  ],
+  "matrix": [
+    {
+      "language": "en",
+      "width": 320
+    },
+    {
+      "language": "en",
+      "width": 390
+    },
+    {
+      "language": "en",
+      "width": 768
+    },
+    {
+      "language": "en",
+      "width": 1280
+    },
+    {
+      "language": "lv",
+      "width": 320
+    },
+    {
+      "language": "lv",
+      "width": 390
+    },
+    {
+      "language": "lv",
+      "width": 768
+    },
+    {
+      "language": "lv",
+      "width": 1280
+    },
+    {
+      "language": "ru",
+      "width": 320
+    },
+    {
+      "language": "ru",
+      "width": 390
+    },
+    {
+      "language": "ru",
+      "width": 768
+    },
+    {
+      "language": "ru",
+      "width": 1280
+    }
+  ],
+  "limits": "Synthetic in-memory boundary; no database/service calls, physical-device, screen-reader or native linguistic coverage. ar/RTL,zh,fr,de,hi,ja,pt,es deferred."
+}

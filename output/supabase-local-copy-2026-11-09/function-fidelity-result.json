@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "sourceWrites": false,
+  "sourceReads": false,
+  "correction": "Windows native SQL output newline conversion",
+  "targets": {
+    "source": {
+      "functions": 32,
+      "hashesOwnersConfigsAclsExact": true
+    },
+    "destination": {
+      "functions": 17,
+      "hashesOwnersConfigsAclsExact": true
+    }
+  }
+}

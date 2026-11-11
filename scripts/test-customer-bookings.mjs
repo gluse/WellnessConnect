@@ -21,7 +21,7 @@ const { default: RoleSwitcher } = await import("../client/src/components/role-sw
 const { act, create } = renderer;
 const user = { id: "customer", firstName: "Customer", currentRole: "seeker" };
 const booking = (id, status, days) => ({
-  id, seekerId: user.id, status, scheduledDate: new Date(Date.now() + days * 86400_000).toISOString(), totalAmount: "25.00",
+  id, serviceId: id + 100, seekerId: user.id, status, scheduledDate: new Date(Date.now() + days * 86400_000).toISOString(), totalAmount: "25.00",
   provider: { firstName: "Test", lastName: "Provider" }, service: { name: `Service ${id}`, duration: 60 },
 });
 const records = [booking(1, "confirmed", 2), booking(2, "pending", 3), booking(3, "completed", -2), booking(4, "cancelled", 4)];
@@ -72,12 +72,13 @@ await mount();
 assert.deepEqual(requests, ["/api/bookings/seeker"]);
 assert.ok(component.root.findByProps({ role: "status" }).children.includes("Loading appointments…"));
 assert.equal(component.root.findAllByType("article").length, 0);
-const headerNav = component.root.findByProps({ "aria-label": "Services" });
+const headerNav = component.root.findByProps({ "aria-label": translation.mobileNavigation.navigation });
 assert.equal(headerNav.findAllByType("a").find(node => node.props.href === "/my-bookings").props["aria-current"], "page");
-assert.equal(headerNav.findAllByType("a").find(node => node.props.href === "/my-services").props["aria-current"], undefined);
+assert.equal(headerNav.findAllByType("a").filter(node => node.props.href === "/my-services").length, 0, "A customer-only account has no provider navigation");
 assert.equal(component.root.findAllByProps({ "aria-label": "Customer navigation" }).length, 0, "The application shell owns signed-in mobile navigation");
 await respond(records);
 assert.deepEqual(names(), ["Service 1", "Service 2"]);
+assert.deepEqual(component.root.findAllByType("a").filter(node => node.props["data-testid"]?.startsWith("booking-service-")).map(node => node.props.href), ["/search?service=101", "/search?service=102"]);
 assert.equal(buttons("Mark complete").length, 0, "Customer bookings must not expose provider actions");
 await act(async () => component.root.findByType("select").props.onChange({ target: { value: "pending" } }));
 assert.deepEqual(names(), ["Service 2"]);

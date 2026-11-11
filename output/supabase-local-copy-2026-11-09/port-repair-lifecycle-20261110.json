@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "check": "port-repair-lifecycle-20261110",
+  "transport": "host-15422-15432",
+  "hostedAccess": false,
+  "localWrites": false,
+  "fingerprint": "a9b8485e3f3f95b70ebae33c8b419c5a8f4ee6992dbf304ff0b4b57f60b96371",
+  "baselineFingerprint": "a9b8485e3f3f95b70ebae33c8b419c5a8f4ee6992dbf304ff0b4b57f60b96371",
+  "targets": {
+    "source": {
+      "tables": 58,
+      "functions": 32,
+      "sequences": 10,
+      "roles": 12
+    },
+    "destination": {
+      "tables": 8,
+      "functions": 17,
+      "sequences": 0,
+      "roles": 10
+    }
+  }
+}

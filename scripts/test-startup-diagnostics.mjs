@@ -4,8 +4,9 @@ import { BillingDatabaseReadinessError, verifyBillingDatabaseReadiness } from ".
 import { CurrencyDatabaseReadinessError } from "../migrations/currencies/application-readiness.mjs";
 import { ServicePhotoDatabaseReadinessError } from "../migrations/service-photos/application-readiness.mjs";
 import { ServiceReminderMessageDatabaseReadinessError } from "../migrations/service-reminder-message/application-readiness.mjs";
-import { WORKSPACE_PRICING_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS, WORKSPACE_PRICING_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL,
-  workspacePricingApplicationReadinessArguments as billingApplicationReadinessArguments, WorkspacePricingDatabaseReadinessError } from "../migrations/workspace-pricing/application-readiness.mjs";
+import { CUSTOMER_NOTIFICATION_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS, CUSTOMER_NOTIFICATION_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL,
+  customerNotificationApplicationReadinessArguments as billingApplicationReadinessArguments } from "../migrations/customer-service-notifications/application-readiness.mjs";
+import { WorkspacePricingDatabaseReadinessError } from "../migrations/workspace-pricing/application-readiness.mjs";
 
 // Pure diagnostics and injected metadata queries; no server/db/env/provider import.
 const canary = "PRIVATE_CONFIG_DRIVER_BODY_STACK_CANARY";

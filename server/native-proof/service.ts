@@ -85,8 +85,8 @@ export function createNativeAuthProofService(options: NativeProofOptions = {}) {
     return time;
   }
   function cleanup(time: number) {
-    for (const [id, record] of store.attempts) if (record.expiresAt <= time || record.handoff && record.handoff.expiresAt <= time) store.attempts.delete(id);
-    for (const [id, record] of store.sessions) if (record.expiresAt <= time) store.sessions.delete(id);
+    for (const [id, record] of Array.from(store.attempts)) if (record.expiresAt <= time || record.handoff && record.handoff.expiresAt <= time) store.attempts.delete(id);
+    for (const [id, record] of Array.from(store.sessions)) if (record.expiresAt <= time) store.sessions.delete(id);
   }
   function attempt(id: unknown, time: number) {
     if (!z.string().uuid().safeParse(id).success) throw new NativeProofError("invalid_handoff");

@@ -1,4 +1,5 @@
 import { formatMoney } from "@/lib/money";
+import { Link } from "wouter";
 import { useState, type ReactNode, type SelectHTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -59,7 +60,7 @@ export default function AppointmentAgenda({ bookings, employees = [], provider =
   </div>;
   const employee = (row: BookingWithDetails) => provider ? employees.find(item => item.id === row.employeeId)?.name : row.employee?.name;
   const name = (row: BookingWithDetails) => [row.seeker.firstName, row.seeker.lastName].filter(Boolean).join(" ") || row.seeker.email || t(prefix + "customer");
-  const badge = (row: BookingWithDetails) => <Badge className={row.status === "pending" ? "bg-amber-50 text-amber-800 border-amber-200" : row.status === "confirmed" ? "bg-green-50 text-green-800 border-green-200" : "bg-neutral-100 text-neutral-600 border-neutral-200"}>{row.status ? t(prefix + "status" + row.status[0].toUpperCase() + row.status.slice(1)) : "—"}</Badge>;
+  const badge = (row: BookingWithDetails) => <Badge className={row.status === "pending" ? "bg-amber-50 text-amber-800 border-amber-200" : row.status === "confirmed" ? "bg-green-50 text-green-800 border-green-200" : row.status === "completed" ? "bg-blue-50 text-blue-800 border-blue-200" : row.status === "cancelled" ? "bg-red-50 text-red-800 border-red-200" : "bg-neutral-100 text-neutral-600 border-neutral-200"}>{row.status ? t(prefix + "status" + row.status[0].toUpperCase() + row.status.slice(1)) : "—"}</Badge>;
   const renderEvent = (key: string, rows: BookingWithDetails[], forceOpen = false) => {
           const row = rows[0], group = provider && row.service.serviceType === "group", open = forceOpen || expanded.has(key);
           if (group) {
@@ -74,6 +75,7 @@ export default function AppointmentAgenda({ bookings, employees = [], provider =
               <div className="min-w-0"><p className="font-semibold break-words">{row.service.name}</p><p className="text-sm text-neutral-600 break-words">{provider ? name(row) : getProviderName(row.provider)}</p>{employee(row) && <p className="text-xs text-neutral-600">{employee(row)}</p>}</div>
               <div className="flex flex-col items-end gap-1">{badge(row)}<p className="font-semibold text-neutral-900">{formatMoney(row.totalAmount, row.currency, i18n.resolvedLanguage || i18n.language) ?? t("currency.unavailable")}</p></div>
             </div>
+            {!provider && Number.isSafeInteger(row.serviceId) && row.serviceId > 0 && <Link href={`/search?service=${row.serviceId}`} className="inline-flex min-h-11 items-center text-sm font-medium text-indigo-700 underline underline-offset-4 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" data-testid={`booking-service-${row.id}`}>{t("frontendFollowup.originalService")}</Link>}
             {(row.participantCount ?? 1) > 1 && <p className="text-sm text-neutral-700">{row.participantCount} participants</p>}
             {provider && <BookingControls {...controls} booking={row} />}{!provider && row.review && <BookingReviewSummary key={row.review.id} booking={row} />}{!provider && renderCustomerActions?.(row)}{renderBookingDetails?.(row)}
           </article>;

@@ -1,0 +1,204 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Build reviewed application snapshots and register images for an existing Lightsail service; deployment remains a separate guarded client operation.",
+  "Metadata": {
+    "AWSToolsMetrics": { "AWSAgentToolkit": "aws-cloudformation@3" },
+    "com.aws.cloudformation.Context": {
+      "must": ["Build only; never grant deployment, database or application-secret access", "Create resources only in the selected project and Region"],
+      "ref": [{ "at": "docs/aws-publish-builder-2026-11-11.md", "has": "setup, validation limits, costs and recovery", "scope": "this stack" }]
+    }
+  },
+  "Parameters": {
+    "TargetService": {
+      "Type": "String",
+      "Default": "fitsmytime-staging-20261109",
+      "AllowedValues": ["fitsmytime-staging-20261109"],
+      "Description": "Existing restricted staging service. This template never creates or changes it."
+    },
+    "TargetServiceArn": {
+      "Type": "String",
+      "AllowedPattern": "^arn:aws:lightsail:eu-north-1:674200807170:ContainerService/[A-Za-z0-9-]+$",
+      "ConstraintDescription": "Use the exact current staging ContainerService ARN in the selected project and Region.",
+      "Description": "Read the existing service ARN and verify its service name before supplying it."
+    }
+  },
+  "Conditions": {
+    "AllowedTarget": {
+      "Fn::And": [
+        { "Fn::Equals": [{ "Ref": "AWS::AccountId" }, "674200807170"] },
+        { "Fn::Equals": [{ "Ref": "AWS::Region" }, "eu-north-1"] },
+        { "Fn::Equals": [{ "Ref": "AWS::Partition" }, "aws"] }
+      ]
+    }
+  },
+  "Resources": {
+    "BuildEncryptionKey": {
+      "Type": "AWS::KMS::Key",
+      "Condition": "AllowedTarget",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Metadata": {
+        "com.aws.cloudformation.Context": {
+          "why": "Encrypt source snapshots and build logs without shipping application secrets to the builder",
+          "must": ["Retain while encrypted source or logs exist", "Restrict log service usage to this log group"],
+          "mutable": "review-required"
+        }
+      },
+      "Properties": {
+        "Description": "Publishing builder source and log encryption",
+        "EnableKeyRotation": true,
+        "KeySpec": "SYMMETRIC_DEFAULT",
+        "KeyUsage": "ENCRYPT_DECRYPT",
+        "MultiRegion": false,
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "EnableProjectIAMPermissions",
+              "Effect": "Allow",
+              "Principal": { "AWS": { "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:root" } },
+              "Action": "kms:*",
+              "Resource": "*"
+            },
+            {
+              "Sid": "EncryptOnlyBuilderLogs",
+              "Effect": "Allow",
+              "Principal": { "Service": { "Fn::Sub": "logs.${AWS::Region}.amazonaws.com" } },
+              "Action": ["kms:Encrypt", "kms:Decrypt", "kms:ReEncryptFrom", "kms:ReEncryptTo", "kms:GenerateDataKey", "kms:GenerateDataKeyWithoutPlaintext", "kms:DescribeKey"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": { "kms:EncryptionContext:aws:logs:arn": { "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${AWS::StackName}-build" } }
+              }
+            }
+          ]
+        },
+        "Tags": [{ "Key": "Project", "Value": "FitsMyTime" }, { "Key": "Purpose", "Value": "publishing-builder" }]
+      }
+    },
+    "SourceBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Condition": "AllowedTarget",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Metadata": {
+        "com.aws.cloudformation.Context": {
+          "why": "Receive immutable version-pinned reviewed source archives instead of credentials or private repository history",
+          "must": ["Block public access and ACLs", "Encrypt at rest and require HTTPS", "Never upload dotenv files or credentials"],
+          "mutable": "review-required"
+        }
+      },
+      "Properties": {
+        "OwnershipControls": { "Rules": [{ "ObjectOwnership": "BucketOwnerEnforced" }] },
+        "PublicAccessBlockConfiguration": { "BlockPublicAcls": true, "IgnorePublicAcls": true, "BlockPublicPolicy": true, "RestrictPublicBuckets": true },
+        "VersioningConfiguration": { "Status": "Enabled" },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [{ "ServerSideEncryptionByDefault": { "SSEAlgorithm": "aws:kms", "KMSMasterKeyID": { "Fn::GetAtt": ["BuildEncryptionKey", "Arn"] } }, "BucketKeyEnabled": false }]
+        },
+        "LifecycleConfiguration": {
+          "Rules": [{ "Id": "ExpireReviewedSources", "Status": "Enabled", "Prefix": "source/", "ExpirationInDays": 7, "NoncurrentVersionExpiration": { "NoncurrentDays": 7 }, "AbortIncompleteMultipartUpload": { "DaysAfterInitiation": 1 } }]
+        },
+        "Tags": [{ "Key": "Project", "Value": "FitsMyTime" }, { "Key": "Purpose", "Value": "publishing-builder" }]
+      }
+    },
+    "SourceBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Condition": "AllowedTarget",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Metadata": { "com.aws.cloudformation.Context": { "why": "Prevent source reads and writes over unencrypted transport", "must": ["Retain the explicit non-HTTPS deny"] } },
+      "Properties": {
+        "Bucket": { "Ref": "SourceBucket" },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{ "Sid": "DenyInsecureTransport", "Effect": "Deny", "Principal": "*", "Action": "s3:*", "Resource": [{ "Fn::GetAtt": ["SourceBucket", "Arn"] }, { "Fn::Sub": "${SourceBucket.Arn}/*" }], "Condition": { "Bool": { "aws:SecureTransport": "false" } } }]
+        }
+      }
+    },
+    "BuildLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Condition": "AllowedTarget",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Metadata": { "com.aws.cloudformation.Context": { "why": "Keep bounded encrypted build diagnostics without enabling application runtime access", "must": ["Never log registry tokens or application secrets", "Retain encryption key until all encrypted logs expire"] } },
+      "Properties": {
+        "LogGroupName": { "Fn::Sub": "/aws/codebuild/${AWS::StackName}-build" },
+        "KmsKeyId": { "Fn::GetAtt": ["BuildEncryptionKey", "Arn"] },
+        "RetentionInDays": 7,
+        "Tags": [{ "Key": "Project", "Value": "FitsMyTime" }, { "Key": "Purpose", "Value": "publishing-builder" }]
+      }
+    },
+    "BuildRole": {
+      "Type": "AWS::IAM::Role",
+      "Condition": "AllowedTarget",
+      "Metadata": {
+        "com.aws.cloudformation.Context": {
+          "why": "Grant the named builder only source decryption, scoped logging and native image registration",
+          "must": ["Trust only this project through CodeBuild", "No deployment, IAM, database or secret-store actions", "Registry login is project-wide because AWS offers no resource-level scope", "Register images only to the exact supplied staging ARN"],
+          "mutable": "review-required"
+        }
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{ "Effect": "Allow", "Principal": { "Service": "codebuild.amazonaws.com" }, "Action": "sts:AssumeRole", "Condition": { "StringEquals": { "aws:SourceAccount": { "Ref": "AWS::AccountId" } }, "ArnEquals": { "aws:SourceArn": { "Fn::Sub": "arn:${AWS::Partition}:codebuild:${AWS::Region}:${AWS::AccountId}:project/${AWS::StackName}-build" } } } }]
+        },
+        "Policies": [{
+          "PolicyName": "ReviewedSourceBuildAndImageRegistration",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              { "Sid": "ReadReviewedSourceVersions", "Effect": "Allow", "Action": ["s3:GetObject", "s3:GetObjectVersion"], "Resource": { "Fn::Sub": "${SourceBucket.Arn}/source/*" } },
+              { "Sid": "InspectSourceBucket", "Effect": "Allow", "Action": ["s3:GetBucketLocation", "s3:GetBucketAcl"], "Resource": { "Fn::GetAtt": ["SourceBucket", "Arn"] } },
+              { "Sid": "DescribeOnlyBuilderKey", "Effect": "Allow", "Action": "kms:DescribeKey", "Resource": { "Fn::GetAtt": ["BuildEncryptionKey", "Arn"] } },
+              { "Sid": "DecryptReviewedSource", "Effect": "Allow", "Action": "kms:Decrypt", "Resource": { "Fn::GetAtt": ["BuildEncryptionKey", "Arn"] }, "Condition": { "StringEquals": { "kms:ViaService": { "Fn::Sub": "s3.${AWS::Region}.amazonaws.com" } }, "StringLike": { "kms:EncryptionContext:aws:s3:arn": { "Fn::Sub": "${SourceBucket.Arn}/source/*" } } } },
+              { "Sid": "UseOnlyEncryptedBuilderLogs", "Effect": "Allow", "Action": ["kms:Encrypt", "kms:Decrypt", "kms:ReEncryptFrom", "kms:ReEncryptTo", "kms:GenerateDataKey", "kms:GenerateDataKeyWithoutPlaintext"], "Resource": { "Fn::GetAtt": ["BuildEncryptionKey", "Arn"] }, "Condition": { "StringEquals": { "kms:ViaService": { "Fn::Sub": "logs.${AWS::Region}.amazonaws.com" } }, "ArnEquals": { "kms:EncryptionContext:aws:logs:arn": { "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${AWS::StackName}-build" } } } },
+              { "Sid": "WriteOnlyBuilderLogs", "Effect": "Allow", "Action": ["logs:CreateLogStream", "logs:PutLogEvents"], "Resource": { "Fn::Sub": "${BuildLogs.Arn}" } },
+              { "Sid": "NativeRegistryLoginAndImageInspection", "Effect": "Allow", "Action": ["lightsail:CreateContainerServiceRegistryLogin", "lightsail:GetContainerImages"], "Resource": "*", "Condition": { "StringEquals": { "aws:RequestedRegion": "eu-north-1" } } },
+              { "Sid": "RegisterOnlyCurrentStagingImages", "Effect": "Allow", "Action": "lightsail:RegisterContainerImage", "Resource": { "Ref": "TargetServiceArn" }, "Condition": { "StringEquals": { "aws:RequestedRegion": "eu-north-1" } } }
+            ]
+          }
+        }],
+        "Tags": [{ "Key": "Project", "Value": "FitsMyTime" }, { "Key": "Purpose", "Value": "publishing-builder" }]
+      }
+    },
+    "BuildProject": {
+      "Type": "AWS::CodeBuild::Project",
+      "Condition": "AllowedTarget",
+      "DependsOn": ["SourceBucketPolicy"],
+      "Metadata": { "com.aws.cloudformation.Context": { "why": "Build Linux images away from the developer PC while keeping deployment approval and runtime credentials outside the builder", "must": ["One build at a time; no automatic retries", "No artifacts or app runtime secrets", "Only the reviewed source and explicit manifest/image-label overrides", "Keep Docker privileged mode confined to this temporary build environment"] } },
+      "Properties": {
+        "Name": { "Fn::Sub": "${AWS::StackName}-build" },
+        "Description": "Build and register reviewed Lightsail staging images; never deploy",
+        "ServiceRole": { "Fn::GetAtt": ["BuildRole", "Arn"] },
+        "Artifacts": { "Type": "NO_ARTIFACTS" },
+        "EncryptionKey": { "Fn::GetAtt": ["BuildEncryptionKey", "Arn"] },
+        "ConcurrentBuildLimit": 1,
+        "AutoRetryLimit": 0,
+        "TimeoutInMinutes": 30,
+        "QueuedTimeoutInMinutes": 5,
+        "Visibility": "PRIVATE",
+        "Environment": {
+          "Type": "LINUX_CONTAINER",
+          "ComputeType": "BUILD_GENERAL1_SMALL",
+          "Image": "aws/codebuild/standard:7.0",
+          "ImagePullCredentialsType": "CODEBUILD",
+          "PrivilegedMode": true,
+          "EnvironmentVariables": [{ "Name": "TARGET_SERVICE", "Type": "PLAINTEXT", "Value": { "Ref": "TargetService" } }, { "Name": "REGION", "Type": "PLAINTEXT", "Value": "eu-north-1" }]
+        },
+        "Source": {
+          "Type": "S3",
+          "Location": { "Fn::Sub": "${SourceBucket}/source/placeholder.zip" },
+          "BuildSpec": "version: 0.2\nphases:\n  install:\n    on-failure: ABORT\n    runtime-versions:\n      nodejs: 22\n  build:\n    on-failure: ABORT\n    commands:\n      - node deploy/aws/publish-cloud-build.mjs\n"
+        },
+        "LogsConfig": { "CloudWatchLogs": { "Status": "ENABLED", "GroupName": { "Ref": "BuildLogs" }, "StreamName": "build" }, "S3Logs": { "Status": "DISABLED" } },
+        "Tags": [{ "Key": "Project", "Value": "FitsMyTime" }, { "Key": "Purpose", "Value": "publishing-builder" }]
+      }
+    }
+  },
+  "Outputs": {
+    "BuildProject": { "Condition": "AllowedTarget", "Description": "CodeBuild project used by the cloud publishing command", "Value": { "Ref": "BuildProject" } },
+    "SourceBucket": { "Condition": "AllowedTarget", "Description": "Private bucket for reviewed source ZIP uploads under source/", "Value": { "Ref": "SourceBucket" } },
+    "EncryptionKeyArn": { "Condition": "AllowedTarget", "Description": "Key required for explicit SSE-KMS source uploads", "Value": { "Fn::GetAtt": ["BuildEncryptionKey", "Arn"] } },
+    "TargetServiceArn": { "Condition": "AllowedTarget", "Description": "Verify this ARN matches the existing staging service before starting builds", "Value": { "Ref": "TargetServiceArn" } }
+  }
+}

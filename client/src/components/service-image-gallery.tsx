@@ -34,11 +34,11 @@ function Gallery({ images, name }: { images: string[]; name: string }) {
       {failed.includes(images[index]) ? <div className="h-56 sm:h-72 flex flex-col items-center justify-center gap-2 p-4 text-center" role="status"><ImageOff aria-hidden="true" /><p>{t("servicePictures.unavailable")}</p></div>
         : <img key={images[index]} src={images[index]} alt={t("servicePictures.alt", { name, current: index + 1, total: images.length })} draggable={false}
           className="w-full h-56 sm:h-72 object-contain" onError={() => setFailed(current => [...current, images[index]])} data-testid="service-gallery-image" />}
+      {images.length > 1 && <div className="pointer-events-none absolute inset-x-2 top-1/2 flex -translate-y-1/2 justify-between gap-2" dir="ltr">
+        <Button type="button" variant="outline" size="icon" className="pointer-events-auto h-11 w-11 shrink-0 rounded-full border-slate-200 bg-white text-slate-900 shadow-md hover:bg-slate-100 hover:text-slate-950 disabled:opacity-40 focus-visible:ring-slate-900 focus-visible:ring-offset-white" disabled={index === 0} onClick={() => move(-1)} aria-label={t("servicePictures.previous")} data-testid="service-image-previous"><ChevronLeft aria-hidden="true" className="h-5 w-5" /></Button>
+        <Button type="button" variant="outline" size="icon" className="pointer-events-auto h-11 w-11 shrink-0 rounded-full border-slate-200 bg-white text-slate-900 shadow-md hover:bg-slate-100 hover:text-slate-950 disabled:opacity-40 focus-visible:ring-slate-900 focus-visible:ring-offset-white" disabled={index === images.length - 1} onClick={() => move(1)} aria-label={t("servicePictures.next")} data-testid="service-image-next"><ChevronRight aria-hidden="true" className="h-5 w-5" /></Button>
+      </div>}
     </div>
-    {images.length > 1 && <div className="flex items-center justify-between gap-2" dir="ltr">
-      <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" disabled={index === 0} onClick={() => move(-1)} aria-label={t("servicePictures.previous")} data-testid="service-image-previous"><ChevronLeft aria-hidden="true" className="h-5 w-5" /></Button>
-      <p aria-live="polite" aria-atomic="true" className="text-sm text-center" data-testid="service-image-position">{t("servicePictures.position", { current: index + 1, total: images.length })}</p>
-      <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" disabled={index === images.length - 1} onClick={() => move(1)} aria-label={t("servicePictures.next")} data-testid="service-image-next"><ChevronRight aria-hidden="true" className="h-5 w-5" /></Button>
-    </div>}
+    {images.length > 1 && <p aria-live="polite" aria-atomic="true" className="text-xs font-medium text-center text-muted-foreground tabular-nums" data-testid="service-image-position">{t("servicePictures.position", { current: index + 1, total: images.length })}</p>}
   </section>;
 }

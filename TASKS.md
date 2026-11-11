@@ -535,6 +535,21 @@ See [business scenarios](docs/payment-business-plan.md),
 ## Terms of Use
 ## AWS hosting
 
+**9 November update — published:** user approved delete-first replacement after
+the environment check. Root verified credentials/settings and encrypted recovery,
+deleted old disabled staging, then created `fitsmytime-staging-20261109` in
+eu-north-1 micro/one-node (USD10/month base). Exact imageapp.4/deployment1 reached
+ACTIVE/RUNNING; old service absence and full expected specification verified.
+Current38-gate preflight and separate fresh five-principal capacity check passed
+once each. Full TypeScript, isolated Linux build/artifacts/gateway security,
+HTTPS/signed-session and live en/lv/ru Chrome guest checks passed. User reports
+fixing redirects by adding the new staging Redirect URLs in Supabase; no fresh
+agent account/OAuth login claimed. Current audit worker delivered13 events with
+no new failures/quarantine at final observation;234 inherited quarantines remain
+a separate unresolved warning. Existing activation/public-release holds remain.
+See [release evidence, URL, limits and recovery](docs/aws-publish-2026-11-09.md).
+Current tests en/lv/ru only; remaining languages/RTL deferred.
+
 - [x] **TASK-036 — Deploy a restricted AWS staging site.** User requested AWS
   publishing on 31 October 2026 and selected restricted staging with High guidance.
   Root owns infrastructure preparation; Backend and DB owners accepted and
@@ -928,4 +943,145 @@ See [business scenarios](docs/payment-business-plan.md),
   Tests: en/lv/ru; ar/RTL, zh/fr/de/hi/ja/pt/es remain deferred.
   [Scope and evidence](docs/admin-provider-status-handoff.md).
 
-<!-- Add the next task here using TASK-052, or place it in the relevant section. -->
+## Supabase to AWS migration
+
+**Planning only, 9 November 2026.** User requested a smooth future migration and
+validation of Gemini's suggestions. Keep existing Drizzle/`pg` access; prepare
+private S3 media and managed authentication, with Cognito recommended for
+evaluation. FitsMyTime retains application authorization. Preserve Microsoft and
+email/password alongside Google, Apple and Facebook. Existing restricted AWS
+staging is already recorded under TASK-036; it still depends on Supabase.
+
+All tasks below are unstarted future backlog. Owners are proposed role owners,
+not new agent assignments or implementation acceptances. No connected access,
+credential reads, resource creation, spending, migration, deployment or destructive
+retirement is authorized by this plan. Existing holds remain. See the
+[migration plan](docs/supabase-to-aws-migration-plan.md) for evidence, dependencies,
+acceptance, approvals, recovery and sources. Test en/lv/ru only; ar/RTL,
+zh/fr/de/hi/ja/pt/es remain deferred while translations are maintained.
+
+- [ ] **TASK-052 — Inventory Supabase dependencies and migration objectives.**
+  Backend/DB/CI/CD, with Frontend contract review. Catalogue all application,
+  audit, identity, media, job and script dependencies; prepare a complete object
+  manifest and agree budget, downtime, RPO/RTO and user impact.
+- [ ] **TASK-053 — Isolate Auth and Storage provider integrations.**
+  Backend, Frontend and DB within their scopes; depends on TASK-052.
+  Preserve working Supabase adapters, stable application identity and API behavior;
+  define portable identity and browser upload contracts with mocked verification.
+- [ ] **TASK-054 — Make PostgreSQL schema, security and jobs reproducible.**
+  DB + Backend; depends on TASK-052. Reconcile Drizzle filters, migrations and
+  readiness; prepare restricted roles, extensions/jobs and audit target profiles.
+  Prove compatibility without weakening TLS, tenant isolation or audit controls.
+- [ ] **TASK-055 — Prepare and verify private S3 media storage.**
+  Backend/CI/CD + Frontend; depends on TASK-053, and TASK-059 for resources.
+  Preserve object references, authorized reads, gallery rules, bounded validated
+  uploads and overwrite protection; prepare monitoring and recovery policies.
+- [ ] **TASK-056 — Copy, reconcile and switch existing media to S3.**
+  CI/CD/Backend, DB for reference changes, Frontend for acceptance; depends on
+  TASK-055 and approved transfer scope. Verify object manifests/checksums and
+  final upload deltas; retain recoverable source media through the rollback window.
+- [ ] **TASK-057 — Select managed authentication and design identity migration.**
+  Backend/DB/CI/CD + Frontend; depends on TASK-052/053. Evaluate Cognito; preserve
+  existing user IDs through verified provider-subject mapping, including social,
+  password and invited users. Choose compatible hash import, first-login
+  migration or reset, with safe linking, session and rollback rules.
+- [ ] **TASK-058 — Implement managed sign-in and migrate identities in stages.**
+  Backend/Frontend/CI/CD, DB for mappings; depends on TASK-057/059.
+  Preserve all sign-in, recovery, invitation, directory and audit flows; verify
+  stable identity and application permissions before switching off legacy Auth.
+- [ ] **TASK-059 — Select, cost and prepare the AWS data platform.**
+  CI/CD + DB/Backend; depends on TASK-052. Confirm eu-north-1, current plan,
+  eligibility and quotas; compare RDS PostgreSQL/Aurora, preserve audit isolation,
+  cost overlap/networking and prepare secure connectivity, backups and alerts.
+- [ ] **TASK-060 — Rehearse application and audit database migration.**
+  DB/CI/CD + Backend; depends on TASK-054/059, and TASK-056/058 for final rehearsal.
+  Verify full-object export/restore, data/sequence/permission parity, jobs,
+  outbox continuity and measured downtime; demonstrate restore and reconciliation.
+- [ ] **TASK-061 — Rehearse the complete application and recovery procedure.**
+  Backend/Frontend/DB/CI/CD; depends on TASK-056/058/060. Verify features, security,
+  workers, performance and rollback before/after new target writes. Keep payment,
+  messaging and privacy activation within their separately accepted scope.
+- [ ] **TASK-062 — Execute an approved, observable migration cutover.**
+  CI/CD coordinates; DB executes data operations; application owners validate.
+  Depends on TASK-061 and named-target approval. Freeze/reconcile/switch one writer
+  set, verify service/audit health and retain the source for agreed recovery.
+- [ ] **TASK-063 — Retire Supabase after the agreed recovery window.**
+  CI/CD/DB/Backend + Frontend; depends on TASK-062. Prove no remaining dependency,
+  reconcile late data, obtain the keep/delete choice, then perform only approved
+  cleanup, credential revocation and billing cancellation. Update runbooks.
+
+## Independent local development database
+
+- [x] **TASK-064 — Copy hosted Supabase into an independent local Docker environment.**
+  User selected the local Docker option on 9 November 2026 and requested resume.
+  Root coordinates local infrastructure; assigned DB owner `local_copy_database`
+  handles read-only hosted exports/local restore and Backend `local_copy_backend`
+  handles explicit isolated local runtime support. Keep hosted application and
+  audit databases for the published AWS app; no AWS changes, hosted writes or new
+  paid resources. Completed10November: independent local application/audit DBs,
+  16Authusers/18identities and32images copied;38readiness gates/five restricted
+  roles, local login/session/search/audit delivery and exact database/image
+  persistence after stop/start passed. Normal development commands select the
+  protected local profile; original hosted configuration is preserved. External
+  provider integrations remain dormant locally; no automatic synchronization.
+  **Startup follow-up10November:** repaired Windows-reserved original host ports
+  with verified154xx loopback mappings and removed redundant audit publication.
+  Normal npm start/stop, unchanged data fingerprint, app/Auth and all image checks
+  pass. [Current run instructions](docs/supabase-local-ports-2026-11-10.md).
+  [Scope, progress and recovery](docs/supabase-local-copy-2026-11-09.md).
+
+## Frontend and booked-service follow-up
+
+- [ ] **TASK-065 — Finish Search, provider, availability and customer-booking refinements.**
+  User requested11November2026. Root owns Frontend; Backend/DB accepted local
+  dependencies. Implementation and focused en/lv/ru mocked checks pass: provider
+  Pro/style/navigation reverified, Grid default/gallery, avatars, specific dates/
+  recurring end, booking status colors/source links, guarded durable deletion and
+  automatic private service-change notices. Local0024/0025 are now applied and
+  verified under the user's explicit startup-repair approval; hosted execution
+  and deployment remain separate. Broad provider regression reproduces an
+  existing failed-workspace-switch draft-loss bug with baseline components;
+  focused requested-flow checks pass. Other languages/RTL deferred.
+  [Evidence, activation prerequisite and recovery](docs/frontend-followup-2026-11-11.md).
+  **Local startup report:** user sees `CUSTOMER_SERVICE_NOTIFICATION_DB_NOT_READY`
+  at `customer_service_notification_database`, with table/DML/customer_notice
+  columns/constraints/indexes/policies failing. Repo diagnosis matches the held
+  0024/0025 dependency. Root verified dev loads `.env.local-docker.local`, not
+  `.env`; inert migration plan and duplicate-attempt/endpoint guard tests pass,
+  with no existing migration-attempt receipt. Current DB owner
+  `/root/publish_db_contract` accepted local repair preparation. Exact migration/
+  protected local reads and managed consumer stop/restart still await the user's
+  target-specific execution approval; no database or hosted service was accessed.
+  **Approved repair completed:** user replied yes to the exact local stop/migrate/
+  verify/restart request. No project consumers/listener existed, so none needed
+  stopping. DB owner ran the guarded command once: both migrations committed,
+  current42 readiness/3Search EXPLAIN/calendar checks passed, existing29services/
+  36bookings fingerprints unchanged, all probes closed. Root restarted `npm run dev`
+  hidden with protected local logs; appPID20620/npmPID31692,127.0.0.1-only5000.
+  Fresh localhost+127.0.0.1 health/live, health/ready and root GETs returned200
+  with no cookies; startup refusal absent. Running dev instance retained. No
+  audit15432, hostedSupabase or AWS operation. Migration receipt consumed;
+  never replay. [Execution/restart evidence](docs/frontend-followup-local-migration-2026-11-11.md).
+
+- [ ] **TASK-066 — Reusable AWS publishing from PC and CodeBuild.** User selected
+  one script for each build option on11November. Root accepts CI/CD preparation;
+  scoped DB/Backend/template owners accepted and returned offline evidence.
+  Both npm entry points, shared image/release helpers, public source snapshots,
+  pure DB contracts and build-only CloudFormation template are prepared.
+  Offline workflow26/DB97/Python6 checks and both plan/source preparation modes pass.
+  No live build/upload/deploy/resource creation or connected DB operation occurred.
+  Execution remains incomplete. The initial credential-to-owner-hook patch was
+  rejected by automatic approval review; user then explicitly approved the exact
+  in-memory transfer and local checker, resolving that implementation hold. Current
+  hosted-schema/Backend acceptance, CodeBuild schema/guard validation and approved
+  setup/spend plus actual build/release/browser/worker acceptance remain required.
+  See [commands, approvals, rejection and recovery](docs/aws-one-command-publishing.md).
+  Tests en/lv/ru; remaining languages/RTL deferred. Existing holds/consumed guards
+  and unrelated workspace changes are preserved.
+  **Approved handoff implemented:** exact local checker, pipe-only private payload,
+  source/credential hashes, strict TLS and sequential one-shot read-only probes
+  are prepared. Fresh workflow31/DB97/Python9 plus capacity-checker109 mock scenarios
+  pass; both publishing/checker plan modes pass. No real credentials transferred,
+  database probe, migration, cloud build, provisioning or deployment occurred.
+
+<!-- Add the next task here using TASK-067, or place it in the relevant section. -->

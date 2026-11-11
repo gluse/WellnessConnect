@@ -19,6 +19,7 @@ import * as money from "../server/money.ts";
 import * as serviceImages from "../server/serviceImages.ts";
 import * as storefront from "../shared/storefront.ts";
 import * as workspacePricing from "../shared/workspace-pricing.ts";
+import * as serviceBookingProtection from "../server/service-booking-protection.ts";
 
 // Never import server/db, dotenv, Auth, external providers or server startup.
 // --original demonstrates the regression against tracked pre-fix modules.
@@ -118,6 +119,7 @@ const db = { select,
   async transaction(work) { const before = rows.map(row => ({ ...row })); lock = false; transactionActive = true; try { return await work(db); } catch (error) { rows = before; throw error; } finally { lock = false; transactionActive = false; } },
 };
 const dependencies = {
+  "./service-booking-protection": serviceBookingProtection,
   "./serviceImages": serviceImages, "@shared/storefront": storefront,
   "./money": money,
   "node:crypto": await import("node:crypto"),

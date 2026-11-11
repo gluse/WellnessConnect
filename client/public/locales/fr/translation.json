@@ -1779,5 +1779,22 @@
     "employeeSaved": "Employé enregistré",
     "employeeRemoved": "Employé supprimé",
     "saveFailed": "Impossible d’enregistrer"
+  },
+  "frontendFollowup": {
+    "accountMenu": "Ouvrir le menu du compte",
+    "originalService": "Voir le service d’origine",
+    "scheduleMode": "Type de disponibilité",
+    "recurring": "Horaires hebdomadaires récurrents",
+    "specific": "Dates précises uniquement",
+    "specificHelp": "Enregistrez ce mode pour désactiver les horaires hebdomadaires. Ajoutez ensuite les dates et horaires. Seules les dates définies ici seront disponibles.",
+    "saveSpecific": "Enregistrer le mode dates précises",
+    "endDate": "Date de fin (facultative)",
+    "endHelp": "Le planning hebdomadaire s’applique jusqu’à cette date incluse dans le fuseau horaire choisi. Laissez vide pour ne pas définir de fin.",
+    "endError": "Choisissez une date de fin valide.",
+    "datedTitle": "Dates et horaires disponibles",
+    "datedHelp": "Ajoutez chaque date et ses plages horaires disponibles. Une date sans horaires est indisponible. Enregistrez d’abord ce mode.",
+    "serviceChanged": "{{service}} a changé depuis votre réservation.",
+    "reviewBooking": "Consulter ma réservation",
+    "keepBooking": "Votre réservation reste inchangée. Consultez le service, puis conservez votre réservation ou ouvrez Mes réservations pour l’annuler."
   }
 }

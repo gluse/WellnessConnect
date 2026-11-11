@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "verifiedAt": "2026-11-10T14:28:19.211Z",
+  "normalNpmStartPassed": true,
+  "alreadyRunningNpmStartPassed": true,
+  "stopPassed": true,
+  "auditStartFromStoppedPassed": true,
+  "portMapping": {
+    "api": 15421,
+    "sourceDatabase": 15422,
+    "mailbox": 15424,
+    "auditDatabase": 15432
+  },
+  "actualBindingsVerified": true,
+  "allServicesHealthy": true,
+  "localServices": 8,
+  "windowsSettingsChanged": false,
+  "sourceAccess": false,
+  "volumesDeleted": false
+}

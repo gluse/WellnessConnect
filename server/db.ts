@@ -13,13 +13,13 @@ if (!process.env.DATABASE_URL) {
 }
 
 assertAuditActivation(process.env);
-const auditConnection = process.env.AUDIT_ENABLED === "true" ? auditApplicationConnection(process.env.DATABASE_URL) : undefined;
+const auditConnection = process.env.AUDIT_ENABLED === "true" ? auditApplicationConnection(process.env.DATABASE_URL, process.env) : undefined;
 export const pool = new pg.Pool({
   ...(auditConnection ? {
     host: auditConnection.host, port: auditConnection.port, user: auditConnection.user,
     password: auditConnection.password, database: auditConnection.database,
     ...{ replication: "false", sslnegotiation: "postgres" }, options: "-c search_path=pg_catalog,public",
-    ssl: { rejectUnauthorized: true, servername: auditConnection.host, checkServerIdentity: tls.checkServerIdentity,
+    ssl: auditConnection.local ? false : { rejectUnauthorized: true, servername: auditConnection.host, checkServerIdentity: tls.checkServerIdentity,
       minVersion: "TLSv1.2" as const, ...(auditConnection.caPath ? { ca: readFileSync(auditConnection.caPath, "utf8") } : {}) },
   } : { connectionString: process.env.DATABASE_URL }),
   max: 5,

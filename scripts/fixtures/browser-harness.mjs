@@ -10,7 +10,10 @@ import postcss from "postcss";
 import tailwindcss from "tailwindcss";
 import loadConfig from "tailwindcss/loadConfig.js";
 
-export async function serveBrowserFixture({ entry, resources, html: previewHtml, timezoneId = "UTC" }) {
+export async function serveBrowserFixture({ entry, resources, html: previewHtml, timezoneId = "UTC", imageAssets = {} }) {
+  // Exact synthetic HTTPS images are fulfilled in memory; never permit a real
+  // external connection to render OAuth avatar fixtures.
+  const imageOrigins = Object.keys(imageAssets).map(value => { const url = new URL(value); assert.equal(url.protocol, 'https:'); assert.equal(url.hostname, 'synthetic.invalid'); return url.href; });
   const root = path.resolve(import.meta.dirname, "../..");
   const config = loadConfig(path.join(root, "tailwind.config.ts"));
   const javascript = previewHtml ? "" : (await build({
@@ -20,7 +23,7 @@ export async function serveBrowserFixture({ entry, resources, html: previewHtml,
   })).outputFiles[0].text;
   const cssSource = previewHtml ? "" : (await Promise.all(["client/src/index.css", "client/src/components/provider/service-editor.css", "client/src/components/forms-phase2.css", "client/src/components/forms-phase3.css", "client/src/components/forms-auth.css", "client/src/components/search-page.css"].map(file => readFile(path.join(root, file), "utf8")))).join("\n");
   const css = previewHtml ? "" : (await postcss([tailwindcss({ ...config, content: [...config.content, entry] })]).process(cssSource, { from: path.join(root, "client/src/index.css") })).css;
-  const html = previewHtml || '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'self\'; style-src \'self\' \'unsafe-inline\'; img-src data:; connect-src \'none\'; form-action \'none\'; base-uri \'none\'"><title>Isolated forms fixture</title><link rel="stylesheet" href="/fixture.css"></head><body><div id="root"></div><script type="module" src="/fixture.js"></script></body></html>';
+  const html = previewHtml || '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'self\'; style-src \'self\' \'unsafe-inline\'; img-src data: ' + imageOrigins.join(' ') + '; connect-src \'none\'; form-action \'none\'; base-uri \'none\'"><title>Isolated forms fixture</title><link rel="stylesheet" href="/fixture.css"></head><body><div id="root"></div><script type="module" src="/fixture.js"></script></body></html>';
   const network = [], blocked = [], errors = [];
   const server = createServer((request, response) => {
     if (request.method !== "GET") { network.push(request.method + " " + request.url); response.writeHead(405).end(); return; }
@@ -32,7 +35,7 @@ export async function serveBrowserFixture({ entry, resources, html: previewHtml,
   await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
   const origin = "http://127.0.0.1:" + server.address().port;
   const close = () => new Promise(resolve => { server.close(resolve); server.closeAllConnections(); });
-  return { root, origin, network, blocked, errors, close, timezoneId };
+  return { root, origin, network, blocked, errors, close, timezoneId, imageAssets };
 }
 
 export async function browserFixture(options) {
@@ -90,7 +93,8 @@ export async function browserFixture(options) {
       if (message.method === "Runtime.exceptionThrown") errors.push(message.params.exceptionDetails.exception?.description || message.params.exceptionDetails.text);
       if (message.method === "Fetch.requestPaused") {
         const { request, requestId } = message.params;
-        if (request.url.startsWith(origin + "/") || request.url === "about:blank") await api("Fetch.continueRequest", { requestId });
+        if (served.imageAssets[request.url]) await api("Fetch.fulfillRequest", { requestId, responseCode: served.imageAssets[request.url].status || 200, responseHeaders: [{ name: 'Content-Type', value: 'image/svg+xml' }], body: Buffer.from(served.imageAssets[request.url].body).toString('base64') });
+        else if (request.url.startsWith(origin + "/") || request.url === "about:blank") await api("Fetch.continueRequest", { requestId });
         else { blocked.push(request.url); await api("Fetch.failRequest", { requestId, errorReason: "BlockedByClient" }); }
       }
       if (message.method === "Page.javascriptDialogOpening") await api("Page.handleJavaScriptDialog", { accept: true });

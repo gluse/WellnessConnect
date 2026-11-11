@@ -1,0 +1,1383 @@
+{
+  "status": "passed",
+  "sourceWrites": false,
+  "credentialsPrinted": false,
+  "targets": {
+    "source": {
+      "version": "170011",
+      "readonly": true,
+      "database_bytes": "24106675",
+      "schemas": [
+        {
+          "name": "audit_capture",
+          "owner": "fm_audit_source_owner"
+        },
+        {
+          "name": "audit_contract",
+          "owner": "fm_audit_contract_owner"
+        },
+        {
+          "name": "audit_rehearsal",
+          "owner": "fm_audit_rehearsal_owner"
+        },
+        {
+          "name": "auth",
+          "owner": "supabase_admin"
+        },
+        {
+          "name": "public",
+          "owner": "pg_database_owner"
+        },
+        {
+          "name": "storage",
+          "owner": "supabase_admin"
+        }
+      ],
+      "relations": [
+        {
+          "kind": "r",
+          "name": "audit_outbox",
+          "bytes": 6807552,
+          "owner": "fm_audit_source_owner",
+          "schema": "audit_capture",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "maintenance_runs",
+          "bytes": 49152,
+          "owner": "fm_audit_source_owner",
+          "schema": "audit_capture",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "schema_migrations",
+          "bytes": 32768,
+          "owner": "fm_audit_source_owner",
+          "schema": "audit_capture",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "installation",
+          "bytes": 32768,
+          "owner": "fm_audit_contract_owner",
+          "schema": "audit_contract",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "migrations",
+          "bytes": 32768,
+          "owner": "fm_audit_contract_owner",
+          "schema": "audit_contract",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "cohort",
+          "bytes": 32768,
+          "owner": "fm_audit_rehearsal_owner",
+          "schema": "audit_rehearsal",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "run",
+          "bytes": 24576,
+          "owner": "fm_audit_rehearsal_owner",
+          "schema": "audit_rehearsal",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "audit_log_entries",
+          "bytes": 24576,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "custom_oauth_providers",
+          "bytes": 57344,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "flow_state",
+          "bytes": 114688,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "identities",
+          "bytes": 122880,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "instances",
+          "bytes": 16384,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "mfa_amr_claims",
+          "bytes": 81920,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "mfa_challenges",
+          "bytes": 24576,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "mfa_factors",
+          "bytes": 57344,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "mfa_recovery_code_sets",
+          "bytes": 24576,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "mfa_recovery_codes",
+          "bytes": 24576,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "oauth_authorizations",
+          "bytes": 40960,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "oauth_client_states",
+          "bytes": 24576,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "oauth_clients",
+          "bytes": 24576,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "oauth_consents",
+          "bytes": 49152,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "one_time_tokens",
+          "bytes": 114688,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "refresh_tokens",
+          "bytes": 172032,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "S",
+          "name": "refresh_tokens_id_seq",
+          "bytes": 8192,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "saml_providers",
+          "bytes": 32768,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "saml_relay_states",
+          "bytes": 40960,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "schema_migrations",
+          "bytes": 24576,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "scim_tokens",
+          "bytes": 49152,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "scim_users",
+          "bytes": 90112,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "sessions",
+          "bytes": 131072,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "sso_domains",
+          "bytes": 32768,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "sso_providers",
+          "bytes": 32768,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "users",
+          "bytes": 303104,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "webauthn_challenges",
+          "bytes": 32768,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "webauthn_credentials",
+          "bytes": 32768,
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "addresses",
+          "bytes": 65536,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "S",
+          "name": "addresses_id_seq",
+          "bytes": 8192,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "availability",
+          "bytes": 32768,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "S",
+          "name": "availability_id_seq",
+          "bytes": 8192,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "billing_accounts",
+          "bytes": 81920,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "billing_events",
+          "bytes": 65536,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "billing_invoices",
+          "bytes": 65536,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "billing_offer_revisions",
+          "bytes": 49152,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "billing_offer_settings",
+          "bytes": 32768,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "billing_operations",
+          "bytes": 81920,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "billing_price_mappings",
+          "bytes": 81920,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "billing_source_state",
+          "bytes": 24576,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "billing_subscriptions",
+          "bytes": 131072,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "booking_message_reads",
+          "bytes": 49152,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "booking_messages",
+          "bytes": 73728,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "booking_reschedule_requests",
+          "bytes": 49152,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "bookings",
+          "bytes": 106496,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "S",
+          "name": "bookings_id_seq",
+          "bytes": 8192,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "categories",
+          "bytes": 49152,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "companies",
+          "bytes": 49152,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "S",
+          "name": "companies_id_seq",
+          "bytes": 8192,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "company_invitations",
+          "bytes": 49152,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "company_memberships",
+          "bytes": 81920,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "employees",
+          "bytes": 49152,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "S",
+          "name": "employees_id_seq",
+          "bytes": 8192,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "geocoding_cache",
+          "bytes": 32768,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "manual_pro_grants",
+          "bytes": 65536,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "notification_callbacks",
+          "bytes": 32768,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "notification_delivery_attempts",
+          "bytes": 40960,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "notification_events",
+          "bytes": 81920,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "notification_jobs",
+          "bytes": 90112,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "phone_verification_challenges",
+          "bytes": 98304,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "product_activity_events",
+          "bytes": 147456,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "provider_subscriptions",
+          "bytes": 65536,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "S",
+          "name": "provider_subscriptions_id_seq",
+          "bytes": 8192,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "service_activity_groups",
+          "bytes": 65536,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "service_activity_reads",
+          "bytes": 24576,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "service_embeddings",
+          "bytes": 278528,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "S",
+          "name": "service_embeddings_id_seq",
+          "bytes": 8192,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "service_reviews",
+          "bytes": 49152,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "S",
+          "name": "service_reviews_id_seq",
+          "bytes": 8192,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "services",
+          "bytes": 139264,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "S",
+          "name": "services_id_seq",
+          "bytes": 8192,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "sessions",
+          "bytes": 262144,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "storefronts",
+          "bytes": 65536,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "S",
+          "name": "storefronts_id_seq",
+          "bytes": 8192,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "user_communication_preferences",
+          "bytes": 49152,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "user_search_locations",
+          "bytes": 32768,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "users",
+          "bytes": 81920,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "wishlist_services",
+          "bytes": 65536,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "workspace_pricing_settings",
+          "bytes": 65536,
+          "owner": "postgres",
+          "schema": "public",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "bucket_lifecycle_states",
+          "bytes": 24576,
+          "owner": "supabase_storage_admin",
+          "schema": "storage",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "buckets",
+          "bytes": 49152,
+          "owner": "supabase_storage_admin",
+          "schema": "storage",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "buckets_analytics",
+          "bytes": 24576,
+          "owner": "supabase_storage_admin",
+          "schema": "storage",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "buckets_vectors",
+          "bytes": 16384,
+          "owner": "supabase_storage_admin",
+          "schema": "storage",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "lifecycle_abandoned_artifacts",
+          "bytes": 24576,
+          "owner": "supabase_storage_admin",
+          "schema": "storage",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "migrations",
+          "bytes": 73728,
+          "owner": "supabase_storage_admin",
+          "schema": "storage",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "objects",
+          "bytes": 221184,
+          "owner": "supabase_storage_admin",
+          "schema": "storage",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "s3_multipart_uploads",
+          "bytes": 24576,
+          "owner": "supabase_storage_admin",
+          "schema": "storage",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "s3_multipart_uploads_parts",
+          "bytes": 16384,
+          "owner": "supabase_storage_admin",
+          "schema": "storage",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "vector_indexes",
+          "bytes": 24576,
+          "owner": "supabase_storage_admin",
+          "schema": "storage",
+          "select": true
+        }
+      ],
+      "roles": [
+        {
+          "name": "fm_app_runtime",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_capture",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_contract_owner",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_delivery",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_rehearsal_owner",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_source_maintenance",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_source_monitor",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_source_owner",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fmt_app_dev",
+          "limit": 5,
+          "login": true,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fmt_audit_capture_dev",
+          "limit": 2,
+          "login": true,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fmt_audit_test_dev",
+          "limit": 2,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fmt_audit_worker_dev",
+          "limit": 2,
+          "login": true,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        }
+      ],
+      "memberships": [
+        {
+          "set": true,
+          "role": "fm_app_runtime",
+          "admin": false,
+          "member": "fmt_app_dev",
+          "inherit": true
+        },
+        {
+          "set": false,
+          "role": "fm_app_runtime",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": true,
+          "role": "fm_audit_capture",
+          "admin": false,
+          "member": "fmt_app_dev",
+          "inherit": true
+        },
+        {
+          "set": true,
+          "role": "fm_audit_capture",
+          "admin": false,
+          "member": "fmt_audit_capture_dev",
+          "inherit": true
+        },
+        {
+          "set": false,
+          "role": "fm_audit_capture",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fm_audit_contract_owner",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": true,
+          "role": "fm_audit_delivery",
+          "admin": false,
+          "member": "fmt_audit_worker_dev",
+          "inherit": true
+        },
+        {
+          "set": false,
+          "role": "fm_audit_delivery",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fm_audit_rehearsal_owner",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fm_audit_source_maintenance",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": true,
+          "role": "fm_audit_source_monitor",
+          "admin": false,
+          "member": "fmt_audit_worker_dev",
+          "inherit": true
+        },
+        {
+          "set": false,
+          "role": "fm_audit_source_monitor",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fm_audit_source_owner",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fmt_app_dev",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fmt_audit_capture_dev",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fmt_audit_test_dev",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fmt_audit_worker_dev",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        }
+      ],
+      "extensions": [
+        {
+          "name": "pg_cron",
+          "schema": "pg_catalog",
+          "version": "1.6.4"
+        },
+        {
+          "name": "pg_stat_statements",
+          "schema": "extensions",
+          "version": "1.11"
+        },
+        {
+          "name": "pgcrypto",
+          "schema": "extensions",
+          "version": "1.3"
+        },
+        {
+          "name": "plpgsql",
+          "schema": "pg_catalog",
+          "version": "1.0"
+        },
+        {
+          "name": "supabase_vault",
+          "schema": "vault",
+          "version": "0.3.1"
+        },
+        {
+          "name": "uuid-ossp",
+          "schema": "extensions",
+          "version": "1.1"
+        }
+      ]
+    },
+    "destination": {
+      "version": "170011",
+      "readonly": true,
+      "database_bytes": "18167475",
+      "schemas": [
+        {
+          "name": "audit",
+          "owner": "fm_audit_destination_owner"
+        },
+        {
+          "name": "audit_contract",
+          "owner": "fm_audit_contract_owner"
+        },
+        {
+          "name": "audit_rehearsal",
+          "owner": "fm_audit_rehearsal_owner"
+        }
+      ],
+      "relations": [
+        {
+          "kind": "r",
+          "name": "events",
+          "bytes": 6520832,
+          "owner": "fm_audit_destination_owner",
+          "schema": "audit",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "integrity_incidents",
+          "bytes": 49152,
+          "owner": "fm_audit_destination_owner",
+          "schema": "audit",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "maintenance_runs",
+          "bytes": 49152,
+          "owner": "fm_audit_destination_owner",
+          "schema": "audit",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "schema_migrations",
+          "bytes": 32768,
+          "owner": "fm_audit_destination_owner",
+          "schema": "audit",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "installation",
+          "bytes": 32768,
+          "owner": "fm_audit_contract_owner",
+          "schema": "audit_contract",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "migrations",
+          "bytes": 32768,
+          "owner": "fm_audit_contract_owner",
+          "schema": "audit_contract",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "cohort",
+          "bytes": 32768,
+          "owner": "fm_audit_rehearsal_owner",
+          "schema": "audit_rehearsal",
+          "select": true
+        },
+        {
+          "kind": "r",
+          "name": "run",
+          "bytes": 24576,
+          "owner": "fm_audit_rehearsal_owner",
+          "schema": "audit_rehearsal",
+          "select": true
+        }
+      ],
+      "roles": [
+        {
+          "name": "fm_audit_contract_owner",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_destination_maintenance",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_destination_owner",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_export",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_reader",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_rehearsal_owner",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fm_audit_writer",
+          "limit": -1,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fmt_audit_reader_dev",
+          "limit": 2,
+          "login": true,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fmt_audit_test_dev",
+          "limit": 2,
+          "login": false,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        },
+        {
+          "name": "fmt_audit_writer_dev",
+          "limit": 2,
+          "login": true,
+          "super": false,
+          "createdb": false,
+          "bypassrls": false,
+          "createrole": false,
+          "replication": false
+        }
+      ],
+      "memberships": [
+        {
+          "set": false,
+          "role": "fm_audit_contract_owner",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fm_audit_destination_maintenance",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fm_audit_destination_owner",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fm_audit_export",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": true,
+          "role": "fm_audit_reader",
+          "admin": false,
+          "member": "fmt_audit_reader_dev",
+          "inherit": true
+        },
+        {
+          "set": false,
+          "role": "fm_audit_reader",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fm_audit_rehearsal_owner",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": true,
+          "role": "fm_audit_writer",
+          "admin": false,
+          "member": "fmt_audit_writer_dev",
+          "inherit": true
+        },
+        {
+          "set": false,
+          "role": "fm_audit_writer",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fmt_audit_reader_dev",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fmt_audit_test_dev",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        },
+        {
+          "set": false,
+          "role": "fmt_audit_writer_dev",
+          "admin": true,
+          "member": "postgres",
+          "inherit": false
+        }
+      ],
+      "extensions": [
+        {
+          "name": "pg_stat_statements",
+          "schema": "extensions",
+          "version": "1.11"
+        },
+        {
+          "name": "pgcrypto",
+          "schema": "extensions",
+          "version": "1.3"
+        },
+        {
+          "name": "plpgsql",
+          "schema": "pg_catalog",
+          "version": "1.0"
+        },
+        {
+          "name": "supabase_vault",
+          "schema": "vault",
+          "version": "0.3.1"
+        },
+        {
+          "name": "uuid-ossp",
+          "schema": "extensions",
+          "version": "1.1"
+        }
+      ]
+    }
+  }
+}

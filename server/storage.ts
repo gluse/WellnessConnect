@@ -34,7 +34,7 @@ import { serviceLocation } from "./addresses";
 import { assertAuditContext, createAuditContext, type AuditContext } from "./audit/context";
 import { createAuditEvent } from "./audit/events";
 import { enqueueDrizzleAudit, AuditCaptureUnavailable } from "./audit/capture";
-import { availableCapacity, bookableSlots, OCCUPYING_BOOKING_STATUSES } from "@shared/scheduling";
+import { availableCapacity, bookableSlots, schedulesForDay, workingRanges, OCCUPYING_BOOKING_STATUSES } from "@shared/scheduling";
 import { reviewSchema, ReviewError, type ReviewInput, type ServiceReviewPage } from "@shared/reviews";
 import { assertSearchSize, MAX_SEARCH_CANDIDATES, MAX_SEARCH_SCHEDULES, searchFiltersSchema, type SearchFilters } from "./searchInput";
 import { assertCustomerBookingChange } from "./customerBookings";
@@ -45,6 +45,7 @@ import { randomUUID } from "node:crypto";
 import { bookingMoneyDto, bookingPriceSnapshot, serviceMoneyChanges, serviceMoneyDto, type ExpectedPrice } from "./money";
 import { hasPro } from "@shared/storefront";
 import { assertServiceImageEntitlement, serviceImageChanges, serviceImageList } from "./serviceImages";
+import { hasUnfinishedServiceBookings, notifyBookedServiceChanges } from "./service-booking-protection";
 
 type NotificationBooking = Booking & { notification?: NotificationSummary };
 
@@ -81,7 +82,7 @@ function searchDistance(filters: SearchFilters) {
 }
 
 function publicSearchConditions(filters: SearchFilters) {
-  const conditions = [eq(services.isActive, true), sql`(${companies.id} IS NULL OR ${companies.isActive} = true)`];
+  const conditions = [eq(services.isActive, true), isNull(services.deletedAt), sql`(${companies.id} IS NULL OR ${companies.isActive} = true)`];
   const durationLimit = searchDurationLimit(filters);
   if (durationLimit !== undefined) conditions.push(lte(services.duration, durationLimit));
   if (filters.companyId !== undefined) conditions.push(eq(services.companyId, filters.companyId));
@@ -285,7 +286,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createService(service: InsertService): Promise<Service> {
-    service = { ...service, ...serviceMoneyChanges(service), ...serviceImageChanges(service) };
+    service = { ...service, ...serviceMoneyChanges(service), ...serviceImageChanges(service), deletedAt: null };
     const newService = await db.transaction(async tx => {
       await assertGalleryConfiguration(tx, service);
       await assertReminderConfiguration(tx, service, service);
@@ -298,7 +299,7 @@ export class DatabaseStorage implements IStorage {
   async copyService(serviceId: number, providerId: string, companyId?: number): Promise<Service | undefined> {
     const copy = await db.transaction(async (tx) => {
       const [source] = await tx.select().from(services)
-        .where(and(eq(services.id, serviceId), companyId != null ? eq(services.companyId, companyId) : and(eq(services.providerId, providerId), isNull(services.companyId))));
+        .where(and(eq(services.id, serviceId), isNull(services.deletedAt), companyId != null ? eq(services.companyId, companyId) : and(eq(services.providerId, providerId), isNull(services.companyId)))).for("share");
       if (!source) return undefined;
       const { id, createdAt, updatedAt, ...listing } = source;
       let imageUrls = serviceImageList(source);
@@ -307,6 +308,7 @@ export class DatabaseStorage implements IStorage {
         ...listing,
         ...serviceImageChanges({ imageUrls }),
         name: `${source.name} (copy)`,
+        deletedAt: null,
         isActive: false,
         reminderEnabled: false,
       }).returning();
@@ -320,7 +322,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(services)
       .leftJoin(addresses, eq(services.addressId, addresses.id))
-      .where(companyId != null ? eq(services.companyId, companyId) : and(eq(services.providerId, providerId), isNull(services.companyId)))
+      .where(and(isNull(services.deletedAt), companyId != null ? eq(services.companyId, companyId) : and(eq(services.providerId, providerId), isNull(services.companyId))))
       .orderBy(desc(services.createdAt));
     return rows.map(row => serviceLocation(row.services, row.addresses));
   }
@@ -334,7 +336,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(employees, eq(services.employeeId, employees.id))
       .leftJoin(companies, eq(services.companyId, companies.id))
       .leftJoin(reviewStats, eq(services.id, reviewStats.serviceId))
-      .where(eq(services.id, id));
+      .where(and(eq(services.id, id), isNull(services.deletedAt)));
 
     if (!result) return undefined;
 
@@ -354,19 +356,27 @@ export class DatabaseStorage implements IStorage {
   async updateService(id: number, updates: Partial<InsertService>): Promise<Service> {
     const service = await db.transaction(async tx => {
       const [previous] = await tx.select().from(services).where(eq(services.id, id)).for("update");
-      if (!previous) throw new BookingConflictError("Service not found.");
+      if (!previous || previous.deletedAt) throw new BookingConflictError("Service not found.");
       updates = { ...updates, ...serviceMoneyChanges(updates, previous), ...serviceImageChanges(updates, previous) };
       if (updates.imageUrls !== undefined) await assertGalleryConfiguration(tx, { ...previous, ...updates }, previous);
       await assertReminderConfiguration(tx, previous, updates, previous);
       const [updated] = await tx.update(services).set({ ...updates, updatedAt: new Date() }).where(eq(services.id, id)).returning();
       if (updated.reminderEnabled !== previous.reminderEnabled || updated.reminderMethod !== previous.reminderMethod || updated.reminderHours !== previous.reminderHours || updated.reminderMessage !== previous.reminderMessage) await reconcileServiceReminders(tx, id);
+      await notifyBookedServiceChanges(tx, previous, updated);
       return updated;
     });
     return serviceLocation(service, service.addressId == null ? null : (await db.select().from(addresses).where(eq(addresses.id, service.addressId)))[0]);
   }
 
   async deleteService(id: number): Promise<void> {
-    await db.delete(services).where(eq(services.id, id));
+    await db.transaction(async tx => {
+      const [service] = await tx.select().from(services).where(eq(services.id, id)).for("update");
+      if (!service || service.deletedAt) throw new BookingConflictError("Service not found.");
+      if (await hasUnfinishedServiceBookings(tx, id)) throw new BookingConflictError("Complete or cancel all reservations before deleting this service.");
+      // Historical reservations retain their source listing and snapshot values.
+      const removedAt = new Date();
+      await tx.update(services).set({ isActive: false, deletedAt: removedAt, updatedAt: removedAt }).where(eq(services.id, id));
+    });
   }
 
   async searchServices(filters: SearchFilters): Promise<ServiceWithProvider[]> {
@@ -473,75 +483,20 @@ export class DatabaseStorage implements IStorage {
       )).orderBy(asc(availability.id)).limit(MAX_SEARCH_SCHEDULES + 1);
       assertSearchSize(allAvailability.length, MAX_SEARCH_SCHEDULES);
       
-      // Track general and service-specific working hours separately for company offers.
-      const providerAvailability = new Map<string, boolean>();
-      
-      // Check each date in the range
-      for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
-        const currentDate = new Date(d);
-        const dayOfWeek = currentDate.getUTCDay();
-        const dateStr = currentDate.toISOString().split('T')[0];
-        
-        for (const schedule of allAvailability) {
-          if (!schedule.isActive) continue;
-          const scheduleKey = `${workspaceKey(schedule)}:${schedule.serviceId ?? "all"}`;
-          
-          // Check if schedule applies to this date
-          const scheduleApplies = 
-            (schedule.scheduleType === 'specific' && 
-             schedule.specificDate && 
-             new Date(schedule.specificDate).toISOString().split('T')[0] === dateStr) ||
-            (schedule.scheduleType === 'recurring' && 
-             schedule.daysOfWeek && 
-             (schedule.daysOfWeek as number[]).includes(dayOfWeek));
-          
-          if (!scheduleApplies) continue;
-          
-          // Parse schedule times
-          const schedStart = schedule.startTime || "00:00";
-          const schedEnd = schedule.endTime || "23:59";
-          const breaks = (schedule.breaks as { startTime: string; endTime: string }[] | null) || [];
-          
-          // If time filters specified, check for overlap
-          if (filters.time || filters.timeEnd) {
-            const filterStart = filters.time || "00:00";
-            const filterEnd = filters.timeEnd || "23:59";
-            
-            // Check if requested time range overlaps with schedule
-            const hasOverlap = filterStart < schedEnd && filterEnd > schedStart;
-            
-            if (hasOverlap) {
-              // Check if there's any overlap with a break (any overlap = blocked during that time)
-              const overlapsWithBreak = breaks.some(brk => 
-                filterStart < brk.endTime && filterEnd > brk.startTime
-              );
-              
-              // If no break overlap, or if the available time outside breaks still covers filter range
-              if (!overlapsWithBreak) {
-                providerAvailability.set(scheduleKey, true);
-              } else {
-                // Check if there's still available time outside breaks that covers the filter range
-                // For simplicity, if any break overlaps with the requested time, we're conservative
-                // and still allow if schedule extends beyond the break
-                const scheduleCoversBeforeBreak = breaks.every(brk => 
-                  filterEnd <= brk.startTime || filterStart >= brk.endTime
-                );
-                if (scheduleCoversBeforeBreak) {
-                  providerAvailability.set(scheduleKey, true);
-                }
-              }
-            }
-          } else {
-            // No time filter - just check if any schedule exists for the date
-            providerAvailability.set(scheduleKey, true);
+      // Use the same schedule precedence as booking: a closed service week and
+      // an expired recurring schedule must not reopen through inherited hours.
+      servicesWithProviders = servicesWithProviders.filter(service => {
+        const schedules = allAvailability.filter(schedule => workspaceKey(schedule) === workspaceKey(service));
+        const zones = Array.from(new Set(schedules.map(schedule => schedule.timezone)));
+        for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
+          const day = d.toISOString().slice(0, 10);
+          for (const zone of zones) for (const schedule of schedulesForDay(schedules, service.id, day, zone)) {
+            if (workingRanges(schedule).some(range => (!filters.time && !filters.timeEnd)
+              || (filters.time || "00:00") < range.endTime && (filters.timeEnd || "23:59") > range.startTime)) return true;
           }
         }
-      }
-      
-      servicesWithProviders = servicesWithProviders.filter(
-        service => providerAvailability.get(`${workspaceKey(service)}:all`) === true
-          || providerAvailability.get(`${workspaceKey(service)}:${service.id}`) === true
-      );
+        return false;
+      });
     }
 
     return filters.limit ? servicesWithProviders.slice(0, filters.limit) : servicesWithProviders;
@@ -553,7 +508,7 @@ export class DatabaseStorage implements IStorage {
       // Serialize check + insert for this administrator, including simultaneous requests.
       await tx.execute(sql`SELECT id FROM users WHERE id = ${booking.providerId} FOR UPDATE`);
       const [service] = await tx.select().from(services).where(eq(services.id, booking.serviceId)).for("share");
-      if (!service?.isActive || service.providerId !== booking.providerId || service.companyId !== (booking.companyId ?? null) || service.employeeId !== (booking.employeeId ?? null)) throw new BookingConflictError("The service has changed. Please choose a time again.");
+      if (!service?.isActive || service.deletedAt || service.providerId !== booking.providerId || service.companyId !== (booking.companyId ?? null) || service.employeeId !== (booking.employeeId ?? null)) throw new BookingConflictError("The service has changed. Please choose a time again.");
       // The locked listing owns money and its currency; never accept caller totals.
       // HTTP requires an explicit quote. Internal callers also compare their saved
       // currency and must take their expected unit price from the listing.

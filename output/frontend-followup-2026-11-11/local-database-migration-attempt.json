@@ -1,0 +1,40 @@
+{
+  "state": "passed",
+  "target": "127.0.0.1:15422/postgres",
+  "executor": "/root/publish_db_contract",
+  "startedAt": "2026-11-11T17:42:35.490Z",
+  "migrations": [
+    {
+      "file": "0024_customer_service_notifications.sql",
+      "sha256": "8f77a99fdb498af89b7a8258e6c7f171e974c4a80beaf5030d3402e9b0a917ca",
+      "committed": true
+    },
+    {
+      "file": "0025_customer_service_notifications_runtime.sql",
+      "sha256": "034447d839864963ad3e03c3c846b746cb9ed24e3270693deecb9f2547ca4718",
+      "committed": true
+    }
+  ],
+  "retry": false,
+  "restart": false,
+  "hostedAccess": false,
+  "before": {
+    "services": 29,
+    "bookings": 36,
+    "service_hash": "d586e8ae19f42e955fdc50a33749eeef",
+    "booking_hash": "11a4af06cfc1681177569244a6efcfac"
+  },
+  "after": {
+    "services": 29,
+    "bookings": 36,
+    "service_hash": "d586e8ae19f42e955fdc50a33749eeef",
+    "booking_hash": "11a4af06cfc1681177569244a6efcfac"
+  },
+  "stage": "complete",
+  "current42Readiness": true,
+  "explainOnlyQueries": 3,
+  "calendarChecks": true,
+  "existingDataUnchanged": true,
+  "allConnectionsClosed": true,
+  "completedAt": "2026-11-11T17:42:44.409Z"
+}

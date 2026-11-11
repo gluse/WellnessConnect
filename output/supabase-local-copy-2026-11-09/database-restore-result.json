@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "hostedWrites": false,
+  "sourceSessionsCopied": false,
+  "sourceAuthTokensCleared": true,
+  "targets": {
+    "destination": {
+      "status": "restored",
+      "tables": 8,
+      "rowCountsMatch": true
+    },
+    "source": {
+      "status": "restored",
+      "tables": 54,
+      "rowCountsMatch": true
+    }
+  }
+}

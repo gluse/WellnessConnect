@@ -9,14 +9,21 @@ import { tmpdir } from 'node:os';
 import { parse } from 'dotenv';
 
 assert.equal(process.argv[2], '--active-gateway-verified', 'Run only after Root verifies the active restricted deployment');
+assert.ok(process.argv.length <= 4 && (!process.argv[3] || process.argv[3] === '--replacement-20261109'), 'Use only the explicitly approved staging release preset');
+const replacement = process.argv[3] === '--replacement-20261109';
 const root = process.cwd();
-const access = parse(await fs.readFile(path.join(root, '.env.aws-staging-access.local')));
+const accessFile = replacement ? '.env.aws-staging-access-20261109.local' : '.env.aws-staging-access.local';
+const access = parse(await fs.readFile(path.join(root, accessFile)));
 const origin = new URL(access.STAGING_ORIGIN).origin;
-assert.match(origin, /^https:\/\/fitsmytime-staging\.[a-z0-9]+\.eu-north-1\.cs\.amazonlightsail\.com$/);
+assert.match(origin, replacement
+  ? /^https:\/\/fitsmytime-staging-20261109\.[a-z0-9]+\.eu-north-1\.cs\.amazonlightsail\.com$/
+  : /^https:\/\/fitsmytime-staging\.[a-z0-9]+\.eu-north-1\.cs\.amazonlightsail\.com$/);
 assert.equal(access.STAGING_USERNAME, 'staging');
 assert.ok(access.STAGING_PASSWORD.length >= 43);
 // Preserve the original gateway release's historical captures in live-frontend/.
-const output = path.join(root, 'outputs/aws-staging-build/live-frontend-session');
+const output = path.join(root, replacement
+  ? 'outputs/aws-staging-build/live-frontend-20261109'
+  : 'outputs/aws-staging-build/live-frontend-session');
 await fs.mkdir(output, { recursive: true });
 const resources = {};
 for (const language of ['en', 'lv', 'ru']) resources[language] = JSON.parse(await fs.readFile(path.join(root, 'client/public/locales', language, 'translation.json')));
@@ -29,6 +36,8 @@ let socket; let api;
 const errors = [], blocked = [], responses = [], matrix = [], checks = [], screenshots = [];
 const authChallenges = [];
 const allowedApi = new Set(['/api/auth/user', '/api/auth/providers', '/api/categories', '/api/billing/runtime']);
+const approvedSearch = url => replacement && url.pathname === '/api/services/search/page' &&
+  url.searchParams.toString() === 'limit=24&sort=default';
 try {
   const endpoint = await new Promise((resolve, reject) => {
     let diagnostic = '';
@@ -74,7 +83,7 @@ try {
         const { requestId, request } = message.params;
         const url = new URL(request.url);
         const read = ['GET', 'HEAD'].includes(request.method);
-        const approved = url.origin === origin && read && (!url.pathname.startsWith('/api/') || allowedApi.has(url.pathname));
+        const approved = url.origin === origin && read && (!url.pathname.startsWith('/api/') || allowedApi.has(url.pathname) || approvedSearch(url));
         if (approved || request.url === 'about:blank') await api('Fetch.continueRequest', { requestId });
         else { blocked.push({ method: request.method, origin: url.origin, path: url.pathname }); await api('Fetch.failRequest', { requestId, errorReason: 'BlockedByClient' }); }
       }
@@ -131,12 +140,33 @@ try {
   assert.ok(responses.slice(before).every(item => !item.path.startsWith('/api/auth/')));
   checks.push('Keyboard focus proceeds to an operable control; empty login fails native email validation without auth submission');
   await api('Page.navigate', { url: origin + '/' });
-  await until(() => !!document.querySelector('[data-testid="button-browse-services"]') && !!document.querySelector('[data-testid="button-get-started"]'), undefined, 'LANDING_NOT_RENDERED');
-  await until(() => !document.body.innerText.includes('Loading categories…'), undefined, 'CATEGORIES_NOT_SETTLED');
-  assert.ok(!await evaluate(() => document.body.innerText.includes('Unable to load categories.')), 'CATEGORIES_ERROR');
-  for (const width of [320, 390, 1280]) { await viewport(width); assert.ok(await evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `LANDING_REFLOW_${width}`); }
-  assert.equal(await evaluate(() => document.querySelector('[data-testid="button-browse-services"]').getAttribute('href')), '/search');
-  checks.push('Guest landing and service/login entry controls rendered at 320/390/1280; search link remains local');
+  if (replacement) {
+    await until(() => !!document.querySelector('#service-query') && !!document.querySelector('#search-location') && !!document.querySelector('[data-testid="button-search-services"]'), undefined, 'SEARCH_NOT_RENDERED');
+    await until(() => document.querySelector('.search-results')?.getAttribute('aria-busy') === 'false' && !document.querySelector('.search-results [role="alert"]') && !!document.querySelector('.search-cards, .search-state h3'), undefined, 'PUBLIC_SEARCH_NOT_SETTLED');
+    for (const width of [320, 390, 1280]) {
+      await viewport(width);
+      const info = await evaluate(() => ({ overflow: document.documentElement.scrollWidth > innerWidth + 1,
+        queryLabel: !!document.querySelector('label[for="service-query"]')?.textContent,
+        locationLabel: !!document.querySelector('label[for="search-location"]')?.textContent,
+        submitLabel: !!document.querySelector('[data-testid="button-search-services"]')?.getAttribute('aria-label'),
+        loginHref: document.querySelector('header a[href^="/login"]')?.getAttribute('href'),
+        resultHeading: !!document.querySelector('#search-results-title')?.textContent,
+        mapDisabled: document.querySelector('[data-testid="button-view-map"]')?.disabled }));
+      assert.equal(info.overflow, false, `SEARCH_REFLOW_${width}`);
+      assert.ok(info.queryLabel && info.locationLabel && info.submitLabel && info.resultHeading, 'SEARCH_CONTROLS_UNLABELED');
+      assert.equal(info.loginHref, '/login?returnTo=%2Fsearch', 'SEARCH_LOGIN_DESTINATION');
+      assert.equal(info.mapDisabled, true, 'LOCATION_WAS_NOT_REQUESTED');
+    }
+    assert.ok(responses.some(item => item.path === '/api/services/search/page' && item.status === 200), 'PUBLIC_SEARCH_RESPONSE_FAILED');
+    checks.push('Root opens current guest search directly; default public search read succeeds, labeled query/location/search controls and settled results-or-empty state render at 320/390/1280 without overflow, with exact local login destination and no location request');
+  } else {
+    await until(() => !!document.querySelector('[data-testid="button-browse-services"]') && !!document.querySelector('[data-testid="button-get-started"]'), undefined, 'LANDING_NOT_RENDERED');
+    await until(() => !document.body.innerText.includes('Loading categories…'), undefined, 'CATEGORIES_NOT_SETTLED');
+    assert.ok(!await evaluate(() => document.body.innerText.includes('Unable to load categories.')), 'CATEGORIES_ERROR');
+    for (const width of [320, 390, 1280]) { await viewport(width); assert.ok(await evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `LANDING_REFLOW_${width}`); }
+    assert.equal(await evaluate(() => document.querySelector('[data-testid="button-browse-services"]').getAttribute('href')), '/search');
+    checks.push('Guest landing and service/login entry controls rendered at 320/390/1280; search link remains local');
+  }
   assert.deepEqual(errors, []);
   assert.ok(blocked.every(item => item.method === 'GET' && item.origin !== origin), 'Unexpected same-origin request or mutation blocked');
   const finalStaticStatus = new Map(responses.filter(item => !item.path.startsWith('/api/')).map(item => [item.path, item.status]));
@@ -149,11 +179,13 @@ try {
   assert.ok(stagingCookie?.secure && stagingCookie.httpOnly && stagingCookie.sameSite === 'Lax' && stagingCookie.path === '/', 'STAGING_SESSION_COOKIE_INVALID');
   assert.equal(await evaluate(() => document.cookie.includes('__Host-fmt-staging=')), false, 'STAGING_SESSION_COOKIE_SCRIPT_VISIBLE');
   checks.push('Exactly one initial staging challenge; secure HttpOnly staging session survives guest application401 and later page/resource reads');
-  const evidence = { date: '2026-11-06', origin, browser: await api('Browser.getVersion'), checks, matrix, screenshots, responses, blocked, errors, authChallenges, stagingCookie: { secure: stagingCookie.secure, httpOnly: stagingCookie.httpOnly, sameSite: stagingCookie.sameSite, path: stagingCookie.path }, languages: ['en', 'lv', 'ru'], deferredLanguages: ['ar', 'zh', 'fr', 'de', 'hi', 'ja', 'pt', 'es'], limits: 'Guest reads only; no auth submission, OAuth/email, signup, persisted user workflow, physical mobile device, Firefox/WebKit, screen reader or WCAG certification. Supabase redirect allowlist is separate.' };
+  const evidence = { date: replacement ? '2026-11-09' : '2026-11-06', origin, browser: await api('Browser.getVersion'), checks, matrix, screenshots, responses, blocked, errors, authChallenges, stagingCookie: { secure: stagingCookie.secure, httpOnly: stagingCookie.httpOnly, sameSite: stagingCookie.sameSite, path: stagingCookie.path }, languages: ['en', 'lv', 'ru'], deferredLanguages: ['ar', 'zh', 'fr', 'de', 'hi', 'ja', 'pt', 'es'], limits: 'Guest reads only; no auth submission, OAuth/email, signup, persisted user workflow, physical mobile device, Firefox/WebKit, screen reader or WCAG certification. Supabase redirect allowlist is separate.' };
   await fs.writeFile(path.join(output, 'evidence.json'), JSON.stringify(evidence, null, 2));
   console.log(JSON.stringify({ passed: true, checks: checks.length, localeViewportCases: matrix.length, runtimeErrors: errors.length, blockedRequests: blocked.length, stagingPromptCount: authChallenges.length, evidence: path.relative(root, path.join(output, 'evidence.json')) }));
 } catch (error) {
-  console.error(JSON.stringify({ passed: false, error: /^[A-Z_0-9]+$/.test(error.message) ? error.message : error.name, runtimeErrors: errors.length, blockedRequests: blocked.length }));
+  const failure = { passed: false, error: /^[A-Z_0-9]+$/.test(error.message) ? error.message : error.name, runtimeErrors: errors.length, blockedRequests: blocked.length };
+  await fs.writeFile(path.join(output, `failure-${Date.now()}.json`), JSON.stringify({ ...failure, checks, matrix, screenshots, responses, blocked, errors, authChallenges }, null, 2));
+  console.error(JSON.stringify(failure));
   process.exitCode = 1;
 } finally {
   if (socket?.readyState === WebSocket.OPEN) { try { await api('Browser.close'); } catch {} socket.close(); }

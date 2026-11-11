@@ -1,0 +1,32 @@
+PASS exact HTTPS API origin and read-only path allowlist
+PASS callback origin, path, duplicate params and secret-bearing extras rejected
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The validation function is expected to return "true". Received false
+
+Caught error:
+
+ProofError: unavailable
+    at async file:///C:/Source/Private/WellnessConnect/output/aws-publish-frontend-2026-11-09/baseline-native-client-test.mjs:63:5
+    at async check (file:///C:/Source/Private/WellnessConnect/output/aws-publish-frontend-2026-11-09/baseline-native-client-test.mjs:45:36)
+    at async file:///C:/Source/Private/WellnessConnect/output/aws-publish-frontend-2026-11-09/baseline-native-client-test.mjs:57:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: ProofError: unavailable
+      at normalizeError (C:\Source\Private\WellnessConnect\output\aws-publish-frontend-2026-11-09\baseline-client.ts:45:10)
+      at NativeProofClient.consumeHandoff (C:\Source\Private\WellnessConnect\output\aws-publish-frontend-2026-11-09\baseline-client.ts:94:75)
+      at async waitForActual (node:assert:646:5)
+      at async strict.rejects (node:assert:769:25)
+      at async file:///C:/Source/Private/WellnessConnect/output/aws-publish-frontend-2026-11-09/baseline-native-client-test.mjs:63:5
+      at async check (file:///C:/Source/Private/WellnessConnect/output/aws-publish-frontend-2026-11-09/baseline-native-client-test.mjs:45:36)
+      at async file:///C:/Source/Private/WellnessConnect/output/aws-publish-frontend-2026-11-09/baseline-native-client-test.mjs:57:1 {
+    code: 'unavailable'
+  },
+  expected: [Function (anonymous)],
+  operator: 'rejects',
+  diff: 'simple'
+}
+
+Node.js v24.22.2

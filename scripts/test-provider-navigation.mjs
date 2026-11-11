@@ -36,7 +36,7 @@ const permissions = { manageServices: true, manageSchedules: true, manageBooking
 const personal = { company: null, membership: null, workspaces: [{ id: 2, name: "Company workspace", role: "admin" }], permissions };
 const company = { ...personal, company: { id: 2, name: "Company workspace", isActive: true }, membership: { role: "admin" }, permissions: { ...permissions, manageTeam: true } };
 const viewer = { ...company, membership: { role: "viewer", employeeId: 3 }, permissions: { manageServices: false, manageSchedules: false, manageBookings: false, manageTeam: false, isOwner: false, readAll: false } };
-const service = (id, name, isActive) => ({ id, name, isActive, description: "Existing description", category: "health_wellness", serviceType: "one_to_one", price: "25.00", duration: 45, maxCapacity: 1, ageGroups: ["adults"], targetGender: "both", instantBooking: false, advancePaymentPercent: 30, addressId: 7, address: "Riga", latitude: 56.95, longitude: 24.1, imageUrl: "/private/image", externalUrl: "https://example.com/service", employeeId: null });
+const service = (id, name, isActive) => ({ id, name, isActive, description: "Existing description", category: "health_wellness", serviceType: "one_to_one", price: "25.00", currency: "EUR", duration: 45, maxCapacity: 1, ageGroups: ["adults"], targetGender: "both", instantBooking: false, advancePaymentPercent: 30, addressId: 7, address: "Riga", latitude: 56.95, longitude: 24.1, imageUrl: "/private/image", externalUrl: "https://example.com/service", employeeId: null });
 const personalServices = [service(1, "Personal published offer", true), service(4, "Personal inactive offer", false)];
 const companyServices = [service(2, "Company offer", true)];
 let context = personal, requests = [], component, location, failSave = false, holdSave = false, resolveSave, failWorkspace = false;
@@ -54,6 +54,7 @@ globalThis.fetch = async (url, options = {}) => {
     context = body.companyId === 2 ? company : personal; return respond(context);
   }
   if (url === "/api/company/context") return respond(context);
+  if (url === "/api/workspace/pricing-settings") return respond({ workspace: context.company ? { kind: "company", id: context.company.id } : { kind: "user", id: user.id }, defaultCurrency: "EUR", businessCountryCode: "LV", revision: 0, canEdit: true });
   if (url === "/api/services/provider") return respond(records);
   if (url === "/api/provider/employees") return respond(context.company ? [{ id: 3, name: "Company employee", showName: false }] : []);
   if (url === "/api/bookings/provider" || url === "/api/availability/provider") return respond([]);

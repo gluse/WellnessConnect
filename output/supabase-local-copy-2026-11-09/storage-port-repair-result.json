@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "mode": "local-port-repair",
+  "destination": "http://127.0.0.1:15421",
+  "originalDestination": "http://127.0.0.1:54321",
+  "sourceAccess": false,
+  "writes": false,
+  "buckets": 1,
+  "objects": 32,
+  "bytes": 13145565,
+  "verified": 32,
+  "manifestSha256": "1e25f52860273c6f9627866584146f756e8320c6bc8e6ef4b3c735d9c7399c24",
+  "privateBuckets": 1,
+  "anonymousAccessDenials": 2,
+  "startedAt": "2026-11-10T14:19:18.339Z",
+  "completedAt": "2026-11-10T14:19:18.947Z"
+}

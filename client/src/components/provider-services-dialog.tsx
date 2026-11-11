@@ -43,7 +43,9 @@ export default function ProviderServicesDialog({ source, open, onClose, onBook, 
   source: ServiceWithProvider | null; open: boolean; onClose: () => void;
 }) {
   const { t } = useTranslation();
-  if (!source) return null;
+  // The public DTO supplies this only for an active Pro, published provider page.
+  // Fail closed for free/expired providers and incomplete public data.
+  if (!source?.storefrontSlug) return null;
   return <Dialog open={open} onOpenChange={value => { if (!value) onClose(); }}>
     <DialogContent className="max-w-5xl max-h-[90dvh] overflow-y-auto" data-testid="dialog-provider-services">
       <DialogHeader>

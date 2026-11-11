@@ -1774,5 +1774,22 @@
     "employeeSaved": "Mitarbeiter gespeichert",
     "employeeRemoved": "Mitarbeiter entfernt",
     "saveFailed": "Speichern nicht möglich"
+  },
+  "frontendFollowup": {
+    "accountMenu": "Kontomenü öffnen",
+    "originalService": "Ursprünglichen Service ansehen",
+    "scheduleMode": "Art der Verfügbarkeit",
+    "recurring": "Wiederkehrende Wochenzeiten",
+    "specific": "Nur bestimmte Termine",
+    "specificHelp": "Speichern Sie diesen Modus, um die Wochenzeiten zu deaktivieren. Fügen Sie danach Termine und Zeiten hinzu. Nur hier festgelegte Termine sind verfügbar.",
+    "saveSpecific": "Modus für bestimmte Termine speichern",
+    "endDate": "Enddatum (optional)",
+    "endHelp": "Der Wochenplan gilt bis einschließlich dieses Datums in der ausgewählten Zeitzone. Für kein Enddatum leer lassen.",
+    "endError": "Wählen Sie ein gültiges Enddatum.",
+    "datedTitle": "Verfügbare Termine und Zeiten",
+    "datedHelp": "Fügen Sie jeden Termin und seine verfügbaren Zeiträume hinzu. Ein Termin ohne Zeiten ist nicht verfügbar. Speichern Sie zuerst diesen Modus.",
+    "serviceChanged": "{{service}} wurde seit Ihrer Buchung geändert.",
+    "reviewBooking": "Meine Buchung prüfen",
+    "keepBooking": "Ihre Reservierung ist unverändert. Prüfen Sie den Service und behalten Sie Ihre Buchung oder öffnen Sie Meine Buchungen, um zu stornieren."
   }
 }

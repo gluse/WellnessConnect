@@ -31,7 +31,7 @@ export default function ServiceDetailModal({ service, open, onClose, onBook, onV
   const categories = useCategories();
   if (!service) return null;
   service = currentLocation(service);
-  if (searchLayout) return <SearchServiceDetails service={service} open={open} onClose={onClose} onBook={onBook} onViewProvider={onViewProvider} />;
+  if (searchLayout) return <SearchServiceDetails service={service} open={open} onClose={onClose} onBook={onBook} onViewProvider={onViewProvider} wishlistEnabled={wishlistEnabled} />;
 
   const isGroupService = service.serviceType === "group";
   const availableSpots = isGroupService ? ((service.maxCapacity || 1) - (service.availableCapacity || 0)) : 1;

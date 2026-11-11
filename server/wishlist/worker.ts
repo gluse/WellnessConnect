@@ -49,6 +49,7 @@ export function createActivityStore(database:ProductDatabase):ActivityStore {
       await database.transaction(async tx=>{
         await tx.execute(sql`DELETE FROM public.product_activity_events WHERE id IN (SELECT id FROM public.product_activity_events WHERE expires_at<=${now.toISOString()}::timestamptz ORDER BY expires_at,id LIMIT ${limit} FOR UPDATE SKIP LOCKED)`);
         await tx.execute(sql`DELETE FROM public.service_activity_groups WHERE id IN (SELECT id FROM public.service_activity_groups WHERE expires_at<=${now.toISOString()}::timestamptz ORDER BY expires_at,id LIMIT ${limit} FOR UPDATE SKIP LOCKED)`);
+        await tx.execute(sql`DELETE FROM public.customer_service_notifications WHERE id IN (SELECT id FROM public.customer_service_notifications WHERE expires_at<=${now.toISOString()}::timestamptz ORDER BY expires_at,id LIMIT ${limit} FOR UPDATE SKIP LOCKED)`);
       });
     },
   };

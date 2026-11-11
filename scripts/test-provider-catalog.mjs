@@ -24,11 +24,7 @@ const translation = JSON.parse(await readFile(new URL("../client/public/locales/
 await i18next.use(initReactI18next).init({ lng: "en", resources: { en: { translation } }, interpolation: { escapeValue: false } });
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
 const { ProviderServicesList, default: ProviderServicesDialog } = await import("../client/src/components/provider-services-dialog.tsx");
-const { default: Home } = await import("../client/src/pages/home.tsx");
 const { default: ServiceCard } = await import("../client/src/components/service-card.tsx");
-const { default: ServiceFilters } = await import("../client/src/components/service-filters.tsx");
-const { default: ServiceDetailModal } = await import("../client/src/components/service-detail-modal.tsx");
-const { default: BookingModal } = await import("../client/src/components/booking-modal.tsx");
 const { act, create } = renderer;
 const service = (id, companyId, providerId) => ({ id, companyId, providerId, name: `Service ${id}`, category: "education", serviceType: "one_to_one", price: "10", duration: 30, employee: null, provider: { firstName: "Personal", lastName: "Provider", providerType: companyId ? "company" : "individual", companyName: companyId ? "Wellness Company" : null } });
 const source = service(1, 7, "team-member-1"), another = service(2, 7, "team-member-2"), personal = service(3, null, "person");
@@ -67,34 +63,19 @@ await act(async () => component.root.findByType("button").props.onClick()); awai
 assert.ok(component.root.findAllByType("p").some(node => node.children.includes(translation.catalog.empty)));
 await act(async () => component.unmount()); queryClient.clear();
 
-// The dialog's portal has no DOM target in this renderer; inspect Home's controlled dialog props.
-responseRows = [source];
-await act(async () => { component = create(wrap(React.createElement(Home))); });
+// Free/expired providers cannot mount the catalog window or fetch its list.
+const beforeDenied = requests.length;
+await act(async () => { component = create(wrap(React.createElement(ProviderServicesDialog, { source, open: true, onClose() {}, onBook() {}, onViewDetails() {} }))); });
 await flush();
-const filters = component.root.findAllByType(ServiceFilters)[0];
-await act(async () => filters.props.onFiltersChange({ ...filters.props.filters, searchQuery: "massage", category: "health_wellness" }));
-await flush(450); await flush();
-await act(async () => component.root.findByProps({ "data-testid": "button-provider-1" }).props.onClick());
-let catalog = component.root.findByType(ProviderServicesDialog);
-assert.equal(catalog.props.source.companyId, 7);
-assert.equal(catalog.props.open, true);
-assert.equal(component.root.findAllByType(ServiceFilters)[0].props.filters.searchQuery, "massage");
-await act(async () => catalog.props.onViewDetails(another));
-assert.equal(component.root.findByType(ServiceDetailModal).props.service.id, 2);
-assert.equal(component.root.findByType(ProviderServicesDialog).props.open, false);
-await act(async () => component.root.findByType(ServiceDetailModal).props.onClose());
-assert.equal(component.root.findByType(ProviderServicesDialog).props.open, true, "Return to catalog after closing service details");
-await act(async () => component.root.findByType(ProviderServicesDialog).props.onBook(another));
-assert.equal(component.root.findByType(BookingModal).props.service.id, 2);
-assert.equal(component.root.findByType(ProviderServicesDialog).props.open, false);
-await act(async () => component.root.findByType(BookingModal).props.onClose());
-assert.equal(component.root.findByType(ProviderServicesDialog).props.open, true, "Return to catalog after closing booking");
-await act(async () => component.root.findByType(ProviderServicesDialog).props.onClose());
-assert.equal(component.root.findByType(ProviderServicesDialog).props.source, null);
-assert.equal(component.root.findAllByType(ServiceFilters)[0].props.filters.category, "health_wellness", "Closing catalog preserves search filters");
-await act(async () => component.root.findByType(ServiceCard).props.onViewDetails());
-await act(async () => component.root.findByType(ServiceDetailModal).props.onViewProvider());
-assert.equal(component.root.findByType(ProviderServicesDialog).props.source.companyId, 7, "Provider names in details open the same company catalog");
+assert.equal(component.toJSON(), null);
+assert.equal(requests.length, beforeDenied);
+await act(async () => component.unmount()); queryClient.clear();
+// The active-Pro public storefront link replaces the former generic catalog fallback.
+await act(async () => { component = create(wrap(React.createElement(ServiceCard, { service: source, searchLayout: true, onBook() {}, onViewDetails() {} }))); });
+assert.equal(component.root.findAllByType("a").length, 0);
+assert.equal(component.root.findAllByProps({ "data-testid": "button-provider-1" }).length, 0);
+await act(async () => component.update(wrap(React.createElement(ServiceCard, { service: { ...source, storefrontSlug: "pro-company" }, searchLayout: true, onBook() {}, onViewDetails() {} }))));
+assert.equal(component.root.findByType("a").props.href, "/providers/pro-company");
 await act(async () => component.unmount()); queryClient.clear();
 
 for (const locale of ["en", "lv", "ru"]) {
@@ -103,7 +84,7 @@ for (const locale of ["en", "lv", "ru"]) {
 }
 delete globalThis.window; delete globalThis.document;
 if (process.argv.includes("--frontend-only")) {
-  console.log("Passed: isolated provider catalog loading, identity, booking/details callbacks, search draft retention, errors/retry and en/lv/ru resources; backend section not loaded.");
+  console.log("Passed: isolated provider catalog loading/identity/callbacks, errors/retry/empty, denied free-provider window, eligible provider link and en/lv/ru resources; backend section not loaded.");
   process.exit(0);
 }
 process.env.DATABASE_URL = "postgresql://fixture:fixture@127.0.0.1:1/fixture";
