@@ -28,6 +28,12 @@ ios/App/Pods/
 ios/**/xcuserdata/
 
 # Local verification checkouts and Python caches.
+output/android-browser/
+output/capacitor-staging/
+output/ios-staging/
+mobile/capacitor-staging/android/.gradle/
+mobile/capacitor-staging/android/local.properties
+mobile/capacitor-staging/android/app/src/main/assets/
 .search-commit-check-*/
 __pycache__/
 *.py[cod]

@@ -10,7 +10,7 @@ import postcss from "postcss";
 import tailwindcss from "tailwindcss";
 import loadConfig from "tailwindcss/loadConfig.js";
 
-export async function serveBrowserFixture({ entry, resources, html: previewHtml, timezoneId = "UTC", imageAssets = {} }) {
+export async function serveBrowserFixture({ entry, resources, html: previewHtml, timezoneId = "UTC", imageAssets = {}, defines = {} }) {
   // Exact synthetic HTTPS images are fulfilled in memory; never permit a real
   // external connection to render OAuth avatar fixtures.
   const imageOrigins = Object.keys(imageAssets).map(value => { const url = new URL(value); assert.equal(url.protocol, 'https:'); assert.equal(url.hostname, 'synthetic.invalid'); return url.href; });
@@ -19,7 +19,7 @@ export async function serveBrowserFixture({ entry, resources, html: previewHtml,
   const javascript = previewHtml ? "" : (await build({
     entryPoints: [path.join(root, entry)], bundle: true, write: false, format: "esm", platform: "browser", target: "chrome120", jsx: "automatic", loader: { ".css": "empty" },
     alias: { "@": path.join(root, "client/src"), "@shared": path.join(root, "shared") },
-    define: { __FORM_RESOURCES__: JSON.stringify(resources), __SERVICE_FORM_RESOURCES__: JSON.stringify(resources), "process.env.NODE_ENV": '"test"' },
+    define: { ...defines, __FORM_RESOURCES__: JSON.stringify(resources), __SERVICE_FORM_RESOURCES__: JSON.stringify(resources), "process.env.NODE_ENV": '"test"' },
   })).outputFiles[0].text;
   const cssSource = previewHtml ? "" : (await Promise.all(["client/src/index.css", "client/src/components/provider/service-editor.css", "client/src/components/forms-phase2.css", "client/src/components/forms-phase3.css", "client/src/components/forms-auth.css", "client/src/components/search-page.css"].map(file => readFile(path.join(root, file), "utf8")))).join("\n");
   const css = previewHtml ? "" : (await postcss([tailwindcss({ ...config, content: [...config.content, entry] })]).process(cssSource, { from: path.join(root, "client/src/index.css") })).css;

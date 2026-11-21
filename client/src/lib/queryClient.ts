@@ -1,10 +1,21 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { startLocationExpiry } from "./location-expiry";
 
+export class ApiResponseError extends Error {
+  readonly status: number;
+  readonly stagingAccessRequired: boolean;
+  constructor(response: Response, text: string) {
+    super(`${response.status}: ${text}`);
+    this.status = response.status;
+    this.stagingAccessRequired = response.status === 401
+      && /^Basic\s/i.test(response.headers.get("WWW-Authenticate") || "");
+  }
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    throw new ApiResponseError(res, text);
   }
 }
 

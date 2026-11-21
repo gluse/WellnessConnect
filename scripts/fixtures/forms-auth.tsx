@@ -20,6 +20,10 @@ window.fetch = async (input, options = {}) => {
   }
   if (method === "POST" && ["/api/auth/login", "/api/auth/signup", "/api/auth/invite-recovery", "/api/auth/google", "/api/auth/facebook", "/api/auth/apple", "/api/auth/microsoft"].includes(path)) {
     fixture.writes.push({ path, body });
+    if (fixture.result === "network") throw new TypeError("Synthetic network unavailable");
+    if (fixture.result === "staging") return new Response("Staging access requires a username and password.", { status: 401, headers: { "WWW-Authenticate": 'Basic realm="FitsMyTime staging"', "Content-Type": "text/plain" } });
+    if (fixture.result === "blocked") return Response.json({}, { status: 403 });
+    if (fixture.result === "unexpected") return new Response("<html>Synthetic unexpected response</html>", { headers: { "Content-Type": "text/html" } });
     if (fixture.result === "pending") await new Promise<void>(resolve => { fixture.resolve = resolve; });
     if (fixture.result === "error") return Response.json({ message: "<img src=x onerror=alert(1)>" }, { status: 503 });
     if (fixture.result === "unauthorized") return Response.json({}, { status: 401 });

@@ -453,6 +453,55 @@ See [business scenarios](docs/payment-business-plan.md),
 ## Mobile apps
 
 - [ ] **TASK-034 — Build the FitsMyTime Android app.**
+  **18 November 2026 — requested current-code Android rebuild v1.0.3 completed.**
+  Root rebuilt the complete bundled UI and Android APK with the existing
+  staging connection/package/key, version code 4, preserving prior APKs and app
+  behavior. Fresh 31 routing/16 gateway Java cases and full UI, release/lint,
+  signature/alignment/version/payload checks pass. Versioned APK delivered;
+  no live service/DB, private credentials, hosting or deployment work.
+  Phone/emulator and deferred-language limitations remain in the
+  [build handoff](docs/android-capacitor-staging-2026-11-18.md).
+  **18 November 2026 — service-photo routing fix v1.0.2 built; phone check pending.**
+  User confirms phone login/avatar now work but service photos are missing. A
+  synthetic regression reproduced the cause: `/objects/...` service-image URLs
+  were treated as packaged assets. Root routed canonical supported image requests
+  to existing HTTPS/server authorization; traversal and document navigation remain
+  blocked. 31 Java routing and 16 gateway cases pass. No backend/storage/DB change
+  or live access; previous en/lv/ru UI evidence preserved, not rerun for this
+  native-only change. Android release/lint, signature/alignment, launcher/version
+  and packaged UI integrity pass; user phone photo verification remains.
+  See [latest image-fix handoff](docs/android-capacitor-staging-2026-11-18.md).
+  **18 November 2026 — staging-access fix v1.0.1 built; phone retry required.**
+  User installed the bundled app but saw no staging prompt and a generic login
+  failure. Root added an explicit native staging-access launcher using fixed HTTPS
+  metadata and the existing protected gateway cookie; no credential embedding,
+  private-file access, backend/gateway changes or connected tests. Account-login
+  errors now distinguish staging, network, blocked and unavailable responses.
+  Same app ID/key, version code 2; local update APK verified. Fresh full types,
+  Android release/lint, signature/payload, 38 Java policy/gateway and 21 mocked
+  en/lv/ru login cases pass. Original cause remains unconfirmed; user must retry
+  on phone. See [current update/evidence](docs/android-capacitor-staging-2026-11-18.md).
+  **18 November 2026 — bundled Capacitor staging APK built; device acceptance open.**
+  User requested the bundled option and explicitly accepted email/password for the
+  first build. Root implemented a separate app packaging the existing React UI,
+  same-origin HTTPS API networking and existing HttpOnly sessions, with native-only
+  social controls hidden. No backend/origin/CORS/DB changes. Full UI/Android release
+  build/lint, signed payload verification, full TypeScript and 22 Java routing plus
+  six mocked en/lv/ru native/web login cases pass. Emulator verification stopped
+  before APK installation (guest mobile-data/phone-service broken pipe after a prior boot
+  timeout); live staging/physical-phone acceptance is unverified. See
+  [bundled APK, scope, evidence and recovery](docs/android-capacitor-staging-2026-11-18.md).
+  **17 November 2026 — personal staging APK built; runtime acceptance incomplete.**
+  User specifically selected a browser-powered APK for the supplied staging HTTPS
+  URL, reusing browser sign-in and allowing a browser toolbar. Root implemented a
+  separate local Android shell and offline SDK build/signing pipeline; existing
+  Capacitor proof remains unchanged. Signature, packaging, alignment, launcher,
+  SDK and en/lv/ru resource checks pass. Emulator boot is blocked by free disk space
+  (about 7.4 GB required, about 3 GB available); physical-phone/live-flow checks
+  remain unverified. See [APK, installation and approval handoff](docs/android-browser-staging-2026-11-17.md).
+  No cloud publication, connected database/service tests or private credential
+  access. Earlier bundled-native acceptance remains open; this selected personal
+  staging delivery does not establish completion of all acceptance criteria below.
   **Status, 30 October 2026:** Added to backlog at the user's request;
   implementation, owner assignment and verification have not started.
   **Scope:** Evaluate Capacitor to reuse the existing React/Vite interface,
@@ -480,6 +529,17 @@ See [business scenarios](docs/payment-business-plan.md),
   connected execution, deployment and store publishing need scoped authorization.
 
 - [ ] **TASK-035 — Build the FitsMyTime iOS app for the Apple App Store.**
+  **18 November 2026 — requested; local readiness reviewed, Mac executor needed.**
+  User requested an iOS build. Root confirmed the Windows environment lacks
+  Xcode/xcrun/Swift and the existing iOS tree is the synthetic proof. Shared React
+  UI assets are prepared for transfer; no installable IPA has been built. An iOS
+  native session/API/gateway/image port is required; Android's HTTPS WebView
+  routing cannot be assumed to work in WKWebView. User was asked about Mac/Xcode
+  or remote Mac access; user confirmed no current Mac access. Native build awaits
+  a Mac executor or selected/authorized cloud build route. Safari's Home Screen
+  web app is the immediate website option. No credentials, signing/provisioning,
+  cloud/spending, connected tests or deployment. See
+  [readiness, remaining work and recovery](docs/ios-staging-build-readiness-2026-11-18.md).
   **Status, 30 October 2026:** Added to backlog at the user's request;
   implementation, owner assignment and verification have not started.
   **Scope:** Evaluate sharing the React/Vite interface and Capacitor foundation
@@ -1083,5 +1143,129 @@ zh/fr/de/hi/ja/pt/es remain deferred while translations are maintained.
   are prepared. Fresh workflow31/DB97/Python9 plus capacity-checker109 mock scenarios
   pass; both publishing/checker plan modes pass. No real credentials transferred,
   database probe, migration, cloud build, provisioning or deployment occurred.
+  **Validator setup:** user approved installing cfn-lint1.60.0/cfn-guard3.2.1
+  locally; both installed in ignored project tools. Corrected HTTPS-deny policy
+  Boolean representation only. Actual template lint0findings; selected AWS
+  Guard16rules:15pass/1not-applicable/0violations. Cloud service validation,
+  setup/spend approval, hosted migration sequence and live release remain pending.
+  **Resumed hosted transition preparation:** Root/CI prepared a retained-session
+  coordinator with immutable release/phase guards and offline failure checks.
+  Replacement DB owner `/root/publish_transition_db_review` accepted pure-contract
+  hardening/review under standing cooperation. Fresh coordinator31/transition163,
+  workflow31/DB97/checker109/Python9 checks pass. Hosted runner/credential path and
+  live CLI wiring remain pending; no `.env`, private configuration, database or
+  cloud resource was accessed. The ordinary final current42 gate is unchanged.
+  [Implementation, validation and next exact authorization](docs/aws-hosted-release-sequence-2026-11-11.md#resumed-ci-coordinator-and-next-authorization).
+  **Approved runner preparation complete,12November:** user replied `approve` to
+  the exact setup-source field/app-URL stdin preparation, then `resume`. Root/CI
+  and replacement DB `/root/hosted_runner_finish_db` implemented/reviewed the
+  source-only reader, retained-session pipe and one-shot hosted preflight/migration
+  runner. Offline runner84/input41/adapter38/Python13 and existing regressions
+  pass. No actual private/configuration read, credential transfer, DB/AWS call,
+  migration, build or deployment occurred. Live CLI integration, exact connected
+  grants, recoverability and live acceptance remain pending; task stays open.
+  [Approval/evidence/recovery](docs/aws-hosted-release-sequence-2026-11-11.md#approved-runner-preparation--resumed12november2026).
+  **Builder setup completed,13November:** user explicitly approved this build-only
+  CloudFormation/IAM/S3/KMS/log setup and credit use after target/audit/change-set
+  checks. Root verified project/service, CloudTrail90-day management history,
+  exact server template, six Add actions and zero validation errors; executed the
+  same change set once. Stack/six resources CREATE_COMPLETE, public bindings and
+  build limits verified, build history empty. Website remains version1 ACTIVE.
+  No build/source upload, database access, private dotenv/runtime extraction or
+  app release. Creation guard is consumed; keep/cleanup choice requested due to
+  retained resource costs. [Evidence and outputs](docs/aws-publish-builder-2026-11-11.md#approved-builder-execution--13november2026).
+  **Retention selected:** user replied `pk keep it` for reusable changing-code
+  development releases. Builder/key/bucket/logs retained; no cleanup requested.
+  Source550 current files match the prepared snapshot; build-only inspection now
+  uses public metadata without retaining runtime credentials (workflow34/Python15
+  offline checks pass). Local boto3/CRT tooling is missing; separate isolated
+  installation and one30-minute image build/upload are concretely proposed, not
+  executed or inferred from retention approval. [Next scoped proposal](docs/aws-one-command-publishing.md#builder-retained-and-next-image-build-proposal--13november).
+  **Approved first build attempted13November:** isolated boto3/CRT installation
+  passed; one CodeBuild source upload/build ran under the user's exact approval.
+  Compilation/full TypeScript, isolated proxy and production artifact checks
+  passed, then native registry push failed with only a generic captured reason.
+  No retry/registered candidate/deployment; website remains version1 ACTIVE.
+  Root prepared a padded Docker-auth compatibility correction and safe diagnostic
+  fields;24 synthetic push tests/workflow34 pass. Fresh550-file source differs
+  only in two CI helpers. Original guards/failure evidence retained; a new exact
+  build/credit-use grant is required, with no DB/maintenance/deployment authority.
+  [Failure, correction, new source and bounded next command](docs/aws-one-command-publishing.md#prepared-registry-compatibility-correction-and-new-build-scope).
+  **New approved image publication completed13November:** user approved one
+  corrected-source build/upload with the same30-minute/no-retry bounds and
+  credit use. Root/CI ran it once; build
+  `91cd82e2-b074-4617-80f6-8c0dd5204f86` SUCCEEDED. Lightsail independently
+  confirms `:fitsmytime-staging-20261109.srcb9de33fbc298c44ea40489d9.5` and the
+  exact recorded digest. Website remains RUNNING/version1 ACTIVE/no pending;
+  no DB/private runtime/maintenance/deployment operation. Builder retained by
+  existing user choice; both consumed attempts preserved. Hosted migration/live
+  release integration and PC path acceptance remain incomplete; TASK-066 stays
+  open. [Verification, receipt and remaining limits](docs/aws-one-command-publishing.md#verified-image-publication--13november2026).
+  User subsequently requested hosted-schema verification before migration. DB
+  `/root/hosted_schema_status_db` accepted and prepared a neutral catalog-only
+  SQL check; no live check/private input yet. Browser control could not initialize
+  (kernel asset path missing), so awaiting the user's source SQL Editor result.
+  [Concrete check and interpretation](docs/aws-hosted-schema-status-2026-11-13.md).
+  User returned PG17/identity/read-only match,41 tables and absent new notification/
+  deletion/constraint/policy/ACL markers, existing app inheritance true. Hosted
+  migration effects are absent; neutral status verification is complete, with
+  the public row retained. Full preflight/recoverability and retained-session
+  release CLI wiring still precede any migration/cutover authorization.
+  **No-backup choice recorded / CLI preparation completed:** user selected
+  proceeding without backup for the exact hosted source. Root completed external
+  first-upgrade CLI; DB/Backend conditionally reviewed actual-receipt acceptance
+  and unchanged built source. CLI27/coordinator31/adapter38/workflow34/helper61/
+  contract163/Python16 pass, DB runner84/input41 rerun. All550 source bytes match;
+  no new image needed. Proposed exact private-input/preflight/maintenance/source
+  migration/capacity/deployment scope and command are reviewable, not approved or
+  executed. Live private/DB/service writes and full acceptance remain pending;
+  stop-inspect/no retry/old41 restart holds remain. [Prepared command and exact
+  next grant](docs/aws-one-command-publishing.md#hosted-release-without-backup--13november2026).
+  **Approved live cutover stopped safely:** user approved exact scope; Root ran
+  once. Live old41/38 preflight passed, maintenance version2 ACTIVE/drain verified.
+  Migration setup guard failed before either SQL script: sql[], no uncertain
+  commit, all probes closed. No candidate/capacity/retry/rollback. AWS confirms
+  version2 ACTIVE/no pending; root503/readiness200 maintenance. Private retained
+  session closed; all consumed attempts/lock preserved. DB preparing source-only
+  diagnostic SQL; exact failed component unknown. Task remains open for diagnosis
+  and new scoped recovery. [Actual result/evidence/holds](docs/aws-one-command-publishing.md#hosted-release-without-backup--13november2026).
+  User diagnostic shows stopped is sole failed gate: two idle supabase_admin
+  clients; identity/role caps/old41 pass, no matching project writer clients.
+  DB owner reviewing managed-admin policy/optional transaction+lock metadata;
+  idle alone is not an exemption. No original guard change or migration retry.
+  Managed-admin follow-up shows full visibility, two idle source admin peers,
+  zero transactions/snapshots/locks/prepared transactions. Observation meets
+  narrow proposed policy; awaiting explicit material-policy selection before
+  implementation and maintenance2 recovery preparation. No further manual SQL
+  needed for that choice; original command remains consumed/unreplayable.
+  **14November recovery preparation complete:** user selected bounded policy and
+  offline recovery implementation/testing, live held. Optional default-strict
+  DB marker, exact historical1/maintenance2 reconstruction, fresh linked UUID,
+  shared recovery mutex and success-only hold archive reviewed by DB/Backend/CI.
+  Policy63/runner91/contract163/input41/acceptance61/evidence19/CLI34/transition62/
+  adapter38/workflow34/Python19 pass; all550 source bytes unchanged. New working
+  recoverye7769268-dcca-44c2-806b-f942211b3e37 and proposed13-pin scope ready,
+  not approved/executed. [Exact next scope/command](docs/aws-one-command-publishing.md#reviewed-maintenance2-recovery-execution--14november2026).
+  **15November exact live recovery approved:** local CLI34/evidence19 pass;
+  pre-guard read-only SDK identity check failed LoginRefreshRequired. Recovery
+  command not invoked, new guards/private setup/DB/deployment untouched. Named
+  AWS login refresh needs the sign-in skill's explicit confirmation; scope and
+  expiry are recorded in new auth-precheck receipt. Resume authorized recovery
+  after login/identity/pins revalidate within the approval window.
+  **15November approved recovery executing:** user confirmed named aws login;
+  fresh identity/pins passed within original approval expiry. Historical1/exact
+  maintenance2 and new full old41 preflight verified; admin policy passed and
+  hosted0024/0025 committed once. Actual current42/all44/data preservation/closed
+  probes and five restricted-role TLS/capacity checks passed. Exact candidate3
+  ACTIVATING, HTTP/final acceptance pending; both active holds still preserved.
+  Never resume old41 after these commits. No migration retry/rollback/new build.
+  **15November live recovery succeeded:** candidate3 ACTIVE/RUNNING/no pending,
+  exact image on app/audit-worker/gateway; previous1/2 INACTIVE. Gateway challenge
+  and sanitized readiness pass. Independent service/history/registry read verifies
+  bindings/digest; archived original hold hash matches, both active holds absent.
+  Hosted0024/0025/all44/data/capacity evidence retained; no retry/rollback/backup.
+  Migration/deployment scope is complete. TASK-066 remains open only for separate
+  worker/browser/PC-path acceptance and follow-up owner work, not hosted migration.
+  [Final evidence and actual URL](docs/aws-one-command-publishing.md#reviewed-maintenance2-recovery-execution--14november2026).
 
 <!-- Add the next task here using TASK-067, or place it in the relevant section. -->

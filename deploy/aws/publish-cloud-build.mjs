@@ -22,6 +22,9 @@ try {
   requireValue(registered.digest === digest && registered.image.startsWith(`:${service}.${label}.`), 'REGISTERED_IMAGE_CHANGED');
   console.log(JSON.stringify({ image: registered.image, digest, sourceManifestSha256: manifest.sha256, isolatedChecksPassed: true, deployed: false }));
 } catch (error) {
-  console.error(JSON.stringify({ error: /^[A-Z_]+$/.test(error.message) ? error.message : 'CLOUD_BUILD_FAILED', retryPerformed: false, deployed: false }));
+  console.error(JSON.stringify({ error: /^[A-Z_]+$/.test(error.message) ? error.message : 'CLOUD_BUILD_FAILED',
+    registryReason: /^[A-Z_]+$/.test(error.registryReason || '') ? error.registryReason : undefined,
+    registryHttpStatus: Number.isInteger(error.registryHttpStatus) ? error.registryHttpStatus : undefined,
+    retryPerformed: false, deployed: false }));
   process.exitCode = 1;
 }

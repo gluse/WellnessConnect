@@ -35,6 +35,25 @@ def fingerprint(spec):
     return digest(spec, True)
 
 
+def validate_build_target(service):
+    # Image publication needs target identity/status, not a private runtime spec.
+    # The separate deployment inspection retains all of its existing checks.
+    require(re.fullmatch(f'arn:aws:lightsail:{REGION}:{PROJECT}:ContainerService/[A-Za-z0-9-]+', service['arn']), 'WRONG_SERVICE_PROJECT')
+    require(service['containerServiceName'] == SERVICE and service['power'] == 'micro' and service['scale'] == 1, 'SERVICE_TARGET_CHANGED')
+    require(service['state'] == 'RUNNING' and not service['isDisabled'] and not service.get('nextDeployment'), 'STABLE_RUNNING_SERVICE_REQUIRED')
+    current = service['currentDeployment']
+    require(current['state'] == 'ACTIVE' and type(current['version']) is int and current['version'] > 0, 'ACTIVE_BASELINE_REQUIRED')
+    commands = {'app': ['node', 'dist/index.js'], 'audit-worker': ['node', 'dist/audit-worker.js'], 'gateway': ['node', 'staging-proxy.mjs']}
+    require(set(current['containers']) == set(commands) and all(current['containers'][key].get('command') == value for key, value in commands.items()), 'BASELINE_COMMANDS_CHANGED')
+    endpoint = current['publicEndpoint']
+    require(endpoint['containerName'] == 'gateway' and endpoint['containerPort'] == 8080 and endpoint['healthCheck']['path'] == '/health/ready', 'PRIVATE_ENDPOINT_CHANGED')
+    origin = service['url'].rstrip('/')
+    parsed = urlsplit(origin)
+    require(parsed.scheme == 'https' and parsed.hostname and parsed.hostname.endswith(f'.{REGION}.cs.amazonlightsail.com')
+            and not parsed.username and not parsed.password and not parsed.port and not parsed.path and not parsed.query and not parsed.fragment, 'ORIGIN_REJECTED')
+    return {'serviceArn': service['arn'], 'baselineVersion': current['version'], 'origin': origin}
+
+
 def validate_runtime(service):
     require(service['arn'].startswith(f'arn:aws:lightsail:{REGION}:{PROJECT}:'), 'WRONG_SERVICE_PROJECT')
     require(service['containerServiceName'] == SERVICE and service['power'] == 'micro' and service['scale'] == 1, 'SERVICE_TARGET_CHANGED')
@@ -94,10 +113,12 @@ class Session:
         require(self.client('sts').get_caller_identity()['Account'] == PROJECT, 'WRONG_AWS_PROJECT')
         self.lightsail = self.client('lightsail')
         self.baseline = None
+        self.baseline_version = None
         self.maintenance_version = None
         self.candidate_version = None
         self.cloud = None
         self.mutations = set()
+        self.recovery = None
 
     def client(self, name):
         return self.session.client(name, config=self.config)
@@ -113,13 +134,129 @@ class Session:
 
     def dispatch(self, request):
         operation = request['operation']
+        if operation == 'inspect-build-target':
+            require(set(request) == {'operation'} and self.baseline is None and self.maintenance_version is None and self.candidate_version is None, 'BUILD_TARGET_INSPECTION_REJECTED')
+            return validate_build_target(self.service())
         if operation == 'inspect':
             require(self.baseline is None, 'ALREADY_INSPECTED')
             service = self.service()
             result = validate_runtime(service)
             self.baseline = specification(service['currentDeployment'])
             self.baseline_hash = result['baselineFingerprint']
+            self.baseline_version = result['baselineVersion']
             return result
+        if operation == 'inspect-maintenance-recovery':
+            require(set(request) == {'operation', 'originalContext', 'maintenanceVersion', 'maintenanceFingerprint', 'recoveryId', 'approvalReference', 'expiresAt'}
+                    and self.baseline is None, 'RECOVERY_INSPECTION_REJECTED')
+            require(isinstance(request['recoveryId'], str) and re.fullmatch(r'[a-f0-9-]{36}', request['recoveryId'])
+                    and isinstance(request['approvalReference'], str) and request['approvalReference'].startswith(('docs/', 'https://')), 'RECOVERY_APPROVAL_REQUIRED')
+            require(re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z', request['expiresAt'])
+                    and datetime.fromisoformat(request['expiresAt'].replace('Z', '+00:00')) > datetime.now(timezone.utc), 'RECOVERY_APPROVAL_EXPIRED')
+            context = request['originalContext']
+            require(isinstance(context, dict) and set(context) == {'releaseId', 'project', 'region', 'service', 'sourceManifestSha256',
+                    'baselineFingerprint', 'runtimeDatabaseSha256', 'auditSettingsSha256', 'baselineVersion', 'image', 'digest', 'origin'}
+                    and context['project'] == PROJECT and context['region'] == REGION and context['service'] == SERVICE
+                    and request['recoveryId'] != context['releaseId'], 'RECOVERY_CONTEXT_REJECTED')
+            service = self.service()
+            history = self.lightsail.get_container_service_deployments(serviceName=SERVICE)['deployments']
+            originals = [item for item in history if item['version'] == context['baselineVersion']]
+            require(len(originals) == 1 and originals[0]['state'] == 'INACTIVE', 'RECOVERY_HISTORY_REQUIRED')
+            original = copy.deepcopy(originals[0])
+            original['state'] = 'ACTIVE'
+            historical_service = copy.deepcopy(service)
+            historical_service['currentDeployment'] = original
+            # validate_runtime also checks the real service's stable state/holds.
+            result = validate_runtime(historical_service)
+            require(all(result[key] == context[key] for key in result), 'RECOVERY_ORIGINAL_FINGERPRINT_CHANGED')
+            active = service['currentDeployment']
+            require(type(request['maintenanceVersion']) is int and request['maintenanceVersion'] > context['baselineVersion']
+                    and active['version'] == request['maintenanceVersion'] and active['state'] == 'ACTIVE'
+                    and specification(active) == maintenance_spec(specification(original))
+                    and fingerprint(specification(active)) == request['maintenanceFingerprint']
+                    and all(item['state'] == 'INACTIVE' for item in history if item['version'] != active['version']), 'RECOVERY_MAINTENANCE_CHANGED')
+            self.once('inspect-maintenance-recovery')
+            self.baseline = specification(original)
+            self.baseline_hash = result['baselineFingerprint']
+            self.baseline_version = result['baselineVersion']
+            self.maintenance_version = active['version']
+            self.recovery = {'releaseId': request['recoveryId'], 'approvalReference': request['approvalReference'], 'expiresAt': request['expiresAt']}
+            self.mutations.add('maintenance')
+            return result
+        if operation == 'inspect-published-image':
+            require(set(request) == {'operation', 'image', 'digest'}, 'IMAGE_PARAMETERS_REJECTED')
+            require(re.fullmatch(r':fitsmytime-staging-20261109\.src[a-f0-9]{24}\.[1-9][0-9]*', request['image'])
+                    and re.fullmatch(r'sha256:[a-f0-9]{64}', request['digest']), 'IMAGE_PARAMETERS_REJECTED')
+            require(any(item['image'] == request['image'] and item['digest'] == request['digest']
+                        for item in self.lightsail.get_container_images(serviceName=SERVICE)['containerImages']), 'IMAGE_DIGEST_CHANGED')
+            return {'image': request['image'], 'digest': request['digest'], 'registered': True}
+        if operation == 'migration-binding':
+            # Public hash lets an authorized inspector prepare the exact later
+            # input grant without retrieving the raw URL into a public artifact.
+            require(set(request) == {'operation', 'baselineFingerprint', 'baselineVersion'} and self.baseline is not None
+                    and (self.maintenance_version is None or getattr(self, 'recovery', None)) and self.candidate_version is None, 'MIGRATION_BINDING_BASELINE_REQUIRED')
+            require(request['baselineFingerprint'] == self.baseline_hash and request['baselineVersion'] == self.baseline_version, 'MIGRATION_BASELINE_CHANGED')
+            if getattr(self, 'recovery', None):
+                require(self.dispatch({'operation': 'status', 'version': self.maintenance_version})['active'], 'QUIESCENCE_CHANGED')
+            else:
+                live = validate_runtime(self.service())
+                require(live['baselineFingerprint'] == self.baseline_hash and live['baselineVersion'] == self.baseline_version, 'MIGRATION_BASELINE_CHANGED')
+            self.once('migration-binding')
+            return {'applicationDatabaseUrlSha256': hashlib.sha256(self.baseline['containers']['app']['environment']['DATABASE_URL'].encode()).hexdigest()}
+        if operation == 'migration-input':
+            # Approved local DB-runner recipient only; no setup credentials live here.
+            phase = request.get('phase')
+            keys = {'operation', 'phase', 'executionGrant'}
+            if phase == 'migrate':
+                keys.update({'quiescentVersion', 'quiescentFingerprint'})
+            require(set(request) == keys and phase in ['preflight', 'migrate'], 'MIGRATION_INPUT_SHAPE_REJECTED')
+            grant = request['executionGrant']
+            require(isinstance(grant, dict) and set(grant) in [{'version', 'purpose', 'context', 'executor', 'approver', 'approvalReference', 'expiresAt', 'operations', 'applicationDatabaseUrlSha256', 'setupSource', 'recovery', 'retry'},
+                    {'version', 'purpose', 'context', 'executor', 'approver', 'approvalReference', 'expiresAt', 'operations', 'applicationDatabaseUrlSha256', 'setupSource', 'recovery', 'retry', 'managedAdminPolicy'}], 'MIGRATION_GRANT_REJECTED')
+            if 'managedAdminPolicy' in grant:
+                policy = grant['managedAdminPolicy']
+                require(isinstance(policy, dict) and set(policy) == {'version', 'name', 'sourceProject', 'maxConnections', 'approvalReference'}
+                        and type(policy['version']) is int and policy['version'] == 1 and policy['name'] == 'supabase-admin-idle-v1' and policy['sourceProject'] == 'hbkooiknruimukkhshrk'
+                        and type(policy['maxConnections']) is int and policy['maxConnections'] == 2
+                        and isinstance(policy['approvalReference'], str)
+                        and re.fullmatch(r'(?:docs/[^\s#]+\.md(?:#[A-Za-z0-9_-]+)?|https://[^\s]+)', policy['approvalReference']), 'MANAGED_ADMIN_POLICY_REJECTED')
+            require(grant['version'] == 1 and grant['purpose'] == 'hosted-schema-execution'
+                    and grant['setupSource'] == {'file': '.env.audit-setup.local', 'key': 'AUDIT_SETUP_SOURCE_DATABASE_URL', 'recipient': 'scripts/aws-hosted-migrate.mjs'}
+                    and grant['recovery'] == 'stop-and-inspect' and grant['retry'] is False, 'MIGRATION_RECIPIENT_REJECTED')
+            require(grant['operations'] == (['preflight'] if phase == 'preflight' else ['migrate-0024', 'activate-0025', 'verify-current42']), 'MIGRATION_SCOPE_REJECTED')
+            require(all(isinstance(grant[key], str) and grant[key].strip() for key in ['executor', 'approver', 'approvalReference']), 'MIGRATION_OWNER_REQUIRED')
+            def unexpired():
+                value = grant['expiresAt']
+                require(isinstance(value, str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z', value)
+                        and datetime.fromisoformat(value.replace('Z', '+00:00')) > datetime.now(timezone.utc), 'MIGRATION_GRANT_EXPIRED')
+            unexpired()
+            context = grant['context']
+            require(self.baseline is not None and self.candidate_version is None and isinstance(context, dict), 'MIGRATION_BASELINE_REQUIRED')
+            require(context.get('project') == PROJECT and context.get('region') == REGION and context.get('service') == SERVICE
+                    and context.get('baselineFingerprint') == self.baseline_hash and context.get('baselineVersion') == self.baseline_version, 'MIGRATION_BASELINE_CHANGED')
+            if getattr(self, 'recovery', None):
+                require(context.get('releaseId') == self.recovery['releaseId'] and grant['approvalReference'] == self.recovery['approvalReference']
+                        and grant['expiresAt'] == self.recovery['expiresAt'] and 'managedAdminPolicy' in grant, 'RECOVERY_GRANT_CHANGED')
+            app = self.baseline['containers']['app']['environment']
+            worker = self.baseline['containers']['audit-worker']['environment']
+            runtime = {key: env[key] for key, env in [('AUDIT_CAPTURE_DATABASE_URL', app), ('AUDIT_DATABASE_URL', worker), ('AUDIT_SOURCE_DATABASE_URL', worker), ('DATABASE_URL', app)]}
+            audit = {key: app[key] for key in ['AUDIT_EXPORT_USER_IDS', 'AUDIT_PRODUCER_CONTRACT', 'AUDIT_READER_DATABASE_URL', 'AUDIT_READER_USER_IDS']}
+            require(context.get('runtimeDatabaseSha256') == digest(runtime) and context.get('auditSettingsSha256') == digest(audit)
+                    and grant['applicationDatabaseUrlSha256'] == hashlib.sha256(app['DATABASE_URL'].encode()).hexdigest(), 'MIGRATION_PRIVATE_BINDING_CHANGED')
+            if phase == 'preflight':
+                if getattr(self, 'recovery', None):
+                    require(self.dispatch({'operation': 'status', 'version': self.maintenance_version})['active'], 'QUIESCENCE_CHANGED')
+                else:
+                    require(self.maintenance_version is None, 'MIGRATION_PREFLIGHT_BASELINE_REQUIRED')
+                    live = validate_runtime(self.service())
+                    require(live['baselineFingerprint'] == self.baseline_hash and live['baselineVersion'] == self.baseline_version, 'MIGRATION_BASELINE_CHANGED')
+            else:
+                require(self.maintenance_version is not None, 'QUIESCENCE_REQUIRED')
+                status = self.dispatch({'operation': 'status', 'version': self.maintenance_version})
+                require(status['active'] and request['quiescentVersion'] == status['quiescentVersion']
+                        and request['quiescentFingerprint'] == status['quiescentFingerprint'], 'QUIESCENCE_CHANGED')
+            unexpired()
+            self.once('migration-input-' + phase)
+            return {'applicationDatabaseUrl': app['DATABASE_URL']}
         if operation == 'registry-login':
             return self.lightsail.create_container_service_registry_login()['registryLogin']
         if operation == 'register':

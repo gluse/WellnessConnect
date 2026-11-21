@@ -9,12 +9,15 @@ import InvitationRecovery from "@/components/invitation-recovery";
 import { useAuth } from "@/hooks/useAuth";
 import { useFormLocale } from "@/components/forms-locale";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { nativeSignInError } from "@/lib/native-sign-in";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 const providerIcons = { google: FaGoogle, facebook: FaFacebook, apple: FaApple, microsoft: FaMicrosoft };
+// Set only by the separate bundled staging build; web sign-in remains unchanged.
+const nativePasswordOnly = import.meta.env.VITE_NATIVE_PASSWORD_ONLY === "true";
 function callbackError(code: string | null) {
   switch (code) {
     case null: return "";
@@ -38,8 +41,8 @@ export default function Login() {
   const returnTo = isAllowedAuthReturnTo(requestedReturn) ? requestedReturn : "/";
   const [message, setMessage] = useState(new URLSearchParams(window.location.search).get("passwordUpdated") === "1" ? "passwordUpdated" : "");
   const [error, setError] = useState(() => callbackError(new URLSearchParams(window.location.search).get("error")));
-  const providers = useQuery<AuthProviders>({ queryKey: ["/api/auth/providers"], staleTime: 60_000, retry: false });
-  const enabled = socialProviders.filter(provider => providers.data?.[provider]);
+  const providers = useQuery<AuthProviders>({ queryKey: ["/api/auth/providers"], staleTime: 60_000, retry: false, enabled: !nativePasswordOnly });
+  const enabled = nativePasswordOnly ? [] : socialProviders.filter(provider => providers.data?.[provider]);
   // Use the configured language list. Native names keep the choice understandable
   // before the visitor can read the current interface language.
   const languages = (Array.isArray(i18n.options.supportedLngs) ? i18n.options.supportedLngs : Object.keys(i18n.services.resourceStore.data)).filter(code => code !== "cimode");
@@ -78,7 +81,8 @@ export default function Login() {
       else { queryClient.clear(); window.location.assign(returnTo); }
     } catch (failure) {
       const raw = failure instanceof Error ? failure.message : "";
-      setError(raw.startsWith("429:") ? "rateLimited" : !signup && raw.startsWith("401:") ? "invalidCredentials" : signup && raw.startsWith("400:") ? "signupFailed" : "signInFailed");
+      setError(nativePasswordOnly && !signup ? nativeSignInError(failure)
+        : raw.startsWith("429:") ? "rateLimited" : !signup && raw.startsWith("401:") ? "invalidCredentials" : signup && raw.startsWith("400:") ? "signupFailed" : "signInFailed");
       requestAnimationFrame(() => errorRef.current?.focus());
     } finally { locked.current = false; setBusy(false); }
   }
@@ -98,7 +102,7 @@ export default function Login() {
             {(returnTo === "/" || returnTo === "/search") && <div><Label htmlFor="signup-type">{t("authForm.accountType")}</Label><select id="signup-type" value={accountType} disabled={busy} onChange={event => { setAccountType(event.target.value); setCompanyNameError(""); }}><option value="personal">{t("authForm.personal")}</option><option value="company">{t("authForm.company")}</option></select></div>}
             {accountType === "company" && <div><Label htmlFor="signup-company">{t("authForm.companyName")}</Label><Input id="signup-company" required maxLength={150} value={companyName} disabled={busy} aria-invalid={Boolean(companyNameError)} aria-describedby={companyNameError ? "signup-company-error" : undefined} onChange={event => { setCompanyName(event.target.value); setCompanyNameError(""); }} />{companyNameError && <p id="signup-company-error" role="alert" className="text-sm text-destructive mt-1">{t(`authForm.${companyNameError}`)}</p>}</div>}
           </fieldset>}
-          {(providers.isPending || providers.isError || enabled.length > 0) && <section aria-labelledby="auth-options-heading" className="space-y-3">
+          {!nativePasswordOnly && (providers.isPending || providers.isError || enabled.length > 0) && <section aria-labelledby="auth-options-heading" className="space-y-3">
             <h2 id="auth-options-heading" className="text-lg font-semibold">{t("authForm.options")}</h2>
             {providers.isPending && <p role="status" className="text-sm text-muted-foreground">{t("authForm.loadingOptions")}</p>}
             {enabled.map(provider => { const Icon = providerIcons[provider]; return <Button key={provider} type="button" className="w-full" variant="outline" disabled={busy} onClick={() => socialSignIn(provider)}><Icon aria-hidden="true" />{t("authForm.continueWith", { provider: socialProviderLabels[provider] })}</Button>; })}

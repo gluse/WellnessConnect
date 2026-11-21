@@ -37,7 +37,11 @@ function confinedSnapshot(value) {
   return snapshot;
 }
 
-class AwsSession {
+export function inspectionOperation(action) {
+  return action === 'publish' ? 'inspect-build-target' : 'inspect';
+}
+
+export class AwsSession {
   constructor(python) {
     requireValue(python, 'PYTHON_WITH_BOTO3_REQUIRED');
     this.child = spawn(python, [path.join(root, 'deploy/aws/publish-aws-session.py')], { cwd: root, windowsHide: true, shell: false, stdio: ['pipe', 'pipe', 'pipe'] });
@@ -66,11 +70,15 @@ class AwsSession {
   close() { this.child.stdin.end(); }
 }
 
-export function validateAuthorization({ authorization, context, now = Date.now() }) {
+export function validateReleaseScope({ authorization, context, now = Date.now() }) {
   requireValue(authorization?.version === 1 && typeof authorization.approver === 'string' && authorization.approver.trim() && typeof authorization.approvalReference === 'string' && authorization.approvalReference.trim(), 'RECORDED_RELEASE_APPROVAL_REQUIRED');
   requireValue(authorization.releaseId === context.releaseId && authorization.sourceManifestSha256 === context.sourceManifestSha256 && authorization.service === service && authorization.region === region && authorization.project === project, 'RELEASE_APPROVAL_TARGET_CHANGED');
   requireValue(authorization.operations?.join(',') === 'upload,maintenance,capacity,deploy,verify' && authorization.recovery === 'stop-and-inspect', 'RELEASE_OPERATION_SCOPE_CHANGED');
   requireValue(Number.isFinite(Date.parse(authorization.expiresAt)) && Date.parse(authorization.expiresAt) > now, 'RELEASE_APPROVAL_EXPIRED');
+}
+
+export function validateAuthorization({ authorization, context, now = Date.now() }) {
+  validateReleaseScope({ authorization, context, now });
   validateDatabaseApproval({ approval: authorization.databaseApproval, context, now });
   const hook = authorization.capacityHook;
   requireValue(hook?.executor === authorization.databaseApproval.databaseOwner && typeof hook.approvalReference === 'string' && hook.approvalReference.trim(), 'OWNER_HOOK_AUTHORIZATION_REQUIRED');
@@ -78,12 +86,12 @@ export function validateAuthorization({ authorization, context, now = Date.now()
   return hook;
 }
 
-function checkHook(hook) {
+export function checkHook(hook) {
   const target = path.resolve(root, hook.script);
   requireValue(!fs.lstatSync(target).isSymbolicLink() && sha256(fs.readFileSync(target)) === hook.sha256, 'OWNER_HOOK_CHANGED');
 }
 
-async function waitFor(session, version) {
+export async function waitFor(session, version) {
   for (let attempt = 0; attempt < 120; attempt++) {
     const status = await session.call('status', { version });
     requireValue(!['FAILED', 'INACTIVE'].includes(status.state), 'DEPLOYMENT_FAILED');
@@ -94,7 +102,7 @@ async function waitFor(session, version) {
   throw Error('DEPLOYMENT_WAIT_TIMEOUT');
 }
 
-async function verifyHttps(origin) {
+export async function verifyHttps(origin) {
   const blocked = await fetch(origin + '/', { redirect: 'manual', signal: AbortSignal.timeout(15000) });
   requireValue(blocked.status === 401 && blocked.headers.get('www-authenticate')?.startsWith('Basic '), 'GATEWAY_RESTRICTION_FAILED');
   await blocked.body?.cancel();
@@ -170,7 +178,7 @@ export async function runPublish(mode, args = process.argv.slice(2)) {
     const preparation = readJson(preparationFile);
     requireValue(preparation.mode === mode && preparation.sourceManifestSha256 === manifest.sha256 && /^[a-f0-9-]{36}$/.test(preparation.releaseId) && /^src[a-f0-9]{24}$/.test(preparation.label), 'PREPARATION_CHANGED');
     session = new AwsSession(options.python || process.env.FMT_PUBLISH_PYTHON);
-    const baseline = await session.call('inspect');
+    const baseline = await session.call(inspectionOperation(options.action));
     const context = { releaseId: preparation.releaseId, project, region, service, sourceManifestSha256: manifest.sha256, ...baseline };
     if (options.action === 'inspect') { save(path.join(snapshot, 'release-context.json'), context); console.log(JSON.stringify(context, null, 2)); return; }
     let authorization;

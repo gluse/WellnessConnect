@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { parseOptions, validateAuthorization, executeRelease } from '../deploy/aws/publish-workflow.mjs';
+import { parseOptions, validateAuthorization, executeRelease, inspectionOperation } from '../deploy/aws/publish-workflow.mjs';
 import { sha256, verifySnapshot } from '../deploy/aws/publish-image.mjs';
 import { DATABASE_RELEASE_ROLES } from './aws-publish-db-contract.mjs';
 
@@ -17,6 +17,8 @@ function removeFixture(directory, parent, prefix) {
   fs.rmSync(directory, { recursive: true });
 }
 assert.equal(parseOptions([]).action, 'plan'); scenarios++;
+assert.equal(inspectionOperation('publish'), 'inspect-build-target'); scenarios++;
+for (const action of ['inspect', 'deploy']) { assert.equal(inspectionOperation(action), 'inspect'); scenarios++; }
 for (const args of [['--deploy'], ['--publish'], ['--inspect'], ['--plan', '--prepare'], ['--unknown'], ['--python=a', '--python=b']]) {
   assert.throws(() => parseOptions(args)); scenarios++;
 }

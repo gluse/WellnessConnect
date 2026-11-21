@@ -1,5 +1,91 @@
 # Cross-role dependency queue
 
+## TASK-035 iOS build request — 18 November 2026
+
+**Readiness reviewed; no Mac build capability established.** User requested the
+iOS app. Root accepted local preparation/review. Windows lacks Xcode/xcrun/Swift;
+existing iOS project is the synthetic proof, while the Android cookie/network
+implementation needs an iOS-specific port. Shared UI preparation is independent
+of that transport decision; no IPA/device build or native compilation is claimed.
+User confirmed no current Mac access. Native build awaits a concrete Mac executor
+or selected/authorized cloud build route; Safari Home Screen web app instructions
+are the immediate website alternative. No private
+credentials, connected service/DB, Apple signing, remote build, spending or
+publication. Test scope remains en/lv/ru with other locales/RTL deferred. See
+[gaps, next actions and recovery](ios-staging-build-readiness-2026-11-18.md).
+
+## TASK-034 bundled Capacitor staging APK — 18 November 2026
+
+**Requested rebuild v1.0.3 completed.** User requested an Android build; Root
+continues scoped local bundled app/build/signing authority. Full UI/native rebuild
+uses the existing staging URL, app ID and key, version code 4; prior login/image
+fixes retained with no additional runtime changes. 31 routing and 16 gateway Java
+checks pass; full UI, release/lint, signature/alignment/version/payload checks
+also pass. Versioned APK ready for installation as an update. No connected service/DB,
+private credential-file, cloud or publication action. Existing locale/device
+evidence limits and recovery remain in the
+[handoff](android-capacitor-staging-2026-11-18.md).
+
+**Photo follow-up v1.0.2 / local fix accepted and implemented.** User confirms
+phone login/avatar success and missing service images. Root reproduced that
+`/objects/...` image paths resolve as local assets, then added constrained HTTPS
+network routing for the backend's supported image-path contract. Existing cookies,
+gateway/image/workspace authorization and document/traversal guards preserved.
+31 routing plus 16 gateway Java checks pass; release/lint, signature/alignment,
+launcher/version and packaged UI integrity checks pass for the signed update.
+No backend/storage/database change, private credentials or connected test. Earlier
+en/lv/ru UI evidence preserved; other languages/RTL deferred. Next: user installs
+the verified update and checks photos on phone. See
+[scope, regression and recovery](android-capacitor-staging-2026-11-18.md).
+
+**Follow-up v1.0.1 built; user phone retry outstanding.** User reported that the
+installed app showed no staging prompt and only a generic sign-in failure. Root
+continued authorized local app diagnosis/fix: explicit native staging-access
+launcher, same-origin protected gateway-cookie handoff and distinct native login
+errors; same package/signing key, version code 2. Private credentials untouched;
+no live request, backend, gateway or database change. All client translations
+maintained; fresh checks only en/lv/ru. Release/lint/signature/payload/types and
+38 Java plus 21 mocked login cases pass. Exact original failure not confirmed;
+the user must verify staging access then account login on the phone. See the
+[updated handoff](android-capacitor-staging-2026-11-18.md).
+
+**APK built and signed; Android runtime/live-flow acceptance open.** User requested
+the bundled app and selected email/password for the first APK. Root accepted and
+implemented that specific local app/build/signing/offline-testing scope:
+`mobile/capacitor-staging/**`, dedicated scripts/output, native-only login flag and
+optional mocked browser-fixture define. Existing browser APK/proof, website social
+sign-in, backend, database and deployment files are preserved. No private config
+read, cloud/deployment/spending, connected service/database operation or credential
+embedding. See [approval, architecture, build and recovery handoff](android-capacitor-staging-2026-11-18.md).
+
+Full bundled UI, Android release/lint, signature/payload checks and TypeScript pass;
+22 Java policy and six mocked en/lv/ru native/web login cases pass. First emulator
+attempt timed out; final attempt stopped before APK installation because the
+guest phone service failed while disabling mobile data after airplane mode was
+enabled and verified. Own emulator/ADB/proxy
+shut down; no live app flow ran. Physical-device/live acceptance and full TASK-034
+release gates remain open. Other supported languages/RTL remain deferred.
+
+## TASK-034 browser-powered staging APK — 17 November 2026
+
+**Local APK build completed; runtime checks incomplete.** User selected the
+browser-powered option and the exact staging HTTPS URL. Root is the specifically
+approved executor for this local app/build/test-signing scope; no role authority
+is inferred from file access. Accepted and implemented separate
+`mobile/android-browser/**`, `scripts/build-android-browser.mjs`,
+`scripts/test-android-browser.mjs` and output ignore rule. Existing Capacitor,
+website/frontend dependencies, server, database and delivery infrastructure remain
+unchanged. See [approval, validation, recovery and installation handoff](android-browser-staging-2026-11-17.md).
+
+Offline compilation, signature, alignment, payload allowlist, launcher, SDK,
+no-native-permission and en/lv/ru resources pass. Emulator could not start with
+about 3 GB free disk space (about 7.4 GB required by installed image); physical
+phone, live staging login and full app-flow acceptance remain open. No private
+configuration/credentials, connected service/DB access, cloud deployment or
+publication. No password embedded. Other supported languages/RTL deferred.
+Next: user installs the APK and checks phone sign-in/needed flows; executor reruns
+isolated offline emulator checks when sufficient disk space is available.
+
 ## TASK-065 frontend and booked-service follow-up — 11 November 2026
 
 **Local startup repair completed after explicit user yes:** DB executor
@@ -698,6 +784,166 @@ request remains. Next: local user review.
 
 ## TASK-066 — Two reusable AWS publishing commands — 11 November 2026
 
+**Builder setup completed13November:** user approved Root/CI creating only
+`fitsmytime-publish-builder`, project674200807170/eu-north-1, after exact target,
+management-audit and clean change-set checks, including listed IAM/resources and
+credit use. Actual STS/service/CloudTrail event-history/template/change-set checks
+passed. The exact six-resource change set was executed once; stack/resources are
+CREATE_COMPLETE, public outputs and CodeBuild configuration verified, build list
+empty. Website stays version1 ACTIVE/no pending; no source upload/build, private
+dotenv/runtime extraction, database operation or application deployment. The
+creation grant does not expand to later operations. Request/execute guards and
+public final receipt are retained. Keep/cleanup choice is requested because
+retained resources incur ongoing costs. [Scope, audit retention limit, evidence,
+outputs and recovery](aws-publish-builder-2026-11-11.md#approved-builder-execution--13november2026).
+
+**Keep selected / next build prepared:** user explicitly retained the reusable
+builder for changing-source development releases. No cleanup or rebuild follows
+from that choice. Root accepted the necessary CI-only offline preparation:
+public-only target inspection for image publication, with unchanged full
+deployment gates; workflow34/Python15 pass. All550 snapshot source files still
+match; no publication attempt exists. The usable local Python lacks boto3/CRT;
+isolated exact SDK installation plus one existing-builder image build/upload is
+proposed for explicit authorization. No dependency install, credential/private
+read, new AWS action, build or DB/app execution occurred in this preparation.
+[Exact install/build scope and recovery](aws-one-command-publishing.md#builder-retained-and-next-image-build-proposal--13november).
+
+**First approved build consumed / correction prepared13November:** user approved
+isolated exact boto3/CRT plus one bounded CodeBuild image publication. SDK checks
+passed; build `a34660f4-72df-4e06-91bf-aedcba57faef` compiled and passed source
+types, isolated gateway and artifact checks, then failed at registry push. No
+automatic retry, registered image for that label or website release; original
+service still version1 ACTIVE. Root/CI accepted local upload-helper compatibility
+and safe diagnostic correction, without permission changes or private payload
+expansion.24 synthetic stream/auth cases and workflow34 pass. Fresh prepared
+source differs only in two CI helpers; no new cloud action for it. Original
+attempt/failure evidence remains. Request only a new exact one-build/source
+credit-use decision; no SDK reinstall, IAM/DB/maintenance/deployment authority.
+[Actual failure, evidence limits and ready next scope](aws-one-command-publishing.md#prepared-registry-compatibility-correction-and-new-build-scope).
+
+**New approved CodeBuild publication completed13November:** user approved the
+exact corrected-source one-build/upload/credit-use scope, no database migration
+or website deployment. Root/CI executed once with retries0/timeout30minutes;
+build `91cd82e2-b074-4617-80f6-8c0dd5204f86` SUCCEEDED. Independent public
+Lightsail read confirms image
+`:fitsmytime-staging-20261109.srcb9de33fbc298c44ea40489d9.5` and matching digest.
+Existing website remains version1 ACTIVE/no pending, micro/scale1/RUNNING.
+No DB/private dotenv/runtime extraction, maintenance, deployment or IAM change.
+Both immutable attempt histories are retained; keep builder under existing user
+choice. Next remains hosted migration/first-release CLI integration and exact
+connected execution authority, plus unverified PC path; no release grant inferred.
+[Verified publication and recovery limits](aws-one-command-publishing.md#verified-image-publication--13november2026).
+
+**Hosted status verification requested13November:** user authorized proceeding
+with checking hosted source `hbkooiknruimukkhshrk/postgres` before any migration.
+Root assigned DB `/root/hosted_schema_status_db`, which accepted and prepared a
+neutral metadata-only SQL check plus interpretation; no private access,
+connection, mutation or full readiness claim. Browser tools failed before
+initialization (kernel assets/system path missing); no signed-in SQL Editor was
+available to Root. Next user step is running the complete reviewed SQL in the
+source project's SQL Editor and returning its single public metadata row.
+Existing migration/private-reader grants remain unchanged; never spoof them for
+a different recipient or replay SQL based only on object presence.
+[SQL, evidence limits and exact optional automated input scope](aws-hosted-schema-status-2026-11-13.md).
+
+**Status result supplied:** user returned the reviewed query's single row:
+identity/PG17/read-only match;41 tables; notification table, deletion column,
+constraint/policy/direct ACL markers absent; policy count0; app inheritance true.
+New migration effects are absent, consistent with pre-0024; full migration
+preflight/recoverability/current42 readiness remain unverified. Neutral status
+step complete; no agent private/DB access or writes. Exact public row is retained
+in the built snapshot's `hosted-schema-status-user-result.json`. Next preparation:
+retained-session live CLI wiring and recovery decision before a cutover grant;
+no manual migration or ordinary deploy against the old schema.
+
+**No-backup choice and first-upgrade preparation completed:** user selected
+"proceed without backup" for hosted source `hbkooiknruimukkhshrk/postgres`.
+Root recorded the scoped recovery waiver and completed external live CLI wiring;
+no live action followed. DB accepted/implemented pure receipt-based final
+acceptance and conditionally reviewed caller; Backend accepted unchanged built
+source/current42 contract and reviewed final caller. All550 source bytes match;
+existing image reusable. CLI27/coordinator31/adapter38/workflow34/helper61/
+contract163/Python16 pass; DB runner84/input41 also rerun. All offline/mocked.
+Proposed exact approval artifact remains explicitly proposed and rejected by CLI;
+next missing action is user approval of named private input recipients, full
+preflight, maintenance, pinned source0024/0025, verification/capacity and existing
+image deployment. No backup/restore/retry/old41 rollback or business acceptance
+inferred. [Exact reviewable scope/command/recovery](aws-one-command-publishing.md#hosted-release-without-backup--13november2026).
+
+**One approved live cutover consumed/stopped:** user explicitly approved exact
+scope and prior no-backup choice. Root invoked reviewed SDK/owner runner once;
+old41/38 full preflight passed, maintenance2 ACTIVE/allprev INACTIVE/no pending
+and drain verified. Migration setup preflight stopped with
+HOSTED_MIGRATION_SETUP_PRECONDITIONS_FAILED, sql[], uncertainCommit=false,
+allConnectionsClosed=true. No SQL dispatch/candidate/capacity/retry/rollback.
+MCP public status2 ACTIVE/RUNNING micro1; root503/readiness200, cookie-free.
+Private original session closed; all guards/service lock preserved. Combined
+guard doesn't report component; other client sessions plausible, not proven.
+DB owner accepted offline diagnostic SQL preparation only. No private/DB retry
+or automatic old41 return; next recovery needs concrete scoped authorization
+after inspecting actual metadata. [Result and remaining holds](aws-one-command-publishing.md#hosted-release-without-backup--13november2026).
+
+**User diagnostic narrows failure:** identity/capacity/old_schema all true;
+stopped=false, solely two idle supabase_admin client peers, no named app/capture/
+worker/otherpostgres peers. Record is under source-GxAVJf/hosted-stop-diagnostic-
+user-result.json. DB owner accepted review/optional metadata SQL proposal only;
+no code guard change, privilege/session action, private read or retry. Role/idle
+alone does not prove safe exemption; any relaxed managed-admin concurrency
+criterion requires explicit material-policy selection plus new reviewed recovery
+scope. Existing maintenance/stop/replay holds preserved.
+
+**Managed-admin observation supplied:** identity/stats visibility true; two idle
+supabase_admin source peers, zero xacts/xids/xmins, locks[] and preparedtxns0.
+The sample meets the proposed bounded exception; no future activity guarantee.
+Exact user row retained under built snapshot. No further manual SQL needed before
+material selection. DB owner finalizing recommendation; next user choice is
+explicit narrow concurrency-policy implementation and offline maintenance2/
+historical-baseline recovery preparation. No change/retry/connected access is
+authorized by the row; original consumed attempts and no-backup hold persist.
+
+**14November selected recovery preparation completed:** user approved bounded
+managed-admin policy implementation/offline maintenance2 recovery preparation;
+repeated approve during work did not expand live scope. DB optional marker and
+all5guard sites, Root exacthistorical1/derivedmaintenance2 reconstruction,
+freshlinkedUUID/samebytesimage/newattempts/sharedrecoverymutex and success-only
+oldholdarchive reviewed. DB delivered integrated acceptance in actual agent
+message; Root froze its provenance in recovery review record. Backend final
+caller review and CI62cases accepted. Policy63/runner91/contract163/input41/
+final61/evidence19/CLI34/adapter38/workflow34/Python19 pass, all550currentbytes
+match. No private/live/serviceholdchanges. Recoverye7769268-dcca-44c2-806b-
+f942211b3e37 working snapshot/proposed13-pin scope ready; exact NEW execution
+grant remains next, original9c2d14c8 still consumed. [Scope/command](aws-one-command-publishing.md#reviewed-maintenance2-recovery-execution--14november2026).
+
+**15November live recovery approved/auth prerequisite:** user approved exact new
+scope. CLI34/evidence19 pass; SDK STS identity before guard failed
+LoginRefreshRequired. No command invocation/guard claim/setup read/DB/migration/
+deployment/servicehold mutation. Immutable auth-precheck receipt records actual
+approval/expiry. Next only named fitsmytime aws login confirmation as required
+by sign-in skill, then identity/pins verification and existing authorized scope
+within expiry. Original consumed run is never replayed.
+
+**15November actual recovery progress:** user approved named login; local CLI
+completed and SDK identity exactproject confirmed. Original approval expiry/pins
+retained. New recovered historical1/exactmaintenance2 session + freshold41/38
+preflight passed; maintained2 verified/drained. Bounded-admin policy passed and
+both pinned sourceSQL COMMITs acknowledged once. Current42/44/unchanged business
+data/emptynewtable/closedprobes passed; allfive restricted-role TLS/capacity passed
+and closed. Exact candidate3 submitted/ACTIVATING; original+recovery holds remain.
+Do not resume old41 after actualcommits. No newmaintenance/build/retry/rollback;
+candidate/HTTP/finalrecord stillpending.
+
+**15November recovery migration/deployment completed:** process55929 exit0;
+exact candidate3 ACTIVE+spec and root401/sanitizedready200 pass. Independent
+SDK public service/history/registry confirms RUNNING/micro1/no pending, allthree
+containers exactimage/digest, prior1/2 INACTIVE. Original servicehold exactbytes
+archive hash632194...ea4a21 verified and both active holds absent aftersuccess;
+all consumed original/newattempts/journals/approvals preserved. Hosted0024/0025
+actualcommits/current42all44/unchangeddata/closedclients and five-rolecapacity
+receipts retained. No retry/rollback/backup/build/publicexpansion. Migration/
+deployment scope complete; no old41 restart or SQLreplay. TASK066 remainsopen
+for explicitly pending worker/browser/PCacceptance, en/lv/ru only. [Outcome/
+evidence/URL](aws-one-command-publishing.md#reviewed-maintenance2-recovery-execution--14november2026).
+
 **Preparation accepted; live execution incomplete.** Requester/approver: user
 selected both PC and CodeBuild options; executor Root/CI/CD. Scope: reversible
 repository scripts/configuration and offline/mocked checks, exact current
@@ -730,6 +976,32 @@ template schema/guard validation and exact setup/IAM/spending approval; live
 publishing/release and en/lv/ru guest/signed-session/worker acceptance remain.
 Other languages/RTL deferred. Recovery stops and inspects; do not clear immutable
 guards, retry uncertain actions or resume old writers. Existing holds persist.
+
+**Resumed local transition preparation,11November:** user requested `resume`.
+Root continues the accepted CI/CD preparation scope and confirmed no earlier
+owner remains live. Replacement DB `/root/publish_transition_db_review` accepted
+and completed pure public-contract hardening/offline tests and reviewed Root's
+injectable retained-session coordinator. Root owns `publish-workflow.mjs`, new
+`publish-hosted-transition.mjs` and its isolated orchestration tests; DB owns the
+pure hosted contract/tests. No application/backend/SQL edit, private read,
+credential transfer, connected probe, build, provisioning or release. Local
+coordinator preparation is implemented; privileged runner/input preparation,
+live CLI wiring and target-specific execution remain pending. Exact scope,
+evidence, stop-and-inspect recovery and next decision are recorded in the
+[hosted release handoff](aws-hosted-release-sequence-2026-11-11.md#resumed-ci-coordinator-and-next-authorization).
+
+**Approved runner preparation, resumed12November:** user replied `approve` to
+the exact local hosted runner + source setup field + app-URL stdin path request,
+then `resume`. Implementation/mock-test authority is reused; no real private
+read/transfer, DB/AWS connection, migration, spending or release is included.
+Root/CI owns the protected reader and session/pipe adapters. Prior DB executor
+became unavailable; `/root/hosted_runner_finish_db` accepted the replacement DB
+runner/pure-contract dependency after live inventory review. Preparation is now
+complete: runner84/input41/adapter38/Python13 and existing regression checks pass.
+Root reviewed DB evidence and the owner reviewed the input/pipe/session contract;
+the suggested global-attempt/no-repeat handoff guard is implemented and verified.
+Execution guards/SQL/unrelated changes are preserved. Evidence and remaining
+connected gates are in the [approval record](aws-hosted-release-sequence-2026-11-11.md#approved-runner-preparation--resumed12november2026).
 
 ## TASK-036 — Restricted AWS staging — 31 October 2026
 
