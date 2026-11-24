@@ -19,7 +19,10 @@ import { BillingRuntimeProvider } from "@/components/billing-runtime";
 import { WishlistProvider } from "@/components/wishlist-provider";
 import Wishlist from "@/pages/wishlist";
 import Inbox from "@/pages/inbox";
+import ServicePage from "@/pages/service";
 import type { ReactNode } from "react";
+import { ThemeProvider } from "@/components/theme-provider";
+import LanguageRouter from "@/components/language-router";
 
 function AuthenticatedBillingRuntime({ children }: { children: ReactNode }) {
   const { user, isLoading, isError } = useAuth();
@@ -39,6 +42,7 @@ function Router() {
       <Route path="/my-services/*?" component={MyServices} />
       <Route path="/dashboard"><Redirect to="/my-services" /></Route>
       <Route path="/search" component={Home} />
+      <Route path="/services/:id" component={ServicePage} />
       <Route path="/providers/:slug" component={StorefrontPage} />
       <Route path="/" component={Home} />
       <Route component={NotFound} />
@@ -48,6 +52,8 @@ function Router() {
 
 function App() {
   return (
+    <ThemeProvider>
+    <LanguageRouter>
     <QueryClientProvider client={queryClient}>
       <AuthenticatedBillingRuntime>
       <WishlistProvider>
@@ -61,6 +67,8 @@ function App() {
       </WishlistProvider>
       </AuthenticatedBillingRuntime>
     </QueryClientProvider>
+    </LanguageRouter>
+    </ThemeProvider>
   );
 }
 

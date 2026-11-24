@@ -38,7 +38,7 @@ export default function ServiceReviews({ serviceId }: { serviceId: number }) {
             </div>
             {review.comment && <p className="text-sm whitespace-pre-wrap break-words">{review.comment}</p>}
           </li>)}</ul>}
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <Button variant="outline" disabled={page === 1} onClick={() => setPage(current => current - 1)}>{t("reviews.previous")}</Button>
           <span className="text-sm text-neutral-500">{t("reviews.page", { page })}</span>
           <Button variant="outline" disabled={!query.data?.hasMore} onClick={() => setPage(current => current + 1)}>{t("reviews.next")}</Button>

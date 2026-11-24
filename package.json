@@ -69,6 +69,7 @@
     "test:search-storage": "node --import tsx scripts/test-search-storage.mjs",
     "test:public-search-ui": "node --import tsx scripts/test-public-search-ui.mjs",
     "test:guest-search": "node --import tsx scripts/test-guest-search.mjs",
+    "test:dark-mode": "node --import tsx scripts/test-dark-mode.mjs",
     "test:provider-catalog": "node --import tsx scripts/test-provider-catalog.mjs",
     "test:reviews": "node --import tsx scripts/test-reviews.mjs",
     "test:public-reviews": "node --import tsx scripts/test-public-reviews.mjs",

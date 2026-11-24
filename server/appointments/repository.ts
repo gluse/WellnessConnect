@@ -8,6 +8,8 @@ import { captureStatusEvent, reconcileBookingReminder, workspacePro } from "../n
 import { statusAction } from "../notifications/policy";
 import type { db } from "../db";
 import { bookingMoneyDto, serviceMoneyDto } from "../money";
+import { readServiceOptions } from "../service-options-store";
+import { optionScheduleRows } from "../service-options";
 
 export class AppointmentError extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }
@@ -95,14 +97,19 @@ export function createAppointmentRepository(database: Database, now: () => Date 
   async function validateNewTime(tx: QueryDatabase, booking: SessionBooking, date: Date) {
     if (!active(booking)) fail(409, "booking_closed", "Only pending or confirmed bookings can be rescheduled.");
     if (!(date > now()) || date.getTime() === booking.scheduledDate.getTime()) fail(409, "invalid_time", "Choose a different future appointment time.");
-    const schedules = await tx.select().from(availability).where(and(booking.companyId != null ? eq(availability.companyId, booking.companyId)
+    const inherited = await tx.select().from(availability).where(and(booking.companyId != null ? eq(availability.companyId, booking.companyId)
       : and(eq(availability.providerId, booking.providerId), isNull(availability.companyId)), eq(availability.isActive, true)));
-    const snapshot = { ...booking.service, duration: booking.bookingDuration ?? booking.service.duration, cleanupTime: booking.bookingCleanupTime ?? 0 };
+    const snapshot = { ...booking.service, optionId: booking.optionId, employeeId: booking.employeeId, providerId: booking.providerId, companyId: booking.companyId,
+      duration: booking.bookingDuration ?? booking.service.duration, cleanupTime: booking.bookingCleanupTime ?? 0 };
+    const option = (await readServiceOptions(tx, booking.service, true)).find(item => item.id === booking.optionId);
+    const schedules = option ? optionScheduleRows(snapshot, option, inherited) : inherited;
     const offered = bookableSlots({ service: snapshot, schedules, bookings: [], date: date.toISOString().slice(0, 10), timezone: "UTC", now: now() });
     if (!offered.some(slot => slot.startsAt === date.toISOString())) fail(409, "time_unavailable", "Choose a time within the available working hours.");
     const end = new Date(date.getTime() + (snapshot.duration + snapshot.cleanupTime) * 60000);
     const occupied = await tx.select().from(bookings).where(and(ne(bookings.id, booking.id), eq(bookings.providerId, booking.providerId), inArray(bookings.status, ["confirmed", "completed"]),
-      booking.employeeId == null ? isNull(bookings.employeeId) : eq(bookings.employeeId, booking.employeeId), lt(bookings.scheduledDate, end),
+      booking.companyId == null ? isNull(bookings.companyId) : eq(bookings.companyId, booking.companyId),
+      booking.employeeId == null ? booking.companyId == null ? isNull(bookings.employeeId) : undefined
+        : or(eq(bookings.employeeId, booking.employeeId), booking.companyId != null ? isNull(bookings.employeeId) : undefined), lt(bookings.scheduledDate, end),
       sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, (SELECT ${services.duration} FROM ${services} WHERE ${services.id} = ${bookings.serviceId}), 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${date.toISOString()}::timestamp`)).limit(5001);
     if (occupied.length > 5000) fail(409, "time_unavailable", "Availability needs to be reviewed. Choose another time.");
     const legacyServiceIds = Array.from(new Set(occupied.filter(row => row.bookingDuration == null).map(row => row.serviceId)));

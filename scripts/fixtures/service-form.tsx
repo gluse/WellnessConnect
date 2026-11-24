@@ -23,7 +23,7 @@ const syntheticService = {
   instantBooking: false, advancePaymentPercent: 30, addressId: 3, imageUrl: "", externalUrl: "", isActive: parameters.get("mode") !== "inactive",
 } as Service;
 const permissions = { manageServices: parameters.get("mode") !== "denied", manageSchedules: true, manageBookings: true, manageTeam: true, isOwner: true, readAll: true };
-const pricing = { defaultCurrency: parameters.get("workspaceCurrency") || null, businessCountryCode: parameters.get("businessCountry") || null, revision: parameters.has("workspaceCurrency") || parameters.has("businessCountry") ? 1 : 0, canEdit: !parameters.has("readOnly") };
+const pricing = { defaultCurrency: parameters.get("workspaceCurrency") || null, businessCountryCode: parameters.get("businessCountry") || null, allowOnlinePayments: false, revision: parameters.has("workspaceCurrency") || parameters.has("businessCountry") ? 1 : 0, canEdit: !parameters.has("readOnly") };
 const pricingByWorkspace: Record<string, typeof pricing> = { personal: pricing };
 const fixture = { writes: [] as unknown[], unexpected: [] as string[], pending: null as (() => void) | null, result: "success", workspaceChanges: 0, workspaceReject: false, categoryResult: parameters.get("categories") || "success", addressResult: parameters.get("addresses") || "success",
   pricing, pricingByWorkspace, pricingResult: parameters.get("pricingResult") || "success", pricingReads: 0, resolvePricing: null as (() => void) | null,
@@ -31,7 +31,7 @@ const fixture = { writes: [] as unknown[], unexpected: [] as string[], pending: 
   setActor: (id: string) => queryClient.setQueryData(["/api/auth/user"], { id, currentRole: "provider" }),
   settingsScope: "personal", setWorkspace: (id: number | null) => {
     fixture.settingsScope = id == null ? "personal" : String(id);
-    pricingByWorkspace[fixture.settingsScope] ??= { defaultCurrency: "GBP", businessCountryCode: "GB", revision: 1, canEdit: true };
+    pricingByWorkspace[fixture.settingsScope] ??= { defaultCurrency: "GBP", businessCountryCode: "GB", allowOnlinePayments: false, revision: 1, canEdit: true };
     queryClient.setQueryData(["/api/company/context"], { company: id == null ? null : { id, name: "Synthetic company", providerId: "synthetic-provider", isActive: true }, permissions, workspaces: [] });
   },
 };
@@ -57,7 +57,7 @@ window.fetch = async (input, options = {}) => {
       if (fixture.pricingResult === "forbidden") return Response.json({}, { status: 403 });
       if (fixture.pricingResult === "pending") await new Promise<void>(resolve => { fixture.resolvePricing = resolve; });
       if (fixture.pricingResult === "error") return Response.json({}, { status: 503 });
-      Object.assign(value, { defaultCurrency: payload.defaultCurrency, businessCountryCode: payload.businessCountryCode, revision: value.revision + 1 });
+      Object.assign(value, { defaultCurrency: payload.defaultCurrency, businessCountryCode: payload.businessCountryCode, allowOnlinePayments: payload.allowOnlinePayments, revision: value.revision + 1 });
     } else {
       fixture.pricingReads++;
       if (fixture.pricingResult === "forbidden") return Response.json({}, { status: 403 });

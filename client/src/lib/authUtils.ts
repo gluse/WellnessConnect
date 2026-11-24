@@ -1,3 +1,4 @@
+import { currentLanguagePath } from "@/lib/language-path";
 import { apiRequest, queryClient } from "./queryClient";
 
 export function isUnauthorizedError(error: unknown): boolean {
@@ -7,5 +8,5 @@ export function isUnauthorizedError(error: unknown): boolean {
 export async function logout() {
   await apiRequest("POST", "/api/logout");
   queryClient.clear();
-  window.location.assign("/");
+  window.location.assign(currentLanguagePath("/"));
 }

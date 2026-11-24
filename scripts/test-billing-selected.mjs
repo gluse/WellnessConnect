@@ -151,6 +151,7 @@ test("Stripe18 adapter creates inclusive monthly price lazily, reuses customer a
   const fixture = stripeFixture();
   await fixture.adapter.checkout.create({ operationId, binding, offer, customerId: "cus-1" });
   const price = fixture.calls.find(call => call[0] === "price"), checkout = fixture.calls.find(call => call[0] === "checkout");
+  assert.equal(price[1].product_data.name, "Ordelino Pro");
   assert.equal(price[1].unit_amount, 1900); assert.equal(price[1].tax_behavior, "inclusive"); assert.equal(price[1].recurring.interval, "month");
   assert.equal(checkout[1].customer, "cus-1"); assert.equal(checkout[2].idempotencyKey, operationId);
   assert.equal(checkout[1].success_url, "https://app.fixture.test/my-services/settings/billing?billing_return=1");

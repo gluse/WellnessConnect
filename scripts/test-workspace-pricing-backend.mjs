@@ -15,6 +15,7 @@ import { PgDialect } from "drizzle-orm/pg-core";
 import { createWorkspacePricingStore } from "../server/workspace-pricing/store.ts";
 import { setupWorkspacePricingRoutes } from "../server/workspace-pricing/routes.ts";
 import { workspacePricingUpdateSchema, WorkspacePricingError } from "../shared/workspace-pricing.ts";
+import { effectiveOnlinePayments } from "../server/service-options-store.ts";
 
 // Real store/HTTP route + relational persistence adapter; no DB/env/provider or
 // socket is imported. SQL predicates are evaluated rather than authorization mocked.
@@ -66,7 +67,7 @@ let checks = 0;
 const check = fn => { fn(); checks++; };
 const input = (workspace, expectedRevision, changes) => workspacePricingUpdateSchema.parse({ expectedWorkspace: workspace, expectedRevision, ...changes });
 const pristine = await store.get(personal);
-check(() => { assert.deepEqual(pristine, { workspace: personalWorkspace, defaultCurrency: null, businessCountryCode: null, revision: 0, canEdit: true }); assert.equal(operations.length, 0, "GET has no lazy writes"); });
+check(() => { assert.deepEqual(pristine, { workspace: personalWorkspace, defaultCurrency: null, businessCountryCode: null, allowOnlinePayments: false, revision: 0, canEdit: true }); assert.equal(operations.length, 0, "GET has no lazy writes"); });
 let result = await store.patch(personal, input(personalWorkspace, 0, { defaultCurrency: "USD", businessCountryCode: "LV" }));
 check(() => { assert.equal(result.revision, 1); assert.equal(result.defaultCurrency, "USD"); assert.equal(rows.workspace_pricing_settings[0].userId, "alice"); assert.equal(rows.workspace_pricing_settings[0].companyId, null); });
 result = await store.patch(company, input(companyWorkspace, 0, { defaultCurrency: "EUR" }));
@@ -157,4 +158,16 @@ await addressModule.exports.addressStore.save({ ...location, pricingCurrency: nu
 check(() => assert.equal(rows.addresses[0].pricingCurrency, null));
 await assert.rejects(() => addressModule.exports.addressStore.save({ ...location, pricingCurrency: "CAD" }, { providerId: "bob" }, 70), error => error.status === 403); checks++;
 check(() => assert.equal(rows.addresses[0].pricingCurrency, null, "other-workspace address edit is rejected"));
+const paymentBase = await store.get(personal);
+result = await store.patch(personal, input(personalWorkspace, paymentBase.revision, { allowOnlinePayments: true }));
+check(() => { assert.equal(result.allowOnlinePayments, true); assert.equal(result.defaultCurrency, paymentBase.defaultCurrency); assert.equal(result.revision, paymentBase.revision + 1); });
+const personalService = { providerId: "alice", companyId: null, onlinePaymentsOverride: null };
+check(() => assert.equal(workspacePricingUpdateSchema.safeParse({ expectedWorkspace: personalWorkspace, expectedRevision: result.revision, allowOnlinePayments: "true" }).success, false));
+check(() => assert.equal((rows.workspace_pricing_settings.find(row => row.companyId === 7)).allowOnlinePayments, false, "personal preferences cannot alter a company"));
+check(() => assert.equal(result.allowOnlinePayments, true));
+assert.equal(await effectiveOnlinePayments(database, personalService), true); checks++;
+assert.equal(await effectiveOnlinePayments(database, { ...personalService, onlinePaymentsOverride: false }), false); checks++;
+assert.equal(await effectiveOnlinePayments(database, { ...personalService, providerId: "bob", onlinePaymentsOverride: true }), true); checks++;
+assert.equal(await effectiveOnlinePayments(database, { ...personalService, providerId: "bob" }), false); checks++;
+await assert.rejects(() => store.patch(personal, input(personalWorkspace, paymentBase.revision, { allowOnlinePayments: false })), error => error.code === "WORKSPACE_PRICING_CHANGED"); checks++;
 console.log(`Passed ${checks} workspace pricing backend scenarios: private selected workspace settings, read-only missing defaults, strict inputs, manager/owner authorization and revocation, inactive company, CAS/conflict/binding races, no service repricing, no-store and safe failures. In-memory adapters and HTTP streams only.`);

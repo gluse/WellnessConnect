@@ -1,6 +1,7 @@
 import type { ServiceDraft } from "./service-draft";
 import { isSupportedCurrency } from "@shared/currencies";
 import { parseMoneyInput } from "@/lib/money-input";
+import { serviceOptionInputSchema } from "@shared/service-options";
 
 export type ServiceErrors = Partial<Record<keyof ServiceDraft, string>>;
 export const serviceControlIds: Partial<Record<keyof ServiceDraft, string>> = {
@@ -9,6 +10,7 @@ export const serviceControlIds: Partial<Record<keyof ServiceDraft, string>> = {
   addressId: "service-address", externalUrl: "externalUrl",
   reminderHours: "service-reminder-hours",
   reminderMessage: "service-reminder-message",
+  options: "service-options",
 };
 export function fieldFeedback(errors: ServiceErrors, field: keyof ServiceDraft, help?: string) {
   return {
@@ -20,7 +22,7 @@ export function ServiceFieldError({ errors, field }: { errors: ServiceErrors; fi
   return errors[field] ? <p id={`${serviceControlIds[field]}-error`} className="text-sm text-red-700 dark:text-red-300">{errors[field]}</p> : null;
 }
 // Presentation validation only; server validation and authorization remain authoritative.
-export function validateServiceDraft(draft: ServiceDraft, locale = "en"): Partial<Record<keyof ServiceDraft, string>> {
+export function validateServiceDraft(draft: ServiceDraft, locale = "en", publishing = true): Partial<Record<keyof ServiceDraft, string>> {
   const errors: Partial<Record<keyof ServiceDraft, string>> = {};
   if (!draft.name.trim()) errors.name = "serviceForm.nameRequired";
   if (!draft.category) errors.category = "serviceForm.categoryRequired";
@@ -33,6 +35,8 @@ export function validateServiceDraft(draft: ServiceDraft, locale = "en"): Partia
   if (!draft.addressId) errors.addressId = "serviceForm.addressRequired";
   if (!Number.isInteger(draft.reminderHours) || draft.reminderHours < 1 || draft.reminderHours > 168) errors.reminderHours = "notifications.hoursInvalid";
   if (draft.reminderMessage.trim().length > 1000) errors.reminderMessage = "notifications.customMessageInvalid";
+  if (!draft.options.length || draft.options.some(({ draftKey, ...option }) => !serviceOptionInputSchema.safeParse({ ...option, price: parseMoneyInput(option.price, draft.currency, locale) ?? "" }).success || parseMoneyInput(option.price, draft.currency, locale) === null || option.employeeIds?.length === 0)) errors.options = "providerOptions.invalidOptions";
+  else if (publishing && !draft.options.some(option => option.isActive)) errors.options = "providerOptions.noActiveOptions";
   if (draft.externalUrl) {
     try { if (!["http:", "https:"].includes(new URL(draft.externalUrl).protocol)) errors.externalUrl = "serviceForm.urlInvalid"; }
     catch { errors.externalUrl = "serviceForm.urlInvalid"; }

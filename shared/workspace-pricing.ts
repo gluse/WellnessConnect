@@ -12,6 +12,7 @@ export const workspacePricingViewSchema = z.object({
   workspace: pricingWorkspaceSchema,
   defaultCurrency: currency.nullable(),
   businessCountryCode: country.nullable(),
+  allowOnlinePayments: z.boolean().default(false),
   revision: z.number().int().min(0).max(2147483647),
   canEdit: z.boolean(),
 }).strict();
@@ -23,7 +24,8 @@ export const workspacePricingUpdateSchema = z.object({
   expectedRevision: z.number().int().min(0).max(2147483646),
   defaultCurrency: currency.nullable().optional(),
   businessCountryCode: country.nullable().optional(),
-}).strict().refine(input => input.defaultCurrency !== undefined || input.businessCountryCode !== undefined, "Choose a setting to update.");
+  allowOnlinePayments: z.boolean().optional(),
+}).strict().refine(input => input.defaultCurrency !== undefined || input.businessCountryCode !== undefined || input.allowOnlinePayments !== undefined, "Choose a setting to update.");
 export type WorkspacePricingUpdate = z.infer<typeof workspacePricingUpdateSchema>;
 export class WorkspacePricingError extends Error {
   constructor(readonly status: number, readonly code: "WORKSPACE_PRICING_CHANGED" | "WORKSPACE_CHANGED" | "WORKSPACE_PRICING_FORBIDDEN", message: string) { super(message); }

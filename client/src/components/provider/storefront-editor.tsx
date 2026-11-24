@@ -1,3 +1,4 @@
+import { currentLanguagePath } from "@/lib/language-path";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -95,8 +96,8 @@ function StorefrontForm({ settings, context }: { settings: StorefrontSettings; c
           </div>
         </fieldset>
       </form>
-      {settings.storefront?.isPublished && <div className="space-y-2"><Label htmlFor="storefront-share">{t("storefront.share")}</Label><Input id="storefront-share" readOnly value={`${window.location.origin}/providers/${settings.storefront.slug}`} onFocus={event => event.target.select()} />
-        <Button variant="outline" onClick={async () => { try { await navigator.clipboard.writeText(`${window.location.origin}/providers/${settings.storefront!.slug}`); setError(""); setMessage(t("storefront.copied")); } catch { setError(t("storefront.copyError")); } }}>{t("storefront.copy")}</Button></div>}
+      {settings.storefront?.isPublished && <div className="space-y-2"><Label htmlFor="storefront-share">{t("storefront.share")}</Label><Input id="storefront-share" readOnly value={`${window.location.origin}${currentLanguagePath(`/providers/${settings.storefront.slug}`)}`} onFocus={event => event.target.select()} />
+        <Button variant="outline" onClick={async () => { try { await navigator.clipboard.writeText(`${window.location.origin}${currentLanguagePath(`/providers/${settings.storefront!.slug}`)}`); setError(""); setMessage(t("storefront.copied")); } catch { setError(t("storefront.copyError")); } }}>{t("storefront.copy")}</Button></div>}
     </>}
     {message && <p role="status">{message}</p>}{error && <p id="storefront-error" ref={errorRef} tabIndex={-1} role="alert" className="text-destructive">{error}{fieldErrors.filter(field => ["slug", "name", "description"].includes(field)).map(field => <a key={field} className="block" href={`#storefront-${field}`}>{t(`storefront.${field === "slug" ? "address" : field}`)}</a>)}</p>}
     {preview && pro && <div className="border-t pt-5 space-y-4"><p className="font-medium">{t("storefront.previewNote")}</p>{services.isPending ? <p role="status">{t("storefront.loading")}</p> : services.isError ? <p role="alert">{t("storefront.loadError")}</p> : <StorefrontView page={{ ...draft, services: services.data }} preview />}</div>}

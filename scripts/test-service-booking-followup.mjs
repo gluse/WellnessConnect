@@ -11,6 +11,9 @@ import * as scheduling from '../shared/scheduling.ts';
 import * as protection from '../server/service-booking-protection.ts';
 import * as money from '../server/money.ts';
 import * as serviceImages from '../server/serviceImages.ts';
+import * as optionStore from '../server/service-options-store.ts';
+import * as optionLogic from '../server/service-options.ts';
+import * as sharedMoney from '../shared/money.ts';
 import {authProfileImage} from '../server/social-auth.ts';
 import {createInboxService} from '../server/wishlist/inbox.ts';
 
@@ -54,7 +57,8 @@ const db={select(){let predicate,joined=false,table;const chain={from(value){tab
   try{return await action(tx);}catch(error){listing=before.listing;notices=before.notices;throw error;}finally{locked=false;}
 }};
 const noop=()=>{};
-const store=await load('server/storage.ts',{'@shared/schema':schema,'./db':{db},'drizzle-orm':drizzle,'@shared/provider':{},'./storefronts':{},'./addresses':{serviceLocation:value=>value},'./audit/context':{},'./audit/events':{},'./audit/capture':{},'@shared/scheduling':scheduling,'@shared/reviews':{},'./searchInput':{},'./customerBookings':{},'./notifications/repository':{assertReminderConfiguration:noop,reconcileServiceReminders:noop},'./notifications/policy':{},'node:crypto':{},'./money':money,'@shared/storefront':{},'./serviceImages':serviceImages,'./service-booking-protection':protection});
+const optionBoundary={...optionStore,async readServiceOptions(_db,service){return [{...optionStore.defaultServiceOption({...listing,...service}),id:1,serviceId:1}];},async replaceServiceOptions(_db,_service,options){return options.map((option,index)=>({...option,id:option.id??index+1,serviceId:1}));}};
+const store=await load('server/storage.ts',{'./service-options-store':optionBoundary,'./service-options':optionLogic,'@shared/money':sharedMoney,'@shared/schema':schema,'./db':{db},'drizzle-orm':drizzle,'@shared/provider':{},'./storefronts':{},'./addresses':{serviceLocation:value=>value},'./audit/context':{},'./audit/events':{},'./audit/capture':{},'@shared/scheduling':scheduling,'@shared/reviews':{},'./searchInput':{},'./customerBookings':{},'./notifications/repository':{assertReminderConfiguration:noop,reconcileServiceReminders:noop},'./notifications/policy':{},'node:crypto':{},'./money':money,'@shared/storefront':{},'./serviceImages':serviceImages,'./service-booking-protection':protection});
 const storage=new store.DatabaseStorage();
 const reservation=(id,status,serviceId=1)=>({id,status,serviceId,seekerId:`customer-${id}`,bookingDuration:60,bookingCleanupTime:15,totalAmount:'25.00'});
 for(const status of ['pending','confirmed',null,'unrecognized']){
@@ -81,7 +85,7 @@ await assert.rejects(()=>storage.updateService(1,{description:'Must roll back'})
 // Actual scheduling + ownership logic, with only the persistence adapter mocked.
 const access=await load('server/companyAccess.ts',{'./db':{db},'drizzle-orm':drizzle,'@shared/schema':schema,'./customerBookings':{}});
 const saved=[];
-const api=await load('server/schedulingRoutes.ts',{zod:{z},'@shared/scheduling':scheduling,'./storage':{storage:{async getServiceById(){return listing;},async replaceAvailability(...args){saved.push(args);}}},'./auth':{isAuthenticated:noop},'./companyAccess':access,'./customerBookings':{CustomerBookingError:class extends Error{}}});
+const api=await load('server/schedulingRoutes.ts',{'./service-options':optionLogic,zod:{z},'@shared/scheduling':scheduling,'./storage':{storage:{async getServiceById(){return listing;},async replaceAvailability(...args){saved.push(args);}}},'./auth':{isAuthenticated:noop},'./companyAccess':access,'./customerBookings':{CustomerBookingError:class extends Error{}}});
 const routes=[];const app={};for(const method of ['get','put','delete'])app[method]=(path,...handlers)=>routes.push({method,path,handlers});api.setupSchedulingRoutes(app);
 async function request(body,permission=true){const res={code:200,status(code){this.code=code;return this;},json(value){this.body=value;return this;}};
   await routes.find(route=>route.path==='/api/availability/weekly').handlers.at(-1)({body,user:{claims:{sub:'provider'}},workspace:{company:null,permissions:{manageSchedules:permission,manageServices:permission}}},res);return res;}

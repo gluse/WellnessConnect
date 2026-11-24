@@ -1,3 +1,4 @@
+import { currentLanguagePath, withoutLanguagePrefix } from "@/lib/language-path";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -27,14 +28,14 @@ export default function Invite() {
     const raw = error instanceof Error ? error.message : "Unable to accept invitation";
     try { return JSON.parse(raw.slice(raw.indexOf(":") + 1)).message; } catch { return "Unable to accept invitation. Please try again."; }
   };
-  const returnTo = window.location.pathname + window.location.search;
+  const returnTo = withoutLanguagePrefix(window.location.pathname) + window.location.search;
   const recoverSession = () => {
     if (redirecting.current) return;
     redirecting.current = true;
     queryClient.setQueryData(["/api/auth/user"], null);
     queryClient.removeQueries({ queryKey: ["/api/auth/invite-status"] });
     queryClient.removeQueries({ queryKey: ["/api/company/my-invitations"] });
-    window.location.assign(`/login?error=invitation_session_expired&returnTo=${encodeURIComponent(returnTo)}`);
+    window.location.assign(currentLanguagePath(`/login?error=invitation_session_expired&returnTo=${encodeURIComponent(returnTo)}`));
   };
   useEffect(() => {
     if (exchangeStarted.current) return;
@@ -77,7 +78,7 @@ export default function Invite() {
         queryClient.setQueryData(["/api/auth/invite-status"], { needsPassword: false });
       }
       await apiRequest("POST", "/api/company/invitations/accept", { id });
-      queryClient.clear(); window.location.assign("/dashboard");
+      queryClient.clear(); window.location.assign(currentLanguagePath("/dashboard"));
     } catch (error) { if (isUnauthorizedError(error)) recoverSession(); else setError(errorText(error)); } finally { setBusy(false); }
   };
   const invitations = token ? preview.data ? [preview.data] : [] : pending.data || [];
@@ -101,7 +102,7 @@ export default function Invite() {
       {!token && isAuthenticated && !pending.isLoading && !invitations.length && <p>No pending invitations for this email address.</p>}
       {!isAuthenticated && !token && !exchanging && <Link href="/login?returnTo=%2Finvite" className="text-primary underline">Sign in to see your invitations</Link>}
       {!isAuthenticated && !exchanging && !isLoading && <InvitationRecovery returnTo={returnTo} />}
-      <Link href="/" className="block text-sm text-neutral-500">Back to FitsMyTime</Link>
+      <Link href="/" className="block text-sm text-neutral-500">Back to Ordelino</Link>
     </CardContent>
   </Card></main>;
 }

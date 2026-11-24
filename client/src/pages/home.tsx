@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { Redirect, useLocation } from "wouter";
+import { servicePagePath } from "@/lib/service-page-state";
 import { MapPin, List, LayoutGrid, CalendarDays, Map as MapIcon, Search, Target, X, SlidersHorizontal } from "lucide-react";
 import ServiceFilters, { type SearchFilters } from "@/components/service-filters";
 import SearchDateFields, { searchDates } from "@/components/search-date-fields";
@@ -12,8 +14,6 @@ import { resolveSearchLocation, type ResolvedSearchLocation } from "@/lib/saved-
 import { useSearchLocation } from "@/hooks/use-search-location";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
-import BookingModal from "@/components/booking-modal";
-import ServiceDetailModal from "@/components/service-detail-modal";
 import BottomNavigation from "@/components/bottom-navigation";
 import { useFormLocale } from "@/components/forms-locale";
 import { Button } from "@/components/ui/button";
@@ -21,9 +21,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import type { ServiceWithProvider } from "@shared/schema";
 import { useCategories } from "@/hooks/use-categories";
 import { fetchPublicSearch, SEARCH_QUERY_LIMIT, searchErrorKey, searchValidationKey } from "@/lib/public-search";
-import { apiRequest } from "@/lib/queryClient";
 
 const defaults: SearchFilters = { category: "", searchQuery: "", searchMode: "exact", serviceType: "", ageGroups: [], distance: 25, date: "", dateEnd: "", time: "", timeEnd: "", availableOnly: false };
+// In-memory only and identity-scoped: keep the current results when visiting a service.
+let lastSearch: { userId: string | null; filters: SearchFilters; draft: SearchFilters; query: string; mode: SearchFilters["searchMode"]; view: "grid" | "list" | "map"; sort: ServiceSort; browse: boolean; scroll: number } | undefined;
 type SearchLocation = ResolvedSearchLocation;
 const validRadius = (distance: number) => Number.isInteger(distance) && distance >= 1 && distance <= 500;
 const validate = (filters: SearchFilters, hasLocation: boolean) => hasLocation && !validRadius(filters.distance) ? "searchPage.invalidRadius" : searchValidationKey(filters);
@@ -31,12 +32,17 @@ const validate = (filters: SearchFilters, hasLocation: boolean) => hasLocation &
 export default function Home() {
   const auth = useAuth();
   const { t } = useFormLocale();
+  const legacyId = new URLSearchParams(window.location.search).get("service");
+  if (legacyId && /^[1-9]\d{0,9}$/.test(legacyId) && Number(legacyId) <= 2147483647) return <Redirect to={servicePagePath(Number(legacyId))} replace />;
   if (auth.isLoading) return <main className="search-state" role="status">{t("searchLocation.restoring")}</main>;
   if (auth.isError) return <main className="search-state" role="alert"><p>{t("searchLocation.restoreFailed")}</p><Button onClick={() => void auth.refetch()}>{t("publicSearch.retry")}</Button></main>;
   return <SearchPage key={auth.user?.id ?? "guest"} userId={auth.user?.id ?? null} />;
 }
 
 function SearchPage({ userId }: { userId: string | null }) {
+  const [, navigate] = useLocation();
+  const [restored] = useState(() => { if (lastSearch?.userId !== userId) lastSearch = undefined; return lastSearch; });
+  const scrollRestored = useRef(false);
   const isMobile = useIsMobile(1024);
   const queryClient = useQueryClient();
   useEffect(() => () => {
@@ -44,17 +50,17 @@ function SearchPage({ userId }: { userId: string | null }) {
   }, [queryClient, userId]);
   const { t, language } = useFormLocale();
   const categories = useCategories();
-  const [requestedViewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
-  const [sort, setSort] = useState<ServiceSort>("default");
-  const [filters, setFilters] = useState<SearchFilters>(defaults);
-  const [draft, setDraft] = useState<SearchFilters>(defaults);
-  const [query, setQuery] = useState("");
-  const [mode, setMode] = useState<SearchFilters["searchMode"]>("exact");
+  const [requestedViewMode, setViewMode] = useState<"grid" | "list" | "map">(restored?.view ?? "grid");
+  const [sort, setSort] = useState<ServiceSort>(restored?.sort ?? "default");
+  const [filters, setFilters] = useState<SearchFilters>(restored?.filters ?? defaults);
+  const [draft, setDraft] = useState<SearchFilters>(restored?.draft ?? defaults);
+  const [query, setQuery] = useState(restored?.query ?? "");
+  const [mode, setMode] = useState<SearchFilters["searchMode"]>(restored?.mode ?? "exact");
   const [locationDraft, setLocationDraft] = useState("");
   const [resolvedDraft, setResolvedDraft] = useState<SearchLocation | null>(null);
   const savedLocation = useSearchLocation(userId);
   // Browsing is session-only; an outage must never delete a remembered preference.
-  const [browsingWithoutLocation, setBrowsingWithoutLocation] = useState(false);
+  const [browsingWithoutLocation, setBrowsingWithoutLocation] = useState(restored?.browse ?? false);
   const location = browsingWithoutLocation ? null : savedLocation.location;
   const viewMode = requestedViewMode === "map" && !location ? "list" : requestedViewMode;
   useEffect(() => {
@@ -78,21 +84,6 @@ function SearchPage({ userId }: { userId: string | null }) {
   const locationCleanup = useRef<(() => void) | null>(null);
   const queryFeedback = useRef<HTMLParagraphElement>(null);
   const resultsHeading = useRef<HTMLHeadingElement>(null);
-  const [selectedService, setSelectedService] = useState<ServiceWithProvider | null>(null);
-  const [showBookingModal, setShowBookingModal] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const resumeId = new URLSearchParams(window.location.search).get("service");
-  const validResumeId = resumeId && /^[1-9]\d{0,9}$/.test(resumeId) && Number(resumeId) <= 2147483647 ? resumeId : null;
-  const [resumeDismissed, setResumeDismissed] = useState(false);
-  const resume = useQuery<ServiceWithProvider>({
-    queryKey: ["wishlist-resume-service", userId, validResumeId], enabled: !!validResumeId && !resumeDismissed,
-    queryFn: async ({ signal }) => (await apiRequest("GET", `/api/services/${validResumeId}`, undefined, signal)).json(),
-    retry: false, staleTime: 0, gcTime: 0,
-  });
-  useEffect(() => {
-    // Authentication continuation is a read-only resume, not an explicit service view.
-    if (resume.data && !resumeDismissed) { setSelectedService(resume.data); setShowDetailModal(true); }
-  }, [resume.data, resumeDismissed]);
 
   useEffect(() => {
     // Location is optional. Only close an explicitly opened picker after a
@@ -132,6 +123,12 @@ function SearchPage({ userId }: { userId: string | null }) {
   const errorKey = search.isError && !search.data ? searchErrorKey(search.error) : undefined;
   const loading = restoringLocation || (searchEnabled && search.isPending);
   const showResults = searchEnabled && !loading && !errorKey;
+  useEffect(() => {
+    if (!showResults || !restored || scrollRestored.current) return;
+    scrollRestored.current = true;
+    const frame = requestAnimationFrame(() => window.scrollTo({ top: restored.scroll }));
+    return () => cancelAnimationFrame(frame);
+  }, [showResults, restored]);
   const refreshSearch = () => { resultsHeading.current?.focus(); void queryClient.resetQueries({ queryKey: searchKey, exact: true }); };
 
   function rejectQuery(key: string) {
@@ -267,12 +264,10 @@ function SearchPage({ userId }: { userId: string | null }) {
   const busy = locationBusy || restoringLocation || savedLocation.saving;
   const formatDate = (value: string) => new Intl.DateTimeFormat(language, { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
   const whenSummary = [filters.date ? filters.dateEnd ? t("searchPage.dateRange", { start: formatDate(filters.date), end: formatDate(filters.dateEnd) }) : formatDate(filters.date) : "", filters.time || filters.timeEnd ? t("searchPage.timeRange", { start: filters.time || "00:00", end: filters.timeEnd || "23:59" }) : ""].filter(Boolean).join(" · ") || t("searchPage.anyTime");
-  const book = (service: ServiceWithProvider) => { setSelectedService(service); setShowBookingModal(true); };
+  const book = (service: ServiceWithProvider) => { details(service); };
   const details = (service: ServiceWithProvider) => {
-    setSelectedService(service); setShowDetailModal(true);
-    if (Number.isInteger(service.id) && service.id > 0 && service.id <= 2147483647) {
-      void apiRequest("POST", `/api/services/${service.id}/view`).catch(() => {});
-    }
+    lastSearch = { userId, filters, draft, query, mode, view: requestedViewMode, sort, browse: browsingWithoutLocation, scroll: window.scrollY };
+    navigate(servicePagePath(service.id), { state: { serviceSource: "/search" } });
   };
 
   return <div className="search-design search-page">
@@ -280,6 +275,7 @@ function SearchPage({ userId }: { userId: string | null }) {
       <h1 className="sr-only">{t("searchPage.title")}</h1>
       <form className="search-query-form" aria-label={t("searchPage.search")} onSubmit={submitQuery}>
         <div className="search-query-bar">
+          <div className="search-query-field"><Search className="search-field-icon" aria-hidden="true" /><div><label htmlFor="service-query">{t("searchPage.whatLabel")}</label><input id="service-query" aria-invalid={queryError === "publicSearch.queryTooLong"} aria-describedby={queryError ? "search-query-feedback" : undefined} data-testid="input-search-query" type="search" maxLength={SEARCH_QUERY_LIMIT} value={query} onChange={event => { setQuery(event.target.value); setQueryError(undefined); }} placeholder={t(isMobile ? "searchPage.anything" : "searchPage.allServices")} disabled={busy} /></div></div>
           <div className="search-query-field">
             <Button ref={locationTrigger} type="button" variant="ghost" className="search-field-icon" data-testid="open-search-location" onClick={() => setLocationOpen(true)} disabled={busy} aria-label={t(location ? "searchLocation.change" : "searchLocation.title")}><MapPin aria-hidden="true" /></Button>
             <div><label htmlFor="search-location">{t("searchPage.whereLabel")}</label><input id="search-location" aria-invalid={(queryError?.startsWith("searchPage.location") || queryError === "searchLocation.required") || false} data-testid="input-location" maxLength={300} aria-describedby={queryError ? "search-query-feedback" : undefined} value={resolvedDraft?.current && locationDraft === resolvedDraft.name ? t("searchPage.currentLocation") : locationDraft} onChange={event => { setLocationDraft(event.target.value); setResolvedDraft(null); setLocationReceipt(false); setQueryError(undefined); }} placeholder={t(isMobile ? "searchPage.anywhere" : "searchPage.anyLocation")} disabled={busy} /></div>
@@ -287,7 +283,6 @@ function SearchPage({ userId }: { userId: string | null }) {
           <Button ref={whenTrigger} variant="ghost" type="button" className="search-when-field" data-testid="open-search-when" aria-haspopup="dialog" aria-expanded={whenOpen} onClick={openWhen} disabled={busy}>
             <CalendarDays aria-hidden="true" /><span><span className="search-field-label">{t("searchPage.when")}</span><span className="search-field-value">{whenSummary}</span></span>
           </Button>
-          <div className="search-query-field"><Search className="search-field-icon" aria-hidden="true" /><div><label htmlFor="service-query">{t("searchPage.whatLabel")}</label><input id="service-query" aria-invalid={queryError === "publicSearch.queryTooLong"} aria-describedby={queryError ? "search-query-feedback" : undefined} data-testid="input-search-query" type="search" maxLength={SEARCH_QUERY_LIMIT} value={query} onChange={event => { setQuery(event.target.value); setQueryError(undefined); }} placeholder={t(isMobile ? "searchPage.anything" : "searchPage.allServices")} disabled={busy} /></div></div>
           <Button type="submit" className="search-submit" data-testid="button-search-services" disabled={busy} aria-label={t(locationBusy ? "searchPage.resolvingLocation" : "searchPage.search")}>{isMobile ? <span>{t("common.search")}</span> : <Search aria-hidden="true" />}</Button>
         </div>
         <details className="search-query-options"><summary>{t("searchPage.searchMode")}: {t(mode === "exact" ? "searchPage.keyword" : "searchPage.ai")}</summary><div className="search-query-mode"><fieldset><legend className="sr-only">{t("searchPage.searchMode")}</legend>{["exact", "semantic"].map(value => <label key={value}><input type="radio" name="search-mode" value={value} checked={mode === value} disabled={busy} onChange={() => setMode(value as SearchFilters["searchMode"])} aria-describedby="search-mode-help" />{t(value === "exact" ? "searchPage.keyword" : "searchPage.ai")}</label>)}</fieldset><p id="search-mode-help">{t(mode === "exact" ? "searchPage.keywordHelp" : "searchPage.aiHelp")}</p></div></details>
@@ -362,9 +357,6 @@ function SearchPage({ userId }: { userId: string | null }) {
         {showResults && services.length > 0 && <p className="search-footer">{t("searchPage.footer")}</p>}
       </section></div>
     </main>
-    {validResumeId && !resumeDismissed && resume.isError && <div role="alert" className="max-w-5xl mx-auto p-4"><p>{t("wishlist.unavailableHelp")}</p><Button variant="outline" onClick={() => void resume.refetch()}>{t("wishlist.retry")}</Button></div>}
-    {showBookingModal && selectedService && <BookingModal service={selectedService} onClose={() => setShowBookingModal(false)} />}
-    <ServiceDetailModal service={selectedService} searchLayout open={showDetailModal} onClose={() => { setShowDetailModal(false); setSelectedService(null); setResumeDismissed(true); }} onBook={() => { setShowDetailModal(false); setShowBookingModal(true); setResumeDismissed(true); }} />
     {!userId && <div className="search-bottom-navigation"><BottomNavigation /></div>}
   </div>;
 }

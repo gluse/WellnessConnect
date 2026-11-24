@@ -3,6 +3,7 @@ import {
   employees,
   companies,
   services,
+  serviceOptions,
   addresses,
   bookings,
   bookingMessages,
@@ -46,6 +47,10 @@ import { bookingMoneyDto, bookingPriceSnapshot, serviceMoneyChanges, serviceMone
 import { hasPro } from "@shared/storefront";
 import { assertServiceImageEntitlement, serviceImageChanges, serviceImageList } from "./serviceImages";
 import { hasUnfinishedServiceBookings, notifyBookedServiceChanges } from "./service-booking-protection";
+import { defaultServiceOption, effectiveOnlinePayments, optionDto, optionSummary, readServiceOptions, replaceServiceOptions } from "./service-options-store";
+import { optionBookableSlots, optionEffectiveService, optionScheduleRows, selectedServiceOption, ServiceOptionError } from "./service-options";
+import type { BookingOptionSelection, ServiceOption, ServiceOptionInput, ServicePageDetails } from "@shared/service-options";
+import { normalizeMoneyAmount, parseMoneyAmount } from "@shared/money";
 
 type NotificationBooking = Booking & { notification?: NotificationSummary };
 
@@ -116,7 +121,7 @@ export class BookingConflictError extends Error {}
 // All booking mutations take the provider row lock before calling this check.
 // This keeps accepting a request serialized with creation and rescheduling.
 async function assertResourceAvailable(tx: Pick<typeof db, "select">, service: Pick<Service, "id" | "duration" | "cleanupTime" | "serviceType" | "maxCapacity">, candidate: {
-  id?: number; providerId: string; employeeId?: number | null; scheduledDate: Date;
+  id?: number; providerId: string; companyId?: number | null; employeeId?: number | null; optionId?: number | null; scheduledDate: Date;
   bookingDuration: number; bookingCleanupTime: number; participantCount?: number | null;
 }) {
   const start = candidate.scheduledDate;
@@ -125,11 +130,12 @@ async function assertResourceAvailable(tx: Pick<typeof db, "select">, service: P
     .leftJoin(services, eq(bookings.serviceId, services.id))
     .where(and(candidate.id === undefined ? undefined : ne(bookings.id, candidate.id),
       eq(bookings.providerId, candidate.providerId), inArray(bookings.status, [...OCCUPYING_BOOKING_STATUSES]),
-      candidate.employeeId != null ? eq(bookings.employeeId, candidate.employeeId) : isNull(bookings.employeeId),
+      candidate.companyId == null ? isNull(bookings.companyId) : eq(bookings.companyId, candidate.companyId),
+      candidate.employeeId != null ? or(eq(bookings.employeeId, candidate.employeeId), candidate.companyId != null ? isNull(bookings.employeeId) : undefined) : candidate.companyId == null ? isNull(bookings.employeeId) : undefined,
       sql`${bookings.scheduledDate} < ${end.toISOString()}::timestamp`,
       sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${start.toISOString()}::timestamp`));
   const count = candidate.participantCount ?? 1;
-  const remaining = availableCapacity({ ...service, duration: candidate.bookingDuration, cleanupTime: candidate.bookingCleanupTime },
+  const remaining = availableCapacity({ ...service, optionId: candidate.optionId, duration: candidate.bookingDuration, cleanupTime: candidate.bookingCleanupTime },
     overlapping.map(row => ({ ...row.booking, bookingDuration: row.booking.bookingDuration ?? row.duration ?? 60 })), start);
   if (!Number.isInteger(count) || count < 1 || count > remaining) throw new BookingConflictError("This time slot is no longer available.");
 }
@@ -165,17 +171,17 @@ export interface IStorage {
   deleteEmployee(providerId: string, id: number, companyId?: number): Promise<boolean>;
 
   // Service operations
-  createService(service: InsertService): Promise<Service>;
+  createService(service: InsertService, options?: ServiceOptionInput[]): Promise<Service>;
   copyService(serviceId: number, providerId: string, companyId?: number): Promise<Service | undefined>;
   getServicesByProvider(providerId: string, companyId?: number): Promise<Service[]>;
   getServiceById(id: number): Promise<ServiceWithProvider | undefined>;
-  updateService(id: number, updates: Partial<InsertService>): Promise<Service>;
+  updateService(id: number, updates: Partial<InsertService>, options?: ServiceOptionInput[]): Promise<Service>;
   deleteService(id: number): Promise<void>;
   searchServices(filters: SearchFilters): Promise<ServiceWithProvider[]>;
   getPublicServiceEmbeddings(filters: SearchFilters): Promise<{ serviceId: number; embedding: number[] }[]>;
 
   // Booking operations
-  createBooking(booking: InsertBooking, initialMessage?: string | null, expectedPrice?: ExpectedPrice): Promise<Booking>;
+  createBooking(booking: InsertBooking, initialMessage?: string | null, expectedPrice?: ExpectedPrice, selection?: BookingOptionSelection): Promise<Booking>;
   createReview(bookingId: number, seekerId: string, input: ReviewInput): Promise<ServiceReview>;
   updateReview(bookingId: number, seekerId: string, input: ReviewInput): Promise<ServiceReview>;
   deleteReview(bookingId: number, seekerId: string): Promise<void>;
@@ -285,13 +291,16 @@ export class DatabaseStorage implements IStorage {
     return removed.length > 0;
   }
 
-  async createService(service: InsertService): Promise<Service> {
+  async createService(service: InsertService, options?: ServiceOptionInput[]): Promise<Service> {
     service = { ...service, ...serviceMoneyChanges(service), ...serviceImageChanges(service), deletedAt: null };
     const newService = await db.transaction(async tx => {
       await assertGalleryConfiguration(tx, service);
       await assertReminderConfiguration(tx, service, service);
       const [created] = await tx.insert(services).values(service).returning();
-      return created;
+      const savedOptions = await replaceServiceOptions(tx, created, options ?? [defaultServiceOption(created)]);
+      const summary = optionSummary(savedOptions, created.currency);
+      const [listing] = summary ? await tx.update(services).set({ price: summary.price, duration: summary.duration }).where(eq(services.id, created.id)).returning() : [created];
+      return { ...listing, options: savedOptions, ...summary };
     });
     return serviceLocation(newService, newService.addressId == null ? null : (await db.select().from(addresses).where(eq(addresses.id, newService.addressId)))[0]);
   }
@@ -312,7 +321,9 @@ export class DatabaseStorage implements IStorage {
         isActive: false,
         reminderEnabled: false,
       }).returning();
-      return copy;
+      const options = await readServiceOptions(tx, source, true);
+      const copiedOptions = await replaceServiceOptions(tx, copy, options.map(({ id: _id, serviceId: _serviceId, ...option }) => option));
+      return { ...copy, options: copiedOptions };
     });
     return copy ? serviceLocation(copy, copy.addressId == null ? null : (await db.select().from(addresses).where(eq(addresses.id, copy.addressId)))[0]) : undefined;
   }
@@ -324,7 +335,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(addresses, eq(services.addressId, addresses.id))
       .where(and(isNull(services.deletedAt), companyId != null ? eq(services.companyId, companyId) : and(eq(services.providerId, providerId), isNull(services.companyId))))
       .orderBy(desc(services.createdAt));
-    return rows.map(row => serviceLocation(row.services, row.addresses));
+    return Promise.all(rows.map(async row => ({ ...serviceLocation(row.services, row.addresses), options: await readServiceOptions(db, row.services, true) })));
   }
 
   async getServiceById(id: number): Promise<ServiceWithProvider | undefined> {
@@ -353,17 +364,46 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateService(id: number, updates: Partial<InsertService>): Promise<Service> {
+  async getServicePageDetails(id: number): Promise<ServicePageDetails | undefined> {
+    const service = await this.getServiceById(id);
+    if (!service) return undefined;
+    const options = await readServiceOptions(db, service);
+    const roster = service.companyId == null ? [] : await this.getEmployees(service.providerId, service.companyId);
+    const eligible = new Set(options.flatMap(option => option.employeeIds ?? (service.employeeId == null ? [] : [service.employeeId])));
+    const summary = optionSummary(options, service.currency);
+    return { ...service, ...summary, options, specialists: roster.filter(person => eligible.has(person.id)).map(person => ({ id: person.id, name: person.showName ? person.name : null })),
+      onlinePaymentsOverride: service.onlinePaymentsOverride ?? null, onlinePaymentsAllowed: await effectiveOnlinePayments(db, service), onlinePaymentsAvailable: false,
+      priceIsFrom: summary?.priceIsFrom ?? false, minimumDuration: summary?.minimumDuration ?? service.duration, maximumDuration: summary?.maximumDuration ?? service.duration };
+  }
+
+  async getServiceOptions(service: Pick<Service, "id" | "currency">, includeInactive = false) { return readServiceOptions(db, service, includeInactive); }
+
+  async updateService(id: number, updates: Partial<InsertService>, options?: ServiceOptionInput[]): Promise<Service> {
     const service = await db.transaction(async tx => {
       const [previous] = await tx.select().from(services).where(eq(services.id, id)).for("update");
       if (!previous || previous.deletedAt) throw new BookingConflictError("Service not found.");
       updates = { ...updates, ...serviceMoneyChanges(updates, previous), ...serviceImageChanges(updates, previous) };
+      const retained = options === undefined || updates.currency !== undefined && updates.currency !== previous.currency ? await readServiceOptions(tx, previous, true) : [];
+      const synchronizeDefault = options === undefined && retained.length === 1 && (updates.price !== undefined || updates.duration !== undefined);
+      if (updates.currency !== undefined && updates.currency !== previous.currency) {
+        try {
+          for (const option of retained) parseMoneyAmount(options?.find(input => input.id === option.id)?.price ?? (synchronizeDefault && updates.price !== undefined ? updates.price : option.price), updates.currency);
+        } catch { throw new ServiceOptionError(400, "PRICE_PRECISION", "Review every option amount, including inactive options, for the selected currency. Amounts are never converted or rounded automatically."); }
+      }
       if (updates.imageUrls !== undefined) await assertGalleryConfiguration(tx, { ...previous, ...updates }, previous);
       await assertReminderConfiguration(tx, previous, updates, previous);
       const [updated] = await tx.update(services).set({ ...updates, updatedAt: new Date() }).where(eq(services.id, id)).returning();
+      let savedOptions: ServiceOption[];
+      if (synchronizeDefault) {
+        const { serviceId: _serviceId, ...option } = retained[0];
+        savedOptions = await replaceServiceOptions(tx, updated, [{ ...option, price: updated.price, duration: updated.duration }]);
+      } else savedOptions = options === undefined ? await readServiceOptions(tx, updated, true) : await replaceServiceOptions(tx, updated, options);
+      if (updated.isActive && !savedOptions.some(option => option.isActive)) throw new ServiceOptionError(400, "NO_ACTIVE_OPTIONS", "Publish at least one active service option.");
+      const summary = optionSummary(savedOptions, updated.currency);
+      const [listing] = summary ? await tx.update(services).set({ price: summary.price, duration: summary.duration }).where(eq(services.id, id)).returning() : [updated];
       if (updated.reminderEnabled !== previous.reminderEnabled || updated.reminderMethod !== previous.reminderMethod || updated.reminderHours !== previous.reminderHours || updated.reminderMessage !== previous.reminderMessage) await reconcileServiceReminders(tx, id);
-      await notifyBookedServiceChanges(tx, previous, updated);
-      return updated;
+      await notifyBookedServiceChanges(tx, previous, listing);
+      return { ...listing, options: savedOptions, ...summary };
     });
     return serviceLocation(service, service.addressId == null ? null : (await db.select().from(addresses).where(eq(addresses.id, service.addressId)))[0]);
   }
@@ -414,6 +454,17 @@ export class DatabaseStorage implements IStorage {
       companyActive: result.companies?.isActive ?? true,
       employee: result.employees ? { id: result.employees.id, name: result.employees.showName ? result.employees.name : null } : null,
     }));
+
+    const optionsByService = new Map<number, ServiceOption[]>();
+    if (servicesWithProviders.length) {
+      const optionRows = await db.select().from(serviceOptions).where(and(inArray(serviceOptions.serviceId, servicesWithProviders.map(service => service.id)), eq(serviceOptions.isActive, true)));
+      servicesWithProviders = servicesWithProviders.flatMap(service => {
+        const options = optionRows.filter(option => option.serviceId === service.id).map(option => optionDto(option, service.currency));
+        optionsByService.set(service.id, options);
+        const summary = optionSummary(options, service.currency);
+        return summary ? [{ ...service, ...summary }] : [];
+      });
+    }
 
     // Retain the time-window constraint on hydrated results as well as the SQL
     // query, independently of the optional provider-availability filter.
@@ -486,13 +537,17 @@ export class DatabaseStorage implements IStorage {
       // Use the same schedule precedence as booking: a closed service week and
       // an expired recurring schedule must not reopen through inherited hours.
       servicesWithProviders = servicesWithProviders.filter(service => {
-        const schedules = allAvailability.filter(schedule => workspaceKey(schedule) === workspaceKey(service));
-        const zones = Array.from(new Set(schedules.map(schedule => schedule.timezone)));
-        for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
-          const day = d.toISOString().slice(0, 10);
-          for (const zone of zones) for (const schedule of schedulesForDay(schedules, service.id, day, zone)) {
-            if (workingRanges(schedule).some(range => (!filters.time && !filters.timeEnd)
-              || (filters.time || "00:00") < range.endTime && (filters.timeEnd || "23:59") > range.startTime)) return true;
+        const inherited = allAvailability.filter(schedule => workspaceKey(schedule) === workspaceKey(service));
+        for (const option of optionsByService.get(service.id) ?? []) {
+          if (durationLimit !== undefined && option.duration > durationLimit || option.employeeIds?.length === 0) continue;
+          const schedules = optionScheduleRows(service, option, inherited);
+          const zones = Array.from(new Set(schedules.map(schedule => schedule.timezone)));
+          for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
+            const day = d.toISOString().slice(0, 10);
+            for (const zone of zones) for (const schedule of schedulesForDay(schedules, service.id, day, zone)) {
+              if (workingRanges(schedule).some(range => (!filters.time && !filters.timeEnd)
+                || (filters.time || "00:00") < range.endTime && (filters.timeEnd || "23:59") > range.startTime)) return true;
+            }
           }
         }
         return false;
@@ -503,24 +558,39 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Booking operations
-  async createBooking(booking: InsertBooking, initialMessage?: string | null, expectedPrice?: ExpectedPrice): Promise<Booking> {
+  async createBooking(booking: InsertBooking, initialMessage?: string | null, expectedPrice?: ExpectedPrice, selection?: BookingOptionSelection): Promise<Booking> {
     return db.transaction(async tx => {
       // Serialize check + insert for this administrator, including simultaneous requests.
       await tx.execute(sql`SELECT id FROM users WHERE id = ${booking.providerId} FOR UPDATE`);
       const [service] = await tx.select().from(services).where(eq(services.id, booking.serviceId)).for("share");
-      if (!service?.isActive || service.deletedAt || service.providerId !== booking.providerId || service.companyId !== (booking.companyId ?? null) || service.employeeId !== (booking.employeeId ?? null)) throw new BookingConflictError("The service has changed. Please choose a time again.");
+      if (!service?.isActive || service.deletedAt || service.providerId !== booking.providerId || service.companyId !== (booking.companyId ?? null)) throw new BookingConflictError("The service has changed. Please choose a time again.");
+      const option = selectedServiceOption(await readServiceOptions(tx, service), selection?.optionId ?? booking.optionId ?? undefined);
+      if (selection?.expectedDuration !== undefined && selection.expectedDuration !== option.duration || selection?.expectedPricingMode !== undefined && selection.expectedPricingMode !== option.pricingMode || selection?.expectedOptionName !== undefined && selection.expectedOptionName !== option.name) throw new ServiceOptionError(409, "OPTION_CHANGED", "The service option changed. Review the appointment before booking.");
+      const participantCount = booking.participantCount ?? 1;
+      if (!Number.isInteger(participantCount) || participantCount < 1 || participantCount > (service.serviceType === "group" ? service.maxCapacity ?? 1 : 1)) throw new BookingConflictError("Choose a valid number of participants.");
+      if (selection?.paymentMethod === "fitsmytime") throw new ServiceOptionError(409, "PAYMENTS_UNAVAILABLE", "Online payment collection is not available. Choose pay onsite.");
+      const roster = service.companyId == null ? [] : await tx.select().from(employees).where(and(eq(employees.companyId, service.companyId), eq(employees.providerId, service.providerId)));
       // The locked listing owns money and its currency; never accept caller totals.
       // HTTP requires an explicit quote. Internal callers also compare their saved
       // currency and must take their expected unit price from the listing.
-      const expected = expectedPrice ?? { expectedPrice: serviceMoneyDto(service).price, expectedCurrency: booking.currency, expectedAdvancePaymentPercent: service.advancePaymentPercent ?? 0 };
+      const expected = expectedPrice ?? { expectedPrice: normalizeMoneyAmount(option.price, service.currency), expectedCurrency: booking.currency, expectedAdvancePaymentPercent: service.advancePaymentPercent ?? 0 };
       const schedules = await tx.select().from(availability).where(and(
         service.companyId != null ? eq(availability.companyId, service.companyId) : and(eq(availability.providerId, service.providerId), isNull(availability.companyId)), eq(availability.isActive, true)));
-      const offered = bookableSlots({ service, schedules, bookings: [], date: booking.scheduledDate.toISOString().slice(0, 10), timezone: "UTC" });
-      if (!offered.some(slot => slot.startsAt === booking.scheduledDate.toISOString())) throw new BookingConflictError("This time is outside the available working hours.");
-      await assertResourceAvailable(tx, service, { ...booking, bookingDuration: service.duration, bookingCleanupTime: service.cleanupTime });
-      const snapshot = bookingPriceSnapshot(service, booking.participantCount ?? 1, expected);
+      const existing = await tx.select().from(bookings).where(and(eq(bookings.providerId, service.providerId),
+        service.companyId == null ? isNull(bookings.companyId) : eq(bookings.companyId, service.companyId), inArray(bookings.status, [...OCCUPYING_BOOKING_STATUSES]),
+        sql`${bookings.scheduledDate} < ${new Date(booking.scheduledDate.getTime() + (option.duration + service.cleanupTime) * 60_000).toISOString()}::timestamp`,
+        sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${booking.scheduledDate.toISOString()}::timestamp`));
+      const offered = optionBookableSlots({ service, option, schedules, bookings: existing, employees: roster, specialist: selection?.specialist ?? "any",
+        participantCount: booking.participantCount ?? 1, date: booking.scheduledDate.toISOString().slice(0, 10), timezone: "UTC" });
+      const slot = offered.find(item => item.startsAt === booking.scheduledDate.toISOString());
+      if (!slot) throw new BookingConflictError("This time is no longer available.");
+      if (selection?.expectedEmployeeId !== undefined && selection.expectedEmployeeId !== slot.employeeId) throw new ServiceOptionError(409, "SPECIALIST_CHANGED", "The assigned specialist changed. Review the appointment before booking.");
+      const effective = optionEffectiveService(service, option, slot.employeeId);
+      const snapshot = bookingPriceSnapshot(effective, booking.participantCount ?? 1, expected);
       const createdAt = new Date();
-      const [created] = await tx.insert(bookings).values({ ...booking, ...snapshot, notes: null, createdAt, bookingDuration: service.duration, bookingCleanupTime: service.cleanupTime }).returning();
+      const [created] = await tx.insert(bookings).values({ ...booking, ...snapshot, notes: null, createdAt, employeeId: slot.employeeId,
+        bookingDuration: option.duration, bookingCleanupTime: service.cleanupTime, optionId: option.id, optionName: option.name,
+        pricingMode: option.pricingMode, unitPrice: effective.price, paymentMethod: "onsite", platformFeeRateBps: 0, platformFeeAmount: "0" }).returning();
       if (initialMessage) {
         await tx.insert(bookingMessages).values({ id: randomUUID(), bookingId: created.id, authorId: created.seekerId,
           authorRole: "customer", body: initialMessage, clientRequestId: randomUUID(), broadcastId: null, createdAt });
@@ -700,7 +770,9 @@ export class DatabaseStorage implements IStorage {
       const [service] = await tx.select().from(services).where(eq(services.id, booking.serviceId));
       const schedules = await tx.select().from(availability).where(and(
         booking.companyId != null ? eq(availability.companyId, booking.companyId) : and(eq(availability.providerId, booking.providerId), isNull(availability.companyId)), eq(availability.isActive, true)));
-      const offered = bookableSlots({ service: { ...service, duration: booking.bookingDuration ?? service.duration, cleanupTime: booking.bookingCleanupTime ?? 0 }, schedules, bookings: [], date: date.toISOString().slice(0, 10), timezone: "UTC" });
+      const option = (await readServiceOptions(tx, service, true)).find(item => item.id === booking.optionId);
+      const offered = bookableSlots({ service: { ...service, optionId: booking.optionId, duration: booking.bookingDuration ?? service.duration, cleanupTime: booking.bookingCleanupTime ?? 0 },
+        schedules: option ? optionScheduleRows(service, option, schedules) : schedules, bookings: [], date: date.toISOString().slice(0, 10), timezone: "UTC" });
       if (!offered.some(slot => slot.startsAt === date.toISOString())) throw new BookingConflictError("Choose a time within the available working hours.");
       await assertResourceAvailable(tx, service, { ...booking, scheduledDate: date, bookingDuration: booking.bookingDuration ?? service.duration, bookingCleanupTime: booking.bookingCleanupTime ?? 0 });
       const [updated] = await tx.update(bookings).set({ scheduledDate: date, notificationRevision: booking.notificationRevision + 1, updatedAt: new Date() }).where(eq(bookings.id, id)).returning();
@@ -762,8 +834,8 @@ export class DatabaseStorage implements IStorage {
   async getBookingsForResourceRange(service: Service, start: Date, end: Date): Promise<Booking[]> {
     const rows = await db.select({ booking: bookings, duration: services.duration }).from(bookings)
       .leftJoin(services, eq(bookings.serviceId, services.id))
-      .where(and(eq(bookings.providerId, service.providerId), inArray(bookings.status, [...OCCUPYING_BOOKING_STATUSES]),
-        service.employeeId != null ? eq(bookings.employeeId, service.employeeId) : sql`${bookings.employeeId} IS NULL`,
+      .where(and(eq(bookings.providerId, service.providerId), service.companyId == null ? isNull(bookings.companyId) : eq(bookings.companyId, service.companyId), inArray(bookings.status, [...OCCUPYING_BOOKING_STATUSES]),
+        service.employeeId != null ? or(eq(bookings.employeeId, service.employeeId), service.companyId != null ? isNull(bookings.employeeId) : undefined) : service.companyId == null ? isNull(bookings.employeeId) : undefined,
         sql`${bookings.scheduledDate} < ${end.toISOString()}::timestamp`,
         sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${start.toISOString()}::timestamp`));
     return rows.map(row => ({ ...row.booking, bookingDuration: row.booking.bookingDuration ?? row.duration ?? 60 }));

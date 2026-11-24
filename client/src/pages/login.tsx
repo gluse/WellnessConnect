@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFormLocale } from "@/components/forms-locale";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { nativeSignInError } from "@/lib/native-sign-in";
+import { currentLanguagePath, withoutLanguagePrefix } from "@/lib/language-path";
+import { switchRouteLanguage } from "@/components/language-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +19,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 const providerIcons = { google: FaGoogle, facebook: FaFacebook, apple: FaApple, microsoft: FaMicrosoft };
 // Set only by the separate bundled staging build; web sign-in remains unchanged.
-const nativePasswordOnly = import.meta.env.VITE_NATIVE_PASSWORD_ONLY === "true";
+const nativePasswordOnly = import.meta.env?.VITE_NATIVE_PASSWORD_ONLY === "true";
 function callbackError(code: string | null) {
   switch (code) {
     case null: return "";
@@ -37,7 +39,7 @@ export default function Login() {
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [firstName, setFirstName] = useState(""), [lastName, setLastName] = useState("");
   const [accountType, setAccountType] = useState("personal"), [companyName, setCompanyName] = useState(""), [companyNameError, setCompanyNameError] = useState("");
-  const requestedReturn = new URLSearchParams(window.location.search).get("returnTo");
+  const requestedReturn = withoutLanguagePrefix(new URLSearchParams(window.location.search).get("returnTo") || "");
   const returnTo = isAllowedAuthReturnTo(requestedReturn) ? requestedReturn : "/";
   const [message, setMessage] = useState(new URLSearchParams(window.location.search).get("passwordUpdated") === "1" ? "passwordUpdated" : "");
   const [error, setError] = useState(() => callbackError(new URLSearchParams(window.location.search).get("error")));
@@ -78,7 +80,7 @@ export default function Login() {
       const result = await response.json();
       setPassword(""); setConfirmPassword("");
       if (signup && !result.signedIn) setMessage("checkEmail");
-      else { queryClient.clear(); window.location.assign(returnTo); }
+      else { queryClient.clear(); window.location.assign(currentLanguagePath(returnTo)); }
     } catch (failure) {
       const raw = failure instanceof Error ? failure.message : "";
       setError(nativePasswordOnly && !signup ? nativeSignInError(failure)
@@ -90,10 +92,10 @@ export default function Login() {
   return <main className="min-h-[100dvh] bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center p-4">
     <Card className="auth-form auth-page-card w-full max-w-md">
       <CardHeader className="text-center space-y-4">
-        <div><Label htmlFor="auth-language">{t("authForm.language")}</Label><select id="auth-language" value={language} onChange={event => void i18n.changeLanguage(event.target.value)}>{languages.map(code => <option key={code} value={code} lang={code}>{languageName(code)}</option>)}</select></div>
+        <div><Label htmlFor="auth-language">{t("authForm.language")}</Label><select id="auth-language" value={language} onChange={event => switchRouteLanguage(event.target.value)}>{languages.map(code => <option key={code} value={code} lang={code}>{languageName(code)}</option>)}</select></div>
         <Heart aria-hidden="true" className="w-10 h-10 text-primary mx-auto" />
         <h1 ref={heading} tabIndex={-1} className="text-2xl font-semibold">{t(signup ? "authForm.createTitle" : "authForm.welcome")}</h1>
-        <p className="text-sm text-muted-foreground">FitsMyTime</p>
+        <p className="text-sm text-muted-foreground">Ordelino</p>
       </CardHeader>
       <CardContent className="space-y-6">
         <form onSubmit={submit} className="space-y-6" aria-label={t(signup ? "authForm.createTitle" : "authForm.signIn")}>
@@ -123,7 +125,7 @@ export default function Login() {
         </form>
         {/^\/invite(?:\?|$)/.test(returnTo) && <InvitationRecovery returnTo={returnTo} />}
         <Button type="button" variant="ghost" className="w-full" disabled={busy} onClick={() => { setSignup(!signup); setMessage(""); setError(""); setPassword(""); setConfirmPassword(""); setConfirmPasswordError(""); setCompanyNameError(""); requestAnimationFrame(() => heading.current?.focus({ preventScroll: true })); }}>{t(signup ? "authForm.switchSignIn" : "authForm.switchSignup")}</Button>
-        <Link href="/" className="block text-center text-sm">{t("authForm.back")}</Link>
+        <Link href={returnTo.startsWith("/services/") ? returnTo : "/"} className="block text-center text-sm">{t(returnTo.startsWith("/services/") ? "common.back" : "authForm.back")}</Link>
         <a href="/privacy-policy.html" className="block text-center text-sm underline underline-offset-4">{t("legal.privacyPolicy")}</a>
       </CardContent>
     </Card>

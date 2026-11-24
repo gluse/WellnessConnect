@@ -34,11 +34,11 @@ try {
   assert.equal(await evaluate(() => window.searchFixture.locationRequests.length), 0);
   assert.equal(await evaluate(() => window.searchFixture.configRequests), 0);
   assert.ok(await evaluate(() => document.querySelector('[data-testid="button-view-list"]').getAttribute('aria-pressed') === 'true'));
-  assert.ok(await evaluate(() => [...document.querySelectorAll('.search-query-bar label,.search-field-label')].map(node => node.textContent).join('/') === 'Where/When/What'));
+  assert.ok(await evaluate(() => [...document.querySelectorAll('.search-query-bar label,.search-field-label')].map(node => node.textContent).join('/') === 'What/Where/When'));
   assert.ok(!(await evaluate(() => window.searchFixture.requests[0])).includes('latitude='));
   await submit(); assert.equal(await count(), 9);
   await viewport(390); await capture('phone-initial', false);
-  checks.push('Empty search immediately returns the unfiltered catalog in list mode; Where/When/What are optional; no GPS or Maps access');
+  checks.push('Empty search immediately returns the unfiltered catalog in list mode; What/Where/When are optional; no GPS or Maps access');
 
   // Real shared header, including authenticated account menu, remains intact.
   await evaluate(() => window.setFixtureUser({ id: 'synthetic-customer', firstName: 'Fixture', lastName: 'Customer' }));

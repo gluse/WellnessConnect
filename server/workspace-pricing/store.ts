@@ -29,7 +29,7 @@ async function authorize(database: QueryDatabase, actor: WorkspacePricingActor, 
   if (!company?.isActive || !membership || !["owner", "admin"].includes(membership.role)) forbidden();
 }
 function view(actor: WorkspacePricingActor, row?: typeof workspacePricingSettings.$inferSelect): WorkspacePricingSettingsView {
-  return workspacePricingSettingsViewSchema.parse({ workspace: pricingWorkspace(actor), defaultCurrency: row?.defaultCurrency ?? null, businessCountryCode: row?.businessCountryCode ?? null, revision: row?.revision ?? 0, canEdit: true });
+  return workspacePricingSettingsViewSchema.parse({ workspace: pricingWorkspace(actor), defaultCurrency: row?.defaultCurrency ?? null, businessCountryCode: row?.businessCountryCode ?? null, allowOnlinePayments: row?.allowOnlinePayments ?? false, revision: row?.revision ?? 0, canEdit: true });
 }
 
 export function createWorkspacePricingStore(database: Database) {
@@ -49,6 +49,7 @@ export function createWorkspacePricingStore(database: Database) {
         const changes = {
           ...(input.defaultCurrency !== undefined ? { defaultCurrency: input.defaultCurrency } : {}),
           ...(input.businessCountryCode !== undefined ? { businessCountryCode: input.businessCountryCode } : {}),
+          ...(input.allowOnlinePayments !== undefined ? { allowOnlinePayments: input.allowOnlinePayments } : {}),
           updatedAt: new Date(),
         };
         if (previous) {
@@ -59,7 +60,7 @@ export function createWorkspacePricingStore(database: Database) {
         }
         const [created] = await tx.insert(workspacePricingSettings).values({
           id: randomUUID(), userId: actor.companyId == null ? actor.userId : null, companyId: actor.companyId ?? null,
-          defaultCurrency: null, businessCountryCode: null, ...changes, revision: 1,
+          defaultCurrency: null, businessCountryCode: null, allowOnlinePayments: false, ...changes, revision: 1,
         }).onConflictDoNothing().returning();
         if (!created) conflict();
         return view(actor, created);

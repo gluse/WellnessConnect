@@ -9,6 +9,7 @@ import type { ServiceWithProvider } from "@shared/schema";
 import WishlistHeart from "@/components/wishlist-heart";
 import { formatServiceDuration } from "@/lib/service-duration";
 import ServiceImageGallery from "@/components/service-image-gallery";
+import ProviderVerificationBadge from "@/components/provider-verification-badge";
 
 export default function SearchServiceDetails({ service, open, onClose, onBook, onViewProvider, wishlistEnabled = true }: {
   service: ServiceWithProvider; open: boolean; onClose: () => void; onBook: () => void; onViewProvider?: () => void; wishlistEnabled?: boolean;
@@ -18,7 +19,7 @@ export default function SearchServiceDetails({ service, open, onClose, onBook, o
   return <Dialog open={open} onOpenChange={value => { if (!value) onClose(); }}>
     <DialogContent className="search-design search-detail-dialog" closeLabel={t("searchPage.close")} data-testid="dialog-service-details">
       <DialogHeader><DialogTitle data-testid="text-service-name"><bdi>{service.name}</bdi></DialogTitle><DialogDescription>{t("searchPage.checkTimes")}</DialogDescription></DialogHeader>
-      <div className="search-detail-provider">{service.storefrontSlug ? <Link href={`/providers/${service.storefrontSlug}`} onClick={onClose}><bdi>{provider}</bdi></Link> : onViewProvider ? <button type="button" onClick={onViewProvider} data-testid="button-provider-details"><bdi>{provider}</bdi></button> : <bdi>{provider}</bdi>}<ServiceRating service={service} /></div>
+      <div className="search-detail-provider"><span className="provider-name-group">{service.storefrontSlug ? <Link href={`/providers/${service.storefrontSlug}`} onClick={onClose}><bdi>{provider}</bdi></Link> : onViewProvider ? <button type="button" onClick={onViewProvider} data-testid="button-provider-details"><bdi>{provider}</bdi></button> : <bdi>{provider}</bdi>}<ProviderVerificationBadge /></span><ServiceRating service={service} /></div>
       <div className="relative min-h-16"><ServiceImageGallery key={`${service.id}:${open}`} service={service} />{wishlistEnabled && <WishlistHeart serviceId={service.id} />}</div>
       {service.description && <section><h3>{t("searchPage.about")}</h3><p data-testid="text-description">{service.description}</p></section>}
       <dl className="search-detail-grid">

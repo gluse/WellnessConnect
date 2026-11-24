@@ -6,7 +6,7 @@ import * as schema from "../../shared/schema.ts";
 // In-memory database boundary for the real worker decision/dispatch function.
 // It evaluates generated, parameterized Drizzle predicates; it does not mock
 // entitlement, consent, expiry, stale-event or duplicate-send decisions.
-const tableNames = ["bookings", "services", "users", "companies", "providerSubscriptions", "userCommunicationPreferences", "notificationEvents", "notificationJobs", "notificationDeliveryAttempts", "phoneVerificationChallenges", "notificationCallbacks", "bookingMessages", "bookingRescheduleRequests", "availability", "companyMemberships"];
+const tableNames = ["bookings", "services", "serviceOptions", "users", "companies", "providerSubscriptions", "userCommunicationPreferences", "notificationEvents", "notificationJobs", "notificationDeliveryAttempts", "phoneVerificationChallenges", "notificationCallbacks", "bookingMessages", "bookingRescheduleRequests", "availability", "companyMemberships"];
 const tables = new Map(tableNames.map(key => [getTableName(schema[key]), schema[key]]));
 const dialect = new PgDialect();
 function sqlTwelveMonthAnniversary(value) {

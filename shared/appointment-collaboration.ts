@@ -19,8 +19,8 @@ export type EventPreview = { bookingIds: number[]; bookingCount: number; partici
 
 // Session identity follows saved reservation fields, never customer/service labels.
 export function appointmentEventKey(booking: { id: number; serviceId: number; providerId: string; companyId?: number | null; employeeId?: number | null;
-  scheduledDate: string | Date; bookingDuration?: number | null; bookingCleanupTime?: number | null; service?: { duration: number; serviceType: string } }) {
+  optionId?: number | null; scheduledDate: string | Date; bookingDuration?: number | null; bookingCleanupTime?: number | null; service?: { duration: number; serviceType: string } }) {
   if (booking.service?.serviceType !== "group") return `booking:${booking.id}`;
-  return JSON.stringify([booking.companyId ?? null, booking.providerId, booking.serviceId, booking.employeeId ?? null,
+  return JSON.stringify([booking.companyId ?? null, booking.providerId, booking.serviceId, booking.optionId ?? null, booking.employeeId ?? null,
     new Date(booking.scheduledDate).toISOString(), booking.bookingDuration ?? booking.service.duration, booking.bookingCleanupTime ?? 0]);
 }

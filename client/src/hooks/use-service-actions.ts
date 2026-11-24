@@ -1,3 +1,4 @@
+import { currentLanguagePath } from "@/lib/language-path";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import type { Service } from "@shared/schema";
@@ -10,7 +11,7 @@ export function useServiceActions() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const onError = (error: Error) => {
-    if (isUnauthorizedError(error)) { window.location.assign("/login?returnTo=%2Fmy-services%2Fservices"); return; }
+    if (isUnauthorizedError(error)) { window.location.assign(currentLanguagePath("/login?returnTo=%2Fmy-services%2Fservices")); return; }
     let message = "Please try again.";
     try { message = JSON.parse(error.message.replace(/^\d+:\s*/, "")).message || message; } catch {}
     toast({ title: "Unable to update services", description: message, variant: "destructive" });

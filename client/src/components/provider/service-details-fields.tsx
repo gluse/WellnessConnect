@@ -16,7 +16,9 @@ export default function ServiceDetailsFields({ newService, setNewService, compan
     <div className="space-y-2">
       <Label htmlFor="serviceName">{t("serviceForm.name")} *</Label>
       <Input id="serviceName" className="min-h-11" required dir="auto" value={newService.name} {...fieldFeedback(errors, "name")}
-        onChange={event => setNewService(prev => ({ ...prev, name: event.target.value }))} />
+        onChange={event => { const name = event.target.value; setNewService(prev => ({ ...prev, name,
+          options: prev.options.map(option => option.draftKey === "default" && option.name === prev.name ? { ...option, name } : option),
+        })); }} />
       <ServiceFieldError errors={errors} field="name" />
     </div>
     <div className="space-y-2">

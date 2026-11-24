@@ -10,6 +10,7 @@ import { formatMoney } from "../client/src/lib/money.ts";
 import AppointmentStats from "../client/src/components/provider/appointment-stats.tsx";
 
 globalThis.React = React;
+const testedLocales = process.argv.includes("--english-only") ? ["en"] : ["en", "lv", "ru"];
 assert.equal(SUPPORTED_CURRENCIES.length, 153);
 assert.equal(SUPPORTED_COUNTRIES.length, 249);
 for (const [country, currency] of [["LV", "EUR"], ["GB", "GBP"], ["US", "USD"], ["CA", "CAD"], ["BG", "EUR"]]) assert.equal(suggestedCurrency(country), currency);
@@ -46,7 +47,7 @@ for (const percent of [0, 50, 100]) {
 assert.throws(() => calculateBookingAmounts("50000000.00", "EUR", 2, 50), "Participant totals retain old monetary bound");
 for (const [participants, percent] of [[0, 50], [-1, 50], [1.5, 50], [1, 101], [1, -1], [1, 0.5]]) assert.throws(() => calculateBookingAmounts("10", "EUR", participants, percent));
 
-for (const locale of ["en", "lv", "ru"]) {
+for (const locale of testedLocales) {
   for (const [currency, amount, digits] of [["EUR", "50.00", 2], ["USD", "50.00", 2], ["CAD", "50.00", 2], ["GBP", "50.00", 2], ["JPY", "50", 0], ["KWD", "50.001", 3], ["HUF", "50.25", 2]]) {
     assert.equal(formatMoney(amount, currency, locale), new Intl.NumberFormat(locale, { style: "currency", currency, currencyDisplay: "code", minimumFractionDigits: digits, maximumFractionDigits: digits }).format(amount));
   }
@@ -57,10 +58,10 @@ for (const locale of ["en", "lv", "ru"]) {
 assert.equal(formatMoney("9007199254740993.01", "EUR", "en"), "EUR\u00a09,007,199,254,740,993.01", "Formatting preserves decimal strings beyond Number precision");
 
 const resources = {};
-for (const locale of ["en", "lv", "ru"]) resources[locale] = { translation: JSON.parse(await readFile(new URL(`../client/public/locales/${locale}/translation.json`, import.meta.url), "utf8")) };
+for (const locale of testedLocales) resources[locale] = { translation: JSON.parse(await readFile(new URL(`../client/public/locales/${locale}/translation.json`, import.meta.url), "utf8")) };
 await i18next.use(initReactI18next).init({ lng: "en", resources, interpolation: { escapeValue: false } });
 const text = node => typeof node === "string" || typeof node === "number" ? String(node) : (node?.children ?? []).map(text).join(" ");
-for (const locale of ["en", "lv", "ru"]) {
+for (const locale of testedLocales) {
   await i18next.changeLanguage(locale);
   let component;
   await renderer.act(async () => { component = renderer.create(React.createElement(AppointmentStats, { bookings: [
@@ -77,4 +78,4 @@ for (const locale of ["en", "lv", "ru"]) {
   assert.equal(content.includes("$"), false);
   await renderer.act(async () => component.unmount());
 }
-console.log("PASS: currency metadata, strict precision, database normalization, exact booking arithmetic, en/lv/ru formatting and separate currency summaries");
+console.log(`PASS: currency metadata, strict precision, database normalization, exact booking arithmetic, ${testedLocales.join("/")} formatting and separate currency summaries`);

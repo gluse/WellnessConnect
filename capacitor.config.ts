@@ -4,7 +4,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 // Real API/auth integration and store identity require a separate reviewed release.
 const config: CapacitorConfig = {
   appId: 'com.fitsmytime.proof',
-  appName: 'FitsMyTime Local Proof',
+  appName: 'Ordelino Local Proof',
   webDir: 'output/native-proof/www',
   server: { androidScheme: 'https', hostname: 'localhost', cleartext: false },
   android: { allowMixedContent: false },

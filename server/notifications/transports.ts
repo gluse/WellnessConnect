@@ -56,7 +56,7 @@ export function createTransports(config: NotificationConfig, fetcher: typeof fet
   return {
     async startVerification(phone: string) {
       if (!verificationReady(config)) throw new TransportError("failed", "not_configured");
-      const result = await post("https://api.nexmo.com/v2/verify", jwt(config), { brand: "FitsMyTime", code_length: 6, channel_timeout: 300, workflow: [{ channel: "sms", to: phone.slice(1) }] });
+      const result = await post("https://api.nexmo.com/v2/verify", jwt(config), { brand: "Ordelino", code_length: 6, channel_timeout: 300, workflow: [{ channel: "sms", to: phone.slice(1) }] });
       if (typeof result.request_id !== "string" || !/^[a-f0-9-]{36}$/i.test(result.request_id)) throw new TransportError("unknown", "invalid_response");
       return result.request_id;
     },

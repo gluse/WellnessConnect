@@ -1,3 +1,4 @@
+import { currentLanguagePath } from "@/lib/language-path";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
@@ -15,6 +16,7 @@ import ServiceBookingFields, { ServiceAudienceFields, ServiceInstantBookingField
 import ServiceLocationFields from "./service-location-fields";
 import ServiceMediaFields from "./service-media-fields";
 import ServiceReminderFields from "./service-reminder-fields";
+import ServiceOptionsFields, { ServiceOnlinePaymentsField } from "./service-options-fields";
 import { serviceControlIds, validateServiceDraft, type ServiceErrors } from "./service-field-feedback";
 import { registerServiceExitBlocker, requestServiceEditorExit } from "./service-navigation-guard";
 import { parseMoneyInput } from "@/lib/money-input";
@@ -35,7 +37,7 @@ function FormSection({ number, title, children }: { number: number; title: strin
 }
 export default function ServiceEditor({ service, employees, company }: { service?: Service; employees: Employee[]; company: boolean }) {
   const { user, isLoading } = useAuth();
-  const pricing = useWorkspacePricing(user?.id, !service);
+  const pricing = useWorkspacePricing(user?.id);
   const { t } = useTranslation();
   if (isLoading || pricing.switching || pricing.context.isPending) return <p role="status">{t("currency.defaultsLoading")}</p>;
   if (pricing.context.isError) return <div role="alert">{t("currency.defaultsLoadError")} <Button onClick={pricing.retry}>{t("publicSearch.retry")}</Button></div>;
@@ -56,7 +58,8 @@ function ServiceEditorContent({ service, employees, company, pricing, actorId }:
   const resolved = resolveCurrencyDefault({ location: selectedAddress, settings: pricing.settings.data });
   const availableDefault = (!pricing.settings.data || pricing.settings.isError) && resolved.source !== "location" ? { currency: null, source: "none" as const } : resolved;
   const choice = currencySelection ?? availableDefault;
-  const draft = { ...newService, currency: choice.currency ?? "" };
+  const firstOption = newService.options.find(option => option.isActive) ?? newService.options[0];
+  const draft = { ...newService, currency: choice.currency ?? "", price: firstOption?.price ?? newService.price, duration: firstOption?.duration ?? newService.duration };
   const localSuggestion = suggestedCurrency(selectedAddress?.countryCode);
   const [savingAs, setSavingAs] = useState<boolean | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -110,6 +113,7 @@ function ServiceEditorContent({ service, employees, company, pricing, actorId }:
   const save = useMutation({
     mutationFn: async (isActive: boolean) => (await apiRequest(service ? "PATCH" : "POST", service ? `/api/services/${service.id}` : "/api/services", {
       ...draft, price: parseMoneyInput(draft.price, draft.currency, i18n.resolvedLanguage || i18n.language), isActive,
+      options: draft.options.map(({ draftKey, ...option }, sortOrder) => ({ ...option, sortOrder, price: parseMoneyInput(option.price, draft.currency, i18n.resolvedLanguage || i18n.language) })),
     })).json(),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ predicate: query => String(query.queryKey[0]).startsWith("/api/services/") });
@@ -121,7 +125,7 @@ function ServiceEditorContent({ service, employees, company, pricing, actorId }:
       if (isUnauthorizedError(error)) {
         // Authentication loss clears the in-memory editor; never recover across accounts.
         bypassExit.current = true;
-        window.location.assign("/login?returnTo=" + encodeURIComponent(service ? `/my-services/services/${service.id}/edit` : "/my-services/services/new")); return;
+        window.location.assign(currentLanguagePath("/login?returnTo=" + encodeURIComponent(service ? `/my-services/services/${service.id}/edit` : "/my-services/services/new"))); return;
       }
       setError(/^403:/.test(error.message) ? "serviceForm.denied" : "serviceForm.saveError");
       queueMicrotask(() => summary.current?.focus());
@@ -130,7 +134,7 @@ function ServiceEditorContent({ service, employees, company, pricing, actorId }:
   });
   const submit = (isActive: boolean, confirmed = false, currencyConfirmed = false) => {
     if (submitting.current || save.isPending || uploading) return;
-    const nextErrors = validateServiceDraft(draft, i18n.resolvedLanguage || i18n.language);
+    const nextErrors = validateServiceDraft(draft, i18n.resolvedLanguage || i18n.language, isActive);
     setFieldErrors(nextErrors); setError("");
     if (Object.keys(nextErrors).length) { queueMicrotask(() => summary.current?.focus()); return; }
     if (service && draft.currency !== service.currency && !currencyConfirmed) { setCurrencyConfirmation(isActive); return; }
@@ -160,26 +164,27 @@ function ServiceEditorContent({ service, employees, company, pricing, actorId }:
       <fieldset disabled={save.isPending} className="space-y-6 min-w-0">
         <FormSection number={1} title={t("serviceForm.details")}><ServiceDetailsFields newService={newService} setNewService={setNewService} employees={employees} company={company} errors={errors} /></FormSection>
         <FormSection number={2} title={t("serviceForm.sessionPrice")}>
-          <ServiceBookingFields newService={draft} setNewService={setNewService} errors={errors}
-            onCurrencyChoice={currency => setCurrencySelection({ currency, source: "manual" })}
-            onPriceChange={price => {
-              if (price.trim() && choice.currency) setCurrencySelection(previous => previous ?? { currency: choice.currency!, source: choice.source });
-              if (!price.trim() && currencySelection && !["saved", "manual"].includes(currencySelection.source)) setCurrencySelection(null);
-              setNewService(previous => ({ ...previous, price }));
-            }} />
+          <ServiceBookingFields newService={draft} setNewService={setNewService} errors={errors} optionFields={false}
+            onCurrencyChoice={currency => setCurrencySelection({ currency, source: "manual" })} />
           {choice.currency && <p className="text-sm text-muted-foreground" data-testid="currency-default-source" role="status">{t(`currency.defaultSource_${choice.source}`, { currency: choice.currency })}</p>}
           {!service && pricing.settings.isPending && !currencySelection && <p role="status">{t("currency.defaultsLoading")}</p>}
           {!service && pricing.settings.isError && <p role="alert">{t("currency.defaultsLoadError")} <button type="button" className="underline min-h-11" onClick={pricing.retry}>{t("publicSearch.retry")}</button></p>}
           {!service && currencySelection && !["saved", "manual"].includes(currencySelection.source) && <p className="text-sm text-muted-foreground">{t("currency.amountLocked")}</p>}
           {localSuggestion && choice.currency && localSuggestion !== choice.currency && <div className="text-sm space-y-1"><p>{t("currency.suggestLocal", { currency: localSuggestion })}</p><Button type="button" variant="outline" className="max-w-full min-h-11 h-auto whitespace-normal" onClick={() => { setCurrencySelection({ currency: localSuggestion, source: "manual" }); setNewService(previous => ({ ...previous, currency: localSuggestion })); }}>{t("currency.useSuggested", { currency: localSuggestion })}</Button></div>}
+          <ServiceOnlinePaymentsField draft={draft} setDraft={setNewService} inherited={pricing.settings.data?.allowOnlinePayments} />
         </FormSection>
-        <FormSection number={3} title={t("serviceForm.audience")}><ServiceAudienceFields newService={newService} setNewService={setNewService} /></FormSection>
-        <FormSection number={4} title={t("serviceForm.bookingLocation")}>
+        <FormSection number={3} title={t("providerOptions.title")}><ServiceOptionsFields draft={draft} setDraft={setNewService} company={company} employees={employees} error={errors.options}
+          onPriceChange={(price, index) => {
+            if (price.trim() && choice.currency) setCurrencySelection(previous => previous ?? { currency: choice.currency!, source: choice.source });
+            if (!newService.options.some((option, i) => (i === index ? price : option.price).trim()) && currencySelection && !["saved", "manual"].includes(currencySelection.source)) setCurrencySelection(null);
+          }} /></FormSection>
+        <FormSection number={4} title={t("serviceForm.audience")}><ServiceAudienceFields newService={newService} setNewService={setNewService} /></FormSection>
+        <FormSection number={5} title={t("serviceForm.bookingLocation")}>
           <ServiceInstantBookingField newService={newService} setNewService={setNewService} />
           <ServiceLocationFields newService={draft} setNewService={setNewService} errors={errors} addresses={addresses} />
         </FormSection>
-        <FormSection number={5} title={t("serviceForm.media")}><ServiceMediaFields newService={newService} setNewService={setNewService} errors={errors} onBusyChange={setUploading} /></FormSection>
-        <FormSection number={6} title={t("notifications.reminderSettings")}><ServiceReminderFields draft={newService} setDraft={setNewService} errors={errors} /></FormSection>
+        <FormSection number={6} title={t("serviceForm.media")}><ServiceMediaFields newService={newService} setNewService={setNewService} errors={errors} onBusyChange={setUploading} /></FormSection>
+        <FormSection number={7} title={t("notifications.reminderSettings")}><ServiceReminderFields draft={newService} setDraft={setNewService} errors={errors} /></FormSection>
       </fieldset>
       <div className="bg-card text-card-foreground border rounded-xl p-4 sm:p-6 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-4">
         <p className="text-sm text-muted-foreground">{t("serviceForm.visibility")}</p>

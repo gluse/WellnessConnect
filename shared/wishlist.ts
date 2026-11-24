@@ -22,5 +22,5 @@ export const notificationReadSchema = z.object({ items: z.array(z.object({ id: z
   .min(1).max(100).refine(items => new Set(items.map(item => item.id)).size === items.length) }).strict();
 
 export function serviceReturnTo(id: number): string {
-  return `/search?service=${positiveServiceId.parse(String(id))}`;
+  return `/services/${positiveServiceId.parse(String(id))}`;
 }

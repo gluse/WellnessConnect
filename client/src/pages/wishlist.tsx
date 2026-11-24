@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Link, Redirect } from "wouter";
+import { Link, Redirect, useLocation } from "wouter";
+import { servicePagePath } from "@/lib/service-page-state";
 import { useTranslation } from "react-i18next";
 import type { ServiceWithProvider } from "@shared/schema";
 import type { WishlistPage } from "@shared/wishlist";
@@ -9,8 +10,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { wishlistListKey } from "@/components/wishlist-provider";
 import WishlistHeart from "@/components/wishlist-heart";
 import ServiceCard from "@/components/service-card";
-import ServiceDetailModal from "@/components/service-detail-modal";
-import BookingModal from "@/components/booking-modal";
 import { Button } from "@/components/ui/button";
 
 export default function Wishlist() {
@@ -23,9 +22,10 @@ export default function Wishlist() {
 }
 
 function SavedServices({ userId }: { userId: string }) {
+  const [, navigate] = useLocation();
   const { t } = useTranslation();
   const heading = useRef<HTMLHeadingElement>(null), focused = useRef<number | null>(null);
-  const [detail, setDetail] = useState<ServiceWithProvider | null>(null), [booking, setBooking] = useState<ServiceWithProvider | null>(null);
+  const openService = (service: ServiceWithProvider) => navigate(servicePagePath(service.id), { state: { serviceSource: "/wishlist" } });
   const list = useInfiniteQuery<WishlistPage>({
     queryKey: wishlistListKey(userId), initialPageParam: null as string | null,
     queryFn: async ({ pageParam, signal }) => (await apiRequest("GET", `/api/wishlist/services${pageParam ? `?cursor=${encodeURIComponent(String(pageParam))}` : ""}`, undefined, signal)).json(),
@@ -53,14 +53,12 @@ function SavedServices({ userId }: { userId: string }) {
         if (heart) focused.current = Number(heart.dataset.wishlistHeart);
       }}>
         {items.map(item => item.available ? <ServiceCard key={item.serviceId} service={item.service} searchLayout
-          onViewDetails={() => setDetail(item.service)} onBook={() => setBooking(item.service)} /> :
+          onViewDetails={() => openService(item.service)} onBook={() => openService(item.service)} /> :
           <article key={item.serviceId} className="relative min-h-24 border-b p-4 pe-16" data-wishlist-unavailable={item.serviceId}>
             <h2 className="font-semibold">{t("wishlist.unavailable")}</h2><p>{t("wishlist.unavailableHelp")}</p><WishlistHeart serviceId={item.serviceId} />
           </article>)}
       </div>
       {list.hasNextPage && <Button variant="outline" disabled={list.isFetchingNextPage} onClick={() => void list.fetchNextPage()}>{t(list.isFetchingNextPage ? "wishlist.loading" : "wishlist.more")}</Button>}
     </main>
-    <ServiceDetailModal service={detail} searchLayout open={!!detail} onClose={() => setDetail(null)} onBook={() => { setBooking(detail); setDetail(null); }} />
-    {booking && <BookingModal service={booking} returnTo="/wishlist" onClose={() => setBooking(null)} />}
   </div>;
 }

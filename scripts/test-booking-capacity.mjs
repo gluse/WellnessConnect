@@ -20,6 +20,10 @@ import * as serviceImages from "../server/serviceImages.ts";
 import * as storefront from "../shared/storefront.ts";
 import * as workspacePricing from "../shared/workspace-pricing.ts";
 import * as serviceBookingProtection from "../server/service-booking-protection.ts";
+import * as optionStore from "../server/service-options-store.ts";
+import * as optionLogic from "../server/service-options.ts";
+import * as optionDomain from "../shared/service-options.ts";
+import * as sharedMoney from "../shared/money.ts";
 
 // Never import server/db, dotenv, Auth, external providers or server startup.
 // --original demonstrates the regression against tracked pre-fix modules.
@@ -37,12 +41,12 @@ async function load(path, dependencies) {
 }
 const scheduling = await load("shared/scheduling.ts", {});
 const date = "2099-06-04", at = time => new Date(`${date}T${time}:00Z`);
-const service = { id: 1, providerId: "provider", companyId: null, employeeId: null, serviceType: "group", maxCapacity: 6,
+const service = { id: 1, name: "Group session", providerId: "provider", companyId: null, employeeId: null, serviceType: "group", maxCapacity: 6,
   duration: 30, cleanupTime: 15, isActive: true, companyActive: true, instantBooking: true, currency: "EUR", price: "10", advancePaymentPercent: 0 };
 const schedule = { id: 1, providerId: "provider", companyId: null, serviceId: null, scheduleType: "specific", specificDate: at("00:00"),
   startTime: "09:00", endTime: "12:00", timezone: "UTC", breaks: [], isActive: true };
 const booking = (id, status = "confirmed", participantCount = 2, time = "09:00", overrides = {}) => ({ id, serviceId: 1, seekerId: `customer-${id}`,
-  providerId: "provider", companyId: null, employeeId: null, scheduledDate: at(time), status, participantCount,
+  providerId: "provider", companyId: null, employeeId: null, optionId: 1, scheduledDate: at(time), status, participantCount,
   bookingDuration: 30, bookingCleanupTime: 15, notificationRevision: 0, currency: "EUR", totalAmount: "20", advanceAmount: "0", ...overrides });
 const slots = (bookings = [], overrides = {}) => scheduling.bookableSlots({ service, schedules: [schedule], bookings,
   date, timezone: "UTC", now: new Date("2099-01-01"), ...overrides });
@@ -101,8 +105,8 @@ function select(fields) {
     where(value) { predicate = value; return query; }, for() { return query; },
     as() { return { serviceId: drizzle.sql`review_stats.service_id`, rating: drizzle.sql`review_stats.rating`, reviewCount: drizzle.sql`review_stats.review_count` }; },
     then(resolve, reject) {
-      const data = table === "bookings" ? rows : table === "services" ? [service] : table === "availability" ? [schedule] : [];
-      if (transactionActive && fields?.booking && table === "bookings") { assert.equal(lock, true, "Check capacity only under the provider lock"); events.push("capacity"); }
+      const data = table === "bookings" ? rows : table === "services" ? [service] : table === "availability" ? [schedule] : table === "service_options" ? [{ ...optionStore.defaultServiceOption(service), id: 1, serviceId: 1 }] : [];
+      if (transactionActive && table === "bookings" && (fields?.booking || dialect.sqlToQuery(predicate).sql.includes('"bookings"."status" in'))) { assert.equal(lock, true, "Check capacity only under the provider lock"); events.push("capacity"); }
       const result = data.filter(row => matches(row, table, predicate)).map(row => fields?.booking ? { booking: { ...row }, duration: service.duration }
         : joined && table === "bookings" ? { bookings: { ...row }, services: service, users: { id: "provider", providerType: "individual" }, companies: null, employees: null }
           : { ...row });
@@ -119,6 +123,7 @@ const db = { select,
   async transaction(work) { const before = rows.map(row => ({ ...row })); lock = false; transactionActive = true; try { return await work(db); } catch (error) { rows = before; throw error; } finally { lock = false; transactionActive = false; } },
 };
 const dependencies = {
+  "./service-options-store": optionStore, "./service-options": optionLogic, "@shared/service-options": optionDomain, "@shared/money": sharedMoney,
   "./service-booking-protection": serviceBookingProtection,
   "./serviceImages": serviceImages, "@shared/storefront": storefront,
   "./money": money,
@@ -202,6 +207,7 @@ storage.getServiceById = async () => ({ ...service });
 storage.getAvailabilityByProvider = async () => [schedule];
 storage.getBookingById = async id => { const row = rows.find(row => row.id === id); return row && { ...row, service: { ...service } }; };
 const schedulingRoutes = await load("server/schedulingRoutes.ts", { zod: { z }, "@shared/scheduling": scheduling,
+  "./service-options": optionLogic,
   "./storage": { storage }, "./auth": { isAuthenticated: (_req, _res, next) => next() }, "./companyAccess": access, "./customerBookings": customerBookings });
 const routes = [], app = () => {};
 app.use = app.set = () => app;

@@ -44,7 +44,7 @@ export function createStripeBillingAdapter(client: Client, mappings: PriceMappin
     try {
       const created = await client.prices.create({ currency: "eur", unit_amount: offer.amountMinor,
         recurring: { interval: "month", interval_count: 1 }, tax_behavior: "inclusive",
-        product_data: { name: "FitsMyTime Pro" }, metadata: { offer_revision: offer.reference, operation_id: reserved.id } },
+        product_data: { name: "Ordelino Pro" }, metadata: { offer_revision: offer.reference, operation_id: reserved.id } },
       { idempotencyKey: reserved.id, maxNetworkRetries: 0, timeout: 10000 });
       verifyMode(created.livemode);
       if (created.currency !== "eur" || created.unit_amount !== offer.amountMinor || created.tax_behavior !== "inclusive" ||
@@ -83,7 +83,7 @@ export function createStripeBillingAdapter(client: Client, mappings: PriceMappin
       try { event = client.webhooks.constructEvent(Buffer.from(raw), signature, config.webhookSecret, 300, undefined, config.now()); }
       catch { throw new BillingError("UNTRUSTED_PROVIDER"); }
       verifyMode(event.livemode);
-      // This integration is for FitsMyTime's merchant account, never Connect events.
+      // This integration is for Ordelino's merchant account, never Connect events.
       if (event.account) throw new BillingError("BINDING_MISMATCH");
       return event;
     },

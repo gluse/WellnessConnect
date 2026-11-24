@@ -82,12 +82,12 @@ function MobileNavigation({ barRef }: { barRef: RefObject<HTMLElement> }) {
     <div className="mx-auto flex max-w-3xl gap-1">
       {tabs.map(({ href, label, icon: Icon, active }) => <Link key={href} href={href} aria-current={active ? "page" : undefined} aria-disabled={busy || undefined}
         onClick={event => { if (busy) event.preventDefault(); }}
-        className={cn(controlClass, active ? "bg-[#efefff] text-primary" : "hover:bg-neutral-100")}>
+        className={cn(controlClass, active ? "bg-[#efefff] text-primary dark:bg-indigo-950 dark:text-indigo-200" : "hover:bg-neutral-100")}>
         <Icon className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="max-w-full break-words">{label}</span>
       </Link>)}
       <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
         <DropdownMenuTrigger asChild>
-          <button ref={trigger} type="button" disabled={busy} className={cn(controlClass, "disabled:opacity-50", menuActive ? "bg-[#efefff] text-primary" : "hover:bg-neutral-100")}>
+          <button ref={trigger} type="button" disabled={busy} className={cn(controlClass, "disabled:opacity-50", menuActive ? "bg-[#efefff] text-primary dark:bg-indigo-950 dark:text-indigo-200" : "hover:bg-neutral-100")}>
             <Menu className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="max-w-full break-words">{t("mobileNavigation.menu")}</span>
           </button>
         </DropdownMenuTrigger>

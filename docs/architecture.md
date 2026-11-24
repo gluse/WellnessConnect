@@ -103,7 +103,8 @@ See the [README](../README.md) for local setup, commands, and deployment, and th
 
 ### Multi-Language Support
 - **UI Internationalization**: react-i18next with 11 languages (English default, Latvian, Spanish, Chinese, Hindi, Arabic, Portuguese, Russian, Japanese, German, French)
-- **Language Detection**: Automatic browser language detection with localStorage persistence
+- **Language Detection**: Supported URL language prefix first, then localStorage preference, browser language and HTML setting, with English fallback
+- **Language URLs**: Frontend pages use `/<language>/...` (for example `/lv/services/7`). Bare legacy links normalize in the browser; API/static URLs retain their paths. Navigation and sharing preserve language. See [TASK-073 handoff](language-routing-handoff.md).
 - **Language Picker**: Header dropdown for manual language selection
 - **Translation Files**: Located in `client/public/locales/<language>/translation.json`, configured by `client/src/lib/i18n.ts`
 - **AI-Powered Search**: OpenAI text-embedding-3-small for cross-language semantic search

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">FitsMyTime Local Proof</string>
-    <string name="title_activity_main">FitsMyTime Local Proof</string>
+    <string name="app_name">Ordelino Local Proof</string>
+    <string name="title_activity_main">Ordelino Local Proof</string>
     <string name="package_name">com.fitsmytime.proof</string>
     <string name="custom_url_scheme">com.fitsmytime.proof</string>
 </resources>

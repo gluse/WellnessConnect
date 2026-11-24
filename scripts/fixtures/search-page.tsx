@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { ThemeProvider, useTheme } from "../../client/src/components/theme-provider";
+import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
@@ -117,9 +118,8 @@ if (new URLSearchParams(location.search).has("redesign")) {
 }
 queryClient.setQueryData(["/api/auth/user"], null);
 function Fixture() {
-  const [dark, setDark] = useState(false);
+  const { theme, setTheme } = useTheme();
   useEffect(() => { fixture.ready = true; }, []);
-  useEffect(() => { document.documentElement.classList.toggle("dark", dark); }, [dark]);
-  return <><nav aria-label="Fixture controls" className="flex flex-wrap gap-4 p-3"><label>Language <select id="fixture-language" onChange={event => void i18next.changeLanguage(event.target.value)}><option value="en">English</option><option value="lv">Latviešu</option><option value="ru">Русский</option></select></label><button id="fixture-theme" onClick={() => setDark(!dark)}>Toggle fixture theme</button></nav>{Header && <Header />}<Home /></>;
+  return <><nav aria-label="Fixture controls" className="flex flex-wrap gap-4 p-3"><label>Language <select id="fixture-language" onChange={event => void i18next.changeLanguage(event.target.value)}><option value="en">English</option><option value="lv">Latviešu</option><option value="ru">Русский</option></select></label><button id="fixture-theme" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>Toggle fixture theme</button></nav>{Header && <Header />}<Home /></>;
 }
-createRoot(document.getElementById("root")!).render(<QueryClientProvider client={queryClient}><Router><WishlistProvider><Fixture /></WishlistProvider></Router></QueryClientProvider>);
+createRoot(document.getElementById("root")!).render(<ThemeProvider><QueryClientProvider client={queryClient}><Router><WishlistProvider><Fixture /></WishlistProvider></Router></QueryClientProvider></ThemeProvider>);

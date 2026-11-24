@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { isAuthenticated } from "./auth";
 import { AccessError, assertBookingChange, assertService, scope } from "./companyAccess";
 import { CustomerBookingError } from "./customerBookings";
+import { optionBookableSlots, optionScheduleRows, selectedServiceOption, ServiceOptionError } from "./service-options";
 
 const timezoneSchema = z.string().max(100).refine(validTimezone, "Choose a valid timezone.");
 const dateSchema = z.string().refine(validDateKey, "Choose a valid date.");
@@ -17,28 +18,32 @@ const intervals = z.array(z.object({ startTime: clock, endTime: clock }).refine(
   .refine(ranges => [...ranges].sort((a, b) => a.startTime.localeCompare(b.startTime)).every((range, index, sorted) => index === 0 || sorted[index - 1].endTime <= range.startTime), "Working hours must not overlap.");
 const target = { serviceId: z.number().int().positive().nullable(), timezone: timezoneSchema };
 function failure(error: unknown, res: import("express").Response) {
-  res.status(error instanceof AccessError || error instanceof CustomerBookingError ? error.status : error instanceof z.ZodError ? 400 : 500)
-    .json({ message: error instanceof AccessError || error instanceof CustomerBookingError ? error.message : error instanceof z.ZodError ? error.issues[0].message : "Unable to update availability. Please try again." });
+  res.status(error instanceof AccessError || error instanceof CustomerBookingError || error instanceof ServiceOptionError ? error.status : error instanceof z.ZodError ? 400 : 500)
+    .json({ ...(error instanceof ServiceOptionError ? { code: error.code } : {}), message: error instanceof AccessError || error instanceof CustomerBookingError || error instanceof ServiceOptionError ? error.message : error instanceof z.ZodError ? error.issues[0].message : "Unable to update availability. Please try again." });
 }
-export async function serviceSlotData(serviceId: number, first: string, last = first) {
+export async function serviceSlotData(serviceId: number, first: string, last = first, optionId?: number) {
   const service = await storage.getServiceById(serviceId);
   if (!service?.isActive || !service.companyActive) throw new AccessError(404, "Service not found");
-  const [schedules, bookings] = await Promise.all([
+  const [schedules, bookings, options, employees] = await Promise.all([
     storage.getAvailabilityByProvider(service.providerId, service.companyId ?? undefined),
-    storage.getBookingsForResourceRange(service, new Date(`${addDateDays(first, -1)}T00:00:00Z`), new Date(`${addDateDays(last, 2)}T00:00:00Z`)),
+    storage.getBookingsForResourceRange({ ...service, employeeId: null }, new Date(`${addDateDays(first, -1)}T00:00:00Z`), new Date(`${addDateDays(last, 2)}T00:00:00Z`)),
+    storage.getServiceOptions(service), service.companyId == null ? Promise.resolve([]) : storage.getEmployees(service.providerId, service.companyId),
   ]);
-  return { service, schedules, bookings };
+  return { service, schedules, bookings, option: selectedServiceOption(options, optionId), employees };
 }
+const selectionQuery = z.object({ optionId: z.coerce.number().int().positive().max(2147483647).optional(),
+  specialist: z.union([z.literal("any"), z.coerce.number().int().positive().max(2147483647)]).default("any"), participantCount: z.coerce.number().int().min(1).max(10000).default(1) });
 export function setupSchedulingRoutes(app: Express) {
   app.get("/api/availability/month/:serviceId", async (req, res) => {
     try {
       const id = z.coerce.number().int().positive().parse(req.params.serviceId);
       const month = monthSchema.parse(req.query.month);
       const timezone = timezoneSchema.parse(req.query.timezone ?? "UTC");
+      const selection = selectionQuery.parse(req.query);
       const { first, last } = monthBounds(month);
-      const data = await serviceSlotData(id, first, last), days = [];
+      const data = await serviceSlotData(id, first, last, selection.optionId), days = [];
       const now = new Date();
-      for (let date = first; date <= last; date = addDateDays(date, 1)) days.push({ date, availableSlots: bookableSlots({ ...data, date, timezone, now }).length });
+      for (let date = first; date <= last; date = addDateDays(date, 1)) days.push({ date, availableSlots: optionBookableSlots({ ...data, ...selection, date, timezone, now }).length });
       res.json({ month, timezone, days });
     } catch (error) { failure(error, res); }
   });
@@ -46,9 +51,10 @@ export function setupSchedulingRoutes(app: Express) {
     try {
       const id = z.coerce.number().int().positive().parse(req.params.serviceId);
       const date = dateSchema.parse(req.query.date), timezone = timezoneSchema.parse(req.query.timezone ?? "UTC");
-      const data = await serviceSlotData(id, date);
-      const slots = bookableSlots({ ...data, date, timezone });
-      res.json({ date, timezone, serviceId: id, serviceDuration: data.service.duration, slots, totalSlots: slots.length, availableSlots: slots.length });
+      const selection = selectionQuery.parse(req.query);
+      const data = await serviceSlotData(id, date, date, selection.optionId);
+      const slots = optionBookableSlots({ ...data, ...selection, date, timezone });
+      res.json({ date, timezone, serviceId: id, optionId: data.option.id, serviceDuration: data.option.duration, slots, totalSlots: slots.length, availableSlots: slots.length });
     } catch (error) { failure(error, res); }
   });
   app.get("/api/bookings/:id/available-times", isAuthenticated, async (req, res) => {
@@ -59,11 +65,14 @@ export function setupSchedulingRoutes(app: Express) {
       const timezone = timezoneSchema.parse(req.query.timezone ?? "UTC");
       const month = req.query.month == null ? null : monthSchema.parse(req.query.month);
       const { first, last } = month ? monthBounds(month) : { first: dateSchema.parse(req.query.date), last: dateSchema.parse(req.query.date) };
-      const service = { ...booking!.service, providerId: booking!.providerId, companyId: booking!.companyId, employeeId: booking!.employeeId, duration: booking!.bookingDuration ?? booking!.service.duration, cleanupTime: booking!.bookingCleanupTime ?? 0 };
-      const [schedules, allBookings] = await Promise.all([
+      const service = { ...booking!.service, optionId: booking!.optionId, providerId: booking!.providerId, companyId: booking!.companyId, employeeId: booking!.employeeId, duration: booking!.bookingDuration ?? booking!.service.duration, cleanupTime: booking!.bookingCleanupTime ?? 0 };
+      const [inherited, allBookings, options] = await Promise.all([
         storage.getAvailabilityByProvider(service.providerId, service.companyId ?? undefined),
         storage.getBookingsForResourceRange(service, new Date(`${addDateDays(first, -1)}T00:00:00Z`), new Date(`${addDateDays(last, 2)}T00:00:00Z`)),
+        storage.getServiceOptions(service, true),
       ]);
+      const option = options.find(item => item.id === booking!.optionId);
+      const schedules = option ? optionScheduleRows(service, option, inherited) : inherited;
       const bookings = allBookings.filter(row => row.id !== id), now = new Date();
       if (month) {
         const days = [];

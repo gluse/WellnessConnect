@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "wouter";
 import SearchServiceCard from "@/components/search-service-card";
 import WishlistHeart from "@/components/wishlist-heart";
+import ProviderVerificationBadge from "@/components/provider-verification-badge";
 
 interface ServiceCardProps {
   service: ServiceWithProvider;
@@ -59,6 +60,7 @@ export default function ServiceCard({ service, onBook, onViewDetails, onViewProv
             </div>
             
             <div className="flex flex-wrap items-center gap-2 mb-2">
+              <div className="provider-name-group">
               {service.storefrontSlug ? <Link href={`/providers/${service.storefrontSlug}`} className="text-sm text-primary underline underline-offset-2" data-testid={`link-provider-${service.id}`}>{getProviderName(service.provider)}</Link> : onViewProvider ? <button type="button" onClick={onViewProvider}
                 data-testid={`button-provider-${service.id}`}
                 aria-label={t("catalog.view", { name: getProviderName(service.provider) })}
@@ -66,7 +68,7 @@ export default function ServiceCard({ service, onBook, onViewDetails, onViewProv
                 {getProviderName(service.provider)}
               </button> : <p className="text-sm text-neutral-600">
                 {getProviderName(service.provider)}
-              </p>}
+              </p>}<ProviderVerificationBadge /></div>
               {service.distance !== undefined && (
                 <>
                   <span className="text-sm text-neutral-500">•</span>

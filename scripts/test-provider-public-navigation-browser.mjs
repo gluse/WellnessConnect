@@ -42,7 +42,7 @@ try {
   assert.deepEqual(await evaluate(() => window.phase2Fixture.reads.filter(path => path.startsWith('/api/services/catalog') || path === '/api/provider/storefront')), []);
   await click('.search-provider-row a[href="/providers/pro-studio"]'); await cardsReady();
   assert.deepEqual(await signature(), searchStyle);
-  assert.equal(await evaluate(() => document.title), "Pro Studio | FitsMyTime");
+  assert.equal(await evaluate(() => document.title), "Pro Studio | Ordelino");
   checks.push("Guest Search exposes active Pro individual/company provider links; free/expired provider names and details have no catalog control or request; shared card presentation matches");
 
   await set("storefront-search", "retreat"); await until(() => document.querySelectorAll('.search-service-card').length === 1);

@@ -37,7 +37,7 @@ function CustomerBookings() {
   }, [bookings.error, queryClient]);
   if (bookings.error && isUnauthorizedError(bookings.error)) return <Redirect to={signInUrl} />;
 
-  return <div className="min-h-[calc(100dvh-4rem)] bg-[#EAF7F3]" data-appointment-area="customer">
+  return <div className="min-h-[calc(100dvh-4rem)] bg-[#EAF7F3] dark:bg-background" data-appointment-area="customer">
     <main className="max-w-7xl mx-auto p-4 sm:p-6 space-y-3">
       <h1 ref={heading} tabIndex={-1} className="sr-only">{t("notifications.appointments")}</h1>
       {message && <p role="status" className="rounded-lg border bg-white p-3">{message}</p>}

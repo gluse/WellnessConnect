@@ -1,3 +1,4 @@
+import { ThemeProvider } from "../../client/src/components/theme-provider";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import i18next from "i18next";
@@ -61,10 +62,10 @@ await i18next.changeLanguage(language);
 document.documentElement.lang = i18next.language;
 queryClient.setQueryData(["/api/auth/user"], user);
 queryClient.setQueryData(["/api/company/context"], context);
-createRoot(document.getElementById("root")!).render(<QueryClientProvider client={queryClient}>
+createRoot(document.getElementById("root")!).render(<ThemeProvider><QueryClientProvider client={queryClient}>
   <MobileNavigationLayout>
     <AppHeader />
     {customerMode ? <MyBookings /> : <MyServices />}
   </MobileNavigationLayout><Toaster />
-</QueryClientProvider>);
+</QueryClientProvider></ThemeProvider>);
 fixture.ready = true;

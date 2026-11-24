@@ -15,6 +15,7 @@ import { Link } from "wouter";
 import SearchServiceDetails from "@/components/search-service-details";
 import WishlistHeart from "@/components/wishlist-heart";
 import ServiceImageGallery from "@/components/service-image-gallery";
+import ProviderVerificationBadge from "@/components/provider-verification-badge";
 
 interface ServiceDetailModalProps {
   service: ServiceWithProvider | null;
@@ -89,14 +90,15 @@ export default function ServiceDetailModal({ service, open, onClose, onBook, onV
                 {getProviderName(service.provider).split(/\s+/).slice(0, 2).map(word => word[0]).join("")}
               </span>
             </div>
-            <div>
+            <div className="min-w-0">
+              <div className="provider-name-group">
               {service.storefrontSlug ? <Link href={`/providers/${service.storefrontSlug}`} className="font-semibold text-primary underline underline-offset-2" onClick={onClose}>{getProviderName(service.provider)}</Link> : onViewProvider ? <button type="button" onClick={onViewProvider}
                 data-testid="button-provider-details" aria-label={t("catalog.view", { name: getProviderName(service.provider) })}
                 className="font-semibold text-primary text-left underline underline-offset-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 {getProviderName(service.provider)}
               </button> : <p className="font-semibold text-neutral-800" data-testid="text-provider-name">
                 {getProviderName(service.provider)}
-              </p>}
+              </p>}<ProviderVerificationBadge /></div>
               {service.employee?.name && <p className="text-sm text-neutral-600">With {service.employee.name}</p>}
               <ServiceRating service={service} />
             </div>

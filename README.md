@@ -1,4 +1,4 @@
-# FitsMyTime
+# Ordelino
 
 Marketplace for local health, wellness, education, and entertainment services.
 Built with React, Express, Drizzle, and Supabase (PostgreSQL, authentication,

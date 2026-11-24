@@ -2,24 +2,17 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
+import { supportedLanguages } from './languages';
+import { languageFromPath } from './language-path';
 
-export const supportedLanguages = [
-  { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'lv', name: 'Latvian', nativeName: 'Latviešu' },
-  { code: 'es', name: 'Spanish', nativeName: 'Español' },
-  { code: 'zh', name: 'Chinese', nativeName: '中文' },
-  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
-  { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
-  { code: 'pt', name: 'Portuguese', nativeName: 'Português' },
-  { code: 'ru', name: 'Russian', nativeName: 'Русский' },
-  { code: 'ja', name: 'Japanese', nativeName: '日本語' },
-  { code: 'de', name: 'German', nativeName: 'Deutsch' },
-  { code: 'fr', name: 'French', nativeName: 'Français' },
-];
+export { supportedLanguages } from './languages';
+
+const languageDetector = new LanguageDetector();
+languageDetector.addDetector({ name: 'languagePath', lookup: () => typeof window === 'undefined' ? undefined : languageFromPath(window.location.pathname) });
 
 i18n
   .use(Backend)
-  .use(LanguageDetector)
+  .use(languageDetector)
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
@@ -31,7 +24,7 @@ i18n
       loadPath: '/locales/{{lng}}/translation.json',
     },
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
+      order: ['languagePath', 'localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
     },

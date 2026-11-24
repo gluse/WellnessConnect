@@ -1,5 +1,40 @@
 # Cross-role dependency queue
 
+## TASK-073 language URL prefixes — 24 November 2026
+
+**Requested → accepted → implemented and verified locally.** User approved
+the language-prefix proposal; `/root` executes local frontend routing, navigation,
+sharing, translations and offline/mocked checks. Backend authentication return
+allowlists remain the existing unprefixed contract. Passing en/lv/ru Chromium,
+path/share/security unit contracts, guest entry and affected auth/service-page
+regressions, TypeScript and isolated frontend build. The existing provider
+workspace-switch draft assertion was reproduced with prior navigation behavior;
+it is recorded separately. Other locales/RTL remain deferred. No connected
+operation, deployment or country-market change. See [handoff](language-routing-handoff.md).
+
+## TASK-072 provider verification placeholder — 24 November 2026
+
+**Placeholder requested → accepted → completed locally; verification workflow remains
+backlog.** User approved the badge UI and requested a future verification page with
+methods varying by provider and service type. `/root` implemented a neutral,
+translated certificate icon beside provider names; no verified status, connected
+operation or data/schema change. TypeScript and isolated en/lv/ru light/dark layout
+checks pass. [Handoff, verification limits and recovery](provider-verification-placeholder-handoff.md).
+TASK-072 retains the future requirements matrix, page and real badge logic; no
+cross-owner implementation or deployment is authorized by this placeholder.
+
+## TASK-071 dark mode — 24 November 2026
+
+**Requested → accepted → implemented and verified locally.** User directly approved
+frontend dark mode; `/root` executed local theme state/bootstrap, shared header,
+palettes, translations, affected fixtures/tests and handoff. No cross-owner
+dependency or connected operation. TypeScript, isolated frontend build, dark-mode
+Chrome checks and en/lv/ru Search entry regressions pass. Existing Search runner
+Grid/List mismatch and Node Vite-env limitation remain separate baseline issues.
+Other locales/RTL, physical-device checks and deployment remain outside this
+verification. Existing changes/holds preserved; see [handoff](dark-mode-handoff.md)
+for exact scope, checks, limitations and recovery.
+
 ## TASK-035 iOS build request — 18 November 2026
 
 **Readiness reviewed; no Mac build capability established.** User requested the
@@ -2723,3 +2758,100 @@ privacy pass. No real credentials tested, account created, source/cloud access,
 Windows setting change or volume deletion. All test app/worker consumers closed.
 Root owns final user instructions: Docker Desktop only, then run the npm command
 from WellnessConnect; do not create new containers from Docker Images.
+
+
+## Public service pages and options — 21–22 November 2026 (TASK-067)
+
+**Accepted / implemented / offline verified; connected activation stopped.** Root
+owns Frontend and assigned Backend /root/service_booking_backend, DB
+/root/service_booking_database and delegated provider UI /root/service_options_provider_ui.
+Each owner accepted the approved plan and returned implementation/check evidence.
+DB delegated persistence/query edits to Backend and accepted crossreview. User
+approved additive migration only at 127.0.0.1:15422/postgres without backup,
+identified local writer stop/restart, English-only tests, and no hosted/AWS/
+payment collection/publication. Root integrated translations and customer flows.
+
+Final English browser suites, affected mocked Backend checks, offline 49-gate DB
+checks, TypeScript and build pass. Backend disclosed a one-time legacy en/lv/ru
+formatting/component runner exception; no new non-English browser/service-page
+matrix is claimed. Details, exact commands, language/device limits and recovery:
+[implementation handoff](service-page-implementation-handoff.md),
+[Backend](service-page-backend-handoff.md), [DB](service-page-database-handoff.md),
+[provider UI](service-page-provider-handoff.md).
+
+22 November root found no app/worker writer candidates and no5000 listener,
+then explicitly released the one-shot DB executor. Its first OS preflight failed
+under the restricted token before private reads, DB connection, SQL or receipt
+creation. No retry/rollback/restart occurred. No guard correction is needed;
+next owner/action is user authorization for one new unchanged guarded attempt
+with the required OS permissions, followed by DB evidence review and Root local
+app restart/health checks. TASK-067 stays open for those connected checks.
+
+
+TASK-067 execution update22November: user approved one renewed guarded attempt
+with OS permissions and success-dependent restart. Root verified/stopped only
+npm/local-launcher/watch PIDs38948/32648/27444/8004 and released DB. Current42
+preflight passed, then0026 trigger installation failed because its setup omitted
+the audit function's temporary EXECUTE authority. No retry/restart. Bounded
+read-only diagnosis proved current42, no added schema, and identical original
+service/booking/pricing fingerprints (29services/36bookings). The consumed
+receipt remains conservative unknown; separate evidence establishes rollback.
+DB is preparing a NEW versioned correction using the established0008 temporary
+membership/EXECUTE pattern with exact restoration before commit. New connected
+execution awaits a concrete recovery approval; original0026/receipt stay frozen.
+
+
+TASK-067 recovery prepared: new0027 and distinct guarded executor/receipt retain
+frozen0026 and its consumed failure evidence.43 offline recovery checks and the
+original49-gate/superset regression pass; Root independently reran recovery tests
+and verified pin c5e0fe3bab8793818d7c1f2477574f290cf7586bcae47aa7d175f66c5e3814f8.
+The sole SQL correction follows existing0008 temporary setup role/EXECUTE grants,
+with exact ACL/member restoration before commit and independent postflight hashes.
+No connected recovery or app restart occurred. Await renewed user execution
+approval under the explicit no-automatic-retry rule; the exact command, target,
+no-backup choice, safeguards and risk are linked in the DB and Root handoffs.
+
+
+TASK-067 second recovery approval/execution22November: user approved exact0027,
+no backup and temporary setup authority with exact restoration. Fresh Root writer
+check found zero candidates/listeners; DB released once with OS permissions.
+0027 COMMITTED.29services/36bookings/alloriginalfingerprints and all backfill/
+payment defaults are preserved; setup ACL/membership hashes match exactly.
+Postflight failed closed on constraints/addedcolumns/functions; noEXPLAIN or
+restart/replay/repair. Bounded read-only diagnosis identifies two checker
+representations (NULL::integer and numeric '0'::numeric) and actual explicit
+Supabase-default EXECUTE grants on three new public trigger functions. DB owns
+narrow verifier corrections with all old gates preserved and new0028 ACL-only
+forward preparation; no connected write authorized yet. Original0026/0027 SQL,
+pins and consumed receipts remain frozen. Root owns final review/new execution
+approval request and success-dependent local restart. See Root/DB handoffs.
+
+
+TASK-067 new0028 approval package ready: narrow checker representations corrected
+without relaxing any prior gate; actual48/49 pass with only explicit function
+ACLs failing. Bounded READONLY planning found a missing option EXISTS delimiter;
+DB fixed its owned query and all3plainEXPLAIN variants now pass (noANALYZE).
+New0028 performs only explicit browser-role EXECUTE revokes on the3 exact reviewed
+new public trigger functions, with body/owner/config checks and owner-only ACL
+postcondition. New distinct executor preserves all business/options fields and
+setup authority, requires committed0027 evidence, current48 preflight and49
+postflight plus3EXPLAINs.53 offline checks pass (Root independently reran); Search57
+passes; Root final TypeScript/build pass. Pinf8037db64073c0c56bf144d96b9684fff337bfd5e8cb811453ce975bb8ba4e11.
+No0028 execution or app restart. New user decision required under no-automatic-
+retry rule; exact target/command/no-backup/stop scope in Root and DB handoffs.
+
+
+TASK-067 COMPLETED locally22November. User approved one0028 ACL-only attempt
+without backup. Root fresh writer scan was empty; DB released once.0028 committed
+and its passing receipt proves49/49 readiness,3plainEXPLAINs, unchanged original/
+full business/options data, unchanged function bodies, intended browser EXECUTE
+denial, exactly restored/inert audit setup and closed probes. Root reviewed the
+receipt and ran approved npm run dev through protected local-only launcher.
+Health/live,health/ready,home andservice SPA shell returned200 with no cookies;
+no connected login/booking/payment test. App remains at http://localhost:5000.
+English UI/affected offline checks, final TypeScript/build and53 forward checks
+pass; language/device limitations and old money-runner exception remain recorded.
+All earlier stops/consumed0026/0027 evidence stay frozen. Do not replay0026–0028.
+TASK-068 country fees,069payments/DAC7 and070privatecalendar remain open. Final
+Root and DB handoffs hold approvals, commands, exact fingerprints and recovery.
+No hosted/AWS/deployment/real-payment/publication operation occurred.

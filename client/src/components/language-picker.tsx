@@ -7,17 +7,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { supportedLanguages } from '@/lib/i18n';
+import { supportedLanguages } from '@/lib/languages';
+import { switchRouteLanguage } from '@/components/language-router';
 
 export function LanguagePicker() {
   const { i18n } = useTranslation();
 
   const currentLanguage = supportedLanguages.find(
-    (lang) => lang.code === (i18n.resolvedLanguage || i18n.language?.split('-')[0])
+    (lang) => lang.code === (i18n.language?.split('-')[0] || i18n.resolvedLanguage)
   ) || supportedLanguages[0];
 
   const handleLanguageChange = (languageCode: string) => {
-    i18n.changeLanguage(languageCode);
+    switchRouteLanguage(languageCode);
   };
 
   return (

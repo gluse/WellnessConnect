@@ -1,3 +1,4 @@
+import { ThemeProvider } from "../../client/src/components/theme-provider";
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import i18next from "i18next";
@@ -177,5 +178,5 @@ function Fixture() {
     <Switch><Route path="/wishlist" component={Wishlist} /><Route path="/inbox" component={Inbox} /><Route path="/search" component={Home} /><Route path="/login" component={Login} /><Route component={Gallery} /></Switch>
   </MobileNavigationLayout></WishlistProvider></TooltipProvider></QueryClientProvider>;
 }
-createRoot(document.getElementById("root")!).render(<Fixture />);
+createRoot(document.getElementById("root")!).render(<ThemeProvider><Fixture /></ThemeProvider>);
 fixture.ready = true;

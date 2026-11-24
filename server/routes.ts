@@ -16,7 +16,7 @@ import { setupPaymentRoutes } from "./payments";
 import { GeocodingError } from "./geocoding";
 import { registerLocation, resolveServiceLocation } from "./registeredLocations";
 import { setupCompanyRoutes } from "./companyRoutes";
-import { setupSchedulingRoutes } from "./schedulingRoutes";
+import { setupSchedulingRoutes, serviceSlotData } from "./schedulingRoutes";
 import { setupAdminRoutes } from "./adminRoutes";
 import { setupCategoryRoutes } from "./categoryRoutes";
 import { categoryStore } from "./categories";
@@ -54,6 +54,9 @@ import { bookingMoneyDto, bookingPriceSnapshot, expectedPriceSchema, MoneyInputE
 import { setupWorkspacePricingRoutes } from "./workspace-pricing/routes";
 import { createWorkspacePricingStore } from "./workspace-pricing/store";
 import { WorkspacePricingError } from "@shared/workspace-pricing";
+import { bookingOptionSelectionSchema, bookingQuoteInputSchema, bookingQuoteResponseSchema, calculatePlatformQuote, serviceOptionsInputSchema } from "@shared/service-options";
+import { effectiveOnlinePayments } from "./service-options-store";
+import { optionBookableSlots, optionEffectiveService, selectedServiceOption, ServiceOptionError } from "./service-options";
 
 // Older booking clients send `notes`; both inputs start the same conversation.
 const initialBookingMessageSchema = z.object({
@@ -66,6 +69,7 @@ const initialBookingMessageSchema = z.object({
 }).transform(input => input.initialMessage || input.notes || null);
 
 function apiFailure(error: unknown, res: import("express").Response, fallback: string) {
+  if (error instanceof ServiceOptionError) return res.status(error.status).json({ code: error.code, message: error.message });
   if (error instanceof PriceChangedError) return res.status(409).json({ code: error.code, message: error.message, currentPrice: error.currentPrice, currentCurrency: error.currentCurrency, currentAdvancePaymentPercent: error.currentAdvancePaymentPercent });
   const pgError = (error as any)?.cause ?? error;
   if ((pgError as any)?.code === "23503" && (pgError as any)?.constraint === "services_category_categories_key_fk") {
@@ -428,7 +432,8 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
       for (const image of serviceData.imageUrls ?? []) await validateServiceImage(image, userId, current.companyId);
       await validateEmployeeAssignment(serviceData.employeeId, req);
       
-      const service = await storage.createService(serviceData);
+      const options = req.body.options === undefined ? undefined : serviceOptionsInputSchema.parse(req.body.options);
+      const service = await storage.createService(serviceData, options);
       
       // Generate embedding for the new service asynchronously
       try {
@@ -467,7 +472,7 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
   // Generate/update embedding for a service
   app.post('/api/services/:id/embedding', isAuthenticated, async (req: any, res) => {
     try {
-      const serviceId = parseInt(req.params.id);
+      const serviceId = z.coerce.number().int().positive().max(2147483647).parse(req.params.id);
       const service = await storage.getServiceById(serviceId);
       
       if (!service) {
@@ -536,8 +541,8 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
 
   app.get('/api/services/:id', async (req, res) => {
     try {
-      const serviceId = parseInt(req.params.id);
-      const service = await storage.getServiceById(serviceId);
+      const serviceId = z.coerce.number().int().positive().max(2147483647).parse(req.params.id);
+      const service = await storage.getServicePageDetails(serviceId);
       
       if (!service || !service.isActive || !service.companyActive) {
         return res.status(404).json({ message: "Service not found" });
@@ -587,7 +592,8 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
           && new Date(booking.scheduledDate).getTime() + ((booking.bookingDuration ?? service!.duration) + (booking.bookingCleanupTime ?? 0)) * 60_000 > Date.now());
         if (upcoming) return res.status(409).json({ message: "This service has upcoming bookings. Keep its assigned employee or resolve those bookings before changing the assignment." });
       }
-      const updatedService = await storage.updateService(serviceId, updates);
+      const options = req.body.options === undefined ? undefined : serviceOptionsInputSchema.parse(req.body.options);
+      const updatedService = await storage.updateService(serviceId, updates, options);
       res.json(updatedService);
     } catch (error) {
       console.error("Error updating service:", error instanceof Error ? error.name : "Error");
@@ -612,6 +618,31 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
     }
   });
 
+  // Quotes are read-only calculations. A quote or browser return is never payment evidence.
+  app.post('/api/bookings/quote', isAuthenticated, async (req, res) => {
+    res.set("Cache-Control", "private, no-store");
+    try {
+      const input = bookingQuoteInputSchema.parse(req.body);
+      const instant = new Date(input.scheduledDate);
+      if (instant.getTime() <= Date.now()) throw new ServiceOptionError(400, "INVALID_TIME", "Choose a future appointment time.");
+      const date = instant.toISOString().slice(0, 10);
+      const data = await serviceSlotData(input.serviceId, date, date, input.optionId);
+      const maximum = data.service.serviceType === "group" ? data.service.maxCapacity ?? 1 : 1;
+      if (input.participantCount > maximum) throw new ServiceOptionError(400, "INVALID_PARTICIPANTS", "Choose a valid number of participants.");
+      const slot = optionBookableSlots({ ...data, specialist: input.specialist, date, timezone: "UTC", participantCount: input.participantCount }).find(item => item.startsAt === instant.toISOString());
+      if (!slot) throw new ServiceOptionError(409, "TIME_UNAVAILABLE", "This appointment time is no longer available.");
+      const effective = optionEffectiveService(data.service, data.option, slot.employeeId);
+      let amounts: ReturnType<typeof calculatePlatformQuote>;
+      try { amounts = calculatePlatformQuote({ ...effective, participantCount: input.participantCount, paymentMethod: input.paymentMethod }); }
+      catch { throw new MoneyInputError("The appointment amount exceeds the supported payment limit. Choose fewer participants."); }
+      res.json(bookingQuoteResponseSchema.parse({ serviceId: data.service.id, optionId: data.option.id, optionName: data.option.name, pricingMode: data.option.pricingMode,
+        price: effective.price, currency: data.service.currency, advancePaymentPercent: data.service.advancePaymentPercent ?? 0, duration: data.option.duration,
+        employeeId: slot.employeeId, employeeName: slot.employeeName, scheduledDate: instant.toISOString(), endsAt: slot.endsAt, timezone: input.timezone,
+        participantCount: input.participantCount, paymentMethod: input.paymentMethod, ...amounts,
+        onlinePaymentsAllowed: await effectiveOnlinePayments(db, data.service), onlinePaymentsAvailable: false }));
+    } catch (error) { apiFailure(error, res, "Unable to quote this appointment. Please try again."); }
+  });
+
   // Booking routes
   app.post('/api/bookings', isAuthenticated, async (req: any, res) => {
     try {
@@ -626,7 +657,10 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
       const scheduledDate = z.string().datetime().transform(value => new Date(value)).refine(value => value.getTime() > Date.now(), "Choose a future appointment time.").parse(req.body.scheduledDate);
       const participantCount = z.number().int().min(1).max(service.serviceType === "group" ? service.maxCapacity ?? 1 : 1).parse(req.body.participantCount ?? 1);
       const expectedPrice = expectedPriceSchema.parse(req.body);
-      const snapshot = bookingPriceSnapshot(service, participantCount, expectedPrice);
+      const selection = bookingOptionSelectionSchema.parse(req.body);
+      if (selection.paymentMethod === "fitsmytime") throw new ServiceOptionError(409, "PAYMENTS_UNAVAILABLE", "Online payment collection is not available. Choose pay onsite.");
+      const option = selectedServiceOption(await storage.getServiceOptions(service), selection.optionId);
+      const snapshot = bookingPriceSnapshot(optionEffectiveService(service, option, service.employeeId), participantCount, expectedPrice);
       const bookingData = insertBookingSchema.parse({
         serviceId,
         notes: null,
@@ -634,7 +668,7 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
         providerId: service.providerId,
         companyId: service.companyId,
         employeeId: service.employeeId,
-        bookingDuration: service.duration,
+        bookingDuration: option.duration,
         bookingCleanupTime: service.cleanupTime,
         status: service.instantBooking ? "confirmed" : "pending",
         paymentStatus: "pending",
@@ -643,7 +677,7 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
         ...snapshot,
       });
       
-      const booking = await storage.createBooking(bookingData, initialMessage, expectedPrice);
+      const booking = await storage.createBooking(bookingData, initialMessage, expectedPrice, selection);
       res.json(bookingMoneyDto(booking));
     } catch (error) {
       console.error("Error creating booking:", error instanceof Error ? error.name : "Error");

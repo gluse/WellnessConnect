@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "wouter";
+import { Link, useParams, useLocation } from "wouter";
+import { servicePagePath } from "@/lib/service-page-state";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import type { PublicStorefront } from "@shared/storefront";
@@ -8,13 +9,14 @@ import { apiRequest } from "@/lib/queryClient";
 import { useCategories } from "@/hooks/use-categories";
 import ServiceCard from "@/components/service-card";
 import ServiceDetailModal from "@/components/service-detail-modal";
-import BookingModal from "@/components/booking-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { canSortServicePrices } from "@/lib/service-sort";
+import ProviderVerificationBadge from "@/components/provider-verification-badge";
 
 export function StorefrontView({ page, preview = false }: { page: PublicStorefront; preview?: boolean }) {
+  const [, navigate] = useLocation();
   const { t } = useTranslation();
   const categories = useCategories();
   const [search, setSearch] = useState("");
@@ -24,15 +26,13 @@ export function StorefrontView({ page, preview = false }: { page: PublicStorefro
   useEffect(() => { if (!priceSortAvailable && sort === "price") setSort("name"); }, [priceSortAvailable, sort]);
   const [detail, setDetail] = useState<ServiceWithProvider | null>(null);
   const showDetails = (service: ServiceWithProvider) => {
-    setDetail(service);
-    if (!preview && Number.isInteger(service.id) && service.id > 0 && service.id <= 2147483647) {
-      void apiRequest("POST", `/api/services/${service.id}/view`).catch(() => {});
-    }
+    if (preview) setDetail(service);
+    else navigate(servicePagePath(service.id), { state: { serviceSource: `/providers/${page.slug}` } });
   };
-  const [booking, setBooking] = useState<ServiceWithProvider | null>(() => {
-    const id = preview || typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("book");
-    return page.services.find(service => String(service.id) === id) ?? null;
-  });
+  useEffect(() => {
+    const id = preview ? null : new URLSearchParams(window.location.search).get("book");
+    if (id && /^[1-9]\d{0,9}$/.test(id) && Number(id) <= 2147483647) navigate(servicePagePath(Number(id)), { replace: true });
+  }, [preview, navigate]);
   const services = useMemo(() => page.services.filter(service => (!category || service.category === category)
     && `${service.name} ${service.description ?? ""}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
     .sort((a, b) => sort === "price" && priceSortAvailable ? Number(a.price) - Number(b.price) || a.id - b.id
@@ -46,7 +46,7 @@ export function StorefrontView({ page, preview = false }: { page: PublicStorefro
       <div className="p-5 sm:p-8 space-y-4">
         <div className="flex items-center gap-4">
           {page.logoUrl && <img src={page.logoUrl} alt={t("storefront.logoAlt", { name: page.name })} className="h-20 w-20 rounded-xl border bg-white object-cover shrink-0" />}
-          <div className="min-w-0"><p className="text-sm text-primary font-medium">{t("storefront.providerPage")}</p><h1 className="text-2xl sm:text-3xl font-semibold break-words">{page.name}</h1></div>
+          <div className="min-w-0"><p className="text-sm text-primary font-medium">{t("storefront.providerPage")}</p><h1 className="provider-name-group text-2xl sm:text-3xl font-semibold break-words"><bdi>{page.name}</bdi><ProviderVerificationBadge /></h1></div>
         </div>
         {page.description && <p className="whitespace-pre-wrap break-words text-neutral-600 max-w-3xl">{page.description}</p>}
       </div>
@@ -65,14 +65,10 @@ export function StorefrontView({ page, preview = false }: { page: PublicStorefro
       {!priceSortAvailable && <p className="text-sm text-neutral-600" role="status">{t("currency.mixedSort")}</p>}
       <p role="status" className="text-sm text-neutral-500">{t("catalog.count", { count: services.length })}</p>
       {!services.length ? <p className="rounded-xl border bg-white p-6">{t("storefront.empty")}</p> : <div className="search-cards search-cards-grid">
-        {services.map(service => <ServiceCard key={service.id} service={service} searchLayout wishlistEnabled={!preview} onBook={() => setBooking(service)} onViewDetails={() => showDetails(service)} />)}
+        {services.map(service => <ServiceCard key={service.id} service={service} searchLayout wishlistEnabled={!preview} onBook={() => showDetails(service)} onViewDetails={() => showDetails(service)} />)}
       </div>}
     </section>
-    <ServiceDetailModal service={detail} searchLayout open={detail !== null} wishlistEnabled={!preview} onClose={() => setDetail(null)} onBook={() => { setBooking(detail); setDetail(null); }} />
-    {booking && <BookingModal service={booking} returnTo={`/providers/${page.slug}?book=${booking.id}`} onClose={() => {
-      setBooking(null);
-      if (!preview && new URLSearchParams(window.location.search).has("book")) window.history.replaceState(null, "", `/providers/${page.slug}`);
-    }} />}
+    {preview && <ServiceDetailModal service={detail} searchLayout open={detail !== null} wishlistEnabled={false} onClose={() => setDetail(null)} onBook={() => setDetail(null)} />}
   </div>;
 }
 
@@ -85,7 +81,7 @@ export default function StorefrontPage() {
   useEffect(() => {
     if (!page.data || page.isError) return;
     const previous = document.title;
-    document.title = `${page.data.name} | FitsMyTime`;
+    document.title = `${page.data.name} | Ordelino`;
     return () => { document.title = previous; };
   }, [page.data?.name, page.isError]);
   const missing = page.error?.message.startsWith("404:");

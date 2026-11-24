@@ -1,3 +1,4 @@
+import { currentLanguagePath } from "@/lib/language-path";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
@@ -100,7 +101,7 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
       setInitialMessage(""); setSucceeded(true);
     },
     onError: error => {
-      if (isUnauthorizedError(error)) { window.location.assign(`/login?returnTo=${encodeURIComponent(returnTo)}`); return; }
+      if (isUnauthorizedError(error)) { window.location.assign(currentLanguagePath(`/login?returnTo=${encodeURIComponent(returnTo)}`)); return; }
       if (error.message.startsWith("409:")) {
         try {
           const detail = JSON.parse(error.message.slice(4));
@@ -148,7 +149,7 @@ function AuthenticatedBooking({ userId, service, onClose, returnTo, restoreFocus
         }
       } catch (error) {
         if (controller.signal.aborted) return;
-        if (isUnauthorizedError(error as Error)) window.location.assign(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+        if (isUnauthorizedError(error as Error)) window.location.assign(currentLanguagePath(`/login?returnTo=${encodeURIComponent(returnTo)}`));
         else setError("bookingForm.duplicateCheckError");
         submitting.current = false;
         return;

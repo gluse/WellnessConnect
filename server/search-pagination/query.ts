@@ -21,7 +21,7 @@ function column(name:string){return sql.raw(`e.${name}`);}
 // presence of a service week is significant even when closed or expired: it
 // must not silently fall back to general working hours.
 function scheduleScope(alias:'av'|'sv'|'sw'|'gv'):SQL {
- return sql.raw(`${alias}.is_active=true AND ((s.company_id IS NOT NULL AND ${alias}.company_id=s.company_id) OR (s.company_id IS NULL AND ${alias}.company_id IS NULL AND ${alias}.provider_id=s.provider_id))`);
+ return sql.raw(`${alias}.option_id=opt.id AND ${alias}.is_active=true AND ((s.company_id IS NOT NULL AND ${alias}.company_id=s.company_id) OR (s.company_id IS NULL AND ${alias}.company_id IS NULL AND ${alias}.provider_id=s.provider_id))`);
 }
 function scheduleHasWorkingRange(alias:'av'|'sw'):SQL {
  // Any surviving interval starts at the working start or a break's end. Check
@@ -34,9 +34,52 @@ function scheduleHasWorkingRange(alias:'av'|'sw'):SQL {
     WHERE pause->>'startTime'<=point AND pause->>'endTime'>point))`);
 }
 function dateOnlySchedule():SQL {
- return sql`EXISTS(SELECT 1 FROM public.availability sw WHERE ${scheduleScope('sw')} AND sw.service_id=s.id AND sw.schedule_type='recurring')
-  AND NOT EXISTS(SELECT 1 FROM public.availability sw WHERE ${scheduleScope('sw')} AND sw.service_id=s.id AND sw.schedule_type='recurring'
+ return sql`EXISTS(SELECT 1 FROM option_schedules sw WHERE ${scheduleScope('sw')} AND sw.service_id=s.id AND sw.schedule_type='recurring')
+  AND NOT EXISTS(SELECT 1 FROM option_schedules sw WHERE ${scheduleScope('sw')} AND sw.service_id=s.id AND sw.schedule_type='recurring'
    AND CASE WHEN jsonb_typeof(sw.days_of_week)='array' THEN jsonb_array_length(sw.days_of_week)>0 ELSE false END AND ${scheduleHasWorkingRange('sw')})`;
+}
+// The virtual schedule mirrors optionScheduleRows without altering shared hours.
+// A closed custom week retains a sentinel so general hours cannot reopen it.
+const optionSchedules = sql`option_schedules AS (
+ SELECT o.id AS option_id,av.provider_id,av.company_id,av.service_id,av.schedule_type,av.specific_date,av.days_of_week,
+ av.start_time,av.end_time,av.breaks,av.timezone,av.recurrence_end_type,av.recurrence_end_value,av.is_active,av.created_at
+ FROM public.service_options o JOIN public.services listing ON listing.id=o.service_id JOIN public.availability av
+ ON ((listing.company_id IS NOT NULL AND av.company_id=listing.company_id) OR (listing.company_id IS NULL AND av.company_id IS NULL AND av.provider_id=listing.provider_id))
+ AND (av.service_id IS NULL OR av.service_id=listing.id)
+ WHERE o.is_active=true AND (o.schedule_mode='inherit' OR (o.schedule_mode='custom' AND
+ (av.service_id IS NULL OR (av.schedule_type='specific' AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(o.schedule_overrides) override WHERE override->>'date'=to_char(av.specific_date,'YYYY-MM-DD'))))))
+ UNION ALL
+ SELECT o.id,listing.provider_id,listing.company_id,listing.id,'recurring',NULL::timestamp,jsonb_build_array(day->'day'),
+ span->>'startTime',span->>'endTime','[]'::jsonb,o.schedule_timezone,'never',NULL::varchar,true,o.created_at
+ FROM public.service_options o JOIN public.services listing ON listing.id=o.service_id
+ CROSS JOIN LATERAL jsonb_array_elements(o.schedule_days) day CROSS JOIN LATERAL jsonb_array_elements(day->'intervals') span
+ WHERE o.is_active=true AND o.schedule_mode='custom'
+ UNION ALL
+ SELECT o.id,listing.provider_id,listing.company_id,listing.id,'recurring',NULL::timestamp,'[]'::jsonb,'00:00','00:00','[]'::jsonb,o.schedule_timezone,'never',NULL::varchar,true,o.created_at
+ FROM public.service_options o JOIN public.services listing ON listing.id=o.service_id WHERE o.is_active=true AND o.schedule_mode='custom'
+ AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(o.schedule_days) day CROSS JOIN LATERAL jsonb_array_elements(day->'intervals') span)
+ UNION ALL
+ SELECT o.id,listing.provider_id,listing.company_id,listing.id,'specific',(override->>'date')::date::timestamp,NULL::jsonb,
+ coalesce(span->>'startTime','00:00'),coalesce(span->>'endTime','00:00'),'[]'::jsonb,o.schedule_timezone,'never',NULL::varchar,true,o.created_at
+ FROM public.service_options o JOIN public.services listing ON listing.id=o.service_id
+ CROSS JOIN LATERAL jsonb_array_elements(o.schedule_overrides) override
+ LEFT JOIN LATERAL jsonb_array_elements(override->'intervals') span ON true
+ WHERE o.is_active=true AND o.schedule_mode='custom'
+)`;
+function minutesOf(expression:string):SQL {
+ return sql.raw(`CASE WHEN ${expression} ~ '^(?:[01][0-9]|2[0-3]):[0-5][0-9]$' THEN split_part(${expression},':',1)::integer*60+split_part(${expression},':',2)::integer ELSE NULL END`);
+}
+function optionFitsWorkingRange(filters:SearchFilters):SQL {
+ const minuteParameter=(value:string)=>sql`(extract(hour FROM ${value}::time)*60+extract(minute FROM ${value}::time))::integer`;
+ const first=filters.time?minuteParameter(filters.time):sql`0`,last=filters.timeEnd?minuteParameter(filters.timeEnd):sql`1440`;
+ return sql`EXISTS(SELECT 1 FROM (SELECT ${minutesOf('av.start_time')} AS start_minute,${minutesOf('av.end_time')} AS end_minute) bounds
+ CROSS JOIN LATERAL (SELECT bounds.start_minute AS point UNION ALL SELECT ${minutesOf("pause->>'endTime'")}
+ FROM jsonb_array_elements(CASE WHEN jsonb_typeof(av.breaks)='array' THEN av.breaks ELSE '[]'::jsonb END) pause) openings
+ CROSS JOIN LATERAL (SELECT bounds.start_minute+ceil((greatest(openings.point,${first},bounds.start_minute)-bounds.start_minute)/15.0)::integer*15 AS point) candidate
+ WHERE openings.point IS NOT NULL AND bounds.start_minute IS NOT NULL AND bounds.end_minute IS NOT NULL
+ AND candidate.point+opt.duration+coalesce(s.cleanup_time,0)<=bounds.end_minute AND candidate.point+opt.duration<=${last}
+ AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(av.breaks)='array' THEN av.breaks ELSE '[]'::jsonb END) pause
+ WHERE candidate.point<${minutesOf("pause->>'endTime'")} AND candidate.point+opt.duration+coalesce(s.cleanup_time,0)>${minutesOf("pause->>'startTime'")}))`;
 }
 function recurrenceApplies():SQL {
  const zone=sql`CASE WHEN EXISTS(SELECT 1 FROM pg_catalog.pg_timezone_names tz WHERE tz.name=av.timezone) THEN av.timezone ELSE 'UTC' END`;
@@ -53,7 +96,8 @@ function recurrenceApplies():SQL {
 }
 export function searchPageSQL(request:SearchPageRequest):SQL{
  const {filters,limit,embedding,position}=request;
- const conditions:SQL[]=[sql`s.is_active=true`,sql`s.deleted_at IS NULL`,sql`(c.id IS NULL OR c.is_active=true)`];
+ const conditions:SQL[]=[sql`s.is_active=true`,sql`s.deleted_at IS NULL`,sql`(c.id IS NULL OR c.is_active=true)`,
+ sql`EXISTS(SELECT 1 FROM public.service_options active_option WHERE active_option.service_id=s.id AND active_option.is_active=true)`];
  if(filters.category)conditions.push(sql`s.category=${filters.category}`);
  if(filters.serviceType)conditions.push(sql`s.service_type=${filters.serviceType}`);
  if(filters.ageGroups?.length)conditions.push(sql`s.age_groups ?| ARRAY[${sql.join(filters.ageGroups.map(group=>sql`${group}`),sql`, `)}]::text[]`);
@@ -66,23 +110,20 @@ export function searchPageSQL(request:SearchPageRequest):SQL{
  const haversine=filters.latitude===undefined?null:sql`least(1.0,greatest(0.0,power(sin(radians(a.latitude-${filters.latitude})/2),2)+cos(radians(${filters.latitude}))*cos(radians(a.latitude))*power(sin(radians(a.longitude-${filters.longitude})/2),2)))`;
  const distance=haversine?sql`CASE WHEN a.latitude IS NOT NULL AND a.longitude IS NOT NULL AND (a.location_source IS DISTINCT FROM 'google' OR a.location_expires_at>now()) THEN (6371*2*atan2(sqrt(${haversine}),sqrt(1-${haversine})))::float8 ELSE NULL END`:sql`NULL::float8`;
  if(filters.availableOnly&&filters.date){
-  const time=filters.time||filters.timeEnd;
-  conditions.push(sql`EXISTS(SELECT 1 FROM public.availability av
+  conditions.push(sql`EXISTS(SELECT 1 FROM public.service_options opt WHERE opt.service_id=s.id AND opt.is_active=true
+   AND EXISTS(SELECT 1 FROM option_schedules av
    WHERE ${scheduleScope('av')}
    AND (av.service_id IS NULL OR av.service_id=s.id)
-   AND ${scheduleHasWorkingRange('av')} AND EXISTS(SELECT 1 FROM pg_catalog.pg_timezone_names tz WHERE tz.name=av.timezone)
+   AND ${scheduleHasWorkingRange('av')} AND ${optionFitsWorkingRange(filters)} AND EXISTS(SELECT 1 FROM pg_catalog.pg_timezone_names tz WHERE tz.name=av.timezone)
    AND EXISTS(SELECT 1 FROM generate_series(${filters.date}::date,${filters.dateEnd??filters.date}::date,interval '1 day') AS dates(day)
     WHERE (av.schedule_type='specific' AND av.specific_date::date=day::date
       AND (av.service_id=s.id OR (NOT (${dateOnlySchedule()}) AND NOT EXISTS(
-       SELECT 1 FROM public.availability sv WHERE ${scheduleScope('sv')} AND sv.service_id=s.id AND sv.schedule_type='specific' AND sv.specific_date::date=day::date))))
+       SELECT 1 FROM option_schedules sv WHERE ${scheduleScope('sv')} AND sv.service_id=s.id AND sv.schedule_type='specific' AND sv.specific_date::date=day::date))))
      OR (av.schedule_type='recurring' AND av.days_of_week @> jsonb_build_array(extract(dow FROM day)::integer)
       AND ${recurrenceApplies()}
-      AND NOT EXISTS(SELECT 1 FROM public.availability sv WHERE ${scheduleScope('sv')} AND sv.service_id=s.id AND sv.schedule_type='specific' AND sv.specific_date::date=day::date)
-      AND ((${dateOnlySchedule()}) OR NOT EXISTS(SELECT 1 FROM public.availability gv WHERE ${scheduleScope('gv')} AND gv.service_id IS NULL AND gv.schedule_type='specific' AND gv.specific_date::date=day::date))
-      AND (av.service_id=s.id OR NOT EXISTS(SELECT 1 FROM public.availability sw WHERE ${scheduleScope('sw')} AND sw.service_id=s.id AND sw.schedule_type='recurring'))))
-   ${time?sql`AND ${filters.time??'00:00'}<COALESCE(av.end_time,'23:59') AND ${filters.timeEnd??'23:59'}>COALESCE(av.start_time,'00:00')
-    AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(av.breaks)='array' THEN av.breaks ELSE '[]'::jsonb END) br
-     WHERE ${filters.time??'00:00'}<(br->>'endTime') AND ${filters.timeEnd??'23:59'}>(br->>'startTime'))`:sql``})`);
+      AND NOT EXISTS(SELECT 1 FROM option_schedules sv WHERE ${scheduleScope('sv')} AND sv.service_id=s.id AND sv.schedule_type='specific' AND sv.specific_date::date=day::date)
+      AND ((${dateOnlySchedule()}) OR NOT EXISTS(SELECT 1 FROM option_schedules gv WHERE ${scheduleScope('gv')} AND gv.service_id IS NULL AND gv.schedule_type='specific' AND gv.specific_date::date=day::date))
+      AND (av.service_id=s.id OR NOT EXISTS(SELECT 1 FROM option_schedules sw WHERE ${scheduleScope('sw')} AND sw.service_id=s.id AND sw.schedule_type='recurring'))))))`);
  }
  // A LEFT LATERAL aggregate scores one existing JSONB vector at a time. CASE
  // guards protect casts even when PostgreSQL reorders WHERE conditions.
@@ -108,7 +149,7 @@ export function searchPageSQL(request:SearchPageRequest):SQL{
   const after=sql`(${column(key.name)} ${sql.raw(key.direction==='ASC'?'>':'<')} ${value}::${sql.raw(key.type)} OR ${column(key.name)} IS NULL)`;
   continuation.push(sql`(${sql.join([...equal,after],sql` AND `)})`);
  }
- return sql`WITH candidates AS (SELECT s.id,s.currency,s.created_at AS created_key,CASE WHEN s.price>=0 THEN s.price::float8 ELSE NULL END AS price_key,
+ return sql`WITH ${filters.availableOnly&&filters.date?sql`${optionSchedules},`:sql``} candidates AS (SELECT s.id,s.currency,s.created_at AS created_key,CASE WHEN s.price>=0 THEN s.price::float8 ELSE NULL END AS price_key,
   reviews.rating AS rating_key,${distance} AS distance_key,${score} AS score_key
   FROM public.services s LEFT JOIN public.addresses a ON a.id=s.address_id
   LEFT JOIN public.companies c ON c.id=s.company_id LEFT JOIN public.employees em ON em.id=s.employee_id

@@ -10,7 +10,7 @@ import postcss from "postcss";
 import tailwindcss from "tailwindcss";
 import loadConfig from "tailwindcss/loadConfig.js";
 
-export async function serveBrowserFixture({ entry, resources, html: previewHtml, timezoneId = "UTC", imageAssets = {}, defines = {} }) {
+export async function serveBrowserFixture({ entry, resources, html: previewHtml, timezoneId = "UTC", imageAssets = {}, staticAssets = {}, defines = {} }) {
   // Exact synthetic HTTPS images are fulfilled in memory; never permit a real
   // external connection to render OAuth avatar fixtures.
   const imageOrigins = Object.keys(imageAssets).map(value => { const url = new URL(value); assert.equal(url.protocol, 'https:'); assert.equal(url.hostname, 'synthetic.invalid'); return url.href; });
@@ -23,11 +23,15 @@ export async function serveBrowserFixture({ entry, resources, html: previewHtml,
   })).outputFiles[0].text;
   const cssSource = previewHtml ? "" : (await Promise.all(["client/src/index.css", "client/src/components/provider/service-editor.css", "client/src/components/forms-phase2.css", "client/src/components/forms-phase3.css", "client/src/components/forms-auth.css", "client/src/components/search-page.css"].map(file => readFile(path.join(root, file), "utf8")))).join("\n");
   const css = previewHtml ? "" : (await postcss([tailwindcss({ ...config, content: [...config.content, entry] })]).process(cssSource, { from: path.join(root, "client/src/index.css") })).css;
-  const html = previewHtml || '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'self\'; style-src \'self\' \'unsafe-inline\'; img-src data: ' + imageOrigins.join(' ') + '; connect-src \'none\'; form-action \'none\'; base-uri \'none\'"><title>Isolated forms fixture</title><link rel="stylesheet" href="/fixture.css"></head><body><div id="root"></div><script type="module" src="/fixture.js"></script></body></html>';
+  const html = previewHtml || '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'self\'; style-src \'self\' \'unsafe-inline\'; img-src \'self\' data: ' + imageOrigins.join(' ') + '; connect-src \'none\'; form-action \'none\'; base-uri \'none\'"><title>Isolated forms fixture</title><link rel="stylesheet" href="/fixture.css"></head><body><div id="root"></div><script type="module" src="/fixture.js"></script></body></html>';
   const network = [], blocked = [], errors = [];
   const server = createServer((request, response) => {
     if (request.method !== "GET") { network.push(request.method + " " + request.url); response.writeHead(405).end(); return; }
-    if (request.url === "/fixture.js") response.writeHead(200, { "Content-Type": "text/javascript" }).end(javascript);
+    if (Object.hasOwn(staticAssets, request.url)) {
+      const asset = staticAssets[request.url];
+      response.writeHead(200, { "Content-Type": asset.contentType }).end(asset.body);
+    }
+    else if (request.url === "/fixture.js") response.writeHead(200, { "Content-Type": "text/javascript" }).end(javascript);
     else if (request.url === "/fixture.css") response.writeHead(200, { "Content-Type": "text/css" }).end(css);
     else if (request.url === "/favicon.ico") response.writeHead(204).end();
     else response.writeHead(200, { "Content-Type": "text/html" }).end(html);

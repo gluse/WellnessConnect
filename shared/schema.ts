@@ -400,6 +400,7 @@ export const workspacePricingSettings = pgTable("workspace_pricing_settings", {
   companyId: integer("company_id").references(() => companies.id, { onDelete: "cascade" }),
   defaultCurrency: varchar("default_currency", { length: 3 }),
   businessCountryCode: varchar("business_country_code", { length: 2 }),
+  allowOnlinePayments: boolean("allow_online_payments").notNull().default(false),
   revision: integer("revision").notNull().default(1),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -465,6 +466,7 @@ export const services = pgTable("services", {
   targetGender: varchar("target_gender", { enum: ["females", "males", "both"] }).default("both"),
   instantBooking: boolean("instant_booking").default(false),
   advancePaymentPercent: integer("advance_payment_percent").default(50),
+  onlinePaymentsOverride: boolean("online_payments_override"),
   imageUrl: text("image_url"),
   imageUrls: text("image_urls").array().notNull().default(sql`ARRAY[]::text[]`),
   externalUrl: text("external_url"),
@@ -487,6 +489,44 @@ export const services = pgTable("services", {
   check("services_advance_percent_check", sql`${table.advancePaymentPercent} IS NULL OR (${table.advancePaymentPercent} >= 0 AND ${table.advancePaymentPercent} <= 100)`),
   check("services_price_money_check", moneyAmountCheck(table.price, table.currency))]).enableRLS();
 
+export type OptionScheduleDay = { day: number; intervals: { startTime: string; endTime: string }[] };
+export type OptionScheduleOverride = { date: string; intervals: { startTime: string; endTime: string }[] };
+
+// Options retain their identity when withdrawn so historical reservations remain attributable.
+export const serviceOptions = pgTable("service_options", {
+  id: serial("id").primaryKey(),
+  serviceId: integer("service_id").notNull().references(() => services.id),
+  name: varchar("name", { length: 150 }).notNull(),
+  description: text("description"),
+  duration: integer("duration").notNull(),
+  price: decimal("price").notNull(),
+  pricingMode: varchar("pricing_mode", { enum: ["fixed", "from"] }).notNull().default("fixed"),
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  // null inherits the listing assignment; an empty array never means any employee.
+  employeeIds: integer("employee_ids").array(),
+  scheduleMode: varchar("schedule_mode", { enum: ["inherit", "custom"] }).notNull().default("inherit"),
+  scheduleTimezone: varchar("schedule_timezone", { length: 100 }).notNull().default("UTC"),
+  scheduleDays: jsonb("schedule_days").$type<OptionScheduleDay[]>().notNull().default([]),
+  scheduleOverrides: jsonb("schedule_overrides").$type<OptionScheduleOverride[]>().notNull().default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, table => [
+  unique("service_options_service_identity").on(table.id, table.serviceId),
+  index("service_options_service_order_idx").on(table.serviceId, table.sortOrder, table.id),
+  check("service_options_name_check", sql`length(trim(${table.name})) BETWEEN 1 AND 150`),
+  check("service_options_description_check", sql`${table.description} IS NULL OR char_length(${table.description}) <= 4000`),
+  check("service_options_duration_check", sql`${table.duration} BETWEEN 1 AND 10080`),
+  check("service_options_price_check", sql`${table.price} >= 0 AND ${table.price} <= 99999999.99 AND ${table.price} = trunc(${table.price}, 3)`),
+  check("service_options_pricing_mode_check", sql`${table.pricingMode} IN ('fixed','from')`),
+  check("service_options_order_check", sql`${table.sortOrder} BETWEEN 0 AND 9999`),
+  check("service_options_employee_shape_check", sql`${table.employeeIds} IS NULL OR (cardinality(${table.employeeIds}) <= 100 AND (cardinality(${table.employeeIds}) = 0 OR (array_ndims(${table.employeeIds}) = 1 AND array_lower(${table.employeeIds}, 1) = 1)) AND array_position(${table.employeeIds}, NULL) IS NULL)`),
+  check("service_options_schedule_mode_check", sql`${table.scheduleMode} IN ('inherit','custom')`),
+  check("service_options_schedule_shape_check", sql`jsonb_typeof(${table.scheduleDays}) = 'array' AND jsonb_array_length(${table.scheduleDays}) <= 7 AND jsonb_typeof(${table.scheduleOverrides}) = 'array' AND jsonb_array_length(${table.scheduleOverrides}) <= 366`),
+]).enableRLS();
+export type ServiceOption = typeof serviceOptions.$inferSelect;
+export type InsertServiceOption = typeof serviceOptions.$inferInsert;
+
 // Only accepted Google coordinates, never Google's formatted address or response.
 // Place IDs may survive coordinate expiry; the key hashes the user's address.
 export const geocodingCache = pgTable("geocoding_cache", {
@@ -501,6 +541,13 @@ export const geocodingCache = pgTable("geocoding_cache", {
 export const bookings = pgTable("bookings", {
   id: serial("id").primaryKey(),
   serviceId: integer("service_id").references(() => services.id).notNull(),
+  optionId: integer("option_id"),
+  optionName: varchar("option_name", { length: 150 }),
+  pricingMode: varchar("pricing_mode", { enum: ["fixed", "from"] }),
+  unitPrice: decimal("unit_price"),
+  paymentMethod: varchar("payment_method", { enum: ["onsite", "fitsmytime"] }).notNull().default("onsite"),
+  platformFeeRateBps: integer("platform_fee_rate_bps").notNull().default(0),
+  platformFeeAmount: decimal("platform_fee_amount").notNull().default("0"),
   seekerId: varchar("seeker_id").references(() => users.id).notNull(),
   providerId: varchar("provider_id").references(() => users.id).notNull(),
   companyId: integer("company_id").references(() => companies.id),
@@ -521,6 +568,12 @@ export const bookings = pgTable("bookings", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [index("bookings_employee_date_idx").on(table.employeeId, table.scheduledDate), check("bookings_cleanup_time_check", sql`${table.bookingCleanupTime} BETWEEN 0 AND 1440`),
+  foreignKey({ name: "bookings_option_service_fk", columns: [table.optionId, table.serviceId], foreignColumns: [serviceOptions.id, serviceOptions.serviceId] }),
+  index("bookings_option_date_idx").on(table.optionId, table.scheduledDate),
+  check("bookings_option_snapshot_check", sql`(${table.optionName} IS NULL AND ${table.pricingMode} IS NULL AND ${table.unitPrice} IS NULL) OR (${table.optionId} IS NOT NULL AND ${table.optionName} IS NOT NULL AND length(trim(${table.optionName})) BETWEEN 1 AND 150 AND ${table.pricingMode} IS NOT NULL AND ${table.pricingMode} IN ('fixed','from') AND ${table.unitPrice} IS NOT NULL)`),
+  check("bookings_unit_price_check", sql`${table.unitPrice} IS NULL OR ${moneyAmountCheck(table.unitPrice, table.currency)}`),
+  check("bookings_payment_method_check", sql`${table.paymentMethod} IN ('onsite','fitsmytime')`),
+  check("bookings_platform_fee_check", sql`${table.platformFeeRateBps} BETWEEN 0 AND 10000 AND ${moneyAmountCheck(table.platformFeeAmount, table.currency)} AND (${table.paymentMethod} <> 'onsite' OR (${table.platformFeeRateBps} = 0 AND ${table.platformFeeAmount} = 0))`),
   index("bookings_message_retention_idx").on(table.closedAt, table.id).where(sql`${table.closedAt} IS NOT NULL AND ${table.status} IN ('cancelled','completed')`),
   check("bookings_notification_revision_check", sql`${table.notificationRevision} >= 0`),
   check("bookings_closed_at_check", sql`${table.closedAt} IS NULL OR ${table.status} IN ('cancelled','completed')`),
@@ -935,7 +988,11 @@ export const employeeSchema = z.object({
 
 export type InsertService = typeof services.$inferInsert;
 // Older API payloads and cached listings carry only the single cover image.
-export type Service = Omit<typeof services.$inferSelect, "imageUrls"> & { imageUrls?: string[] } & AddressLocation;
+export type Service = Omit<typeof services.$inferSelect, "imageUrls" | "onlinePaymentsOverride"> & {
+  imageUrls?: string[]; onlinePaymentsOverride?: boolean | null;
+  options?: import("./service-options").ServiceOption[];
+  priceIsFrom?: boolean; minimumDuration?: number; maximumDuration?: number;
+} & AddressLocation;
 
 export type InsertBooking = typeof bookings.$inferInsert;
 export type Booking = typeof bookings.$inferSelect;

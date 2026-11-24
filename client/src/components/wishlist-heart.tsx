@@ -12,7 +12,7 @@ export default function WishlistHeart({ serviceId, className = "" }: { serviceId
       title={t(saved ? "wishlist.remove" : "wishlist.add")} disabled={pending || (!state.ready && !state.failed)}
       onClick={event => { event.stopPropagation(); event.currentTarget.focus(); if (state.failed) state.retry(); else void state.toggle(serviceId); }}
       className={`wishlist-heart ${saved ? "is-saved" : ""}`}>
-      {state.failed ? <RefreshCw className="h-[18px] w-[18px]" aria-hidden="true" /> : <Heart className="h-[18px] w-[18px]" fill={saved ? "currentColor" : "none"} aria-hidden="true" />}
+      {state.failed ? <RefreshCw className="h-[18px] w-[18px]" aria-hidden="true" /> : <Heart className="h-[18px] w-[18px]" stroke="white" fill="currentColor" fillOpacity={0.55} aria-hidden="true" />}
     </button>
     {(failed || state.failed) && <span role="alert" className="wishlist-heart-error">{t(failed ? "wishlist.saveFailed" : "wishlist.stateFailed")}</span>}
   </span>;

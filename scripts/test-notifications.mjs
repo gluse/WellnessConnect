@@ -20,8 +20,8 @@ const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 20
 const templates = Object.fromEntries(["en", "lv", "ru"].flatMap(language => ["accepted", "rejected", "rescheduled", "reminder"].map(kind => [`${language}:${kind}`, { name: `appointment_${kind}`, namespace: "test_namespace", language }])));
 const config = notificationConfig({ NOTIFICATIONS_ENABLED: "true", NOTIFICATIONS_AUTOMATION_ENABLED: "true", NOTIFICATIONS_VERIFICATION_ENABLED: "true",
   VONAGE_APPLICATION_ID: "00000000-0000-4000-8000-000000000001", VONAGE_PRIVATE_KEY: privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
-  VONAGE_API_KEY: "synthetic-key", VONAGE_SIGNATURE_SECRET: "synthetic-webhook-signature", VONAGE_SMS_FROM: "FitsMyTime", VONAGE_WHATSAPP_FROM: "37120000002",
-  VONAGE_WHATSAPP_TEMPLATES_JSON: JSON.stringify(templates), RESEND_API_KEY: "synthetic-resend-key", NOTIFICATIONS_EMAIL_FROM: "FitsMyTime <notify@example.test>",
+  VONAGE_API_KEY: "synthetic-key", VONAGE_SIGNATURE_SECRET: "synthetic-webhook-signature", VONAGE_SMS_FROM: "Ordelino", VONAGE_WHATSAPP_FROM: "37120000002",
+  VONAGE_WHATSAPP_TEMPLATES_JSON: JSON.stringify(templates), RESEND_API_KEY: "synthetic-resend-key", NOTIFICATIONS_EMAIL_FROM: "Ordelino <notify@example.test>",
   NOTIFICATIONS_RESEND_WEBHOOK_SECRET: `whsec_${Buffer.from("synthetic-resend-webhook-key").toString("base64")}` });
 const requestId = "00000000-0000-4000-8000-000000000002";
 const sent = { channel: "email", recipient: "customer@example.test", subject: "Appointment update", message: "Synthetic test message", jobId: "00000000-0000-4000-8000-000000000003", language: "en", kind: "accepted", service: privateService, date: "31 Oct 2026 12:00 (Europe/Riga)", oldDate: "30 Oct 2026 12:00 (Europe/Riga)" };
@@ -77,7 +77,7 @@ try {
   for (const language of ["en", "lv", "ru"]) {
     const input = { kind: "reminder", service: privateService, date: appointment, language, timeZone: "UTC" };
     const standard = renderMessage(input), custom = renderMessage({ ...input, reminderMessage: `  ${customNote}\n ` });
-    equal(custom.message, standard.message.replace("\nFitsMyTime", `\n\n${customNote}\nFitsMyTime`), "Custom text supplements mandatory localized appointment details");
+    equal(custom.message, standard.message.replace("\nOrdelino", `\n\n${customNote}\nOrdelino`), "Custom text supplements mandatory localized appointment details");
     equal(renderMessage({ ...input, reminderMessage: " \n " }).message, standard.message, "Blank custom text preserves existing message");
     equal(custom.reminderMessage, customNote);
     for (const kind of ["accepted", "rejected", "rescheduled"]) {
@@ -111,6 +111,7 @@ try {
   result = { request_id: requestId };
   equal(await transport.startVerification(phone), requestId);
   equal(requests.at(-1).url, "https://api.nexmo.com/v2/verify");
+  equal(requests.at(-1).body.brand, "Ordelino");
   equal(requests.at(-1).body.workflow, [{ channel: "sms", to: phone.slice(1) }], "Verification uses SMS only, no voice fallback");
   equal(requests.at(-1).body.code_length, 6);
   const token = requests.at(-1).options.headers.Authorization.replace("Bearer ", "").split(".");

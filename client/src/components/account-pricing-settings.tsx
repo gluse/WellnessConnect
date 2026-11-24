@@ -8,11 +8,12 @@ import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 
 const endpoint = "/api/workspace/pricing-settings";
 type Props = { actorId: string };
-type Draft = { defaultCurrency: string; businessCountryCode: string };
-const draftFrom = (value: WorkspacePricingSettingsView): Draft => ({ defaultCurrency: value.defaultCurrency ?? "", businessCountryCode: value.businessCountryCode ?? "" });
+type Draft = { defaultCurrency: string; businessCountryCode: string; allowOnlinePayments: boolean };
+const draftFrom = (value: WorkspacePricingSettingsView): Draft => ({ defaultCurrency: value.defaultCurrency ?? "", businessCountryCode: value.businessCountryCode ?? "", allowOnlinePayments: value.allowOnlinePayments ?? false });
 
 function PricingForm({ actorId, initial, reload }: Props & { initial: WorkspacePricingSettingsView; reload: () => Promise<{ data?: WorkspacePricingSettingsView; error?: unknown }> }) {
   const { t, i18n } = useTranslation();
@@ -38,7 +39,7 @@ function PricingForm({ actorId, initial, reload }: Props & { initial: WorkspaceP
     mutationFn: async (): Promise<WorkspacePricingSettingsView> => {
       request.current = new AbortController();
       const data = workspacePricingSettingsViewSchema.parse(await (await apiRequest("PATCH", endpoint, { expectedWorkspace: base.workspace, expectedRevision: base.revision,
-        defaultCurrency: draft.defaultCurrency || null, businessCountryCode: draft.businessCountryCode || null }, request.current.signal)).json());
+        defaultCurrency: draft.defaultCurrency || null, businessCountryCode: draft.businessCountryCode || null, allowOnlinePayments: draft.allowOnlinePayments }, request.current.signal)).json());
       if (!samePricingWorkspace(data.workspace, base.workspace)) throw new Error("409: Workspace changed");
       return data;
     },
@@ -101,6 +102,11 @@ function PricingForm({ actorId, initial, reload }: Props & { initial: WorkspaceP
         </select>
         <p id="pricing-business-country-help" className="text-sm text-muted-foreground">{t("pricingSettings.countryHelp")}</p>
         {invalid.includes("pricing-business-country") && <p id="pricing-country-error" className="text-sm text-red-700 dark:text-red-300">{t("pricingSettings.invalidCountry")}</p>}
+      </div>
+      <div className="space-y-2 border-t pt-4">
+        <div className="flex items-center justify-between gap-4"><Label htmlFor="pricing-online-payments">{t("providerOptions.allowOnlinePayments")}</Label><Switch id="pricing-online-payments" checked={draft.allowOnlinePayments} aria-describedby="pricing-online-payments-help" onCheckedChange={checked => { setDraft(previous => ({ ...previous, allowOnlinePayments: checked })); clearFeedback(); }} /></div>
+        <p id="pricing-online-payments-help" className="text-sm text-muted-foreground">{t("providerOptions.onlineDefaultHelp")}</p>
+        <p className="text-sm text-muted-foreground">{t("providerOptions.onlineUnavailable")}</p>
       </div>
     </fieldset>
     {error && <div data-pricing-error tabIndex={-1} role="alert" className="space-y-2 text-sm text-red-700 dark:text-red-300 focus:outline focus:outline-2 focus:outline-offset-2"><p>{t(error)}</p>

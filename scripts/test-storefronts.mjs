@@ -37,7 +37,7 @@ globalThis.React = React;
 globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
 globalThis.window = { location: { origin: "http://localhost", pathname: "/providers/riga-studio", search: "", hash: "" }, history: { replaceState() {} },
   setTimeout, clearTimeout, addEventListener() {}, removeEventListener() {}, HTMLSelectElement: { prototype: { value: "" } }, HTMLInputElement: { prototype: { checked: false } } };
-globalThis.document = { title: "FitsMyTime", visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
+globalThis.document = { title: "Ordelino", visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
 const { default: StorefrontPage, StorefrontView } = await import("../client/src/pages/storefront.tsx");
 const { default: StorefrontEditor } = await import("../client/src/components/provider/storefront-editor.tsx");
@@ -98,7 +98,7 @@ async function mount(child, path = "/providers/riga-studio", signedIn = false) {
 }
 await mount(React.createElement(Route, { path: "/providers/:slug", component: StorefrontPage }));
 assert.equal(component.root.findAllByType(ServiceCard).length, 2);
-assert.equal(document.title, "Riga studio | FitsMyTime");
+assert.equal(document.title, "Riga studio | Ordelino");
 await edit("storefront-category", "education"); assert.equal(component.root.findAllByType(ServiceCard).length, 1);
 await edit("storefront-category", ""); await edit("storefront-search", "massage"); assert.equal(component.root.findAllByType(ServiceCard).length, 1);
 await edit("storefront-search", "missing"); assert.ok(text().includes(translation.storefront.empty));

@@ -1268,4 +1268,116 @@ zh/fr/de/hi/ja/pt/es remain deferred while translations are maintained.
   worker/browser/PC-path acceptance and follow-up owner work, not hosted migration.
   [Final evidence and actual URL](docs/aws-one-command-publishing.md#reviewed-maintenance2-recovery-execution--14november2026).
 
-<!-- Add the next task here using TASK-067, or place it in the relevant section. -->
+## Service pages and booking options
+
+- [x] **TASK-067 — Deliver public service pages and configurable booking options.**
+  User-approved phased implementation, 21 November 2026. Root owns Frontend;
+  assigned Backend/DB owners and delegated provider Frontend accepted scoped
+  dependencies. Public URLs, fixed/From options, company specialist dropdown,
+  resource-safe calendar, exact sign-in return, sharing and inherited online-payment
+  preferences. Online collection remains disabled; onsite booking stays available.
+  Local application PostgreSQL `127.0.0.1:15422/postgres` migration is approved
+  **without backup**, after verified writer stop and reviewed preparation.
+  Fresh tests **English only**; Latvian/Russian and other-language/RTL checks
+  deferred, translations maintained. No hosted/AWS/deployment/real payment scope.
+  [Approval, owners, limits and evidence](docs/service-page-implementation-handoff.md).
+  **22 November:** implementation, English customer/provider browser checks,
+  affected Backend/DB offline checks, global TypeScript and build pass. Local
+  migration preflight stopped before private read/connection/SQL because the
+  restricted OS token denied TCP/Docker inspection. No retry or restart under
+  the approved stop rule. Await one newly authorized guarded attempt in the
+  permitted OS context, then preservation/readiness verification and restart.
+  User approved one new attempt. Root stopped the verified local npm/watch tree;
+  OS/current42 checks passed, but SQL trigger installation failed because the
+  migration omitted the established temporary audit-function setup privilege.
+  Bounded read-only diagnosis proves complete transaction rollback, current42
+  readiness and unchanged original fingerprints (29services/36bookings). The
+  consumed receipt and0026 remain frozen. DB is preparing new0027 with exact
+  temporary-privilege restoration; no automatic retry/repair/restart.
+  New0027 recovery is prepared and reviewed: 43 offline recovery checks plus
+  original49-gate regression pass. It uses temporary audit-trigger setup
+  authority with exact ACL/member restoration. Awaiting one explicitly approved
+  recovery execution, then successful verification and local restart.
+  User approved0027; it committed with original data and setup privileges exactly
+  preserved. Postflight stopped on two catalog-format comparison defects and
+  real Supabase-default EXECUTE grants on the three new trigger functions.
+  DB is preparing narrow verifier fixes and new0028 explicit revokes; no further
+  database write/restart occurred, and frozen0026/0027 evidence is retained.
+  Narrow comparison corrections now pass48/49 real gates; all3 plain EXPLAINs
+  pass after fixing the option Search EXISTS delimiter. New0028 ACL-only forward
+  repair is reviewed and ready:53 offline checks, final global TypeScript/build
+  pass. Awaiting one explicit0028 execution approval, then49 gates/data/ACL
+  verification and success-dependent local restart. App remains stopped.
+  **Completed locally22November:** user approved0028; it committed once and all49
+  readiness gates/threeplainEXPLAINs/full data preservation/setup restoration/
+  private function ACL checks pass. Root reviewed the receipt, restarted via
+  `npm run dev` and verified liveness/readiness/home/service SPA HTTP200 without
+  cookies or connected booking/auth/payment tests. English browser suites,
+  TypeScript/build and affected offline owner checks pass; deferred language
+  scope and disclosed money-runner exception are in the handoff. Earlier stop
+  evidence stays preserved. Online collection/country rates/DAC7/private calendar
+  remain separately tracked follow-ups. No hosted deployment occurred.
+
+- [ ] **TASK-068 — Configure platform service fees by provider business country.**
+  Requested by user: authorized Administration manages versioned rates, initially
+  EEA 6% and USA 8%, based on provider business country rather than customer locale
+  or currency. Calculate exact amounts server-side; apply changes to new quotes
+  and preserve historical transaction rate/amount. Acceptance includes admin
+  authorization, country selection, rounding, changed quotes and historic values.
+  Current TASK-067 prepares a central 6% quote policy; country configuration is
+  follow-up work and does not authorize real payment collection or deployment.
+
+- [ ] **TASK-069 — Prepare service-payment collection and provider tax review.**
+  Follow-up prerequisite to enabling TASK-067 online checkout: provider onboarding,
+  private DAC7 profile/review, verified payment collection, payouts, refunds,
+  reconciliation/recovery and reporting. Preserve selected full/minimum amount
+  plus platform fee and payment after acceptance for approval-based appointments.
+  Exact commercial/legal policies and connected execution remain separate work.
+
+- [ ] **TASK-070 — Add a private personal-calendar usage mode.**
+  Requested design: manual private appointments and optional indicative amounts,
+  without public listings, customer booking links or platform payments. Keep usage
+  mode distinct from legal seller type. Confirm classification before treating
+  it as outside seller-reporting scope; preserve earlier records on mode changes.
+
+## Appearance
+
+- [x] **TASK-071 — Add dark mode support.** Completed locally, 24 November 2026,
+  under the user's specific frontend request. Shared header now offers persistent
+  Light/Dark/System choices; system updates, first paint, denied storage, forms,
+  calendars and navigation are covered. TypeScript, isolated frontend production
+  build, dark-mode browser checks and Search entry regressions pass. Existing
+  Search Grid/List test mismatch and direct Node Vite-env limitation are recorded
+  separately. Tests en/lv/ru only; other languages/RTL remain deferred. No connected
+  services/database, deployment or native rebuild. [Scope, evidence and recovery](docs/dark-mode-handoff.md).
+
+## Provider verification
+
+- [ ] **TASK-072 — Implement provider verification and a provider verification page.**
+  Requested 24 November 2026. Add a page where providers can apply for verification;
+  verification methods and required evidence must vary by provider type and the
+  type/category of service they provide. Define and approve that requirements
+  matrix before implementing the workflow. Include submission, review, status
+  feedback, renewal/revocation rules where needed, and accurate customer-facing
+  badge behavior. Decide evidence privacy, access and retention before collecting
+  documents; coordinate Backend/DB owners for APIs, storage and schema work.
+  **Placeholder delivered:** a neutral certificate icon now appears beside provider
+  names on service cards, details and storefronts, labeled “Provider verification
+  coming soon”. It does not assert verified status or collect evidence. The real
+  verification logic/page remains future work. [Scope and local checks](docs/provider-verification-placeholder-handoff.md).
+
+## Language URLs
+
+- [x] **TASK-073 — Add language prefixes to frontend URLs.** Requested and accepted
+  24 November 2026. User approved the proposed language-prefix change; `/root`
+  owns reversible local frontend routing, navigation, sharing, language detection,
+  affected translations/tests and documentation. Implemented locally with passing
+  mocked Chromium verification in en/lv/ru, TypeScript and isolated frontend build.
+  Legacy links, query/hash/state, authentication allowlists and language-switch
+  drafts are preserved. A separately reproduced existing provider workspace-switch
+  test failure is recorded in the handoff. Other locales/RTL remain deferred.
+  No country-prefix, backend/DB,
+  private configuration, connected service, deployment or native build operation.
+  [Scope, verification and recovery](docs/language-routing-handoff.md).
+
+<!-- Add the next task here using TASK-074, or place it in the relevant section. -->

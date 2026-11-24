@@ -1,3 +1,4 @@
+import { currentLanguagePath } from "@/lib/language-path";
 import { useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -25,7 +26,7 @@ export default function AccountPasswordForm() {
     mutationFn: () => updateAccountPassword({ currentPassword, newPassword }),
     onSuccess: result => {
       setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); setError(""); setErrors({});
-      if (result.requiresSignIn) { queryClient.clear(); window.location.assign("/login?returnTo=%2Faccount&passwordUpdated=1"); return; }
+      if (result.requiresSignIn) { queryClient.clear(); window.location.assign(currentLanguagePath("/login?returnTo=%2Faccount&passwordUpdated=1")); return; }
       setSaved(true);
     },
     onError: error => {

@@ -8,8 +8,8 @@ import { fieldFeedback, ServiceFieldError, type ServiceErrors } from "./service-
 import { SUPPORTED_CURRENCIES, isSupportedCurrency, currencyDigits } from "@shared/currencies";
 import ServiceDurationField from "./service-duration-field";
 
-type Props = { newService: ServiceDraft; setNewService: Dispatch<SetStateAction<ServiceDraft>>; errors?: ServiceErrors; onCurrencyChoice?: (currency: string) => void; onPriceChange?: (price: string) => void };
-export default function ServiceBookingFields({ newService, setNewService, errors = {}, onCurrencyChoice, onPriceChange }: Props) {
+type Props = { newService: ServiceDraft; setNewService: Dispatch<SetStateAction<ServiceDraft>>; errors?: ServiceErrors; onCurrencyChoice?: (currency: string) => void; onPriceChange?: (price: string) => void; optionFields?: boolean };
+export default function ServiceBookingFields({ newService, setNewService, errors = {}, onCurrencyChoice, onPriceChange, optionFields = true }: Props) {
   const { t, i18n } = useTranslation();
   const currencyNames = new Intl.DisplayNames([i18n.resolvedLanguage || i18n.language], { type: "currency" });
   const numeric = (field: "maxCapacity" | "advancePaymentPercent", id: string, label: string, min: number, max?: number) => <div className="space-y-2">
@@ -31,16 +31,16 @@ export default function ServiceBookingFields({ newService, setNewService, errors
     </fieldset>
     {newService.serviceType === "group" && numeric("maxCapacity", "maxCapacity", `${t("service.capacity")} *`, 1)}
     <div className="grid sm:grid-cols-2 gap-4">
-      <ServiceDurationField newService={newService} setNewService={setNewService} errors={errors} />
+      {optionFields && <ServiceDurationField newService={newService} setNewService={setNewService} errors={errors} />}
       <ServiceDurationField field="cleanupTime" newService={newService} setNewService={setNewService} errors={errors} />
     </div>
     <div className="grid sm:grid-cols-2 gap-4">
-      <div className="space-y-2"><Label htmlFor="price">{t("serviceForm.price")} *</Label>
+      {optionFields && <div className="space-y-2"><Label htmlFor="price">{t("serviceForm.price")} *</Label>
         <Input id="price" className="min-h-11" type="text" inputMode="decimal" required value={newService.price} {...fieldFeedback(errors, "price", "service-price-help")}
           onChange={event => { const price = event.target.value; if (onPriceChange) onPriceChange(price); else setNewService(prev => ({ ...prev, price })); }} />
         <p id="service-price-help" className="text-sm text-muted-foreground">{t("currency.precision", { digits: isSupportedCurrency(newService.currency) ? currencyDigits(newService.currency) : "—" })}</p>
         <ServiceFieldError errors={errors} field="price" />
-      </div>
+      </div>}
       <div className="space-y-2"><Label htmlFor="service-currency">{t("currency.label")} *</Label>
         <select id="service-currency" required className="w-full min-h-11 rounded-md border bg-background px-3 py-2 text-base" value={newService.currency}
           {...fieldFeedback(errors, "currency", "service-currency-help")}

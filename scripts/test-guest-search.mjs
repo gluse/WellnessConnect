@@ -42,9 +42,10 @@ for (const code of ["en", "lv", "ru"]) {
 }
 globalThis.window = {
   location: { pathname: "/", search: "", hash: "" }, setTimeout, clearTimeout, addEventListener() {}, removeEventListener() {},
+  matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
   HTMLSelectElement: { prototype: { value: "" } }, HTMLInputElement: { prototype: { checked: false } },
 };
-globalThis.document = { cookie: `${SEARCH_LOCATION_COOKIE}=${encodeSearchLocation({ source: "device", latitude: 56.95, longitude: 24.1 })}`, visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
+globalThis.document = { documentElement: { classList: { toggle() {} }, style: {} }, cookie: `${SEARCH_LOCATION_COOKIE}=${encodeSearchLocation({ source: "device", latitude: 56.95, longitude: 24.1 })}`, visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
 globalThis.google = window.google = { maps: { importLibrary: async name => name === "maps" ? { Map: class {} } : { Marker: class {} } } };
 const { queryClient } = await import("../client/src/lib/queryClient.ts");
 const { default: App } = await import("../client/src/App.tsx");
@@ -74,9 +75,8 @@ assert.equal(component.root.findAllByProps({ "data-testid": "button-get-started"
 assert.equal(component.root.findByType("header").props.className.includes("search-app-header"), true);
 if (process.argv.includes("--entry-only")) {
   for (const language of ["en", "lv", "ru"]) {
-    await act(async () => i18n.changeLanguage(language));
     for (const path of ["/", "/search"]) {
-      await mount(path, null, true);
+      await mount(`/${language}${path}`, null, true);
       assert.equal(component.root.findAllByType(Home).length, 1, `${language}/${path}: Search mounts while identity loads`);
       assert.equal(component.root.findAllByProps({ "data-testid": "button-get-started" }).length, 0);
       assert.equal(component.root.findByType("header").props.className.includes("search-app-header"), true);
@@ -84,23 +84,23 @@ if (process.argv.includes("--entry-only")) {
       for (let attempt = 0; attempt < 30 && component.root.findAllByType(ServiceCard).length === 0; attempt++) await flush();
       assert.equal(component.root.findAllByType(ServiceCard).length, 1, `${language}/${path}: guest results load`);
       assert.ok(component.root.findByProps({ id: "service-query" }));
-      assert.ok(component.root.findAllByType("a").some(node => node.props.href === "/login?returnTo=%2Fsearch"));
+      assert.ok(component.root.findAllByType("a").some(node => node.props.href === `/${language}/login?returnTo=%2Fsearch`), JSON.stringify({ language, actual: component.root.findAllByType("a").map(node => node.props.href), history: location.history, current: i18n.language }));
       if (path === "/search") {
-        const brand = component.root.findAllByType("a").find(node => node.props["aria-label"] === "FitsMyTime");
+        const brand = component.root.findAllByType("a").find(node => node.props["aria-label"] === "Ordelino");
         await act(async () => brand.props.onClick({ button: 0, preventDefault() {} })); await flush();
-        assert.equal(location.history.at(-1), "/");
+        assert.equal(location.history.at(-1), `/${language}/`);
         assert.equal(component.root.findAllByType(Home).length, 1, "Brand navigation keeps Search open");
       }
     }
   }
   await act(async () => component.unmount()); queryClient.clear();
-  console.log("Passed: direct Search at / and /search during/after identity loading, search header, guest results, login and brand navigation in en/lv/ru. Offline mocked frontend only.");
+  console.log("Passed: direct Search at / and language-prefixed / and /search during/after identity loading, search header, guest results, login and brand navigation in en/lv/ru. Offline mocked frontend only.");
   process.exit(0);
 }
 await mount("/search");
 assert.equal(component.root.findAllByType(Home).length, 1);
 assert.equal(component.root.findAllByType(ServiceCard).length, 1);
-assert.ok(component.root.findAllByType("a").some(node => node.props.href === "/login?returnTo=%2Fsearch"));
+assert.ok(component.root.findAllByType("a").some(node => node.props.href === "/en/login?returnTo=%2Fsearch"));
 await act(async () => {
   const filters = component.root.findAllByType(ServiceFilters)[0];
   filters.props.onFiltersChange({ ...filters.props.filters, category: "health_wellness", searchQuery: "massage" });
@@ -132,12 +132,12 @@ await mount("/search", null, true);
 assert.ok(component.root.findByType(Home), "The search route remains available during identity resolution");
 assert.equal(component.root.findAllByType(ServiceCard).length, 0, "Wait for identity before selecting a private or guest location");
 await act(async () => releaseAuth()); await flush();
-assert.equal(location.history.at(-1), "/search");
+assert.equal(location.history.at(-1), "/en/search");
 await mount("/login?returnTo=%2Fsearch");
 await act(async () => component.root.findAllByType("button").find(node => node.children.includes("New here? Create an account")).props.onClick());
 assert.ok(component.root.findAllByType("select").some(node => node.props.id === "signup-type"), "Search return URLs still allow company signup");
 await mount("/my-bookings");
-assert.equal(location.history.at(-1), "/login?returnTo=%2Fmy-bookings");
+assert.equal(location.history.at(-1), "/en/login?returnTo=%2Fmy-bookings");
 await mount("/search", { id: "customer", firstName: "Customer" });
 await act(async () => component.root.findByType(ServiceCard).props.onBook());
 assert.equal(component.root.findAllByProps({ "data-testid": "dialog-booking-sign-in" }).length, 0, "Signed-in bookings retain their existing form");

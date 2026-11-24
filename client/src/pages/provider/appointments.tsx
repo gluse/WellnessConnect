@@ -1,3 +1,4 @@
+import { currentLanguagePath } from "@/lib/language-path";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
@@ -70,7 +71,7 @@ function AppointmentsContent({ scope, view }: { scope: string; view: Appointment
     onError: error => {
       if (isUnauthorizedError(error)) {
         const path = view === "calendar" ? "/my-services/appointments" : view === "upcoming" ? "/my-services/upcoming-appointments" : "/my-services/past-appointments";
-        window.location.assign(`/login?returnTo=${encodeURIComponent(path)}`); return;
+        window.location.assign(currentLanguagePath(`/login?returnTo=${encodeURIComponent(path)}`)); return;
       }
       toast({ title: "Error", description: "Failed to update booking", variant: "destructive" });
     },

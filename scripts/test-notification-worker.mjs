@@ -15,7 +15,7 @@ const seed = () => ({
   user_communication_preferences: [{ userId: "customer", phone: "+37120000001", phoneVerifiedAt: now, preferredMethod: "sms", language: "lv", smsOptIn: true, whatsappOptIn: true, emailSuppressed: false }],
 });
 const savedEnvironment = process.env;
-process.env = { NOTIFICATIONS_ENABLED: "true", NOTIFICATIONS_AUTOMATION_ENABLED: "true", VONAGE_APPLICATION_ID: "synthetic", VONAGE_PRIVATE_KEY: "synthetic", VONAGE_API_KEY: "synthetic", VONAGE_SIGNATURE_SECRET: "synthetic", VONAGE_SMS_FROM: "FitsMyTime", VONAGE_WHATSAPP_FROM: "37120000002", RESEND_API_KEY: "synthetic", NOTIFICATIONS_EMAIL_FROM: "notify@example.test", NOTIFICATIONS_RESEND_WEBHOOK_SECRET: "synthetic" };
+process.env = { NOTIFICATIONS_ENABLED: "true", NOTIFICATIONS_AUTOMATION_ENABLED: "true", VONAGE_APPLICATION_ID: "synthetic", VONAGE_PRIVATE_KEY: "synthetic", VONAGE_API_KEY: "synthetic", VONAGE_SIGNATURE_SECRET: "synthetic", VONAGE_SMS_FROM: "Ordelino", VONAGE_WHATSAPP_FROM: "37120000002", RESEND_API_KEY: "synthetic", NOTIFICATIONS_EMAIL_FROM: "notify@example.test", NOTIFICATIONS_RESEND_WEBHOOK_SECRET: "synthetic" };
 const savedFetch = globalThis.fetch;
 globalThis.fetch = async () => { throw new Error("No provider network allowed"); };
 let cases = 0;
@@ -53,7 +53,7 @@ try {
   await scenario("PRO accepted update", () => {}, { state: "accepted", calls: 1 });
   const customNote = "Please arrive early.\nBring <documents> & {date}.";
   await scenario("Reminder loads latest custom note at dispatch", input => { input.notification_events[0].kind = "reminder"; input.services[0].reminderMessage = customNote; }, { state: "accepted", calls: 1 }, (_memory, message) => {
-    assert.ok(message.message.includes(`\n\n${customNote}\nFitsMyTime`));
+    assert.ok(message.message.includes(`\n\n${customNote}\nOrdelino`));
     assert.ok(message.message.includes("Synthetic service")); assert.ok(message.message.includes(message.date));
     assert.equal(message.reminderMessage, customNote); return { provider: "vonage", messageId: "synthetic-custom" };
   });

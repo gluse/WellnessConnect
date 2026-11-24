@@ -1,3 +1,5 @@
+import { withoutLanguagePrefix } from "@/lib/language-path";
+
 // Active only while a service editor registers a blocker. No draft data is stored.
 type ExitBlocker = (proceed: () => unknown) => void;
 let blocker: ExitBlocker | undefined;
@@ -24,12 +26,12 @@ export function installServiceNavigationTracking() {
   originalReplace.call(window.history, stateAt(window.history.state, position), "");
   const push: History["pushState"] = function (state, unused, url) {
     const proceed = () => { position += 1; originalPush.call(window.history, stateAt(state, position), unused, url); };
-    if (blocker && url && new URL(String(url), window.location.href).pathname !== window.location.pathname) blocker(proceed);
+    if (blocker && url && withoutLanguagePrefix(new URL(String(url), window.location.href).pathname) !== withoutLanguagePrefix(window.location.pathname)) blocker(proceed);
     else proceed();
   };
   const replace: History["replaceState"] = function (state, unused, url) {
     const proceed = () => originalReplace.call(window.history, stateAt(state, position), unused, url);
-    if (blocker && url && new URL(String(url), window.location.href).pathname !== window.location.pathname) blocker(proceed);
+    if (blocker && url && withoutLanguagePrefix(new URL(String(url), window.location.href).pathname) !== withoutLanguagePrefix(window.location.pathname)) blocker(proceed);
     else proceed();
   };
   const pop = (event: PopStateEvent) => {

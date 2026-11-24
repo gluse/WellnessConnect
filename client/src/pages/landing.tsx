@@ -20,7 +20,7 @@ export default function Landing() {
           <div className="w-16 h-16 bg-primary rounded-2xl mx-auto mb-4 flex items-center justify-center">
             <Heart className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-neutral-800 mb-2">FitsMyTime</h1>
+          <h1 className="text-3xl font-bold text-neutral-800 mb-2">Ordelino</h1>
           <p className="text-neutral-600">{t('landing.heroSubtitle')}</p>
         </div>
 

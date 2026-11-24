@@ -10,32 +10,37 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
-export default function BookingTimePicker({ serviceId, bookingId, selected, onSelect }: {
+export default function BookingTimePicker({ serviceId, bookingId, selected, onSelect, optionId, specialist = "any", initialDate, initialMonth, initialTimezone, onCalendarChange }: {
   serviceId: number; bookingId?: number; selected: BookableSlot | null; onSelect: (slot: BookableSlot | null) => void;
+  optionId?: number; specialist?: "any" | number; initialDate?: string; initialMonth?: string; initialTimezone?: string;
+  onCalendarChange?: (value: { date?: string; month: string; timezone: string }) => void;
 }) {
   const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage || i18n.language;
-  const [timezone, setTimezone] = useState(selected?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const [timezone, setTimezone] = useState(initialTimezone || selected?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
   const today = dateInZone(new Date(), timezone);
-  const [date, setDate] = useState<Date | undefined>(() => selected ? new Date(dateInZone(new Date(selected.startsAt), timezone) + "T12:00:00") : undefined);
-  const [month, setMonth] = useState(() => startOfMonth(date || new Date(today + "T12:00:00")));
+  const [date, setDate] = useState<Date | undefined>(() => initialDate ? new Date(initialDate + "T12:00:00") : selected ? new Date(dateInZone(new Date(selected.startsAt), timezone) + "T12:00:00") : undefined);
+  const [month, setMonth] = useState(() => startOfMonth(initialMonth ? new Date(initialMonth + "-01T12:00:00") : date || new Date(today + "T12:00:00")));
   const dateKey = date ? format(date, "yyyy-MM-dd") : "";
+  const monthKey = format(month, "yyyy-MM");
+  useEffect(() => { onCalendarChange?.({ date: dateKey || undefined, month: monthKey, timezone }); }, [dateKey, monthKey, timezone, onCalendarChange]);
+  const optionQuery = optionId ? `&optionId=${optionId}&specialist=${specialist}` : "";
   const zones = Array.from(new Set([timezone, Intl.DateTimeFormat().resolvedOptions().timeZone, "Europe/Riga", "Europe/London", "Europe/Berlin", "America/New_York", "America/Los_Angeles", "Asia/Tokyo", "UTC"]));
   const monthQuery = useQuery<{ days: { date: string; availableSlots: number }[] }>({
-    queryKey: ["/api/availability/month", serviceId, format(month, "yyyy-MM"), timezone, bookingId ?? null],
-    queryFn: async ({ signal }) => (await apiRequest("GET", `${bookingId ? `/api/bookings/${bookingId}/available-times` : `/api/availability/month/${serviceId}`}?month=${format(month, "yyyy-MM")}&timezone=${encodeURIComponent(timezone)}`, undefined, signal)).json(),
+    queryKey: ["/api/availability/month", serviceId, monthKey, timezone, bookingId ?? null, optionId ?? null, specialist],
+    queryFn: async ({ signal }) => (await apiRequest("GET", `${bookingId ? `/api/bookings/${bookingId}/available-times` : `/api/availability/month/${serviceId}`}?month=${monthKey}&timezone=${encodeURIComponent(timezone)}${optionQuery}`, undefined, signal)).json(),
     staleTime: 30_000,
   });
   const slotsQuery = useQuery<{ slots: BookableSlot[] }>({
-    queryKey: ["/api/availability/slots", serviceId, dateKey, timezone, bookingId ?? null],
-    queryFn: async ({ signal }) => (await apiRequest("GET", `${bookingId ? `/api/bookings/${bookingId}/available-times` : `/api/availability/slots/${serviceId}`}?date=${dateKey}&timezone=${encodeURIComponent(timezone)}`, undefined, signal)).json(),
+    queryKey: ["/api/availability/slots", serviceId, dateKey, timezone, bookingId ?? null, optionId ?? null, specialist],
+    queryFn: async ({ signal }) => (await apiRequest("GET", `${bookingId ? `/api/bookings/${bookingId}/available-times` : `/api/availability/slots/${serviceId}`}?date=${dateKey}&timezone=${encodeURIComponent(timezone)}${optionQuery}`, undefined, signal)).json(),
     enabled: Boolean(dateKey), staleTime: 0,
   });
   useEffect(() => {
     if (!selected || !slotsQuery.data) return;
     const current = slotsQuery.data.slots.find(slot => slot.startsAt === selected.startsAt);
     if (!current) onSelect(null);
-    else if (current.availableCapacity !== selected.availableCapacity) onSelect(current);
+    else if (JSON.stringify(current) !== JSON.stringify(selected)) onSelect(current);
   }, [slotsQuery.data, selected, onSelect]);
   const available = new Set(monthQuery.data?.days.filter(day => day.availableSlots > 0).map(day => day.date));
   const dateLabel = (value: Date) => new Intl.DateTimeFormat(language, { calendar: "gregory", weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(value);
@@ -44,7 +49,7 @@ export default function BookingTimePicker({ serviceId, bookingId, selected, onSe
       <h3 className="font-semibold">{t("bookingForm.chooseDateTime")}</h3>
       <div className="space-y-2 min-w-0">
         <Label htmlFor="booking-timezone">{t("bookingForm.timezone")}</Label>
-        <select id="booking-timezone" className="border rounded-md p-2 min-h-11 w-full max-w-full bg-background" value={timezone} dir="ltr" onChange={event => {
+        <select id="booking-timezone" className="border border-neutral-500 rounded-md p-2 min-h-11 w-full max-w-full bg-background" value={timezone} dir="ltr" onChange={event => {
           setTimezone(event.target.value); setDate(undefined); onSelect(null);
           setMonth(startOfMonth(new Date(dateInZone(new Date(), event.target.value) + "T12:00:00")));
         }}>{zones.map(zone => <option key={zone} value={zone}>{zone.replaceAll("_", " ")}</option>)}</select>
