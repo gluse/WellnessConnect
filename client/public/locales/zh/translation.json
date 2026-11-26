@@ -619,7 +619,14 @@
     "removeTitle": "移除此已保存的地址？",
     "removeHelp": "从此工作区移除“{{address}}”？服务正在使用的地址无法移除。",
     "removeError": "无法移除此地址，可能仍有服务正在使用。",
-    "removing": "正在移除…"
+    "removing": "正在移除…",
+    "permanentHelp": "您的街道地址将一直保存。地图坐标为可选项，可能需要更新。",
+    "saveAddressOnly": "仅保存地址",
+    "coordinatesOptional": "地图坐标为可选项。",
+    "useCurrentLocation": "使用当前位置",
+    "locating": "正在查找您的位置…",
+    "currentLocationHelp": "请在服务地点使用此功能来填写纬度和经度。您的街道地址保持不变。",
+    "currentLocationSet": "已填写当前位置坐标。请检查坐标并在保存前输入街道地址。"
   },
   "bookingForm": {
     "duplicateTitle": "已预订",
@@ -1875,7 +1882,10 @@
     "email": "电子邮件",
     "moreApps": "更多应用",
     "link": "服务公开链接",
-    "shareError": "无法分享。请选择并复制下方链接。"
+    "shareError": "无法分享。请选择并复制下方链接。",
+    "showDirections": "查看路线",
+    "chooseMap": "您想使用哪个地图？",
+    "addressUnavailable": "地址暂不可用。请联系服务提供者了解路线。"
   },
   "manualBookings": {
     "add": "添加预约",

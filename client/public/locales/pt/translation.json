@@ -619,7 +619,14 @@
     "removeTitle": "Remover este endereço salvo?",
     "removeHelp": "Remover “{{address}}” deste espaço de trabalho? Endereços usados por serviços não podem ser removidos.",
     "removeError": "Não foi possível remover o endereço. Um serviço ainda pode estar usando-o.",
-    "removing": "Removendo…"
+    "removing": "Removendo…",
+    "permanentHelp": "A sua morada permanece guardada. As coordenadas do mapa são opcionais e podem precisar de atualização.",
+    "saveAddressOnly": "Guardar apenas a morada",
+    "coordinatesOptional": "As coordenadas do mapa são opcionais.",
+    "useCurrentLocation": "Usar localização atual",
+    "locating": "A procurar a sua localização…",
+    "currentLocationHelp": "Use esta opção no local do serviço para preencher a latitude e a longitude. A sua morada permanece inalterada.",
+    "currentLocationSet": "Coordenadas atuais preenchidas. Verifique-as e introduza a morada antes de guardar."
   },
   "bookingForm": {
     "duplicateTitle": "Já reservado",
@@ -1890,7 +1897,10 @@
     "email": "E-mail",
     "moreApps": "Mais aplicações",
     "link": "Ligação pública do serviço",
-    "shareError": "Não foi possível partilhar. Selecione e copie a ligação abaixo."
+    "shareError": "Não foi possível partilhar. Selecione e copie a ligação abaixo.",
+    "showDirections": "Mostrar direções",
+    "chooseMap": "Que mapa pretende utilizar?",
+    "addressUnavailable": "A morada está indisponível de momento. Contacte o prestador para saber como chegar."
   },
   "manualBookings": {
     "add": "Adicionar reserva",

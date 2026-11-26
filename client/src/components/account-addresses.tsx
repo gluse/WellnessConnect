@@ -24,21 +24,22 @@ function AddressForm({ address, onClose }: { address?: Address; onClose: (saved?
   const submitting = useRef(false);
   const dirty = JSON.stringify(draft) !== JSON.stringify(createLocationDraft(address));
   const save = useMutation({
-    mutationFn: async (): Promise<Address> => (await apiRequest(address ? "PATCH" : "POST", address ? `/api/addresses/${address.id}` : "/api/addresses", draft)).json(),
+    mutationFn: async ({ addressOnly }: { addressOnly: boolean }): Promise<Address> => (await apiRequest(address ? "PATCH" : "POST", address ? `/api/addresses/${address.id}` : "/api/addresses", addressOnly ? { ...draft, addressOnly: true, latitude: null, longitude: null } : draft)).json(),
     onSuccess: async saved => { await client.invalidateQueries(); onClose(saved); },
     onError: error => setError(/^403:/.test(error.message) ? "addressForm.denied" : "addressForm.saveError"),
     onSettled: () => { submitting.current = false; },
   });
-  return <form ref={form} className="space-y-4 border rounded-xl p-4" noValidate aria-busy={save.isPending} onSubmit={event => {
-    event.preventDefault();
+  const submit = (confirmAddressOnly = false) => {
     if (submitting.current || verifying) return;
-    const invalidAddress = Boolean(addressError(draft.address)), invalidCoordinates = !validCoordinates(draft.latitude, draft.longitude);
+    const addressOnly = confirmAddressOnly || (draft.latitude == null && draft.longitude == null && draft.locationAddressSource === "user");
+    const invalidAddress = Boolean(addressError(draft.address)), invalidCoordinates = !addressOnly && !validCoordinates(draft.latitude, draft.longitude);
     setAddressIssue(invalidAddress); setCoordinateIssue(invalidCoordinates);
     if (invalidAddress || invalidCoordinates) { queueMicrotask(() => form.current?.querySelector<HTMLElement>(invalidAddress ? "#address" : "#latitude")?.focus()); return; }
-    setError(""); submitting.current = true; save.mutate();
-  }}>
+    setError(""); submitting.current = true; save.mutate({ addressOnly });
+  };
+  return <form ref={form} className="phase2-form space-y-4 border rounded-xl p-4" noValidate aria-busy={save.isPending} onSubmit={event => { event.preventDefault(); submit(); }}>
     <h3 className="font-semibold">{t(address ? "addressForm.edit" : "addressForm.add")}</h3>
-    <p className="text-sm text-muted-foreground">{t("addressForm.steps")}</p>
+    <p className="text-sm text-muted-foreground">{t("addressForm.permanentHelp")}</p>
     <fieldset disabled={save.isPending} className="min-w-0">
       <AddressLocationFields newService={draft} setNewService={setDraft} addressIssue={addressIssue ? t("addressForm.addressInvalid") : undefined}
         coordinateIssue={coordinateIssue ? t("addressForm.coordinateInvalid") : undefined} onBusyChange={setVerifying} />
@@ -47,6 +48,7 @@ function AddressForm({ address, onClose }: { address?: Address; onClose: (saved?
     {error && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t(error)}</p>}
     <div className="grid sm:grid-cols-2 gap-3"><Button type="submit" disabled={save.isPending || verifying}>{t(save.isPending ? "accountForm.saving" : "addressForm.save")}</Button>
       <Button ref={cancelTrigger} type="button" variant="outline" disabled={save.isPending} onClick={() => dirty ? setDiscarding(true) : onClose()}>{t("common.cancel")}</Button></div>
+    {(draft.latitude != null || draft.longitude != null || draft.locationAddressSource === "google") && <Button type="button" variant="outline" className="h-auto min-h-11 whitespace-normal" disabled={save.isPending || verifying} onClick={() => submit(true)}>{t("addressForm.saveAddressOnly")}</Button>}
     <AlertDialog open={discarding} onOpenChange={setDiscarding}>
       <AlertDialogContent dir={i18n.dir()} className={dialogClass} onCloseAutoFocus={event => { event.preventDefault(); cancelTrigger.current?.focus(); }}>
         <AlertDialogHeader className="text-start sm:text-start"><AlertDialogTitle>{t("serviceForm.discardTitle")}</AlertDialogTitle><AlertDialogDescription>{t("addressForm.discardHelp")}</AlertDialogDescription></AlertDialogHeader>
@@ -78,7 +80,7 @@ export default function AccountAddresses() {
   });
   const companyParts = context.data?.company ? t("addressForm.companyHelp", { name: "\uFFFC" }).split("\uFFFC") : null;
   const removeParts = t("addressForm.removeHelp", { address: "\uFFFC" }).split("\uFFFC");
-  return <Card id="addresses" className="scroll-mt-6" aria-labelledby="account-addresses-title">
+  return <Card id="addresses" className="scroll-mt-6 [overflow-wrap:anywhere]" aria-labelledby="account-addresses-title">
     <CardHeader><h2 className="text-lg font-semibold" id="account-addresses-title">{t("addressForm.title")}</h2><CardDescription>
       {companyParts ? companyParts.map((part, index) => <Fragment key={index}>{index > 0 && <bdi>{context.data?.company?.name}</bdi>}{part}</Fragment>) : t("addressForm.personalHelp")}
     </CardDescription></CardHeader>
@@ -91,11 +93,11 @@ export default function AccountAddresses() {
         <ul ref={list} className="space-y-3">{addresses.data?.map(address => <li key={address.id} tabIndex={-1} data-address-id={address.id} className="border rounded-lg p-4 space-y-3 focus:outline focus:outline-2 focus:outline-offset-2">
           <p className="break-words"><bdi>{address.address || t("serviceForm.addressNeedsUpdate")}</bdi></p>
           {address.locationSource === "google" && !validCoordinates(address.latitude, address.longitude) && <p className="text-sm text-muted-foreground">{t("addressForm.expired")}</p>}
-          <div className="flex flex-wrap gap-3"><Button type="button" variant="outline" disabled={editing !== null || remove.isPending} onClick={event => { editTrigger.current = event.currentTarget; remove.reset(); setSavedId(null); setEditing(address); }}>{t("common.edit")}</Button>
-            <Button type="button" variant="outline" disabled={editing !== null || remove.isPending} onClick={event => { editTrigger.current = event.currentTarget; remove.reset(); setRemoving(address); }}>{t("storefront.remove")}</Button></div>
+          <div className="flex flex-wrap gap-3"><Button type="button" variant="outline" className="h-auto min-h-11 min-w-0 max-w-full whitespace-normal" disabled={editing !== null || remove.isPending} onClick={event => { editTrigger.current = event.currentTarget; remove.reset(); setSavedId(null); setEditing(address); }}>{t("common.edit")}</Button>
+            <Button type="button" variant="outline" className="h-auto min-h-11 min-w-0 max-w-full whitespace-normal" disabled={editing !== null || remove.isPending} onClick={event => { editTrigger.current = event.currentTarget; remove.reset(); setRemoving(address); }}>{t("storefront.remove")}</Button></div>
         </li>)}</ul>
         {editing ? <AddressForm key={editing === "new" ? "new" : editing.id} address={editing === "new" ? undefined : editing} onClose={saved => { setSavedId(saved?.id ?? null); setEditing(null); }} />
-          : <Button ref={addButton} type="button" disabled={remove.isPending} onClick={event => { editTrigger.current = event.currentTarget; remove.reset(); setSavedId(null); setEditing("new"); }}>{t("addressForm.add")}</Button>}
+          : <Button ref={addButton} type="button" className="h-auto min-h-11 min-w-0 max-w-full whitespace-normal" disabled={remove.isPending} onClick={event => { editTrigger.current = event.currentTarget; remove.reset(); setSavedId(null); setEditing("new"); }}>{t("addressForm.add")}</Button>}
       </>}
       <AlertDialog open={Boolean(removing)} onOpenChange={open => { if (!open && !remove.isPending) setRemoving(null); }}>
         <AlertDialogContent dir={i18n.dir()} className={dialogClass} onEscapeKeyDown={event => { if (remove.isPending) event.preventDefault(); }} onCloseAutoFocus={event => { event.preventDefault(); (editTrigger.current?.isConnected ? editTrigger.current : addButton.current)?.focus(); }}>

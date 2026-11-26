@@ -75,9 +75,23 @@ export async function registerLocation(input: unknown, owner: Owner, store = loc
 
 // The client may identify a verification but cannot set its lifetime or Place ID.
 // Saving/copying an unchanged Google location never starts a new cache period.
-export async function resolveServiceLocation(input: Partial<AddressLocation>, body: Record<string, unknown>, existing?: AddressLocation, store = locationStore): Promise<Partial<AddressLocation>> {
+export async function resolveServiceLocation(input: Partial<AddressLocation> & { addressOnly?: boolean }, body: Record<string, unknown>, existing?: AddressLocation, store = locationStore): Promise<Partial<AddressLocation>> {
+  if (input.addressOnly !== undefined && typeof input.addressOnly !== "boolean") {
+    throw new GeocodingError(400, "INVALID_LOCATION", "Choose a valid address-only save mode.");
+  }
   if (body.locationSource !== undefined && !["manual", "google", "legacy"].includes(String(body.locationSource))) {
     throw new GeocodingError(400, "INVALID_LOCATION", "Choose a valid coordinate source.");
+  }
+  if (input.addressOnly === true) {
+    const error = addressError(input.address);
+    if (error || input.latitude != null || input.longitude != null) {
+      throw new GeocodingError(400, "INVALID_LOCATION", error || "An address-only save cannot include coordinates.");
+    }
+    // This mode is the provider's explicit confirmation of submitted address
+    // text. It never relabels or extends cached Google coordinates.
+    return { address: input.address!.trim(), latitude: null, longitude: null,
+      locationSource: "legacy", locationAddressSource: "user", locationKey: null,
+      locationPlaceId: null, locationExpiresAt: null };
   }
   if (existing && !["address", "latitude", "longitude", "locationSource", "locationKey"].some(key => key in body)) return {};
   const address = input.address === undefined ? existing?.address : input.address;

@@ -306,7 +306,8 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
       const existing = id == null ? undefined : await addressStore.get(id, owner);
       const input = addressInputSchema.parse(req.body);
       const metadata = await resolveServiceLocation(input, req.body, existing);
-      res.status(id == null ? 201 : 200).json(await addressStore.save({ ...input, ...metadata } as AddressLocation, owner, id));
+      const { addressOnly: _addressOnly, ...locationInput } = input;
+      res.status(id == null ? 201 : 200).json(await addressStore.save({ ...locationInput, ...metadata } as AddressLocation, owner, id));
     } catch (error) { apiFailure(error, res, "Unable to save address."); }
   };
   app.post('/api/addresses', isAuthenticated, saveAddress);

@@ -619,7 +619,14 @@
     "removeTitle": "Noņemt šo saglabāto adresi?",
     "removeHelp": "Noņemt “{{address}}” no šīs darba vides? Pakalpojumos izmantotās adreses nevar noņemt.",
     "removeError": "Adresi neizdevās noņemt. Iespējams, to joprojām izmanto pakalpojums.",
-    "removing": "Noņem…"
+    "removing": "Noņem…",
+    "permanentHelp": "Jūsu adrese paliek saglabāta. Kartes koordinātas nav obligātas, un tās var būt jāatjaunina.",
+    "saveAddressOnly": "Saglabāt tikai adresi",
+    "coordinatesOptional": "Kartes koordinātas nav obligātas.",
+    "useCurrentLocation": "Izmantot pašreizējo atrašanās vietu",
+    "locating": "Nosaka jūsu atrašanās vietu…",
+    "currentLocationHelp": "Izmantojiet šo opciju pakalpojuma sniegšanas vietā, lai aizpildītu platumu un garumu. Adrese nemainīsies.",
+    "currentLocationSet": "Pašreizējās koordinātas ir aizpildītas. Pirms saglabāšanas pārbaudiet tās un ievadiet adresi."
   },
   "bookingForm": {
     "duplicateTitle": "Jau rezervēts",
@@ -1892,7 +1899,10 @@
     "email": "E-pasts",
     "moreApps": "Citas lietotnes",
     "link": "Publiskā pakalpojuma saite",
-    "shareError": "Kopīgošana nav pieejama. Atlasiet un nokopējiet tālāk redzamo saiti."
+    "shareError": "Kopīgošana nav pieejama. Atlasiet un nokopējiet tālāk redzamo saiti.",
+    "showDirections": "Rādīt maršrutu",
+    "chooseMap": "Kuru karti vēlaties izmantot?",
+    "addressUnavailable": "Adrese pašlaik nav pieejama. Lai noskaidrotu ceļu, sazinieties ar pakalpojuma sniedzēju."
   },
   "manualBookings": {
     "add": "Pievienot pierakstu",

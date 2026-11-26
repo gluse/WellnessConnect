@@ -440,11 +440,23 @@ export type Address = typeof addresses.$inferSelect;
 export type AddressLocation = Pick<Address, "address" | "countryCode" | "latitude" | "longitude" | "locationSource" | "locationKey" | "locationPlaceId" | "locationExpiresAt" | "locationAddressSource">;
 export const addressInputSchema = createInsertSchema(addresses, {
   address: z.string().trim().min(5).max(500),
-  latitude: z.number().finite().min(-90).max(90),
-  longitude: z.number().finite().min(-180).max(180),
+  latitude: z.number().finite().min(-90).max(90).nullable().optional(),
+  longitude: z.number().finite().min(-180).max(180).nullable().optional(),
   countryCode: countryInput.nullable().optional(),
   pricingCurrency: currencyInput.nullable().optional(),
-}).pick({ address: true, latitude: true, longitude: true, countryCode: true, pricingCurrency: true });
+}).pick({ address: true, latitude: true, longitude: true, countryCode: true, pricingCurrency: true })
+  .extend({ addressOnly: z.boolean().optional() })
+  .superRefine((input, context) => {
+    // Permanent provider text is an explicit choice, not a way to retain an
+    // incomplete coordinate pair or silently relabel cached Google content.
+    for (const field of ["latitude", "longitude"] as const) {
+      if (input.addressOnly === true ? input[field] != null : input[field] == null) {
+        context.addIssue({ code: z.ZodIssueCode.custom, path: [field], message: input.addressOnly === true
+          ? "Leave coordinates empty when saving only the address."
+          : "Provide both coordinates or choose to save only the address." });
+      }
+    }
+  });
 
 // Services table
 export const services = pgTable("services", {

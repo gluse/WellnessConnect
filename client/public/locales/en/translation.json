@@ -619,7 +619,14 @@
     "removeTitle": "Remove this saved address?",
     "removeHelp": "Remove “{{address}}” from this workspace? Addresses used by services cannot be removed.",
     "removeError": "Unable to remove this address. It may still be used by a service.",
-    "removing": "Removing…"
+    "removing": "Removing…",
+    "permanentHelp": "Your street address stays saved. Map coordinates are optional and may need refreshing.",
+    "saveAddressOnly": "Save address only",
+    "coordinatesOptional": "Map coordinates are optional.",
+    "useCurrentLocation": "Use Current Location",
+    "locating": "Finding your location…",
+    "currentLocationHelp": "Use this while at the service location to fill latitude and longitude. Your street address stays unchanged.",
+    "currentLocationSet": "Current coordinates filled. Check them and enter the street address before saving."
   },
   "bookingForm": {
     "duplicateTitle": "Already booked",
@@ -1881,7 +1888,10 @@
     "email": "Email",
     "moreApps": "More apps",
     "link": "Public service link",
-    "shareError": "Sharing was unavailable. Select and copy the link below."
+    "shareError": "Sharing was unavailable. Select and copy the link below.",
+    "showDirections": "Show Directions",
+    "chooseMap": "Which map would you like to use?",
+    "addressUnavailable": "The address is currently unavailable. Please contact the provider for directions."
   },
   "manualBookings": {
     "add": "Add booking",

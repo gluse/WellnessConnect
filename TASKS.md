@@ -1420,4 +1420,39 @@ zh/fr/de/hi/ja/pt/es remain deferred while translations are maintained.
   TypeScript and production build pass. Confirmation includes dates/times and
   verified text/action contrast. [Scope and evidence](docs/manual-booking-delete-handoff.md).
 
-<!-- Add the next task here using TASK-077, or place it in the relevant section. -->
+- [ ] **TASK-077 — Show the service address and directions link.**
+  Requested and accepted 26 November 2026. User assigned Frontend; `/root`
+  implemented the Address label and Show Directions link on `/en/services/{id}`
+  and equivalent localized pages. Use current valid coordinates or encoded
+  address fallback; preserve expired-location handling and safe external links.
+  User follow-up adds a Google Maps/Waze/Apple Maps chooser for native and
+  installed web apps; local frontend implementation stays within TASK-077.
+  Focused en/lv/ru Chrome checks, existing English service-page regressions,
+  TypeScript and production build pass. All supported translations maintained;
+  other locales/RTL deferred. No connected operation or deployment.
+  [Evidence, limits and recovery](docs/service-directions-handoff.md).
+  **Service 3 follow-up:** its Google location has expired; public data contains
+  no address/coordinates. Address section moved above photos with an explicit
+  unavailable message. Restoring this stored location awaits the user's current
+  address and the applicable saved-address owner/workflow; no expiry bypass.
+  Frontend implementation is complete; task reopened for this data restoration.
+  Latest accepted follow-up: address now shares a row with Share; explicit
+  text-only address saves preserve provider-entered street text permanently,
+  without Google lookup or coordinates. Backend/DB owners accepted and reviewed
+  paired local changes; no migration or stored-data operation. Focused en/lv/ru
+  browser and offline Backend/DB checks pass. Service 3's current text still needed.
+  Latest frontend revision makes the address itself clickable beside Share and
+  removes the separate Show Directions label; mobile map chooser is preserved.
+
+- [x] **TASK-078 — Use Current Location when creating or editing a saved address.**
+  Requested and accepted 26 November 2026. Root owns local frontend form,
+  translations and synthetic checks. Explicit device permission request fills
+  editable coordinates, retains street text and uses the existing Save flow.
+  Handles denied/unavailable/timeouts and stale replies; no automatic save or
+  paid lookup. Focused en/lv/ru browser checks at 320/768/1280px/200% text,
+  saved-address regressions, TypeScript and production build pass. Other languages
+  and physical-device/native location tests deferred; translations maintained.
+  No connected operation or deployment.
+  [Scope, checks and recovery](docs/address-current-location-handoff.md).
+
+<!-- Add the next task here using TASK-079, or place it in the relevant section. -->

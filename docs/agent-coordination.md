@@ -1,5 +1,46 @@
 # Cross-role dependency queue
 
+## TASK-078 saved-address current location — 26 November 2026
+
+**Requested → accepted → implemented and verified locally.** User
+requests Use Current Location on saved-address create/edit. Root owns frontend
+form, translation and mocked test scope. Browser/device permission is requested
+only on click; coordinates stay editable and street text is preserved, with no
+automatic save/geocode. Existing manual source and save API suffice; no cross-owner
+implementation or connected operation. [Handoff](address-current-location-handoff.md).
+En/lv/ru current-location and existing saved-address browser checks, frontend
+coordinate regression, TypeScript and production build pass. Phone/tablet/desktop
+and 200% text reflow checked; other locales/RTL and physical devices deferred.
+
+## TASK-077 service address and directions — 26 November 2026
+
+**Requested → accepted → implemented and verified locally.** User assigned
+Frontend; `/root` owns the service address label, external directions link,
+translations and mocked frontend checks. No cross-owner dependency. Focused
+en/lv/ru Chrome checks, existing English service-page regressions, TypeScript and
+production build pass. Other locales/RTL remain deferred; translations maintained.
+No connected operation or deployment. [Handoff](service-directions-handoff.md).
+User follow-up accepted: native/installed-web-app map chooser with Google Maps,
+Waze and Apple Maps. Local frontend only; no native rebuild or policy change.
+Service 3 missing-address report: exact cookie-free public API diagnostic confirms
+expired Google-sourced data omitted from the response. Frontend now explains the
+unavailable location before the photo; current address requested from user.
+Stored-location restoration is pending current data and applicable Backend/DB
+workflow/authorization. No database write, geocoding call or expiry bypass.
+Latest user choice accepted: address beside Share and permanent provider text.
+Root frontend, assigned Backend `/root/address_backend` and DB
+`/root/address_database` accepted non-overlapping local scopes; implemented
+explicit addressOnly:true save path with normal owner authorization and no
+coordinate verification requirement. Existing columns suffice; no migration or
+expiry-policy change. Provider text is permanent, Google metadata is cleared
+only by deliberate text-only save. Backend 53 assertions, DB validation and
+focused en/lv/ru browsers pass. Current service 3 street text remains pending.
+See [Backend](service-address-backend-handoff.md) and
+[DB](service-address-database-handoff.md) handoffs for limits/recovery.
+User's subsequent clickable-address revision accepted by root: address text now
+opens directions/mobile chooser directly; separate directions label removed.
+Frontend-only; exact destination and stored-address contracts unchanged.
+
 ## TASK-073 language URL prefixes — 24 November 2026
 
 **Requested → accepted → implemented and verified locally.** User approved

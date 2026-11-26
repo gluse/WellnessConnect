@@ -619,7 +619,14 @@
     "removeTitle": "この保存済み住所を削除しますか？",
     "removeHelp": "このワークスペースから「{{address}}」を削除しますか？サービスで使用中の住所は削除できません。",
     "removeError": "住所を削除できませんでした。サービスで使用中の可能性があります。",
-    "removing": "削除中…"
+    "removing": "削除中…",
+    "permanentHelp": "住所は保存されたままになります。地図の座標は任意で、更新が必要になる場合があります。",
+    "saveAddressOnly": "住所のみを保存",
+    "coordinatesOptional": "地図の座標は任意です。",
+    "useCurrentLocation": "現在地を使用",
+    "locating": "現在地を取得しています…",
+    "currentLocationHelp": "サービス提供場所で使用すると緯度と経度が入力されます。住所は変更されません。",
+    "currentLocationSet": "現在地の座標を入力しました。保存前に座標を確認し、住所を入力してください。"
   },
   "bookingForm": {
     "duplicateTitle": "予約済みです",
@@ -1875,7 +1882,10 @@
     "email": "メール",
     "moreApps": "その他のアプリ",
     "link": "サービスの公開リンク",
-    "shareError": "共有できませんでした。下のリンクを選択してコピーしてください。"
+    "shareError": "共有できませんでした。下のリンクを選択してコピーしてください。",
+    "showDirections": "経路を表示",
+    "chooseMap": "どの地図を使用しますか？",
+    "addressUnavailable": "現在、住所を表示できません。道順についてはサービス提供者にお問い合わせください。"
   },
   "manualBookings": {
     "add": "予約を追加",

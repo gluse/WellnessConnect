@@ -619,7 +619,14 @@
     "removeTitle": "Diese gespeicherte Adresse entfernen?",
     "removeHelp": "„{{address}}“ aus diesem Arbeitsbereich entfernen? Von Dienstleistungen verwendete Adressen können nicht entfernt werden.",
     "removeError": "Die Adresse konnte nicht entfernt werden. Möglicherweise wird sie noch verwendet.",
-    "removing": "Wird entfernt…"
+    "removing": "Wird entfernt…",
+    "permanentHelp": "Ihre Straßenadresse bleibt gespeichert. Kartenkoordinaten sind optional und müssen möglicherweise aktualisiert werden.",
+    "saveAddressOnly": "Nur Adresse speichern",
+    "coordinatesOptional": "Kartenkoordinaten sind optional.",
+    "useCurrentLocation": "Aktuellen Standort verwenden",
+    "locating": "Ihr Standort wird ermittelt…",
+    "currentLocationHelp": "Nutzen Sie diese Funktion am Dienstleistungsort, um Breiten- und Längengrad einzutragen. Ihre Straßenadresse bleibt unverändert.",
+    "currentLocationSet": "Aktuelle Koordinaten eingetragen. Prüfen Sie diese und geben Sie vor dem Speichern die Straßenadresse ein."
   },
   "bookingForm": {
     "duplicateTitle": "Bereits gebucht",
@@ -1885,7 +1892,10 @@
     "email": "E-Mail",
     "moreApps": "Weitere Apps",
     "link": "Öffentlicher Dienstleistungslink",
-    "shareError": "Teilen war nicht verfügbar. Markieren und kopieren Sie den Link unten."
+    "shareError": "Teilen war nicht verfügbar. Markieren und kopieren Sie den Link unten.",
+    "showDirections": "Route anzeigen",
+    "chooseMap": "Welche Karte möchten Sie verwenden?",
+    "addressUnavailable": "Die Adresse ist derzeit nicht verfügbar. Bitte kontaktieren Sie den Anbieter für eine Wegbeschreibung."
   },
   "manualBookings": {
     "add": "Buchung hinzufügen",

@@ -619,7 +619,14 @@
     "removeTitle": "¿Eliminar esta dirección guardada?",
     "removeHelp": "¿Eliminar «{{address}}» de este espacio de trabajo? Las direcciones usadas por servicios no se pueden eliminar.",
     "removeError": "No se pudo eliminar la dirección. Puede que un servicio aún la use.",
-    "removing": "Eliminando…"
+    "removing": "Eliminando…",
+    "permanentHelp": "Su dirección permanece guardada. Las coordenadas del mapa son opcionales y pueden necesitar actualizarse.",
+    "saveAddressOnly": "Guardar solo la dirección",
+    "coordinatesOptional": "Las coordenadas del mapa son opcionales.",
+    "useCurrentLocation": "Usar ubicación actual",
+    "locating": "Buscando su ubicación…",
+    "currentLocationHelp": "Use esta opción en el lugar del servicio para rellenar la latitud y la longitud. Su dirección no cambiará.",
+    "currentLocationSet": "Coordenadas actuales completadas. Revíselas e introduzca la dirección antes de guardar."
   },
   "bookingForm": {
     "duplicateTitle": "Ya reservado",
@@ -1890,7 +1897,10 @@
     "email": "Correo electrónico",
     "moreApps": "Más aplicaciones",
     "link": "Enlace público del servicio",
-    "shareError": "No se pudo compartir. Seleccione y copie el enlace de abajo."
+    "shareError": "No se pudo compartir. Seleccione y copie el enlace de abajo.",
+    "showDirections": "Mostrar indicaciones",
+    "chooseMap": "¿Qué mapa desea utilizar?",
+    "addressUnavailable": "La dirección no está disponible actualmente. Contacte con el proveedor para saber cómo llegar."
   },
   "manualBookings": {
     "add": "Añadir reserva",

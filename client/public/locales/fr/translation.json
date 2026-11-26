@@ -619,7 +619,14 @@
     "removeTitle": "Supprimer cette adresse enregistrée ?",
     "removeHelp": "Supprimer « {{address}} » de cet espace de travail ? Les adresses utilisées par des services ne peuvent pas être supprimées.",
     "removeError": "Impossible de supprimer cette adresse. Un service l’utilise peut-être encore.",
-    "removing": "Suppression…"
+    "removing": "Suppression…",
+    "permanentHelp": "Votre adresse reste enregistrée. Les coordonnées cartographiques sont facultatives et peuvent nécessiter une mise à jour.",
+    "saveAddressOnly": "Enregistrer uniquement l’adresse",
+    "coordinatesOptional": "Les coordonnées cartographiques sont facultatives.",
+    "useCurrentLocation": "Utiliser ma position actuelle",
+    "locating": "Recherche de votre position…",
+    "currentLocationHelp": "Utilisez cette option sur le lieu de la prestation pour renseigner la latitude et la longitude. Votre adresse reste inchangée.",
+    "currentLocationSet": "Coordonnées actuelles renseignées. Vérifiez-les et saisissez l’adresse avant d’enregistrer."
   },
   "bookingForm": {
     "duplicateTitle": "Déjà réservé",
@@ -1890,7 +1897,10 @@
     "email": "E-mail",
     "moreApps": "Autres applications",
     "link": "Lien public du service",
-    "shareError": "Le partage n’est pas disponible. Sélectionnez et copiez le lien ci-dessous."
+    "shareError": "Le partage n’est pas disponible. Sélectionnez et copiez le lien ci-dessous.",
+    "showDirections": "Afficher l’itinéraire",
+    "chooseMap": "Quelle carte souhaitez-vous utiliser ?",
+    "addressUnavailable": "L’adresse est actuellement indisponible. Contactez le prestataire pour connaître l’itinéraire."
   },
   "manualBookings": {
     "add": "Ajouter une réservation",

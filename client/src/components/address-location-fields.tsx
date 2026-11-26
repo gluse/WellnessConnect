@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { SUPPORTED_COUNTRIES, SUPPORTED_CURRENCIES } from "@shared/currencies";
+import { LocateFixed } from "lucide-react";
 
 export function createLocationDraft(address?: Address) {
   const location = address ? currentLocation(address) : undefined;
@@ -27,11 +28,13 @@ export default function AddressLocationFields({ newService, setNewService, addre
   const countryNames = new Intl.DisplayNames([language], { type: "region" });
   const currencyNames = new Intl.DisplayNames([language], { type: "currency" });
   const { toast } = useToast();
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"verify" | "locate" | null>(null);
   const [feedback, setFeedback] = useState("");
   const [manualOpen, setManualOpen] = useState(newService.locationSource === "manual");
   const pending = useRef<AbortController | null>(null);
-  useEffect(() => () => pending.current?.abort(), []);
+  const locationCleanup = useRef<(() => void) | null>(null);
+  const deviceCoordinates = useRef(false);
+  useEffect(() => () => { pending.current?.abort(); locationCleanup.current?.(); }, []);
   useEffect(() => { if (coordinateIssue) setManualOpen(true); }, [coordinateIssue]);
   useEffect(() => {
     const timer = setInterval(() => setNewService(prev => {
@@ -41,16 +44,16 @@ export default function AddressLocationFields({ newService, setNewService, addre
     if (typeof timer === "object" && "unref" in timer) timer.unref();
     return () => clearInterval(timer);
   }, [setNewService]);
-  const updateBusy = (next: boolean) => { setBusy(next); onBusyChange?.(next); };
-  const cancel = () => { pending.current?.abort(); pending.current = null; updateBusy(false); };
+  const updateBusy = (next: "verify" | "locate" | null) => { setBusy(next); onBusyChange?.(Boolean(next)); };
+  const cancel = () => { pending.current?.abort(); pending.current = null; locationCleanup.current?.(); locationCleanup.current = null; updateBusy(null); };
   const verified = validCoordinates(newService.latitude, newService.longitude)
     && (newService.locationSource === "manual" || (newService.locationSource === "google"
       && !!newService.locationExpiresAt && Date.parse(newService.locationExpiresAt) > Date.now()));
   const verify = async () => {
-    if (pending.current || verified) return;
+    if (pending.current || locationCleanup.current || verified) return;
     if (addressError(newService.address)) { setFeedback("addressForm.addressInvalid"); return; }
     const controller = new AbortController(), address = newService.address;
-    pending.current = controller; updateBusy(true); setFeedback("");
+    pending.current = controller; updateBusy("verify"); setFeedback("");
     try {
       const response = await apiRequest("POST", "/api/geocode", { address }, controller.signal);
       const data = await response.json();
@@ -66,8 +69,34 @@ export default function AddressLocationFields({ newService, setNewService, addre
       setFeedback("addressForm.verifyError"); setManualOpen(true);
       toast({ title: t("addressForm.verifyError"), variant: "destructive" });
     } finally {
-      if (pending.current === controller) { pending.current = null; updateBusy(false); }
+      if (pending.current === controller) { pending.current = null; updateBusy(null); }
     }
+  };
+  const useCurrentLocation = () => {
+    if (pending.current || locationCleanup.current) return;
+    if (window.isSecureContext === false) { setFeedback("searchPage.locationInsecure"); return; }
+    if (!navigator.geolocation) { setFeedback("searchPage.locationUnsupported"); return; }
+    setFeedback(""); updateBusy("locate");
+    let active = true;
+    // Geolocation cannot be aborted. Ignore late replies after edits/unmount or
+    // the deadline, including time spent waiting for a permission prompt.
+    const cleanup = () => { active = false; clearTimeout(deadline); };
+    const finish = () => { cleanup(); locationCleanup.current = null; updateBusy(null); };
+    const fail = (key: string) => { if (!active) return; setFeedback(key); finish(); };
+    const deadline = setTimeout(() => fail("searchPage.locationTimeout"), 30000);
+    locationCleanup.current = cleanup;
+    try {
+      navigator.geolocation.getCurrentPosition(position => {
+        if (!active) return;
+        const { latitude, longitude } = position.coords;
+        if (!validCoordinates(latitude, longitude)) { fail("searchPage.locationUnavailable"); return; }
+        deviceCoordinates.current = true;
+        setNewService(previous => ({ ...previous, latitude, longitude,
+          locationSource: "manual", locationKey: null, locationExpiresAt: null, locationAddressSource: "user" }));
+        setManualOpen(true); setFeedback("addressForm.currentLocationSet"); finish();
+      }, error => fail(error.code === 1 ? "searchPage.locationDenied" : error.code === 3 ? "searchPage.locationTimeout" : "searchPage.locationUnavailable"),
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+    } catch { fail("searchPage.locationUnavailable"); }
   };
   const addressErrorText = addressIssue || (feedback === "addressForm.addressInvalid" ? t(feedback) : "");
   return <section className="space-y-4">
@@ -96,15 +125,22 @@ export default function AddressLocationFields({ newService, setNewService, addre
             const address = event.target.value; setFeedback("");
             if (normalizeAddress(address) === normalizeAddress(newService.address)) { setNewService(prev => ({ ...prev, address })); return; }
             cancel();
+            // A device fix is independent of the street text, so entering the
+            // address after locating must not discard the chosen coordinates.
+            if (deviceCoordinates.current) { setNewService(prev => ({ ...prev, address })); return; }
             setNewService(prev => ({ ...prev, address, latitude: null, longitude: null,
               locationSource: "legacy", locationKey: null, locationExpiresAt: null, locationAddressSource: "user" }));
           }} data-testid="input-address" />
-        <Button type="button" variant="outline" disabled={busy || verified} onClick={verify} data-testid="button-verify-address">{t(busy ? "addressForm.verifying" : verified ? "addressForm.locationSet" : "addressForm.verify")}</Button>
+        <Button type="button" variant="outline" disabled={Boolean(busy) || verified} onClick={verify} data-testid="button-verify-address">{t(busy === "verify" ? "addressForm.verifying" : verified ? "addressForm.locationSet" : "addressForm.verify")}</Button>
       </div>
       <p id="address-help" className="text-sm text-muted-foreground">{t("addressForm.verifyHelp")}</p>
-      <p id="address-status" role="status" aria-live="polite" className="text-sm font-medium">{t(busy ? "addressForm.verifying" : verified ? "addressForm.locationSet" : "addressForm.needsVerification")}</p>
+      <Button type="button" variant="outline" className="h-auto min-h-11 max-w-full whitespace-normal" disabled={Boolean(busy)} aria-describedby="address-current-location-help" onClick={useCurrentLocation} data-testid="button-use-current-location"><LocateFixed aria-hidden="true" className="h-4 w-4 shrink-0" />{t(busy === "locate" ? "addressForm.locating" : "addressForm.useCurrentLocation")}</Button>
+      <p id="address-current-location-help" className="text-sm text-muted-foreground">{t("addressForm.currentLocationHelp")}</p>
+      <p id="address-status" role="status" aria-live="polite" className="text-sm font-medium">{t(busy === "locate" ? "addressForm.locating" : busy === "verify" ? "addressForm.verifying" : verified ? "addressForm.locationSet" : newService.latitude == null && newService.longitude == null ? "addressForm.coordinatesOptional" : "addressForm.needsVerification")}</p>
       {addressErrorText && <p id="address-error" role="alert" className="text-sm text-red-700 dark:text-red-300">{addressErrorText}</p>}
       {feedback === "addressForm.verifyError" && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t(feedback)}</p>}
+      {feedback.startsWith("searchPage.location") && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t(feedback)}</p>}
+      {feedback === "addressForm.currentLocationSet" && <p role="status" className="text-sm font-medium">{t(feedback)}</p>}
     </div>
     <details open={manualOpen} onToggle={event => setManualOpen(event.currentTarget.open)} className="border rounded-lg p-3">
       <summary className="cursor-pointer min-h-11 py-2 font-medium">{t("addressForm.useCoordinates")}</summary>
@@ -116,7 +152,7 @@ export default function AddressLocationFields({ newService, setNewService, addre
             value={newService[field] ?? ""} aria-invalid={Boolean(coordinateIssue) || undefined}
             aria-describedby={"address-coordinate-help" + (coordinateIssue ? " address-coordinates-error" : "")}
             onChange={event => {
-              cancel(); setFeedback("");
+              cancel(); setFeedback(""); deviceCoordinates.current = false;
               const value = event.target.value === "" ? null : Number(event.target.value);
               setNewService(prev => ({ ...prev, ...(prev.locationSource !== "manual" ? { latitude: null, longitude: null } : {}),
                 [field]: value, locationSource: "manual", locationKey: null, locationExpiresAt: null, locationAddressSource: "user" }));
