@@ -62,6 +62,10 @@ company access and storage, and `shared/schema.ts` contains shared schemas.
 
 ## Hosting
 
+The separate company website has its own local build and hosting proposal; see
+[company-site/README.md](company-site/README.md). It is not deployed by the
+marketplace publishing workflow.
+
 AWS publishing has two prepared entry points: `npm run publish:aws:local` and
 `npm run publish:aws:codebuild`. Both default to an offline plan. See the
 [publishing guide](docs/aws-one-command-publishing.md) for exact release commands,

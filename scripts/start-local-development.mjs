@@ -6,6 +6,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { readSettings } from '../migrations/audit/runtime-support.mjs';
 import { assertAuditActivation, LOCAL_AUDIT_PORTS } from '../server/audit/config.ts';
+import { resolveLocalGit, LocalGitUnavailableError } from './local-git.mjs';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 export const LOCAL_PROFILE_NAME = '.env.local-docker.local';
@@ -49,7 +50,7 @@ function verifyProtectedPath(filename, { directory = false, allowInherited = fal
     realpathSync(filename).toLowerCase() !== filename.toLowerCase()) fail();
   const relative = path.relative(ROOT, filename).replaceAll('\\', '/');
   if (relative.startsWith('../') || path.isAbsolute(relative)) fail();
-  const ignored = spawnSync('git', ['check-ignore', '--', relative], { cwd: ROOT, encoding: 'utf8', windowsHide: true });
+  const ignored = spawnSync(resolveLocalGit(), ['check-ignore', '--', relative], { cwd: ROOT, encoding: 'utf8', windowsHide: true });
   if (ignored.status !== 0) fail();
   if (process.platform === 'win32') {
     const script = `$ErrorActionPreference='Stop';try {
@@ -218,7 +219,8 @@ async function main() {
     for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => child.kill(signal));
     child.once('error', () => { console.error('Local Docker process could not start.'); process.exitCode = 1; });
     child.once('exit', code => { process.exitCode = code ?? 1; });
-  } catch {
+  } catch (error) {
+    if (error instanceof LocalGitUnavailableError) console.error('Local Docker prerequisite missing: Git. Install Git or make an installed Git available on PATH.');
     console.error(`Local Docker operation refused. Complete the isolated copy setup and check protected ${LOCAL_PROFILE_NAME}; hosted runtime was not started.`);
     process.exitCode = 1;
   }

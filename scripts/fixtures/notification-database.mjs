@@ -6,7 +6,7 @@ import * as schema from "../../shared/schema.ts";
 // In-memory database boundary for the real worker decision/dispatch function.
 // It evaluates generated, parameterized Drizzle predicates; it does not mock
 // entitlement, consent, expiry, stale-event or duplicate-send decisions.
-const tableNames = ["bookings", "services", "serviceOptions", "users", "companies", "providerSubscriptions", "userCommunicationPreferences", "notificationEvents", "notificationJobs", "notificationDeliveryAttempts", "phoneVerificationChallenges", "notificationCallbacks", "bookingMessages", "bookingRescheduleRequests", "availability", "companyMemberships"];
+const tableNames = ["bookings", "services", "serviceOptions", "users", "companies", "providerSubscriptions", "userCommunicationPreferences", "notificationEvents", "notificationJobs", "notificationDeliveryAttempts", "phoneVerificationChallenges", "notificationCallbacks", "bookingMessages", "bookingRescheduleRequests", "availability", "companyMemberships", "manualAppointments", "employees", "workspacePricingSettings"];
 const tables = new Map(tableNames.map(key => [getTableName(schema[key]), schema[key]]));
 const dialect = new PgDialect();
 function sqlTwelveMonthAnniversary(value) {
@@ -23,6 +23,11 @@ function matches(table, row, condition, data = {}) {
     const target = query.params[Number(parameter.slice(1)) - 1];
     const duration = row.bookingDuration ?? data.services?.find(service => service.id === row.serviceId)?.duration ?? 60;
     const overlaps = new Date(row.scheduledDate).getTime() + (duration + (row.bookingCleanupTime ?? 0)) * 60000 > new Date(target).getTime();
+    query.params.push(overlaps, true); return `$${query.params.length - 1} = $${query.params.length}`;
+  });
+  query.sql = query.sql.replace(/"manual_appointments"\."ends_at" \+ "manual_appointments"\."cleanup_minutes" \* interval '1 minute' > (\$\d+)::timestamptz/g, (_expression, parameter) => {
+    const target = query.params[Number(parameter.slice(1)) - 1];
+    const overlaps = new Date(row.endsAt).getTime() + row.cleanupMinutes * 60000 > new Date(target).getTime();
     query.params.push(overlaps, true); return `$${query.params.length - 1} = $${query.params.length}`;
   });
   query.sql = query.sql.replace(/NOT EXISTS \(SELECT 1 FROM "booking_messages" WHERE "booking_messages"\."booking_id" = "bookings"\."id" AND "booking_messages"\."created_at" > (\$\d+)\)/gi, (_expression, parameter) => {

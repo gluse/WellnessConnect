@@ -19,10 +19,13 @@ const controlClass = "flex min-h-14 min-w-[max(44px,1.75rem)] flex-auto flex-col
 /** One signed-in mobile bar, with content clearance following its rendered height. */
 export default function MobileNavigationLayout({ children }: { children: ReactNode }) {
   const { isAuthenticated, user } = useAuth();
+  const [location] = useLocation();
+  const editingManualBooking = location === "/my-services/appointments/new" || /^\/my-services\/appointments\/manual\/[^/]+\/edit$/.test(location);
+  const showNavigation = isAuthenticated && !editingManualBooking;
   const shell = useRef<HTMLDivElement>(null);
   const bar = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (!isAuthenticated || !bar.current) return;
+    if (!showNavigation || !bar.current) return;
     let frame = 0;
     const measure = () => {
       const height = `${bar.current?.getBoundingClientRect().height ?? 0}px`;
@@ -38,11 +41,11 @@ export default function MobileNavigationLayout({ children }: { children: ReactNo
     observer.observe(bar.current);
     measure();
     return () => { observer.disconnect(); cancelAnimationFrame(frame); };
-  }, [isAuthenticated, user?.id, user?.currentRole]);
+  }, [showNavigation, user?.id, user?.currentRole]);
 
-  return <div ref={shell} className={isAuthenticated ? "mobile-navigation-layout pb-[var(--mobile-navigation-height,calc(7rem_+_env(safe-area-inset-bottom)))] lg:pb-0" : undefined}>
+  return <div ref={shell} className={showNavigation ? "mobile-navigation-layout pb-[var(--mobile-navigation-height,calc(7rem_+_env(safe-area-inset-bottom)))] lg:pb-0" : undefined}>
     {children}
-    {isAuthenticated && <MobileNavigation key={`${user?.id}:${user?.currentRole ?? ""}`} barRef={bar} />}
+    {showNavigation && <MobileNavigation key={`${user?.id}:${user?.currentRole ?? ""}`} barRef={bar} />}
   </div>;
 }
 

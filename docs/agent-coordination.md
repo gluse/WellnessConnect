@@ -2855,3 +2855,87 @@ All earlier stops/consumed0026/0027 evidence stay frozen. Do not replay0026–00
 TASK-068 country fees,069payments/DAC7 and070privatecalendar remain open. Final
 Root and DB handoffs hold approvals, commands, exact fingerprints and recovery.
 No hosted/AWS/deployment/real-payment/publication operation occurred.
+
+
+## TASK-074 — Calendar phone bookings — 24 November 2026
+
+**Completed locally.** User approved the reviewed calendar-first journey and
+explicitly granted local database jobs after reporting main.dump/audit.dump backups
+at17:28. Root accepted Frontend/integration and assigned Backend
+/root/manual_booking_backend, DB /root/manual_booking_database, and delegated
+calendar interaction work to /root/calendar_selection. Owners accepted and
+implemented their scoped local dependencies; DB explicitly delegated application
+queries to Backend. Root reviewed integration and completed startup wiring.
+
+Delivered: selectable30-minute calendar ranges, editable Add booking page, optional
+service/notes/customer contacts/price, authorized salon staff selection, outside-
+hours acknowledgment, private confirmed manual records, edits/cancel/completion,
+and shared registered/manual resource conflicts. No account/invitation/automatic
+message/payment collection/account linking. User-selected duration is preserved.
+
+New0029 committed once at protected127.0.0.1:15422/postgres.57readiness gates and
+19fullyrolled-back restricted-runtime synthetic checks pass;43original table
+fingerprints and exact setup ACL/membership are preserved. Earlier migration
+receipts/holds are unchanged; never replay consumed0029/test flags.
+
+Focused en/lv/ru Chromium form/touch/keyboard/scope checks, new55Backend cases,
+affected booking/collaboration/options/protection/audit/startup regressions,85
+offline DB checks, TypeScript/build and diff whitespace checks pass. Four older
+VM runners remain blocked by an independently confirmed preexisting service-option
+fixture import mismatch; no assertion was weakened. Other locales/RTL, physical
+devices and authenticated live booking workflows remain deferred/unverified.
+
+Root started the protected local launcher and verified cookie-free HTTP200for
+health/live,health/ready and both calendar/Add booking SPA shells. App remains
+127.0.0.1:5000. No real guest booking was persisted by tests. No hosted database,
+AWS, deployment, spending, backup restore or destructive operation.
+
+[Root authorization/results/recovery](manual-booking-handoff.md),
+[DB receipt and runtime evidence](manual-booking-database-handoff.md),
+[calendar evidence](manual-booking-calendar-handoff.md).
+Recovery: revert only attributable application edits; preserve private new data,
+all unrelated changes and frozen migration evidence. Separate future work owns
+legacy fixture refresh, any hosted rollout and additional device/browser checks.
+
+
+## TASK-075 — Local launcher Git discovery — 25 November 2026
+
+Completed by Root under the user’s startup error report. The earlier temporary
+PATH workaround did not apply to new terminals. The launcher now discovers an
+existing standard/Visual Studio Git and retains mandatory Git-ignore, file/ACL and
+isolated-profile checks. Seven offline scenarios and exact npm run dev -- --check
+pass without PATH edits. Existing127.0.0.1:5000 app retained; health/live and
+health/ready HTTP200 without cookies. No private configuration/data write, install,
+DB migration, hosted access or deployment.
+[Evidence and recovery](local-start-git-discovery-2026-11-25.md).
+
+TASK-075 startup follow-up: duplicate foreground start hit EADDRINUSE because Root’s
+earlier background dev app was healthy on5000. Root validated and stopped only
+its own39976/25744/application tree; verified zero listeners on5000 and retained
+user control of terminal startup. Previous running-app statements are historical.
+No new background instance, schema/data/config/container operation.
+
+
+## TASK-076 — Delete manual provider bookings — 25 November 2026
+
+Completed locally under the user’s explicit request to delete self-created
+bookings rather than cancel. Root owns Frontend/integration; existing assigned
+Backend owner accepted the private manual-only DELETE dependency, and DB owner
+accepted/delegated/reviewed its existing-schema query. Permission boundaries remain
+personal workspace / company manager / assigned staff. Registered customer
+bookings keep cancellation and history.
+
+Delete booking replaces manual Cancel, including previous cancelled/completed
+manual entries. Named/date/time confirmation explains irreversible removal;
+revision checks, pending/error/permission handling and cache/focus updates apply.
+Backend98mocked cases, en/lv/ru deletion+complete manual booking Chromium suites,
+form/locale parity, TypeScript/build and diff checks pass. Dialog contrast checked.
+No schema/migration, actual stored deletion, private config access, connected
+fixture, deployment or app stop/restart. Current user-owned development process
+remains under user control; refresh Calendar for new labels/actions.
+
+[Root handoff](manual-booking-delete-handoff.md),
+[Backend](manual-booking-delete-backend-handoff.md),
+[DB delegation/review](manual-booking-delete-db-review.md).
+Other languages/RTL tests, physical devices, screen readers and authenticated live
+deletion remain deferred/unverified. No user records deleted during verification.

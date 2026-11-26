@@ -123,6 +123,7 @@ const db = { select,
   async transaction(work) { const before = rows.map(row => ({ ...row })); lock = false; transactionActive = true; try { return await work(db); } catch (error) { rows = before; throw error; } finally { lock = false; transactionActive = false; } },
 };
 const dependencies = {
+  "./manual-appointments/busy": { async readManualBusyIntervals() { return manualBusy; } },
   "./service-options-store": optionStore, "./service-options": optionLogic, "@shared/service-options": optionDomain, "@shared/money": sharedMoney,
   "./service-booking-protection": serviceBookingProtection,
   "./serviceImages": serviceImages, "@shared/storefront": storefront,
@@ -139,7 +140,8 @@ const dependencies = {
 const storageModule = await load("server/storage.ts", dependencies);
 const storage = new storageModule.DatabaseStorage();
 const conflict = error => error instanceof storageModule.BookingConflictError;
-const reset = data => { rows = data.map(row => ({ ...row })); events = []; lock = false; };
+let manualBusy = [];
+const reset = data => { rows = data.map(row => ({ ...row })); events = []; lock = false; manualBusy = []; };
 const create = (count = 1, status = "confirmed", time = "09:00", overrides = {}) => storage.createBooking(booking(undefined, status, count, time, overrides));
 
 reset([booking(1, "pending", 6)]);
@@ -193,6 +195,21 @@ await assert.rejects(() => create(1), conflict);
 await assert.rejects(() => storage.updateBookingStatus(1, "confirmed"), conflict);
 service.serviceType = "group";
 
+// Manual reservations are exclusive resource occupancy even for a public group
+// service, and the same guard protects creation, approval and direct moves.
+const manualInterval = () => ({ id: "manual:synthetic", source: "manual", providerId: "provider", companyId: null, employeeId: null,
+  scheduledDate: at("09:00"), bookingDuration: 30, bookingCleanupTime: 15, serviceId: null, status: "confirmed", participantCount: 1 });
+reset([]); manualBusy = [manualInterval()];
+await assert.rejects(() => create(1), conflict);
+await assert.rejects(() => create(1, "confirmed", "09:30"), conflict);
+await create(1, "confirmed", "09:45");
+reset([booking(1, "pending", 1)]); manualBusy = [manualInterval()];
+await assert.rejects(() => storage.updateBookingStatus(1, "confirmed"), conflict);
+assert.equal(rows[0].status, "pending");
+reset([booking(1, "confirmed", 1, "10:00")]); manualBusy = [manualInterval()];
+await assert.rejects(() => storage.rescheduleBooking(1, at("09:00")), conflict);
+assert.equal(rows[0].scheduledDate.getTime(), at("10:00").getTime());
+
 // Range/day queries used by scheduling APIs must exclude requests, while list
 // endpoints retain them. Adapter's lock assertion applies only to writes.
 reset([booking(1, "pending"), booking(2), booking(3, "completed"), booking(4, "cancelled")]);
@@ -216,6 +233,7 @@ const noop = () => {};
 class ProviderError extends Error {}
 const routeDependencies = { ...dependencies, "@shared/workspace-pricing": workspacePricing, "./workspace-pricing/routes": { setupWorkspacePricingRoutes() {} }, "./workspace-pricing/store": { createWorkspacePricingStore: () => ({}) }, http: { createServer: () => ({ close() {} }) }, "./storage": { ...storageModule, storage },
   "./search-pagination/store": { createSearchPageStore: () => ({}) },
+  "./manual-appointments/routes": { setupManualAppointmentRoutes: noop }, "./manual-appointments/repository": { createManualAppointmentRepository: () => ({}), ManualAppointmentError: ProviderError },
   "./wishlist/routes": { setupWishlistRoutes: noop }, "./wishlist/postgres": { createWishlistStore: () => ({}) },
   "./wishlist/service": { createWishlistService: () => ({}) }, "./wishlist/inbox": { createInboxService: () => ({}) },
   "./auth": { setupAuth: noop, isAuthenticated: noop }, zod: { z }, "./companyAccess": access, "./schedulingRoutes": schedulingRoutes,
@@ -274,4 +292,9 @@ const first = await request("post", "/api/bookings", { body: { serviceId: 1, exp
 const second = await request("post", "/api/bookings", { body: { serviceId: 1, expectedPrice: service.price, expectedCurrency: service.currency, expectedAdvancePaymentPercent: service.advancePaymentPercent ?? 0, scheduledDate: at("09:00").toISOString(), participantCount: 4 } });
 const full = await request("post", "/api/bookings", { body: { serviceId: 1, expectedPrice: service.price, expectedCurrency: service.currency, expectedAdvancePaymentPercent: service.advancePaymentPercent ?? 0, scheduledDate: at("09:00").toISOString(), participantCount: 1 } });
 assert.equal(first.code, 200); assert.equal(second.code, 200); assert.equal(full.code, 409);
+reset([]); manualBusy = [manualInterval()];
+const guestBlockedSlots = await request("get", "/api/availability/slots/:serviceId");
+assert.equal(guestBlockedSlots.data.slots.some(row => row.startTime === "09:00"), false);
+assert.equal(guestBlockedSlots.data.slots.some(row => row.startTime === "09:45"), true);
+assert.equal(JSON.stringify(guestBlockedSlots.data).includes("manual:synthetic"), false, "Public slots contain availability, not private record IDs");
 console.log("Passed: pending availability, shared group capacity, exclusive employee sessions, cleanup/snapshots, creation/approval/reschedule conflicts, participant validation, SQL filters, daily/month previews, server-owned status/identity and API 403/409. Only injected in-memory adapters; no live clients or environment files loaded.");

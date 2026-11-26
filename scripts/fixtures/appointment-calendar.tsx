@@ -55,6 +55,7 @@ window.fetch = async (input, options = {}) => {
     const locale = path.match(/^\/locales\/(en|lv|ru)\/translation.json$/);
     if (locale) return Response.json(__FORM_RESOURCES__[locale[1]].translation);
     if (path === "/api/admin/access") return Response.json({ isAdmin: false });
+    if (path === "/api/admin/audit/access") return Response.json({ canRead: false, canExport: false, available: false });
     if (path === "/api/auth/user") return Response.json(user);
     if (path.startsWith("/api/inbox/summary?")) return Response.json({ unreadMessages: 0, unreadNotifications: 0 });
     if (path === "/api/company/context") return Response.json(context);
@@ -64,6 +65,8 @@ window.fetch = async (input, options = {}) => {
       return Response.json(fixture.state === "empty" ? [] : records);
     }
     if (path === "/api/provider/employees") return Response.json([{ id: 1, name: "Mara" }, { id: 2, name: "Laura" }]);
+    if (path === "/api/provider/manual-appointments") return Response.json([]);
+    if (path === "/api/services/provider") return Response.json([]);
     if (path === "/api/notifications/capabilities") return Response.json({ hasPro: true, automationEnabled: false, channels: { email: false, sms: false, whatsapp: false } });
     if (/^\/api\/bookings\/\d+\/notifications$/.test(path)) return Response.json({ notification: { mode: "none" }, reminder: { state: "off" } });
     if (/^\/api\/bookings\/\d+\/(event\/)?reschedule-requests$/.test(path)) return Response.json({ requests: [] });

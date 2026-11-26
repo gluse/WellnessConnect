@@ -22,7 +22,7 @@ export function useCalendarSwipe(surface: RefObject<HTMLElement>, scroller: RefO
       if (target.closest('input,select,textarea,a,[contenteditable="true"]')) return;
       const header = !!target.closest("[data-calendar-swipe-navigation]");
       if (!header && !target.closest("[data-calendar-swipe-grid]")) return;
-      if (button && !button.hasAttribute("data-calendar-swipe-navigation") && !button.hasAttribute("data-calendar-event")) return;
+      if (button && !button.hasAttribute("data-calendar-swipe-navigation") && !button.hasAttribute("data-calendar-event") && !button.hasAttribute("data-calendar-slot")) return;
       const touch = event.touches[0], scroll = scroller.current;
       // Leave screen-edge gestures to the browser/OS.
       if (touch.clientX < 24 || touch.clientX > window.innerWidth - 24) return;
@@ -31,6 +31,7 @@ export function useCalendarSwipe(surface: RefObject<HTMLElement>, scroller: RefO
     };
     const move = (event: TouchEvent) => {
       if (!gesture) return;
+      if (scroller.current?.dataset.calendarSelecting === "true") { gesture = null; return; }
       if (event.touches.length !== 1) { gesture = null; return; }
       const touch = Array.from(event.touches).find(item => item.identifier === gesture!.id);
       if (!touch) { gesture = null; return; }

@@ -27,7 +27,7 @@ const defaults: SearchFilters = { category: "", searchQuery: "", searchMode: "ex
 let lastSearch: { userId: string | null; filters: SearchFilters; draft: SearchFilters; query: string; mode: SearchFilters["searchMode"]; view: "grid" | "list" | "map"; sort: ServiceSort; browse: boolean; scroll: number } | undefined;
 type SearchLocation = ResolvedSearchLocation;
 const validRadius = (distance: number) => Number.isInteger(distance) && distance >= 1 && distance <= 500;
-const validate = (filters: SearchFilters, hasLocation: boolean) => hasLocation && !validRadius(filters.distance) ? "searchPage.invalidRadius" : searchValidationKey(filters);
+const validate = (filters: SearchFilters) => !validRadius(filters.distance) ? "searchPage.invalidRadius" : searchValidationKey(filters);
 
 export default function Home() {
   const auth = useAuth();
@@ -139,7 +139,7 @@ function SearchPage({ userId }: { userId: string | null }) {
     event.preventDefault();
     if (locked.current || restoringLocation || savedLocation.saving) return;
     const next = locationOnly ? filters : { ...filters, searchQuery: query.trim(), searchMode: mode };
-    const invalid = validate(next, !!location);
+    const invalid = validate(next);
     if (invalid) { rejectQuery(invalid); return; }
     locked.current = true; setLocationBusy(true); setQueryError(undefined); setLocationReceipt(false);
     try {
@@ -204,8 +204,8 @@ function SearchPage({ userId }: { userId: string | null }) {
   }
   function applyFilters() {
     if (locked.current || restoringLocation || savedLocation.saving) return false;
-    const next = { ...draft, distance: !location && !validRadius(draft.distance) ? defaults.distance : draft.distance, searchQuery: filters.searchQuery, searchMode: filters.searchMode };
-    const invalid = validate(next, !!location);
+    const next = { ...draft, searchQuery: filters.searchQuery, searchMode: filters.searchMode };
+    const invalid = validate(next);
     setFilterError(invalid);
     if (invalid) return false;
     if (!location) setBrowsingWithoutLocation(true);
@@ -220,7 +220,7 @@ function SearchPage({ userId }: { userId: string | null }) {
     event.preventDefault();
     if (locked.current || restoringLocation || savedLocation.saving) return;
     const next = { ...filters, ...searchDates(whenDraft) };
-    const invalid = validate(next, !!location);
+    const invalid = validate(next);
     setWhenError(invalid);
     if (invalid) { requestAnimationFrame(() => whenFeedback.current?.focus()); return; }
     setFilters(next); setDraft(current => ({ ...current, ...searchDates(next) })); setWhenOpen(false);
@@ -260,7 +260,7 @@ function SearchPage({ userId }: { userId: string | null }) {
   }
   if (filters.time || filters.timeEnd) chips.push({ key: "time", label: t("searchPage.timeRange", { start: filters.time || "00:00", end: filters.timeEnd || "23:59" }), action: () => remove({ time: "", timeEnd: "" }) });
   if (filters.availableOnly) chips.push({ key: "available", label: t("searchPage.availableOnly"), action: () => remove({ availableOnly: false }) });
-  const filterProps = { filters: draft, onFiltersChange: (next: SearchFilters) => { setDraft(next); setFilterError(undefined); }, onApply: applyFilters, onReset: resetDraft, error: filterError, pending: locationBusy, hasLocation: !!location };
+  const filterProps = { filters: draft, onFiltersChange: (next: SearchFilters) => { setDraft(next); setFilterError(undefined); }, onApply: applyFilters, onReset: resetDraft, error: filterError, pending: locationBusy };
   const busy = locationBusy || restoringLocation || savedLocation.saving;
   const formatDate = (value: string) => new Intl.DateTimeFormat(language, { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
   const whenSummary = [filters.date ? filters.dateEnd ? t("searchPage.dateRange", { start: formatDate(filters.date), end: formatDate(filters.dateEnd) }) : formatDate(filters.date) : "", filters.time || filters.timeEnd ? t("searchPage.timeRange", { start: filters.time || "00:00", end: filters.timeEnd || "23:59" }) : ""].filter(Boolean).join(" · ") || t("searchPage.anyTime");
@@ -285,7 +285,7 @@ function SearchPage({ userId }: { userId: string | null }) {
           </Button>
           <Button type="submit" className="search-submit" data-testid="button-search-services" disabled={busy} aria-label={t(locationBusy ? "searchPage.resolvingLocation" : "searchPage.search")}>{isMobile ? <span>{t("common.search")}</span> : <Search aria-hidden="true" />}</Button>
         </div>
-        <details className="search-query-options"><summary>{t("searchPage.searchMode")}: {t(mode === "exact" ? "searchPage.keyword" : "searchPage.ai")}</summary><div className="search-query-mode"><fieldset><legend className="sr-only">{t("searchPage.searchMode")}</legend>{["exact", "semantic"].map(value => <label key={value}><input type="radio" name="search-mode" value={value} checked={mode === value} disabled={busy} onChange={() => setMode(value as SearchFilters["searchMode"])} aria-describedby="search-mode-help" />{t(value === "exact" ? "searchPage.keyword" : "searchPage.ai")}</label>)}</fieldset><p id="search-mode-help">{t(mode === "exact" ? "searchPage.keywordHelp" : "searchPage.aiHelp")}</p></div></details>
+        {/* Search mode choices are temporarily hidden until Keywords and AI Search are working. */}
         {queryError && !locationOpen && <p ref={queryFeedback} id="search-query-feedback" tabIndex={-1} role="alert" className="search-query-error">{t(queryError)}</p>}
         {savedLocation.error && !locationOpen && <p role="alert" className="search-query-error">{t(savedLocation.error)} <button type="button" className="search-text-button" onClick={() => setLocationOpen(true)}>{t("searchLocation.change")}</button></p>}
         {locationBusy && <p role="status" className="search-location-receipt">{t("searchPage.resolvingLocation")}</p>}

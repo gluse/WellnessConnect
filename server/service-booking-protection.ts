@@ -16,8 +16,9 @@ export function changedServiceFields(previous: ServiceListing, updated: ServiceL
 // Call with the service row locked FOR UPDATE. Booking creation takes FOR SHARE
 // on that same row, so a reservation cannot slip between this check and removal.
 export async function hasUnfinishedServiceBookings(tx: ProductQuery, serviceId: number) {
-  return (await queryRows(tx, sql`SELECT id FROM public.bookings WHERE service_id=${serviceId}
-    AND (status IS NULL OR status NOT IN ('completed','cancelled')) LIMIT 1`)).length > 0;
+  if ((await queryRows(tx, sql`SELECT id FROM public.bookings WHERE service_id=${serviceId}
+    AND (status IS NULL OR status NOT IN ('completed','cancelled')) LIMIT 1`)).length > 0) return true;
+  return (await queryRows(tx, sql`SELECT id FROM public.manual_appointments WHERE service_id=${serviceId} AND status='confirmed' LIMIT 1`)).length > 0;
 }
 
 export async function notifyBookedServiceChanges(tx: ProductQuery, previous: ServiceListing, updated: ServiceListing, now = new Date()) {

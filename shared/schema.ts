@@ -538,6 +538,45 @@ export const geocodingCache = pgTable("geocoding_cache", {
 }).enableRLS();
 
 // Bookings table
+// Private provider-entered appointments have no account or catalogue dependency.
+// Their interval and optional amount are snapshots, independent of listing edits.
+export const manualAppointments = pgTable("manual_appointments", {
+  id: uuid("id").primaryKey(),
+  providerId: varchar("provider_id").notNull().references(() => users.id),
+  companyId: integer("company_id").references(() => companies.id),
+  employeeId: integer("employee_id").references(() => employees.id),
+  serviceId: integer("service_id").references(() => services.id, { onDelete: "set null" }),
+  serviceName: varchar("service_name", { length: 150 }),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+  endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+  cleanupMinutes: integer("cleanup_minutes").notNull().default(0),
+  notes: text("notes"),
+  customerName: varchar("customer_name", { length: 200 }),
+  customerPhone: varchar("customer_phone", { length: 50 }),
+  customerEmail: varchar("customer_email", { length: 320 }),
+  price: decimal("price"),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  status: varchar("status", { enum: ["confirmed", "cancelled", "completed"] }).notNull().default("confirmed"),
+  revision: integer("revision").notNull().default(1),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("manual_appointments_workspace_time_idx").on(table.providerId, table.companyId, table.startsAt),
+  index("manual_appointments_employee_time_idx").on(table.employeeId, table.startsAt),
+  index("manual_appointments_service_idx").on(table.serviceId),
+  check("manual_appointments_interval_check", sql`${table.endsAt} > ${table.startsAt} AND ${table.endsAt} <= ${table.startsAt} + '7 days'::interval`),
+  check("manual_appointments_cleanup_check", sql`${table.cleanupMinutes} BETWEEN 0 AND 1440`),
+  check("manual_appointments_assignment_check", sql`(${table.companyId} IS NULL AND ${table.employeeId} IS NULL) OR (${table.companyId} IS NOT NULL AND ${table.employeeId} IS NOT NULL)`),
+  check("manual_appointments_status_check", sql`${table.status} IN ('confirmed','cancelled','completed')`),
+  check("manual_appointments_revision_check", sql`${table.revision} > 0`),
+  check("manual_appointments_notes_check", sql`${table.notes} IS NULL OR (length(${table.notes}) >= 1 AND length(${table.notes}) <= 4000)`),
+  check("manual_appointments_customer_check", sql`(${table.customerName} IS NULL OR length(trim(${table.customerName})) BETWEEN 1 AND 200) AND (${table.customerPhone} IS NULL OR length(trim(${table.customerPhone})) BETWEEN 1 AND 50) AND (${table.customerEmail} IS NULL OR length(trim(${table.customerEmail})) BETWEEN 1 AND 320)`),
+  check("manual_appointments_price_check", sql`${table.price} IS NULL OR ${moneyAmountCheck(table.price, table.currency)}`),
+  check("manual_appointments_currency_check", currencyCodeCheck(table.currency)),
+]).enableRLS();
+export type ManualAppointment = typeof manualAppointments.$inferSelect;
+export type InsertManualAppointment = typeof manualAppointments.$inferInsert;
+
 export const bookings = pgTable("bookings", {
   id: serial("id").primaryKey(),
   serviceId: integer("service_id").references(() => services.id).notNull(),

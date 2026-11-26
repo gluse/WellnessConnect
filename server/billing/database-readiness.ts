@@ -1,9 +1,9 @@
 // DB owner prepared this injected metadata guard under Backend's explicit local
 // delegation. It never imports server/db, reads configuration or opens a socket.
-// The service-options profile retains every existing billing/audit check and adds
+// The manual-appointments profile retains every existing billing/audit check and adds
 // its schema checks. The offline DB regression verifies that strict superset.
-import { SERVICE_OPTIONS_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL, serviceOptionsApplicationReadinessArguments as billingApplicationReadinessArguments,
-  assertServiceOptionsDatabaseReadiness as assertBillingApplicationReadiness, SERVICE_OPTIONS_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS } from "../../migrations/service-options/application-readiness.mjs";
+import { MANUAL_APPOINTMENTS_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL, manualAppointmentsApplicationReadinessArguments as billingApplicationReadinessArguments,
+  assertManualAppointmentsDatabaseReadiness as assertBillingApplicationReadiness, MANUAL_APPOINTMENTS_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS } from "../../migrations/manual-appointments/application-readiness.mjs";
 
 export type BillingReadinessQuery = (text: string, values?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }>;
 export class BillingDatabaseReadinessError extends Error {

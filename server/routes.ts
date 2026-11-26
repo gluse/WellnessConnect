@@ -57,6 +57,8 @@ import { WorkspacePricingError } from "@shared/workspace-pricing";
 import { bookingOptionSelectionSchema, bookingQuoteInputSchema, bookingQuoteResponseSchema, calculatePlatformQuote, serviceOptionsInputSchema } from "@shared/service-options";
 import { effectiveOnlinePayments } from "./service-options-store";
 import { optionBookableSlots, optionEffectiveService, selectedServiceOption, ServiceOptionError } from "./service-options";
+import { setupManualAppointmentRoutes } from "./manual-appointments/routes";
+import { createManualAppointmentRepository, ManualAppointmentError } from "./manual-appointments/repository";
 
 // Older booking clients send `notes`; both inputs start the same conversation.
 const initialBookingMessageSchema = z.object({
@@ -163,6 +165,13 @@ export async function registerRoutes(app: Express, billing?: { mountAuthenticate
   } });
   setupNotificationRoutes(app);
   setupAppointmentRoutes(app);
+  setupManualAppointmentRoutes(app, { authenticate: isAuthenticated, repository: createManualAppointmentRepository(db), currentActor(req) {
+    try { const current = scope(req); return { userId: current.userId, companyId: current.companyId ?? null }; }
+    catch (error) {
+      if (error instanceof AccessError) throw new ManualAppointmentError(error.status, "MANUAL_BOOKING_FORBIDDEN", error.message);
+      throw error;
+    }
+  } });
   const wishlist = createWishlistService(createWishlistStore(db), id => storage.getServiceById(id));
   setupWishlistRoutes(app, isAuthenticated, wishlist, createInboxService(db, id => storage.getBookingById(id)), id => storage.getUser(id));
   billing?.mountAuthenticated(app);

@@ -12,6 +12,7 @@ const routes: readonly [RegExp, Action, boolean?][] = [
   [/^\/api\/services\/provider$/, "services.provider", true], [/^\/api\/bookings\/seeker$/, "bookings.seeker"],
   [/^\/api\/reports\/service-views\/?$/i, "services.provider", true],
   [/^\/api\/bookings\/provider$/, "bookings.provider", true], [/^\/api\/availability\/provider$/, "schedules.provider", true],
+  [/^\/api\/provider\/manual-appointments(?:\/[0-9a-f-]{36})?$/i, "bookings.provider", true],
   [/^\/api\/company\/context$/, "company.context", true], [/^\/api\/company\/team$/, "company.team", true],
   [/^\/api\/company\/my-invitations$/, "company.invitations"], [/^\/api\/bookings\/[1-9]\d*\/conversation$/, "appointments.conversation"],
   [/^\/api\/bookings\/[1-9]\d*\/(?:event\/)?reschedule-requests$/, "appointments.reschedules"],

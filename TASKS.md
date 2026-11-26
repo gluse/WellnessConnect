@@ -1380,4 +1380,44 @@ zh/fr/de/hi/ja/pt/es remain deferred while translations are maintained.
   private configuration, connected service, deployment or native build operation.
   [Scope, verification and recovery](docs/language-routing-handoff.md).
 
-<!-- Add the next task here using TASK-074, or place it in the relevant section. -->
+## Calendar phone bookings
+
+- [x] **TASK-074 — Book unregistered customers directly from provider Calendar.**
+  Accepted 24 November 2026. Select a range in 30-minute blocks, then open an
+  editable Add booking page. Service selection or free-text notes; customer
+  name/phone/email and price are optional. Salon staff selection respects workspace
+  permissions. Preserve the selected duration; permit outside-hours bookings with
+  a warning, and prevent conflicts with registered and manual appointments.
+  User authorized implementation and local database jobs, reporting `main.dump`
+  (2,019,735 bytes) and `audit.dump` (530,370 bytes), both 24 November at 17:28.
+  Completed locally: calendar/form, private APIs, shared conflict checks and additive
+  migration 0029. All 57 readiness gates and 19 rolled-back runtime DB checks pass;
+  existing table fingerprints are preserved. Focused en/lv/ru browser, backend,
+  TypeScript and production build checks pass. Four older VM runners retain an
+  independently evidenced baseline service-options fixture mismatch. Local app
+  is running at localhost:5000 with passing health and calendar/Add booking shells.
+  Root owns Frontend/integration; assigned Backend/DB and delegated calendar owners
+  returned implementation evidence. No hosted/AWS/deployment/spending.
+  [Current authorization, progress and recovery](docs/manual-booking-handoff.md).
+
+- [x] **TASK-075 — Repair local startup when Git is missing from PATH.**
+  Completed 25 November 2026 under the user's local launcher error report. Resolve
+  existing Windows Git/Visual Studio installations automatically; preserve the
+  mandatory Git-ignore, private-file ACL and isolated-profile safeguards. Seven
+  offline discovery scenarios and exact `npm run dev -- --check` pass without a
+  PATH workaround. Existing local app retained; no private config/data changes,
+  installation, migration, cloud or deployment. [Evidence and recovery](docs/local-start-git-discovery-2026-11-25.md).
+
+- [x] **TASK-076 — Delete provider-created manual bookings instead of cancelling.**
+  Accepted 25 November 2026 under the user's explicit deletion-feature request.
+  Root owns Frontend/integration; assigned Backend and DB owners accepted the
+  revision-checked manual-only DELETE dependency and existing schema review.
+  Replace manual Cancel with confirmed permanent deletion, including previously
+  cancelled/completed entries. Preserve registered-customer booking cancellation,
+  workspace/staff permissions and redacted audit capture. No migration or actual
+  stored booking deletion during implementation/testing. Backend 98 cases,
+  en/lv/ru deletion and complete manual-booking browser flows, locale/form checks,
+  TypeScript and production build pass. Confirmation includes dates/times and
+  verified text/action contrast. [Scope and evidence](docs/manual-booking-delete-handoff.md).
+
+<!-- Add the next task here using TASK-077, or place it in the relevant section. -->

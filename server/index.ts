@@ -18,7 +18,9 @@ import { mountNotificationWebhooks } from "./notifications/webhooks";
 import { startupFailureDiagnostic, type StartupStage } from "./startup-diagnostics";
 import { startBookingMessageRetention } from "./appointments/retention";
 import { verifyCurrencyDatabaseReadiness } from "../migrations/currencies/application-readiness.mjs";
-import { verifyServiceOptionsDatabaseReadiness } from "../migrations/service-options/application-readiness.mjs";
+// The 57-condition profile preserves all 49 service-options conditions and their
+// exact SQL/grants, then adds the authorized manual table and eight integrity checks.
+import { verifyManualAppointmentsDatabaseReadiness } from "../migrations/manual-appointments/application-readiness.mjs";
 import { verifyServicePhotoDatabaseReadiness } from "../migrations/service-photos/application-readiness.mjs";
 import { verifyServiceReminderMessageDatabaseReadiness } from "../migrations/service-reminder-message/application-readiness.mjs";
 
@@ -67,7 +69,7 @@ app.use((req, res, next) => {
     return pool.query(query);
   });
   startupStage = "customer_service_notification_database";
-  await verifyServiceOptionsDatabaseReadiness((text, values) => {
+  await verifyManualAppointmentsDatabaseReadiness((text, values) => {
     const query: QueryConfig & Pick<ClientConfig, "query_timeout"> = { text, values, query_timeout: 5000 };
     return pool.query(query);
   });

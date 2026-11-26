@@ -18,6 +18,7 @@ import {authProfileImage} from '../server/social-auth.ts';
 import {createInboxService} from '../server/wishlist/inbox.ts';
 
 async function load(path, dependencies) {
+  if(path==='server/storage.ts')dependencies={...dependencies,'./manual-appointments/busy':{async readManualBusyIntervals(){return [];}}};
   const source=await readFile(new URL(`../${path}`,import.meta.url),'utf8');
   const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
   const module={exports:{}};
@@ -28,7 +29,7 @@ async function load(path, dependencies) {
 }
 const dialect=new PgDialect(), now=new Date('2035-06-01T12:00:00Z');
 let listing={id:1,providerId:'provider',companyId:null,employeeId:null,addressId:null,name:'Conference',description:'Original',category:'education',serviceType:'group',price:'25.00',currency:'EUR',duration:60,cleanupTime:15,maxCapacity:10,ageGroups:[],targetGender:'both',instantBooking:false,advancePaymentPercent:50,imageUrl:null,imageUrls:[],externalUrl:null,reminderEnabled:false,reminderMethod:'email',reminderHours:24,reminderMessage:'',isActive:true};
-let bookings=[],notices=[],locked=false,failNotification=false,events=[];
+let bookings=[],manualReservations=[],notices=[],locked=false,failNotification=false,events=[];
 function ormPredicate(row,predicate){
   if(!predicate)return true;const query=dialect.sqlToQuery(predicate);let result=true;
   for(const match of query.sql.matchAll(/"services"\."(\w+)" (= \$(\d+)|is null)/gi)){
@@ -52,6 +53,7 @@ const db={select(){let predicate,joined=false,table;const chain={from(value){tab
         for(const row of bookings.filter(row=>row.serviceId===id&&statuses.includes(row.status)))notices.push({bookingId:row.id,seekerId:row.seekerId,serviceId:id,fields:JSON.parse(fields),createdAt,expiresAt});
         return {rows:[]};
       }
+      if(query.sql.startsWith('SELECT id FROM public.manual_appointments'))return {rows:manualReservations.filter(row=>row.serviceId===query.params[0]&&row.status==='confirmed').slice(0,1)};
       throw Error(`Unexpected offline SQL ${query.sql}`);
     }};
   try{return await action(tx);}catch(error){listing=before.listing;notices=before.notices;throw error;}finally{locked=false;}
@@ -65,6 +67,9 @@ for(const status of ['pending','confirmed',null,'unrecognized']){
   bookings=[reservation(1,status)];await assert.rejects(()=>storage.deleteService(1),/Complete or cancel/);assert.equal(listing.isActive,true);assert.deepEqual(events,['locked','query']);
 }
 bookings=[reservation(1,'completed'),reservation(2,'cancelled'),reservation(3,'confirmed',2)];
+manualReservations=[{id:'synthetic-manual',serviceId:1,status:'confirmed'}];
+await assert.rejects(()=>storage.deleteService(1),/Complete or cancel/);assert.equal(listing.isActive,true);
+manualReservations[0].status='completed';
 await storage.deleteService(1);assert.equal(listing.isActive,false);assert.ok(listing.deletedAt instanceof Date);assert.equal(bookings.length,3);assert.equal(events[0],'locked');
 await assert.rejects(()=>storage.updateService(1,{isActive:true}),/Service not found/);
 assert.equal(await storage.getServiceById(1),undefined,'Deleted services cannot be reopened by public ID');

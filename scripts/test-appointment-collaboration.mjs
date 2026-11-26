@@ -153,5 +153,10 @@ try {
   assert.equal(memory.data.booking_messages.length, 0, "A partial broadcast must roll back"); cases++;
   assert.notEqual(appointmentEventKey({ ...booking(), service }), appointmentEventKey({ ...booking(2, { bookingCleanupTime: 10 }), service }));
   assert.equal(rescheduleInputSchema.safeParse(input({ timeZone: "not/a/zone" })).success, false); cases++;
+  seed({ bookings: [booking(1, { employeeId: null })], manual_appointments: [{ id: randomUUID(), providerId: "provider", companyId: null, employeeId: null,
+    startsAt: new Date(proposed), endsAt: new Date(Date.parse(proposed) + 60 * 60000), cleanupMinutes: 0, status: "confirmed" }] });
+  await rejects(() => repository.request(provider, 1, input()), "time_unavailable");
+  assert.equal(memory.data.booking_reschedule_requests.length, 0);
+  assert.equal(memory.data.bookings[0].scheduledDate.getTime(), original.getTime(), "A manual appointment blocks a registered reschedule proposal without moving its original reservation"); cases++;
   console.log(`Passed ${cases} appointment collaboration scenarios: private two-way history/pagination, idempotency, Pro, event scope/completion, both request directions/fallbacks, independent group decisions, original reservation on failure/silence, revoked access and transactional rollback. In-memory adapters only.`);
 } finally { process.env = previousEnvironment; }

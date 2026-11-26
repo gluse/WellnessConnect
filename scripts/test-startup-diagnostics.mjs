@@ -4,8 +4,9 @@ import { BillingDatabaseReadinessError, verifyBillingDatabaseReadiness } from ".
 import { CurrencyDatabaseReadinessError } from "../migrations/currencies/application-readiness.mjs";
 import { ServicePhotoDatabaseReadinessError } from "../migrations/service-photos/application-readiness.mjs";
 import { ServiceReminderMessageDatabaseReadinessError } from "../migrations/service-reminder-message/application-readiness.mjs";
-import { SERVICE_OPTIONS_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS, SERVICE_OPTIONS_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL,
-  serviceOptionsApplicationReadinessArguments as billingApplicationReadinessArguments, ServiceOptionsDatabaseReadinessError } from "../migrations/service-options/application-readiness.mjs";
+import { MANUAL_APPOINTMENTS_APPLICATION_READINESS_KEYS as BILLING_APPLICATION_READINESS_KEYS, MANUAL_APPOINTMENTS_APPLICATION_READINESS_SQL as BILLING_APPLICATION_READINESS_SQL,
+  manualAppointmentsApplicationReadinessArguments as billingApplicationReadinessArguments, ManualAppointmentsDatabaseReadinessError } from "../migrations/manual-appointments/application-readiness.mjs";
+import { ServiceOptionsDatabaseReadinessError } from "../migrations/service-options/application-readiness.mjs";
 import { WorkspacePricingDatabaseReadinessError } from "../migrations/workspace-pricing/application-readiness.mjs";
 
 // Pure diagnostics and injected metadata queries; no server/db/env/provider import.
@@ -39,6 +40,9 @@ for (const type of ["StripeAuthenticationError", "StripePermissionError"])
   check(() => assert.equal(startupFailureDiagnostic("billing_portal", { type }).code, "STRIPE_AUTHENTICATION_OR_PERMISSION"));
 check(() => assert.equal(startupFailureDiagnostic("billing_portal", { type: "StripeConnectionError" }).code, "STRIPE_NETWORK_OR_TIMEOUT"));
 let calls = 0;
+check(() => assert.deepEqual(startupFailureDiagnostic("billing_database", new ManualAppointmentsDatabaseReadinessError(["manual_appointment_private_acl", canary])), {
+  event: "application_startup_refused", stage: "billing_database", code: "MANUAL_APPOINTMENTS_DB_NOT_READY", checks: ["manual_appointment_private_acl"],
+}));
 check(() => assert.deepEqual(startupFailureDiagnostic("customer_service_notification_database", new ServiceOptionsDatabaseReadinessError(["service_options_added_columns", canary])), {
   event: "application_startup_refused", stage: "customer_service_notification_database", code: "SERVICE_OPTIONS_DB_NOT_READY", checks: ["service_options_added_columns"],
 }));

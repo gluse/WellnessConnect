@@ -6,6 +6,7 @@ import { useWorkspaceChange } from "@/hooks/use-workspace-change";
 import ProviderNavigation from "@/components/provider/provider-navigation";
 import { WorkspaceNotice } from "@/components/provider/workspace-switcher";
 import AppointmentsPage from "@/pages/provider/appointments";
+import ManualBookingPage from "@/pages/provider/manual-booking";
 import ServicesPage from "@/pages/provider/services";
 import ServiceEditPage from "@/pages/provider/service-edit";
 import AvailabilityPage from "@/pages/provider/availability";
@@ -42,6 +43,8 @@ function ProviderLayout() {
           <fieldset disabled={switching} className={`min-w-0 ${switching ? "pointer-events-none opacity-50" : ""}`} aria-busy={switching}>
           <Switch>
             <Route path="/my-services"><Redirect to="/my-services/appointments" replace /></Route>
+            <Route path="/my-services/appointments/new" component={ManualBookingPage} />
+            <Route path="/my-services/appointments/manual/:id/edit" component={ManualBookingPage} />
             <Route path="/my-services/appointments"><AppointmentsPage /></Route>
             <Route path="/my-services/upcoming-appointments"><AppointmentsPage view="upcoming" /></Route>
             <Route path="/my-services/past-appointments"><AppointmentsPage view="past" /></Route>

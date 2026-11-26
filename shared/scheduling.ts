@@ -6,7 +6,10 @@ export type BookableSlot = TimeRange & { startsAt: string; endsAt: string; timez
 // historical appointments and their saved cleanup intervals.
 export const OCCUPYING_BOOKING_STATUSES = ["confirmed", "completed"] as const;
 type SlotService = Pick<Service, "id" | "duration"> & Partial<Pick<Service, "cleanupTime" | "serviceType" | "maxCapacity">> & { optionId?: number | null };
-type SlotBooking = Pick<Booking, "scheduledDate" | "bookingDuration" | "status"> & Partial<Pick<Booking, "bookingCleanupTime" | "serviceId" | "participantCount">> & { optionId?: number | null };
+export type SlotBooking = Pick<Booking, "scheduledDate" | "bookingDuration" | "status"> & Partial<Pick<Booking, "bookingCleanupTime" | "participantCount">> & {
+  serviceId?: number | null; optionId?: number | null; employeeId?: number | null; source?: "manual";
+};
+export type ResourceBooking = SlotBooking & { id: number | string; providerId: string; companyId: number | null; employeeId: number | null };
 
 // Only an identical group session can share the employee's occupied interval.
 // Saved durations prevent changed listings from joining incompatible sessions.
@@ -20,7 +23,7 @@ export function availableCapacity(service: SlotService, bookings: SlotBooking[],
     const busyStart = new Date(booking.scheduledDate).getTime();
     const busyDuration = booking.bookingDuration ?? 60, busyCleanup = booking.bookingCleanupTime ?? 0;
     if (start.getTime() >= busyStart + (busyDuration + busyCleanup) * 60_000 || end <= busyStart) continue;
-    if (service.serviceType !== "group" || booking.serviceId !== service.id || service.optionId != null && booking.optionId !== service.optionId || busyStart !== start.getTime()
+    if (booking.source === "manual" || service.serviceType !== "group" || booking.serviceId !== service.id || service.optionId != null && booking.optionId !== service.optionId || busyStart !== start.getTime()
       || busyDuration !== duration || busyCleanup !== cleanup) return 0;
     occupied += booking.participantCount ?? 1;
   }

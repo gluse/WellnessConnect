@@ -5,6 +5,9 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { CalendarDays, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import type { BookingWithDetails, Employee } from "@shared/schema";
+import type { ManualAppointmentDto } from "@shared/manual-appointments";
+import type { ManualTimeSelection } from "@/lib/manual-appointment-form";
+import type { CalendarEvent } from "@/lib/appointment-calendar";
 import { appointmentEventKey } from "@shared/appointment-collaboration";
 import { getProviderName } from "@shared/provider";
 import { Calendar } from "@/components/ui/calendar";
@@ -33,12 +36,17 @@ type Props = ProviderControls & {
   renderCustomerActions?: (booking: BookingWithDetails) => ReactNode;
   renderBookingDetails?: (booking: BookingWithDetails) => ReactNode;
   renderEventDetails?: (booking: BookingWithDetails) => ReactNode;
+  manualAppointments?: ManualAppointmentDto[];
+  renderManualAppointment?: (appointment: ManualAppointmentDto) => ReactNode;
+  onSelectTime?: (selection: ManualTimeSelection) => void;
 };
-export default function AppointmentAgenda({ bookings, employees = [], provider = false, loading = false, fixedView, renderCustomerActions, renderBookingDetails, renderEventDetails, ...controls }: Props) {
+export default function AppointmentAgenda({ bookings, employees = [], provider = false, loading = false, fixedView, renderCustomerActions, renderBookingDetails, renderEventDetails, manualAppointments = [], renderManualAppointment, onSelectTime, ...controls }: Props) {
   const { t, i18n } = useTranslation();
-  const [selectedView, setView] = useState<"upcoming" | "date" | "past" | "calendar">("upcoming"), [date, setDate] = useState(new Date());
+  const query = new URLSearchParams(typeof window === "undefined" ? "" : window.location.search);
+  const initialDate = query.get("date");
+  const [selectedView, setView] = useState<"upcoming" | "date" | "past" | "calendar">("upcoming"), [date, setDate] = useState(() => initialDate && /^\d{4}-\d{2}-\d{2}$/.test(initialDate) && Number.isFinite(Date.parse(initialDate)) ? new Date(initialDate + "T12:00:00") : new Date());
   const view = fixedView ?? selectedView;
-  const [employeeId, setEmployeeId] = useState("all"), [status, setStatus] = useState("all"), [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const [employeeId, setEmployeeId] = useState(() => employees.some(employee => String(employee.id) === query.get("employeeId")) ? query.get("employeeId")! : "all"), [status, setStatus] = useState("all"), [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const now = Date.now(), selectedDay = format(date, "yyyy-MM-dd");
   const filtered = bookings.filter(row => employeeId === "all" || String(row.employeeId) === employeeId);
   const matches = (row: BookingWithDetails) => {
@@ -51,6 +59,18 @@ export default function AppointmentAgenda({ bookings, employees = [], provider =
   const events = new Map<string, BookingWithDetails[]>();
   for (const row of filtered) { const key = provider ? appointmentEventKey(row) : `booking:${row.id}`; events.set(key, [...(events.get(key) ?? []), row]); }
   const displayed = Array.from(events).filter(([, rows]) => rows.some(matches)).sort((a, b) => (view === "past" ? -1 : 1) * (new Date(a[1][0].scheduledDate).getTime() - new Date(b[1][0].scheduledDate).getTime()));
+  const manualRows = provider ? manualAppointments.filter(row => employeeId === "all" || String(row.employeeId) === employeeId) : [];
+  const matchesManual = (row: ManualAppointmentDto) => {
+    if (status !== "all" && row.status !== status) return false;
+    const start = new Date(row.startsAt);
+    if (view === "date") return format(start, "yyyy-MM-dd") === selectedDay;
+    if (view === "past") return start.getTime() < now || row.status === "cancelled" || row.status === "completed";
+    return start.getTime() >= now && row.status === "confirmed";
+  };
+  const calendarEvents: CalendarEvent[] = [...Array.from(events).map(([key, rows]) => ({ key, rows })), ...manualRows.map(manual => ({ key: `manual:${manual.id}`, rows: [], manual }))];
+  const listEvents = [...displayed.map(([key, rows]) => ({ key, rows, manual: undefined as ManualAppointmentDto | undefined })),
+    ...manualRows.filter(matchesManual).map(manual => ({ key: `manual:${manual.id}`, rows: [] as BookingWithDetails[], manual }))]
+    .sort((a, b) => (view === "past" ? -1 : 1) * (Date.parse(a.manual?.startsAt ?? String(a.rows[0].scheduledDate)) - Date.parse(b.manual?.startsAt ?? String(b.rows[0].scheduledDate))));
   const toggle = (key: string) => setExpanded(current => { const next = new Set(current); next.has(key) ? next.delete(key) : next.add(key); return next; });
   const time = (row: BookingWithDetails) => `${format(new Date(row.scheduledDate), "HH:mm")}–${format(new Date(new Date(row.scheduledDate).getTime() + (row.bookingDuration ?? row.service.duration) * 60_000), "HH:mm")}`;
   const dateLabel = (value: Date) => new Intl.DateTimeFormat(i18n.language, { weekday: "short", day: "numeric", month: "short", year: "numeric" }).format(value);
@@ -99,9 +119,10 @@ export default function AppointmentAgenda({ bookings, employees = [], provider =
     </div>}
     {view !== "calendar" && filterControls}
     {view === "calendar" && provider ? <AppointmentCalendar date={date} onDateChange={setDate} loading={loading} employees={employees} filters={filterControls} updating={controls.updating}
-      events={Array.from(events).filter(([, rows]) => status === "all" || rows.some(row => row.status === status)).map(([key, rows]) => ({ key, rows }))}
-      renderDetails={event => renderEvent(event.key, event.rows, true)} /> : <div className={view === "date" ? "grid lg:grid-cols-[auto_1fr] gap-3 items-start" : ""}>{view === "date" && <Calendar mode="single" weekStartsOn={1} selected={date} onSelect={value => { if (value) setDate(value); }} modifiers={{ booked: filtered.map(row => new Date(row.scheduledDate)) }} modifiersClassNames={{ booked: "font-bold underline decoration-primary underline-offset-4" }} className="border bg-white rounded-xl h-fit w-fit max-w-full mx-auto p-1 sm:p-3" />}
-      <div className="min-w-0 space-y-3">{loading ? <p role="status" className="text-sm text-neutral-600 rounded-xl border bg-white p-4">{t("appointmentAgenda.loading")}</p> : !displayed.length ? <p className="text-sm text-neutral-600 rounded-xl border bg-white p-4">{view === "date" ? t("appointmentAgenda.emptyDate", { date: dateLabel(date) }) : t("appointmentAgenda.empty")}</p> : displayed.map(([key, rows]) => renderEvent(key, rows))}</div>
+      events={calendarEvents.filter(event => status === "all" || (event.manual ? event.manual.status === status : event.rows.some(row => row.status === status)))}
+      selectionEvents={calendarEvents} canSelectTime={!!onSelectTime} onSelectTime={onSelectTime} selectionEmployeeId={employeeId !== "all" ? Number(employeeId) : employees.length === 0 ? null : employees.length === 1 ? employees[0].id : undefined}
+      renderDetails={event => event.manual ? renderManualAppointment?.(event.manual) : renderEvent(event.key, event.rows, true)} /> : <div className={view === "date" ? "grid lg:grid-cols-[auto_1fr] gap-3 items-start" : ""}>{view === "date" && <Calendar mode="single" weekStartsOn={1} selected={date} onSelect={value => { if (value) setDate(value); }} modifiers={{ booked: [...filtered.map(row => new Date(row.scheduledDate)), ...manualRows.map(row => new Date(row.startsAt))] }} modifiersClassNames={{ booked: "font-bold underline decoration-primary underline-offset-4" }} className="border bg-white rounded-xl h-fit w-fit max-w-full mx-auto p-1 sm:p-3" />}
+      <div className="min-w-0 space-y-3">{loading ? <p role="status" className="text-sm text-neutral-600 rounded-xl border bg-white p-4">{t("appointmentAgenda.loading")}</p> : !listEvents.length ? <p className="text-sm text-neutral-600 rounded-xl border bg-white p-4">{view === "date" ? t("appointmentAgenda.emptyDate", { date: dateLabel(date) }) : t("appointmentAgenda.empty")}</p> : listEvents.map(event => event.manual ? <div key={event.key}>{renderManualAppointment?.(event.manual)}</div> : renderEvent(event.key, event.rows))}</div>
     </div>}
   </section>;
 }

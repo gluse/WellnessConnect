@@ -19,6 +19,9 @@ assert.throws(()=>parseAuditEnvelope({...own,scope:{kind:'personal',workspaceId:
 assert.throws(()=>protectedReadEvent({},'bookings.seeker'));
 assert.equal(protectedReadAction('/api/services'),undefined); assert.equal(protectedReadAction('/api/admin/audit/events'),undefined);
 assert.equal(protectedReadAction('/api/bookings/7/conversation')[1],'appointments.conversation');
+assert.equal(protectedReadAction('/api/provider/manual-appointments')[1],'bookings.provider');
+assert.equal(protectedReadAction('/api/provider/manual-appointments/11111111-1111-4111-8111-111111111111')[2],true);
+assert.equal(protectedReadAction('/api/provider/manual-appointments/preview'),undefined);
 const deduplicated=[];setAuditSink(async event=>{deduplicated.push(event);});
 const deniedRequest={...actor};await recordDenial(deniedRequest,'FORBIDDEN');await recordDenial(deniedRequest,'FORBIDDEN');
 assert.equal(deduplicated.length,1,'Existing middleware plus response instrumentation must not double-count one request denial');setAuditSink();

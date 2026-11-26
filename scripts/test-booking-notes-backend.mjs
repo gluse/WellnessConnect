@@ -96,6 +96,7 @@ const db = {
   },
 };
 const dependencies = {
+  "./manual-appointments/busy": { async readManualBusyIntervals() { return []; } },
   "./service-booking-protection": serviceBookingProtection,
   "./serviceImages": serviceImages, "@shared/storefront": storefront,
   "./money": money,

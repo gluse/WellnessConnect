@@ -1,8 +1,10 @@
 import { currentLanguagePath } from "@/lib/language-path";
 import { useEffect, useRef, useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
-import { useIsMutating, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useIsMutating, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { ManualAppointmentDto } from "@shared/manual-appointments";
+import ManualAppointmentDetails from "@/components/provider/manual-appointment-details";
 import type { Booking, BookingWithDetails } from "@shared/schema";
 import type { NotificationSummary } from "@shared/notifications";
 import { useProviderBookings, useProviderEmployees, useProviderWorkspace, WORKSPACE_CHANGE_KEY } from "@/hooks/use-provider-workspace";
@@ -35,8 +37,10 @@ export default function AppointmentsPage({ view = "calendar" }: { view?: Appoint
 function AppointmentsContent({ scope, view }: { scope: string; view: AppointmentView }) {
   const { data: context } = useProviderWorkspace();
   const { t } = useTranslation();
+  const [, navigate] = useLocation();
   const capabilities = useNotificationCapabilities();
   const bookings = useProviderBookings(scope);
+  const manual = useQuery<ManualAppointmentDto[]>({ queryKey: ["/api/provider/manual-appointments", scope], staleTime: 0, gcTime: 0, retry: false });
   const employees = useProviderEmployees();
   const [rescheduling, setRescheduling] = useState<BookingWithDetails | null>(null);
   const [conversation, setConversation] = useState<BookingWithDetails | null>(null);
@@ -81,11 +85,14 @@ function AppointmentsContent({ scope, view }: { scope: string; view: Appointment
   const restoreFocus = () => { if (trigger.current?.isConnected && !trigger.current.matches(":disabled")) trigger.current.focus(); else content.current?.focus(); };
   return <div ref={content} tabIndex={-1} aria-label={t(view === "calendar" ? "notifications.appointments" : view === "upcoming" ? "providerNavigation.upcomingAppointments" : "providerNavigation.pastAppointments")} className="space-y-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
     {view !== "calendar" && <h1 className="text-2xl font-semibold">{t(view === "upcoming" ? "providerNavigation.upcomingAppointments" : "providerNavigation.pastAppointments")}</h1>}
+    {canManage && view !== "past" && <div className="flex justify-end"><Button onClick={() => navigate("/my-services/appointments/new")}>{t("manualBookings.add")}</Button></div>}
     {capabilities.data?.hasPro === false && <div className="rounded-xl border bg-white p-3 text-sm">{t("notifications.proBanner")} <Link href="/my-services/settings/billing" className="underline inline-block py-2">{t("notifications.subscription")}</Link></div>}
     {capabilities.isError && <p role="status">{t("notifications.capabilityError")}</p>}
     {automatic && <NotificationFeedback key={`${automatic.bookingId}:${automatic.summary.eventId ?? "latest"}`} bookingId={automatic.bookingId} summary={automatic.summary} scope={scope} />}
-    {bookings.isError ? <p role="alert">Unable to load appointments. Please refresh to try again.</p> : <>
-      <AppointmentAgenda fixedView={view} bookings={bookings.data ?? []} employees={employees.data ?? []} provider loading={bookings.isLoading} updating={update.isPending}
+    {bookings.isError || manual.isError || employees.isError ? <p role="alert">{t("manualBookings.loadError")}</p> : <>
+      <AppointmentAgenda fixedView={view} bookings={bookings.data ?? []} employees={employees.data ?? []} provider loading={bookings.isLoading || manual.isLoading || employees.isLoading} updating={update.isPending}
+        manualAppointments={manual.data ?? []} renderManualAppointment={appointment => <ManualAppointmentDetails key={appointment.id} appointment={appointment} employees={employees.data ?? []} canManage={canManage} onDeleted={() => requestAnimationFrame(() => content.current?.focus())} />}
+        onSelectTime={canManage ? selection => { const query = new URLSearchParams({ start: selection.startsAt, end: selection.endsAt }); if (selection.employeeId) query.set("employeeId", String(selection.employeeId)); navigate(`/my-services/appointments/new?${query}`); } : undefined}
         onStatusChange={canManage ? (bookingId, status, element) => { if (!update.isPending) { rememberTrigger(element); setAutomatic(null); if (status === "cancelled") setCancelling(bookings.data?.find(row => row.id === bookingId) ?? null); else update.mutate({ bookingId, status }); } } : undefined}
         onReschedule={canManage ? (booking, element) => { rememberTrigger(element); setAutomatic(null); setRescheduling(booking); } : undefined}
         onMessage={(booking, element) => { rememberTrigger(element); setConversation(booking); }}

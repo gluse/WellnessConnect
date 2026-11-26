@@ -39,6 +39,7 @@ const database = {
   async transaction(action) { activeTransaction = true; try { return await action(database); } finally { activeTransaction = false; } },
 };
 const dependencies = {
+  "./manual-appointments/busy": { async readManualBusyIntervals() { return []; } },
   "./service-booking-protection": serviceBookingProtection,
   "@shared/schema": schema, "drizzle-orm": orm, "./db": { db: database }, "./money": money,
   "./serviceImages": gallery, "@shared/storefront": storefront, "node:crypto": await import("node:crypto"),

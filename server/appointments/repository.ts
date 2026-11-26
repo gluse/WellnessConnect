@@ -10,6 +10,7 @@ import type { db } from "../db";
 import { bookingMoneyDto, serviceMoneyDto } from "../money";
 import { readServiceOptions } from "../service-options-store";
 import { optionScheduleRows } from "../service-options";
+import { readManualBusyIntervals } from "../manual-appointments/busy";
 
 export class AppointmentError extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }
@@ -114,8 +115,9 @@ export function createAppointmentRepository(database: Database, now: () => Date 
     if (occupied.length > 5000) fail(409, "time_unavailable", "Availability needs to be reviewed. Choose another time.");
     const legacyServiceIds = Array.from(new Set(occupied.filter(row => row.bookingDuration == null).map(row => row.serviceId)));
     const legacyServices = legacyServiceIds.length ? await tx.select({ id: services.id, duration: services.duration }).from(services).where(inArray(services.id, legacyServiceIds)) : [];
-    const capacity = availableCapacity(snapshot, occupied.filter(row => row.id !== booking.id).map(row => ({ ...row,
-      bookingDuration: row.bookingDuration ?? legacyServices.find(service => service.id === row.serviceId)?.duration ?? 60 })), date);
+    const capacity = availableCapacity(snapshot, [...occupied.filter(row => row.id !== booking.id).map(row => ({ ...row,
+      bookingDuration: row.bookingDuration ?? legacyServices.find(service => service.id === row.serviceId)?.duration ?? 60 })),
+      ...await readManualBusyIntervals(tx, booking, date, end)], date);
     if ((booking.participantCount ?? 1) > capacity) fail(409, "time_unavailable", "The proposed time is no longer available. Your original reservation is unchanged.");
     return capacity;
   }

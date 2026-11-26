@@ -35,7 +35,7 @@ import { serviceLocation } from "./addresses";
 import { assertAuditContext, createAuditContext, type AuditContext } from "./audit/context";
 import { createAuditEvent } from "./audit/events";
 import { enqueueDrizzleAudit, AuditCaptureUnavailable } from "./audit/capture";
-import { availableCapacity, bookableSlots, schedulesForDay, workingRanges, OCCUPYING_BOOKING_STATUSES } from "@shared/scheduling";
+import { availableCapacity, bookableSlots, schedulesForDay, workingRanges, OCCUPYING_BOOKING_STATUSES, type ResourceBooking } from "@shared/scheduling";
 import { reviewSchema, ReviewError, type ReviewInput, type ServiceReviewPage } from "@shared/reviews";
 import { assertSearchSize, MAX_SEARCH_CANDIDATES, MAX_SEARCH_SCHEDULES, searchFiltersSchema, type SearchFilters } from "./searchInput";
 import { assertCustomerBookingChange } from "./customerBookings";
@@ -51,6 +51,7 @@ import { defaultServiceOption, effectiveOnlinePayments, optionDto, optionSummary
 import { optionBookableSlots, optionEffectiveService, optionScheduleRows, selectedServiceOption, ServiceOptionError } from "./service-options";
 import type { BookingOptionSelection, ServiceOption, ServiceOptionInput, ServicePageDetails } from "@shared/service-options";
 import { normalizeMoneyAmount, parseMoneyAmount } from "@shared/money";
+import { readManualBusyIntervals } from "./manual-appointments/busy";
 
 type NotificationBooking = Booking & { notification?: NotificationSummary };
 
@@ -136,7 +137,8 @@ async function assertResourceAvailable(tx: Pick<typeof db, "select">, service: P
       sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${start.toISOString()}::timestamp`));
   const count = candidate.participantCount ?? 1;
   const remaining = availableCapacity({ ...service, optionId: candidate.optionId, duration: candidate.bookingDuration, cleanupTime: candidate.bookingCleanupTime },
-    overlapping.map(row => ({ ...row.booking, bookingDuration: row.booking.bookingDuration ?? row.duration ?? 60 })), start);
+    [...overlapping.map(row => ({ ...row.booking, bookingDuration: row.booking.bookingDuration ?? row.duration ?? 60 })),
+      ...await readManualBusyIntervals(tx, candidate, start, end)], start);
   if (!Number.isInteger(count) || count < 1 || count > remaining) throw new BookingConflictError("This time slot is no longer available.");
 }
 
@@ -194,8 +196,8 @@ export interface IStorage {
   updateBookingPayment(id: number, paymentStatus: string): Promise<Booking>;
   getBookingsForServiceOnDate(serviceId: number, date: Date): Promise<Booking[]>;
   getBookingsForProviderOnDate(providerId: string, date: Date): Promise<Booking[]>;
-  getBookingsForResourceOnDate(service: Service, date: Date): Promise<Booking[]>;
-  getBookingsForResourceRange(service: Service, start: Date, end: Date): Promise<Booking[]>;
+  getBookingsForResourceOnDate(service: Service, date: Date): Promise<ResourceBooking[]>;
+  getBookingsForResourceRange(service: Service, start: Date, end: Date): Promise<ResourceBooking[]>;
 
   // Availability operations
   createAvailability(availability: InsertAvailability): Promise<Availability>;
@@ -580,7 +582,9 @@ export class DatabaseStorage implements IStorage {
         service.companyId == null ? isNull(bookings.companyId) : eq(bookings.companyId, service.companyId), inArray(bookings.status, [...OCCUPYING_BOOKING_STATUSES]),
         sql`${bookings.scheduledDate} < ${new Date(booking.scheduledDate.getTime() + (option.duration + service.cleanupTime) * 60_000).toISOString()}::timestamp`,
         sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${booking.scheduledDate.toISOString()}::timestamp`));
-      const offered = optionBookableSlots({ service, option, schedules, bookings: existing, employees: roster, specialist: selection?.specialist ?? "any",
+      const manualBusy = await readManualBusyIntervals(tx, { ...service, employeeId: null }, booking.scheduledDate,
+        new Date(booking.scheduledDate.getTime() + (option.duration + service.cleanupTime) * 60000));
+      const offered = optionBookableSlots({ service, option, schedules, bookings: [...existing, ...manualBusy], employees: roster, specialist: selection?.specialist ?? "any",
         participantCount: booking.participantCount ?? 1, date: booking.scheduledDate.toISOString().slice(0, 10), timezone: "UTC" });
       const slot = offered.find(item => item.startsAt === booking.scheduledDate.toISOString());
       if (!slot) throw new BookingConflictError("This time is no longer available.");
@@ -823,7 +827,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Availability operations
-  async getBookingsForResourceOnDate(service: Service, date: Date): Promise<Booking[]> {
+  async getBookingsForResourceOnDate(service: Service, date: Date): Promise<ResourceBooking[]> {
     const start = new Date(date);
     start.setHours(0, 0, 0, 0);
     const end = new Date(start);
@@ -831,14 +835,15 @@ export class DatabaseStorage implements IStorage {
     return this.getBookingsForResourceRange(service, start, end);
   }
 
-  async getBookingsForResourceRange(service: Service, start: Date, end: Date): Promise<Booking[]> {
+  async getBookingsForResourceRange(service: Service, start: Date, end: Date): Promise<ResourceBooking[]> {
     const rows = await db.select({ booking: bookings, duration: services.duration }).from(bookings)
       .leftJoin(services, eq(bookings.serviceId, services.id))
       .where(and(eq(bookings.providerId, service.providerId), service.companyId == null ? isNull(bookings.companyId) : eq(bookings.companyId, service.companyId), inArray(bookings.status, [...OCCUPYING_BOOKING_STATUSES]),
         service.employeeId != null ? or(eq(bookings.employeeId, service.employeeId), service.companyId != null ? isNull(bookings.employeeId) : undefined) : service.companyId == null ? isNull(bookings.employeeId) : undefined,
         sql`${bookings.scheduledDate} < ${end.toISOString()}::timestamp`,
         sql`${bookings.scheduledDate} + (COALESCE(${bookings.bookingDuration}, ${services.duration}, 60) + COALESCE(${bookings.bookingCleanupTime}, 0)) * interval '1 minute' > ${start.toISOString()}::timestamp`));
-    return rows.map(row => ({ ...row.booking, bookingDuration: row.booking.bookingDuration ?? row.duration ?? 60 }));
+    return [...rows.map(row => ({ ...row.booking, bookingDuration: row.booking.bookingDuration ?? row.duration ?? 60 })),
+      ...await readManualBusyIntervals(db, service, start, end)];
   }
 
   async createAvailability(availabilityData: InsertAvailability): Promise<Availability> {

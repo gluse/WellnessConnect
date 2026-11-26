@@ -25,10 +25,9 @@ interface ServiceFiltersProps {
   onReset: () => void;
   error: string | undefined;
   pending: boolean;
-  hasLocation?: boolean;
 }
 
-export default function ServiceFilters({ filters, onFiltersChange, onApply, onReset, error, pending, hasLocation = true }: ServiceFiltersProps) {
+export default function ServiceFilters({ filters, onFiltersChange, onApply, onReset, error, pending }: ServiceFiltersProps) {
   const { t } = useTranslation();
   const categories = useCategories();
   const id = useId();
@@ -51,7 +50,7 @@ export default function ServiceFilters({ filters, onFiltersChange, onApply, onRe
         {categories.isPending && <p role="status">{t("searchPage.categoriesLoading")}</p>}
         {categories.isError && <p role="alert">{t("searchPage.categoriesError")} <button type="button" className="search-text-button" onClick={() => void categories.refetch()}>{t("publicSearch.retry")}</button></p>}
       </div>
-      <div className="search-filter-section"><label htmlFor={`${id}-distance`}>{t("searchPage.radius")}</label><div className="search-radius"><input id={`${id}-distance`} data-testid="input-distance" disabled={!hasLocation} type="number" inputMode="numeric" min={1} max={500} step={1} value={Number.isNaN(filters.distance) ? "" : filters.distance} onChange={event => update({ distance: event.target.value === "" ? NaN : Number(event.target.value) })} aria-invalid={errorField === "distance" && !!error} aria-describedby={errorField === "distance" && error ? `${id}-radius-help ${id}-error` : `${id}-radius-help`} /><span>km</span></div><p id={`${id}-radius-help`}>{t(hasLocation ? "searchPage.radiusHelp" : "searchLocation.browseHelp")}</p></div>
+      <div className="search-filter-section"><label htmlFor={`${id}-distance`}>{t("searchPage.radius")}</label><div className="search-radius"><input id={`${id}-distance`} data-testid="input-distance" disabled={pending} type="number" inputMode="numeric" min={1} max={500} step={1} value={Number.isNaN(filters.distance) ? "" : filters.distance} onChange={event => update({ distance: event.target.value === "" ? NaN : Number(event.target.value) })} aria-invalid={errorField === "distance" && !!error} aria-describedby={errorField === "distance" && error ? `${id}-radius-help ${id}-error` : `${id}-radius-help`} /><span>km</span></div><p id={`${id}-radius-help`}>{t("searchPage.radiusHelp")}</p></div>
       <fieldset className="search-filter-section"><legend>{t("searchPage.sessionType")}</legend>{[["", "allTypes"], ["one_to_one", "individual"], ["group", "group"]].map(([value, key]) => <label className="search-choice" key={value}><input type="radio" name={`${id}-type`} value={value} checked={filters.serviceType === value} onChange={() => update({ serviceType: value })} /><span>{t(`searchPage.${key}`)}</span></label>)}</fieldset>
       <fieldset className="search-filter-section"><legend>{t("searchPage.audience")}</legend><div className="search-audience">{["children", "teens", "adults", "seniors"].map(age => <label className="search-choice" key={age}><input type="checkbox" checked={filters.ageGroups.includes(age)} onChange={event => update({ ageGroups: event.target.checked ? [...filters.ageGroups, age] : filters.ageGroups.filter(value => value !== age) })} /><span>{t(`searchPage.${age}`)}</span></label>)}</div></fieldset>
       <details className="search-filter-section" open={datesOpen} onToggle={event => setDatesOpen(event.currentTarget.open)}><summary>{t("searchPage.dateTime")}</summary><SearchDateFields id={id} filters={filters} onChange={update} error={errorField !== "distance" ? error : undefined} disabled={pending} /></details>
